@@ -1,0 +1,57 @@
+{
+    "name": "prooph/event-store-mysql-adapter",
+    "description": "MySQL Adapter for ProophEventStore",
+    "homepage": "http://getprooph.org/",
+    "license": "BSD-3-Clause",
+    "authors": [
+        {
+            "name": "Alexander Miertsch",
+            "email": "contact@prooph.de",
+            "homepage": "http://www.prooph.de"
+        },
+        {
+            "name": "Sascha-Oliver Prolic",
+            "email": "saschaprolic@googlemail.com"
+        }
+    ],
+    "require": {
+        "php": "^7.1",
+        "ext-pdo_mysql": "*",
+        "prooph/common": "dev-develop as 4.0",
+        "prooph/event-store": "dev-develop as 7.0"
+    },
+    "require-dev": {
+        "container-interop/container-interop": "^1.1",
+        "sandrokeil/interop-config": "^1.0",
+        "phpunit/phpunit": "^5.6",
+        "phpunit/phpunit-mock-objects": "^3.3.1",
+        "phpspec/prophecy": "dev-patch-1 as 1.6.1",
+        "friendsofphp/php-cs-fixer": "^1.12.2",
+        "sebastian/comparator": "^1.2",
+        "satooshi/php-coveralls": "^1.0"
+    },
+    "suggest": {
+        "container-interop/container-interop": "For usage of provided factories",
+        "sandrokeil/interop-config": "For usage of provided factories"
+    },
+    "conflict": {
+        "sandrokeil/interop-config": "<1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Prooph\\EventStore\\Adapter\\MongoDb\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "ProophTest\\EventStore\\Adapter\\Mysql\\": "tests/",
+            "ProophTest\\EventStore\\": "vendor/prooph/event-store/tests/"
+        }
+    },
+    "repositories": [
+      {
+        "type": "git",
+        "url": "https://github.com/prolic/prophecy.git"
+      }
+    ]
+}
