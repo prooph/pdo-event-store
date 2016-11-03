@@ -1,6 +1,6 @@
 <?php
 /**
- * This file is part of the prooph/event-store-mysql-adapter.
+ * This file is part of the prooph/event-store-pdo-adapter.
  * (c) 2016-2016 prooph software GmbH <contact@prooph.de>
  * (c) 2016-2016 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
@@ -10,58 +10,43 @@
 
 namespace ProophTest\EventStore\Adapter\MySQL;
 
+use PDO;
 use PHPUnit_Framework_TestCase as TestCase;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\Adapter\Exception\RuntimeException;
-use Prooph\EventStore\Adapter\MySQL\MySQLEventStoreAdapter;
+use Prooph\EventStore\Adapter\PDO\MySQLOneStreamPerAggregateIndexingStrategy;
+use Prooph\EventStore\Adapter\PDO\PDOEventStoreAdapter;
+use Prooph\EventStore\Adapter\PDO\Sha1TableNameGeneratorStrategy;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Stream\Stream;
 use Prooph\EventStore\Stream\StreamName;
+use ProophTest\EventStore\Adapter\PDO\TestUtil;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
 
-final class MySQLEventStoreAdapterTest extends TestCase
+final class PDOEventStoreAdapterTest extends TestCase
 {
     /**
-     * @var MySQLEventStoreAdapter
+     * @var PDOEventStoreAdapter
      */
     private $adapter;
 
-    /**
-     * @var Manager
-     */
-    private $manager;
-
-    /**
-     * @var
-     */
-    private $dbName;
-
     protected function setUp(): void
     {
-        $this->manager = new Manager('MySQL://localhost:27017');
-        $this->dbName = 'mongo_adapter_test';
-
-        $this->manager->executeCommand($this->dbName, new Command(['dropDatabase' => 1]));
-
-        $this->createAdapter();
+        $connection = TestUtil::getConnection();
+        $connection->exec(file_get_contents(__DIR__ . '/../scripts/mysql_event_streams_table.sql'));
+        $this->createAdapter($connection);
     }
 
-    protected function tearDown(): void
+    protected function createAdapter(PDO $connection): void
     {
-        if (null !== $this->manager) {
-            $this->manager->executeCommand($this->dbName, new Command(['dropDatabase' => 1]));
-        }
-    }
-
-    protected function createAdapter(): void
-    {
-        $this->adapter = new MySQLEventStoreAdapter(
+        $this->adapter = new PDOEventStoreAdapter(
             new FQCNMessageFactory(),
             new NoOpMessageConverter(),
-            $this->manager,
-            $this->dbName
+            $connection,
+            new MySQLOneStreamPerAggregateIndexingStrategy(),
+            new Sha1TableNameGeneratorStrategy()
         );
     }
 
@@ -356,17 +341,6 @@ final class MySQLEventStoreAdapterTest extends TestCase
     /**
      * @test
      */
-    public function it_throws_exception_when_no_db_name_set(): void
-    {
-        $this->expectException(\Assert\InvalidArgumentException::class);
-        $this->expectExceptionMessage('MySQL database name is missing');
-
-        new MySQLEventStoreAdapter(new FQCNMessageFactory(), new NoOpMessageConverter(), $this->manager, null);
-    }
-
-    /**
-     * @test
-     */
     public function it_throws_exception_when_empty_stream_created(): void
     {
         $this->expectException(RuntimeException::class);
@@ -382,7 +356,7 @@ final class MySQLEventStoreAdapterTest extends TestCase
         $this->expectException(\Assert\InvalidArgumentException::class);
         $this->expectExceptionMessage('Transaction timeout must be a positive integer');
 
-        new MySQLEventStoreAdapter(
+        new PDOEventStoreAdapter(
             new FQCNMessageFactory(),
             new NoOpMessageConverter(),
             $this->manager,
@@ -397,7 +371,7 @@ final class MySQLEventStoreAdapterTest extends TestCase
      */
     public function it_accepts_custom_transaction_timeout(): void
     {
-        new MySQLEventStoreAdapter(
+        new PDOEventStoreAdapter(
             new FQCNMessageFactory(),
             new NoOpMessageConverter(),
             $this->manager,
@@ -462,7 +436,7 @@ final class MySQLEventStoreAdapterTest extends TestCase
      */
     public function it_uses_custom_stream_collection_map(): void
     {
-        $this->adapter = new MySQLEventStoreAdapter(
+        $this->adapter = new PDOEventStoreAdapter(
             new FQCNMessageFactory(),
             new NoOpMessageConverter(),
             $this->manager,
@@ -495,11 +469,9 @@ final class MySQLEventStoreAdapterTest extends TestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Cannot write to different streams in one transaction');
 
-        $this->adapter = new MySQLEventStoreAdapter(
+        $this->adapter = new PDOEventStoreAdapter(
             new FQCNMessageFactory(),
             new NoOpMessageConverter(),
-            $this->manager,
-            $this->dbName,
             null,
             3,
             [

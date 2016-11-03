@@ -1,6 +1,6 @@
 <?php
 /**
- * This file is part of the prooph/event-store-mysql-adapter.
+ * This file is part of the prooph/event-store-pdo-adapter.
  * (c) 2016-2016 prooph software GmbH <contact@prooph.de>
  * (c) 2016-2016 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
@@ -8,7 +8,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Prooph\EventStore\Adapter\MySQL\Container;
+namespace Prooph\EventStore\Adapter\PDO\Container;
 
 use Interop\Config\ConfigurationTrait;
 use Interop\Config\ProvidesDefaultOptions;
@@ -19,9 +19,9 @@ use Prooph\Common\Messaging\MessageConverter;
 use Prooph\Common\Messaging\MessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\Adapter\Exception\InvalidArgumentException;
-use Prooph\EventStore\Adapter\MySQL\MySQLEventStoreAdapter;
+use Prooph\EventStore\Adapter\PDO\PDOEventStoreAdapter;
 
-final class MySQLEventStoreAdapterFactory implements RequiresConfig, ProvidesDefaultOptions
+final class PDOEventStoreAdapterFactory implements RequiresConfig, ProvidesDefaultOptions
 {
     use ConfigurationTrait;
 
@@ -39,13 +39,13 @@ final class MySQLEventStoreAdapterFactory implements RequiresConfig, ProvidesDef
      * <code>
      * <?php
      * return [
-     *     MySQLEventStoreAdapter::class => [MySQLEventStoreAdapterFactory::class, 'service_name'],
+     *     PDOEventStoreAdapter::class => [PDOEventStoreAdapterFactory::class, 'service_name'],
      * ];
      * </code>
      *
      * @throws InvalidArgumentException
      */
-    public static function __callStatic(string $name, array $arguments): MySQLEventStoreAdapter
+    public static function __callStatic(string $name, array $arguments): PDOEventStoreAdapter
     {
         if (! isset($arguments[0]) || ! $arguments[0] instanceof ContainerInterface) {
             throw new InvalidArgumentException(
@@ -60,7 +60,7 @@ final class MySQLEventStoreAdapterFactory implements RequiresConfig, ProvidesDef
         $this->configId = $configId;
     }
 
-    public function __invoke(ContainerInterface $container): MySQLEventStoreAdapter
+    public function __invoke(ContainerInterface $container): PDOEventStoreAdapter
     {
         $config = $container->get('config');
         $config = $this->options($config, $this->configId)['adapter']['options'];
@@ -75,7 +75,7 @@ final class MySQLEventStoreAdapterFactory implements RequiresConfig, ProvidesDef
             ? $container->get(MessageConverter::class)
             : new NoOpMessageConverter();
 
-        return new MySQLEventStoreAdapter(
+        return new PDOEventStoreAdapter(
             $messageFactory,
             $messageConverter,
             $connection,

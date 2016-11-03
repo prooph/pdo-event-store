@@ -10,7 +10,7 @@
          syntaxCheck="false"
          bootstrap="vendor/autoload.php"
 >
-    <testsuite name="Prooph EventStore MongoDB Adapter Test Suite">
+    <testsuite name="Prooph EventStore PDO Adapter Test Suite">
         <directory>./tests/</directory>
     </testsuite>
 
@@ -19,4 +19,13 @@
             <directory>./src/</directory>
         </whitelist>
     </filter>
+
+    <php>
+        <var name="db_type" value="pdo_mysql"/>
+        <var name="db_host" value="127.0.0.1" />
+        <var name="db_username" value="root" />
+        <var name="db_password" value="root" />
+        <var name="db_name" value="event_store_tests" />
+        <var name="db_port" value="3306"/>
+    </php>
 </phpunit>

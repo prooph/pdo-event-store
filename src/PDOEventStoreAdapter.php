@@ -1,6 +1,6 @@
 <?php
 /**
- * This file is part of the prooph/event-store-mysql-adapter.
+ * This file is part of the prooph/event-store-pdo-adapter.
  * (c) 2016-2016 prooph software GmbH <contact@prooph.de>
  * (c) 2016-2016 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
@@ -8,23 +8,20 @@
  * file that was distributed with this source code.
  */
 
-namespace Prooph\EventStore\Adapter\MySQL;
+namespace Prooph\EventStore\Adapter\PDO;
 
-use Assert\Assertion;
 use Iterator;
 use PDO;
-use Prooph\Common\Messaging\Message;
 use Prooph\Common\Messaging\MessageConverter;
 use Prooph\Common\Messaging\MessageFactory;
 use Prooph\EventStore\Adapter\Adapter;
+use Prooph\EventStore\Adapter\Exception\RuntimeException;
 use Prooph\EventStore\Adapter\Feature\CanHandleTransaction;
-use Prooph\EventStore\Exception\RuntimeException;
-use Prooph\EventStore\Exception\StreamNotFoundException;
+use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Stream\Stream;
 use Prooph\EventStore\Stream\StreamName;
-use Ramsey\Uuid\Uuid;
 
-final class MySQLEventStoreAdapter implements Adapter, CanHandleTransaction
+final class PDOEventStoreAdapter implements Adapter, CanHandleTransaction
 {
     /**
      * @var MessageFactory
@@ -61,6 +58,11 @@ final class MySQLEventStoreAdapter implements Adapter, CanHandleTransaction
      */
     private $eventStreamsTable;
 
+    /**
+     * @var bool
+     */
+    private $inTransaction = false;
+
     public function __construct(
         MessageFactory $messageFactory,
         MessageConverter $messageConverter,
@@ -85,7 +87,8 @@ final class MySQLEventStoreAdapter implements Adapter, CanHandleTransaction
         $streamName = $streamName->toString();
 
         $sql = <<<EOT
-SELECT `metadata` FROM `$eventStreamsTable` WHERE `real_stream_name` = '$streamName'; 
+SELECT `metadata` FROM `$eventStreamsTable`
+WHERE `real_stream_name` = '$streamName'; 
 EOT;
         $statement = $this->connection->query($sql);
         $statement->execute();
@@ -127,7 +130,7 @@ EOT;
 
         $sql = <<<EOT
 INSERT INTO `$tableName` (`event_id`, `event_name`, `payload`, `metadata`, `created_at`)
-VALUES $data
+VALUES $data;
 EOT;
 
         $this->connection->exec($sql);
@@ -138,145 +141,96 @@ EOT;
         int $fromNumber = 0,
         int $count = null
     ): ?Stream {
-        $events = $this->loadEvents($streamName, [], $fromNumber, $count);
+        $events = $this->loadEvents($streamName, $fromNumber, $count);
 
         return new Stream($streamName, $events);
     }
 
     public function loadReverse(
         StreamName $streamName,
-        int $fromNumber = 0,
+        int $fromNumber = PHP_INT_MAX,
         int $count = null
     ): ?Stream {
-        $events = $this->loadEventsReverse($streamName, [], $fromNumber, $count);
+        $events = $this->loadEventsReverse($streamName, $fromNumber, $count);
 
         return new Stream($streamName, $events);
     }
 
     public function loadEvents(
         StreamName $streamName,
-        array $metadata = [],
         int $fromNumber = 0,
-        int $count = null
+        int $count = null,
+        MetadataMatcher $metadataMatcher = null
     ): Iterator {
-        if (null === $count) {
-            $count = 0;
+        $tableName = $this->tableNameGeneratorStrategy->__invoke($streamName);
+        $sql = [
+            'from' => "SELECT * FROM `$tableName`",
+            'orderBy' => "ORDER BY `no` ASC",
+        ];
+
+        foreach ($metadataMatcher->data() as $key => $v) {
+            $operator = $v['operator']->getValue();
+            $value = $v['value'];
+            if (is_string($value)) {
+                $value = "'$value'";
+            }
+            $sql['where'][] = "`$key`` $operator $value";
         }
 
-        $query = $metadata;
-
-        if (null !== $fromNumber) {
-            $query['no'] = ['$gte' => $fromNumber];
-        }
-
-        $query = new Query($query, [
-            'sort' => [
-                'no' => 1
-            ],
-            'limit' => $count,
-        ]);
-
-        return new MongoDBStreamIterator($this->manager, $namespace, $query, $this->readPreference, $this->messageFactory, $metadata);
+        return new PDOStreamIterator($this->connection, $this->messageFactory, $sql, $this->loadBatchSize, $fromNumber, $count);
     }
 
     public function loadEventsReverse(
         StreamName $streamName,
-        array $metadata = [],
-        int $fromNumber = 0,
-        int $count = null
+        int $fromNumber = PHP_INT_MAX,
+        int $count = null,
+        MetadataMatcher $metadataMatcher = null
     ): Iterator {
-        if (null === $count) {
-            $count = 0;
+        $tableName = $this->tableNameGeneratorStrategy->__invoke($streamName);
+        $sql = [
+            'from' => "SELECT * FROM `$tableName`",
+            'orderBy' => "ORDER BY `no` DESC",
+        ];
+
+        foreach ($metadataMatcher->data() as $key => $v) {
+            $operator = $v['operator']->getValue();
+            $value = $v['value'];
+            if (is_string($value)) {
+                $value = "'$value'";
+            }
+            $sql['where'][] = "`$key`` $operator $value";
         }
 
-        $query = $metadata;
-
-        if (null !== $fromNumber) {
-            $query['no'] = ['$gte' => $fromNumber];
-        }
-
-        $query['expire_at'] = ['$exists' => false];
-        $query['transaction_id'] = ['$exists' => false];
-
-        $query = new Query($query, [
-            'sort' => [
-                'no' => -1
-            ],
-            'limit' => $count,
-        ]);
-
-        $namespace = $this->dbName . '.' . $this->getCollectionName($streamName);
-
-        return new MongoDBStreamIterator($this->manager, $namespace, $query, $this->readPreference, $this->messageFactory, $metadata);
+        return new PDOStreamIterator($this->connection, $this->messageFactory, $sql, $this->loadBatchSize, $fromNumber, $count);
     }
 
+    /**
+     * @throws RuntimeException
+     */
     public function beginTransaction(): void
     {
-        if (null !== $this->transactionId) {
-            throw new \RuntimeException('Transaction already started');
+        if ($this->inTransaction) {
+            throw new RuntimeException('Transaction already started');
         }
 
-        $this->transactionId = Uuid::uuid4();
+        $this->inTransaction = true;
+        $this->connection->beginTransaction();
     }
 
     public function commit(): void
     {
-        if (! $this->currentStreamName) {
-            $this->transactionId = null;
-            return;
-        }
-
-        $bulk = new BulkWrite(['ordered' => false]);
-        $bulk->update(
-            [
-                'transaction_id' => $this->transactionId->toString(),
-                '$isolated' => 1,
-            ],
-            [
-                '$unset' => [
-                    'expire_at' => 1,
-                    'transaction_id' => 1
-                ]
-            ],
-            [
-                'multi' => true
-            ]
-        );
-
-        $this->manager->executeBulkWrite(
-            $this->dbName . '.' . $this->getCollectionName($this->currentStreamName),
-            $bulk,
-            $this->writeConcern
-        );
-
-        $this->transactionId = null;
-        $this->currentStreamName = null;
+        $this->connection->commit();
+        $this->inTransaction = false;
     }
 
     public function rollback(): void
     {
-        if (! $this->currentStreamName) {
-            $this->transactionId = null;
+        if (! $this->inTransaction) {
             return;
         }
 
-        $bulk = new BulkWrite(['ordered' => false]);
-        $bulk->delete(
-            [
-                '_id' => $this->transactionId->toString()
-            ],
-            [
-                'limit' => 1
-            ]
-        );
-
-        $this->manager->executeBulkWrite(
-            $this->dbName . '.transactions',
-            $bulk,
-            $this->writeConcern
-        );
-
-        $this->transactionId = null;
+        $this->connection->rollBack();
+        $this->inTransaction = false;
     }
 
     public function addStreamToStreamsTable(Stream $stream): void

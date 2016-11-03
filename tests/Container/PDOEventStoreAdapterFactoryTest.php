@@ -1,6 +1,6 @@
 <?php
 /**
- * This file is part of the prooph/event-store-mysql-adapter.
+ * This file is part of the prooph/event-store-pdo-adapter.
  * (c) 2016-2016 prooph software GmbH <contact@prooph.de>
  * (c) 2016-2016 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
@@ -8,14 +8,14 @@
  * file that was distributed with this source code.
  */
 
-namespace ProophTest\EventStore\Adapter\MySQL\Service;
+namespace ProophTest\EventStore\Adapter\PDO\Container;
 
 use Interop\Container\ContainerInterface;
 use PHPUnit_Framework_TestCase as TestCase;
-use Prooph\EventStore\Adapter\MySQL\MySQLEventStoreAdapter;
-use Prooph\EventStore\Adapter\MySQL\Container\MySQLEventStoreAdapterFactory;
+use Prooph\EventStore\Adapter\PDO\PDOEventStoreAdapter;
+use Prooph\EventStore\Adapter\PDO\Container\PDOEventStoreAdapterFactory;
 
-final class MySQLEventStoreAdapterFactoryTest extends TestCase
+final class PDOEventStoreAdapterFactoryTest extends TestCase
 {
     /**
      * @test
@@ -26,7 +26,7 @@ final class MySQLEventStoreAdapterFactoryTest extends TestCase
         $dbName = 'mongo_adapter_test';
 
         $config = [];
-        $config['prooph']['event_store']['adapter']['options'] = [
+        $config['prooph']['event_store']['default']['adapter']['options'] = [
             'mongo_manager' => 'mongo_manager',
             'db_name' => $dbName,
         ];
@@ -35,9 +35,9 @@ final class MySQLEventStoreAdapterFactoryTest extends TestCase
         $mock->expects($this->at(0))->method('get')->with('config')->will($this->returnValue($config));
         $mock->expects($this->at(1))->method('get')->with('mongo_manager')->will($this->returnValue($manager));
 
-        $factory = new MySQLEventStoreAdapterFactory();
+        $factory = new PDOEventStoreAdapterFactory();
         $adapter = $factory($mock);
 
-        $this->assertInstanceOf(MySQLEventStoreAdapter::class, $adapter);
+        $this->assertInstanceOf(PDOEventStoreAdapter::class, $adapter);
     }
 }
