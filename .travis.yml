@@ -11,17 +11,22 @@ matrix:
       env:
         - DEPENDENCIES=""
         - TEST_COVERAGE=true
+        - DRIVER="mysql"
     - php: 7.1
       env:
         - DEPENDENCIES="--prefer-lowest --prefer-stable"
+        - DRIVER="mysql"
 
 before_script:
   - composer self-update
   - composer update --prefer-source $DEPENDENCIES
 
 script:
-  - phpunit --coverage-text --coverage-clover ./build/logs/clover.xml
+  - if [[ $DRIVER == 'mysql' ]]; then cp phpunit.xml.mysql phpunit.xml; fi
+  - if [[ $DRIVER == 'postgres' ]]; then cp phpunit.xml.postgres phpunit.xml; fi
+  - ./vendor/bin/phpunit --coverage-text --coverage-clover ./build/logs/clover.xml
   - ./vendor/bin/php-cs-fixer fix -v --diff --dry-run
+  - ./vendor/bin/docheader check src/ tests/
 
 after_success:
   - if [[ $TEST_COVERAGE == 'true' ]]; then php vendor/bin/coveralls -v; fi

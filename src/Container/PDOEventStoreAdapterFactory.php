@@ -13,15 +13,19 @@ namespace Prooph\EventStore\Adapter\PDO\Container;
 use Interop\Config\ConfigurationTrait;
 use Interop\Config\ProvidesDefaultOptions;
 use Interop\Config\RequiresConfig;
+use Interop\Config\RequiresConfigId;
 use Interop\Container\ContainerInterface;
+use PDO;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\MessageConverter;
 use Prooph\Common\Messaging\MessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\Adapter\Exception\InvalidArgumentException;
+use Prooph\EventStore\Adapter\PDO\IndexingStrategy\MySQLOneStreamPerAggregate;
 use Prooph\EventStore\Adapter\PDO\PDOEventStoreAdapter;
+use Prooph\EventStore\Adapter\PDO\TableNameGeneratorStrategy\Sha1;
 
-final class PDOEventStoreAdapterFactory implements RequiresConfig, ProvidesDefaultOptions
+final class PDOEventStoreAdapterFactory implements RequiresConfig, RequiresConfigId, ProvidesDefaultOptions
 {
     use ConfigurationTrait;
 
@@ -29,6 +33,15 @@ final class PDOEventStoreAdapterFactory implements RequiresConfig, ProvidesDefau
      * @var string
      */
     private $configId;
+
+    /**
+     * @var array
+     */
+    private $driverSchemeAliases = [
+        'pdo_mysql'  => 'mysql',
+        'pdo_pgsql'  => 'postgres',
+        'pdo_sqlite' => 'sqlite',
+    ];
 
     /**
      * Creates a new instance from a specified config, specifically meant to be used as static factory.
@@ -65,7 +78,17 @@ final class PDOEventStoreAdapterFactory implements RequiresConfig, ProvidesDefau
         $config = $container->get('config');
         $config = $this->options($config, $this->configId)['adapter']['options'];
 
-        $connection = null;
+        if (isset($config['connection_service'])) {
+            $connection = $container->get($config['connection_service']);
+        } else {
+            $dsn = $this->driverSchemeAliases[$config['connection_options']['driver']] . ':'
+                . 'host=' . $config['connection_options']['host'] . ';'
+                . 'port=' . $config['connection_options']['port'] . ';'
+                . 'dbname=' . $config['connection_options']['dbname'];
+            $user = $config['connection_options']['user'];
+            $password = $config['connection_options']['password'];
+            $connection = new PDO($dsn, $user, $password);
+        }
 
         $messageFactory = $container->has(MessageFactory::class)
             ? $container->get(MessageFactory::class)
@@ -75,11 +98,18 @@ final class PDOEventStoreAdapterFactory implements RequiresConfig, ProvidesDefau
             ? $container->get(MessageConverter::class)
             : new NoOpMessageConverter();
 
+        $indexingStrategy = $container->get($config['indexing_strategy']);
+
+        $tableNameGeneratorStrategy = $container->get($config['table_name_generator_strategy']);
+
         return new PDOEventStoreAdapter(
             $messageFactory,
             $messageConverter,
             $connection,
-            $config['stream_collection_map']
+            $indexingStrategy,
+            $tableNameGeneratorStrategy,
+            $config['load_batch_size'],
+            $config['event_streams_table']
         );
     }
 
@@ -93,7 +123,18 @@ final class PDOEventStoreAdapterFactory implements RequiresConfig, ProvidesDefau
         return [
             'adapter' => [
                 'options' => [
-                    'stream_collection_map' => [],
+                    'connection_options' => [
+                        'driver' => 'pdo_mysql',
+                        'user' => 'root',
+                        'password' => '',
+                        'host' => '127.0.0.1',
+                        'dbname' => 'event_store',
+                        'port' => 3306,
+                    ],
+                    'indexing_strategy' => MySQLOneStreamPerAggregate::class,
+                    'table_name_generator_strategy' => Sha1::class,
+                    'load_batch_size' => 1000,
+                    'event_streams_table' => 'event_streams',
                 ]
             ]
         ];

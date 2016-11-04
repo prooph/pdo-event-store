@@ -12,32 +12,69 @@ namespace ProophTest\EventStore\Adapter\PDO\Container;
 
 use Interop\Container\ContainerInterface;
 use PHPUnit_Framework_TestCase as TestCase;
+use Prooph\Common\Messaging\FQCNMessageFactory;
+use Prooph\Common\Messaging\MessageConverter;
+use Prooph\Common\Messaging\MessageFactory;
+use Prooph\Common\Messaging\NoOpMessageConverter;
+use Prooph\EventStore\Adapter\PDO\IndexingStrategy;
 use Prooph\EventStore\Adapter\PDO\PDOEventStoreAdapter;
 use Prooph\EventStore\Adapter\PDO\Container\PDOEventStoreAdapterFactory;
+use Prooph\EventStore\Adapter\PDO\TableNameGeneratorStrategy;
+use ProophTest\EventStore\Adapter\PDO\TestUtil;
 
 final class PDOEventStoreAdapterFactoryTest extends TestCase
 {
     /**
      * @test
      */
-    public function it_creates_adapter(): void
+    public function it_creates_adapter_via_connection_service(): void
     {
-        $manager = new Manager('MySQL://localhost:27017');
-        $dbName = 'mongo_adapter_test';
-
-        $config = [];
         $config['prooph']['event_store']['default']['adapter']['options'] = [
-            'mongo_manager' => 'mongo_manager',
-            'db_name' => $dbName,
+            'connection_service' => 'my_connection',
         ];
 
-        $mock = $this->getMockForAbstractClass(ContainerInterface::class);
-        $mock->expects($this->at(0))->method('get')->with('config')->will($this->returnValue($config));
-        $mock->expects($this->at(1))->method('get')->with('mongo_manager')->will($this->returnValue($manager));
+        $connection = TestUtil::getConnection();
+
+        $container = $this->prophesize(ContainerInterface::class);
+
+        $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
+        $container->get('config')->willReturn($config)->shouldBeCalled();
+        $container->has(MessageFactory::class)->willReturn(false)->shouldBeCalled();
+        $container->has(MessageConverter::class)->willReturn(false)->shouldBeCalled();
+        $container->get(IndexingStrategy\MySQLOneStreamPerAggregate::class)->willReturn(new IndexingStrategy\MySQLOneStreamPerAggregate())->shouldBeCalled();
+        $container->get(TableNameGeneratorStrategy\Sha1::class)->willReturn(new TableNameGeneratorStrategy\Sha1())->shouldBeCalled();
 
         $factory = new PDOEventStoreAdapterFactory();
-        $adapter = $factory($mock);
+        $adapter = $factory($container->reveal());
 
         $this->assertInstanceOf(PDOEventStoreAdapter::class, $adapter);
+    }
+
+    /**
+     * @test
+     */
+    public function it_creates_adapter_via_connection_options(): void
+    {
+        $connection = TestUtil::getConnection();
+        $connection->exec('CREATE DATABASE ' . TestUtil::getDatabaseName());
+        $config['prooph']['event_store']['custom']['adapter']['options'] = [
+            'connection_options' => TestUtil::getConnectionParams(),
+        ];
+
+        $container = $this->prophesize(ContainerInterface::class);
+
+        $container->get('config')->willReturn($config)->shouldBeCalled();
+        $container->has(MessageFactory::class)->willReturn(true)->shouldBeCalled();
+        $container->get(MessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
+        $container->has(MessageConverter::class)->willReturn(true)->shouldBeCalled();
+        $container->get(MessageConverter::class)->willReturn(new NoOpMessageConverter())->shouldBeCalled();
+        $container->get(IndexingStrategy\MySQLOneStreamPerAggregate::class)->willReturn(new IndexingStrategy\MySQLOneStreamPerAggregate())->shouldBeCalled();
+        $container->get(TableNameGeneratorStrategy\Sha1::class)->willReturn(new TableNameGeneratorStrategy\Sha1())->shouldBeCalled();
+
+        $eventStoreName = 'custom';
+        $adapter = PDOEventStoreAdapterFactory::$eventStoreName($container->reveal());
+
+        $this->assertInstanceOf(PDOEventStoreAdapter::class, $adapter);
+        $connection->exec('DROP DATABASE ' . TestUtil::getDatabaseName());
     }
 }

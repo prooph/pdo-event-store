@@ -10,4 +10,12 @@ Requirements
 ------------
 
 - PHP >= 7.1
-- PDO_MySQL Extension, PDO_PGSQL Extension or PDO_SQLITE Extension
+- PDO_MySQL Extension or PDO_PGSQL Extension
+
+For MySQL you need Server version 5.7.
+
+Setup
+-----
+
+For MySQL run the script in `scripts/mysql_event_streams_table.sql` on your server.
+This will setup the event_streams_table;

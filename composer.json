@@ -28,14 +28,13 @@
         "friendsofphp/php-cs-fixer": "^1.12.2",
         "sebastian/comparator": "^1.2",
         "satooshi/php-coveralls": "^1.0",
-        "ext-pdo_mysql": "*"
+        "malukenho/docheader": "^0.1.4"
     },
     "suggest": {
         "container-interop/container-interop": "For usage of provided factories",
         "sandrokeil/interop-config": "For usage of provided factories",
         "ext-pdo_mysql": "For usage with MySQL",
-        "ext-pdo_pgsql": "For usage with PostgreSQL",
-        "ext-pdo_sqlite": "For usage with SQLite"
+        "ext-pdo_pgsql": "For usage with PostgreSQL"
     },
     "conflict": {
         "sandrokeil/interop-config": "<1.0"
