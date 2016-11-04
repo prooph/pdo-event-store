@@ -11,11 +11,11 @@ matrix:
       env:
         - DEPENDENCIES=""
         - TEST_COVERAGE=true
-        - DRIVER="mysql"
+        - DRIVER="pdo_mysql"
     - php: 7.1
       env:
         - DEPENDENCIES="--prefer-lowest --prefer-stable"
-        - DRIVER="mysql"
+        - DRIVER="pdo_mysql"
 
 before_script:
   - composer self-update
