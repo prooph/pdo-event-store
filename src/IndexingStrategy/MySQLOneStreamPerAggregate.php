@@ -10,11 +10,13 @@
 
 declare(strict_types=1);
 
-namespace Prooph\EventStore\Adapter\PDO;
+namespace Prooph\EventStore\Adapter\PDO\IndexingStrategy;
 
-final class MySQLMultipleStreamsPerAggregateIndexingStrategy implements IndexingStrategy
+use Prooph\EventStore\Adapter\PDO\IndexingStrategy;
+
+final class MySQLOneStreamPerAggregate implements IndexingStrategy
 {
-    public function __invoke(string $tableName): string
+    public function createSchema(string $tableName): string
     {
         return <<<EOT
 CREATE TABLE `$tableName` (
@@ -24,14 +26,19 @@ CREATE TABLE `$tableName` (
     `payload` JSON NOT NULL,
     `metadata` JSON NOT NULL,
     `created_at` CHAR(26) COLLATE utf8_unicode_ci NOT NULL,
-    `version` INT GENERATED ALWAYS AS (JSON_EXTRACT(metadata, '$._version')),
-    `aggregate_id` char(36) GENERATED ALWAYS AS (JSON_EXTRACT(metadata, '$._aggregate_id')),
-    `aggregate_type` varchar(150) GENERATED ALWAYS AS (JSON_EXTRACT(metadata, '$._aggregate_type')),
     PRIMARY KEY (`no`),
-    UNIQUE KEY `ix_event_id` (`event_id`),
-    UNIQUE KEY `ix_unique_event` (`version`, `aggregate_id`),
-    UNIQUE KEY `ix_aggregate_type` (`aggregate_type`)
+    UNIQUE KEY `ix_event_id` (`event_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 EOT;
+    }
+
+    public function oneStreamPerAggregate(): bool
+    {
+        return true;
+    }
+
+    public function duplicateEntryErrorCode(): string
+    {
+        return "23000";
     }
 }

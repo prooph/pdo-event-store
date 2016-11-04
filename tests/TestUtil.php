@@ -28,31 +28,29 @@ class TestUtil
     public static function getConnection(): PDO
     {
         $connectionParams = self::getConnectionParams();
-        if (isset($connectionParams['driver'], $connectionParams['memory'])
-            && $connectionParams['memory']
-        ) {
-            $connection = new PDO('sqlite::memory:');
-        } else {
-            $dsn = self::$driverSchemeAliases[$connectionParams['driver']] . ':';
-            $dsn .= 'host=' . $connectionParams['host'] . ';';
-            $dsn .= 'port=' . $connectionParams['port'] . ';';
-            $dsn .= 'dbname=' . $connectionParams['dbname'];
-            $connection = new PDO($dsn, $connectionParams['user'], $connectionParams['password']);
-        }
+        $dsn = self::$driverSchemeAliases[$connectionParams['driver']] . ':';
+        $dsn .= 'host=' . $connectionParams['host'] . ';';
+        $dsn .= 'port=' . $connectionParams['port'] . ';';
+        $connection = new PDO($dsn, $connectionParams['user'], $connectionParams['password']);
 
         return $connection;
     }
 
-    private static function getConnectionParams()
+    public static function getDatabaseName(): string
     {
-        if (self::hasRequiredConnectionParams()) {
-            return self::getSpecifiedConnectionParams();
-        }
-
-        return self::getFallbackConnectionParams();
+        return $GLOBALS['db_name'] ?? 'event_store_tests';
     }
 
-    private static function hasRequiredConnectionParams()
+    public static function getConnectionParams(): array
+    {
+        if (! self::hasRequiredConnectionParams()) {
+            throw new \RuntimeException('No connection params given');
+        }
+
+        return self::getSpecifiedConnectionParams();
+    }
+
+    private static function hasRequiredConnectionParams(): bool
     {
         return isset(
             $GLOBALS['db_type'],
@@ -73,14 +71,6 @@ class TestUtil
             'host' => $GLOBALS['db_host'],
             'dbname' => $GLOBALS['db_name'],
             'port' => $GLOBALS['db_port']
-        ];
-    }
-
-    private static function getFallbackConnectionParams()
-    {
-        return [
-            'driver' => 'pdo_sqlite',
-            'memory' => true
         ];
     }
 }

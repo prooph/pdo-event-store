@@ -10,13 +10,15 @@
 
 declare(strict_types=1);
 
-namespace Prooph\EventStore\Adapter\PDO;
+namespace Prooph\EventStore\Adapter\PDO\TableNameGeneratorStrategy;
 
-interface IndexingStrategy
+use Prooph\EventStore\Adapter\PDO\TableNameGeneratorStrategy;
+use Prooph\EventStore\Stream\StreamName;
+
+final class Sha1 implements TableNameGeneratorStrategy
 {
-    public function createSchema(string $tableName): string;
-
-    public function oneStreamPerAggregate(): bool;
-
-    public function duplicateEntryErrorCode(): string;
+    public function __invoke(StreamName $streamName): string
+    {
+        return sha1($streamName->toString());
+    }
 }

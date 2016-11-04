@@ -8,22 +8,25 @@
  * file that was distributed with this source code.
  */
 
-namespace ProophTest\EventStore\Adapter\MySQL;
+namespace ProophTest\EventStore\Adapter\PDO;
 
 use PDO;
 use PHPUnit_Framework_TestCase as TestCase;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\Adapter\Exception\RuntimeException;
-use Prooph\EventStore\Adapter\PDO\MySQLOneStreamPerAggregateIndexingStrategy;
+use Prooph\EventStore\Adapter\PDO\IndexingStrategy\MySQLMultipleStreamsPerAggregate;
+use Prooph\EventStore\Adapter\PDO\IndexingStrategy\MySQLOneStreamPerAggregate;
 use Prooph\EventStore\Adapter\PDO\PDOEventStoreAdapter;
 use Prooph\EventStore\Adapter\PDO\Sha1TableNameGeneratorStrategy;
 use Prooph\EventStore\Exception\ConcurrencyException;
+use Prooph\EventStore\Metadata\MetadataMatcher;
+use Prooph\EventStore\Metadata\Operator;
 use Prooph\EventStore\Stream\Stream;
 use Prooph\EventStore\Stream\StreamName;
-use ProophTest\EventStore\Adapter\PDO\TestUtil;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
+use Ramsey\Uuid\Uuid;
 
 final class PDOEventStoreAdapterTest extends TestCase
 {
@@ -32,11 +35,24 @@ final class PDOEventStoreAdapterTest extends TestCase
      */
     private $adapter;
 
+    /**
+     * @var PDO
+     */
+    private $connection;
+
     protected function setUp(): void
     {
-        $connection = TestUtil::getConnection();
-        $connection->exec(file_get_contents(__DIR__ . '/../scripts/mysql_event_streams_table.sql'));
-        $this->createAdapter($connection);
+        $databaseName = TestUtil::getDatabaseName();
+        $this->connection = TestUtil::getConnection();
+        $this->connection->exec("CREATE DATABASE $databaseName;");
+        $this->connection->exec("use $databaseName;");
+        $this->connection->exec(file_get_contents(__DIR__ . '/../scripts/mysql_event_streams_table.sql'));
+        $this->createAdapter($this->connection);
+    }
+
+    protected function tearDown(): void
+    {
+        $this->connection->exec('DROP DATABASE ' . TestUtil::getDatabaseName() . ';');
     }
 
     protected function createAdapter(PDO $connection): void
@@ -45,7 +61,7 @@ final class PDOEventStoreAdapterTest extends TestCase
             new FQCNMessageFactory(),
             new NoOpMessageConverter(),
             $connection,
-            new MySQLOneStreamPerAggregateIndexingStrategy(),
+            new MySQLOneStreamPerAggregate(),
             new Sha1TableNameGeneratorStrategy()
         );
     }
@@ -63,7 +79,9 @@ final class PDOEventStoreAdapterTest extends TestCase
 
         $this->adapter->commit();
 
-        $streamEvents = $this->adapter->loadEvents(new StreamName('Prooph\Model\User'), ['tag' => 'person']);
+        $metadataMatcher = new MetadataMatcher();
+        $metadataMatcher->withMetadataMatch('tag', Operator::EQUALS(), 'person');
+        $streamEvents = $this->adapter->loadEvents(new StreamName('Prooph\Model\User'), 0, null, $metadataMatcher);
 
         $count = 0;
         foreach ($streamEvents as $event) {
@@ -82,7 +100,7 @@ final class PDOEventStoreAdapterTest extends TestCase
         $this->assertEquals('ProophTest\EventStore\Mock\UserCreated', $event->messageName());
         $this->assertEquals('contact@prooph.de', $event->payload()['email']);
         $this->assertEquals(1, $event->version());
-        $this->assertEquals(['tag' => 'person'], $event->metadata());
+        $this->assertEquals(['tag' => 'person', '_version' => 1], $event->metadata());
     }
 
     /**
@@ -124,163 +142,7 @@ final class PDOEventStoreAdapterTest extends TestCase
     /**
      * @test
      */
-    public function it_replays(): void
-    {
-        $testStream = $this->getTestStream();
-
-        $this->adapter->beginTransaction();
-
-        $this->adapter->create($testStream);
-
-        $this->adapter->commit();
-
-        $streamEvent = UsernameChanged::with(
-            ['name' => 'John Doe'],
-            2
-        );
-
-        $streamEvent = $streamEvent->withAddedMetadata('tag', 'person');
-
-        $this->adapter->appendTo(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
-
-        $streamEvents = $this->adapter->replay(new StreamName('Prooph\Model\User'), null, ['tag' => 'person']);
-
-        $count = 0;
-        foreach ($streamEvents as $event) {
-            $count++;
-        }
-        $this->assertEquals(2, $count);
-
-        $testStream->streamEvents()->rewind();
-        $streamEvents->rewind();
-
-        $testEvent = $testStream->streamEvents()->current();
-        $event = $streamEvents->current();
-
-        $this->assertEquals($testEvent->uuid()->toString(), $event->uuid()->toString());
-        $this->assertEquals($testEvent->createdAt()->format('Y-m-d\TH:i:s.uO'), $event->createdAt()->format('Y-m-d\TH:i:s.uO'));
-        $this->assertEquals('ProophTest\EventStore\Mock\UserCreated', $event->messageName());
-        $this->assertEquals('contact@prooph.de', $event->payload()['email']);
-        $this->assertEquals(1, $event->version());
-
-        $streamEvents->next();
-        $event = $streamEvents->current();
-
-        $this->assertEquals($streamEvent->uuid()->toString(), $event->uuid()->toString());
-        $this->assertEquals($streamEvent->createdAt()->format('Y-m-d\TH:i:s.uO'), $event->createdAt()->format('Y-m-d\TH:i:s.uO'));
-        $this->assertEquals('ProophTest\EventStore\Mock\UsernameChanged', $event->messageName());
-        $this->assertEquals('John Doe', $event->payload()['name']);
-        $this->assertEquals(2, $event->version());
-    }
-
-    /**
-     * @test
-     */
-    public function it_replays_from_specific_date(): void
-    {
-        $testStream = $this->getTestStream();
-
-        $this->adapter->beginTransaction();
-
-        $this->adapter->create($testStream);
-
-        $this->adapter->commit();
-
-        sleep(1);
-
-        // hack: see: https://github.com/MySQL/mongo-php-driver/issues/132
-        $this->manager = new Manager('MySQL://localhost:27017');
-        $this->createAdapter();
-
-        $since = new \DateTime('now', new \DateTimeZone('UTC'));
-
-        $streamEvent = UsernameChanged::with(
-            ['name' => 'John Doe'],
-            2
-        );
-
-        $streamEvent = $streamEvent->withAddedMetadata('tag', 'person');
-
-        $this->adapter->appendTo(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
-
-        $streamEvents = $this->adapter->replay(new StreamName('Prooph\Model\User'), $since, ['tag' => 'person']);
-
-        $count = 0;
-        foreach ($streamEvents as $event) {
-            $count++;
-        }
-        $this->assertEquals(1, $count);
-
-        $testStream->streamEvents()->rewind();
-        $streamEvents->rewind();
-
-        $event = $streamEvents->current();
-
-        $this->assertEquals($streamEvent->uuid()->toString(), $event->uuid()->toString());
-        $this->assertEquals($streamEvent->createdAt()->format('Y-m-d\TH:i:s.uO'), $event->createdAt()->format('Y-m-d\TH:i:s.uO'));
-        $this->assertEquals('ProophTest\EventStore\Mock\UsernameChanged', $event->messageName());
-        $this->assertEquals('John Doe', $event->payload()['name']);
-        $this->assertEquals(2, $event->version());
-    }
-
-    /**
-     * @test
-     */
-    public function it_replays_events_of_two_aggregates_in_a_single_stream_in_correct_order(): void
-    {
-        $testStream = $this->getTestStream();
-
-        $this->adapter->beginTransaction();
-
-        $this->adapter->create($testStream);
-
-        $this->adapter->commit();
-
-        $streamEvent = UsernameChanged::with(
-            ['name' => 'John Doe'],
-            2
-        );
-
-        $streamEvent = $streamEvent->withAddedMetadata('tag', 'person');
-
-        $this->adapter->appendTo(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
-
-        sleep(1);
-
-        // hack: see: https://github.com/MySQL/mongo-php-driver/issues/132
-        $this->manager = new Manager('MySQL://localhost:27017');
-        $this->createAdapter();
-
-        $secondUserEvent = UserCreated::with(
-            ['name' => 'Jane Doe', 'email' => 'jane@acme.com'],
-            3
-        );
-
-        $secondUserEvent = $secondUserEvent->withAddedMetadata('tag', 'person');
-
-        $this->adapter->appendTo(new StreamName('Prooph\Model\User'), new \ArrayIterator([$secondUserEvent]));
-
-        $streamEvents = $this->adapter->replay(new StreamName('Prooph\Model\User'), null, ['tag' => 'person']);
-
-
-        $replayedPayloads = [];
-        foreach ($streamEvents as $event) {
-            $replayedPayloads[] = $event->payload();
-        }
-
-        $expectedPayloads = [
-            ['name' => 'Max Mustermann', 'email' => 'contact@prooph.de'],
-            ['name' => 'John Doe'],
-            ['name' => 'Jane Doe', 'email' => 'jane@acme.com'],
-        ];
-
-        $this->assertEquals($expectedPayloads, $replayedPayloads);
-    }
-
-    /**
-     * @test
-     */
-    public function it_loads_events_from_min_version_on(): void
+    public function it_loads_events_from_position(): void
     {
         $this->adapter->create($this->getTestStream());
 
@@ -321,12 +183,37 @@ final class PDOEventStoreAdapterTest extends TestCase
 
     /**
      * @test
+     * @group mysql
      */
-    public function it_fails_to_write_with_duplicate_aggregate_id_and_version(): void
+    public function it_fails_to_write_with_duplicate_version_and_one_stream_per_aggregate_strategy(): void
     {
         $this->expectException(ConcurrencyException::class);
 
-        $this->adapter->create($this->getTestStream());
+        /*
+        $this->adapter = new PDOEventStoreAdapter(
+            new FQCNMessageFactory(),
+            new NoOpMessageConverter(),
+            $this->connection,
+            new MySQLMultipleStreamsPerAggregate(),
+            new Sha1TableNameGeneratorStrategy()
+        );
+*/
+        $streamEvent = UserCreated::with(
+            ['name' => 'Max Mustermann', 'email' => 'contact@prooph.de'],
+            1
+        );
+
+        $aggregateId = Uuid::uuid4()->toString();
+
+        $streamEvent = $streamEvent->withAddedMetadata('tag', 'person');
+        $streamEvent = $streamEvent->withAddedMetadata('_aggregate_id', $aggregateId);
+        $streamEvent = $streamEvent->withAddedMetadata('_aggregate_type', 'user');
+
+        $stream = new Stream(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
+
+        $this->expectException(ConcurrencyException::class);
+
+        $this->adapter->create($stream);
 
         $streamEvent = UsernameChanged::with(
             ['name' => 'John Doe'],
@@ -334,6 +221,53 @@ final class PDOEventStoreAdapterTest extends TestCase
         );
 
         $streamEvent = $streamEvent->withAddedMetadata('tag', 'person');
+        $streamEvent = $streamEvent->withAddedMetadata('_aggregate_id', $aggregateId);
+        $streamEvent = $streamEvent->withAddedMetadata('_aggregate_type', 'user');
+
+        $this->adapter->appendTo(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
+    }
+
+    /**
+     * @test
+     * @group mysql
+     */
+    public function it_fails_to_write_with_duplicate_version_and_mulitple_streams_per_aggregate_strategy(): void
+    {
+        $this->expectException(ConcurrencyException::class);
+
+        $this->adapter = new PDOEventStoreAdapter(
+            new FQCNMessageFactory(),
+            new NoOpMessageConverter(),
+            $this->connection,
+            new MySQLMultipleStreamsPerAggregate(),
+            new Sha1TableNameGeneratorStrategy()
+        );
+
+        $streamEvent = UserCreated::with(
+            ['name' => 'Max Mustermann', 'email' => 'contact@prooph.de'],
+            1
+        );
+
+        $aggregateId = Uuid::uuid4()->toString();
+
+        $streamEvent = $streamEvent->withAddedMetadata('tag', 'person');
+        $streamEvent = $streamEvent->withAddedMetadata('_aggregate_id', $aggregateId);
+        $streamEvent = $streamEvent->withAddedMetadata('_aggregate_type', 'user');
+
+        $stream = new Stream(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
+
+        $this->expectException(ConcurrencyException::class);
+
+        $this->adapter->create($stream);
+
+        $streamEvent = UsernameChanged::with(
+            ['name' => 'John Doe'],
+            1
+        );
+
+        $streamEvent = $streamEvent->withAddedMetadata('tag', 'person');
+        $streamEvent = $streamEvent->withAddedMetadata('_aggregate_id', $aggregateId);
+        $streamEvent = $streamEvent->withAddedMetadata('_aggregate_type', 'user');
 
         $this->adapter->appendTo(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
     }
@@ -351,39 +285,6 @@ final class PDOEventStoreAdapterTest extends TestCase
     /**
      * @test
      */
-    public function it_throws_exception_when_invalid_transaction_timeout_given(): void
-    {
-        $this->expectException(\Assert\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Transaction timeout must be a positive integer');
-
-        new PDOEventStoreAdapter(
-            new FQCNMessageFactory(),
-            new NoOpMessageConverter(),
-            $this->manager,
-            'mongo_adapter_test',
-            null,
-            'invalid'
-        );
-    }
-
-    /**
-     * @test
-     */
-    public function it_accepts_custom_transaction_timeout(): void
-    {
-        new PDOEventStoreAdapter(
-            new FQCNMessageFactory(),
-            new NoOpMessageConverter(),
-            $this->manager,
-            'mongo_adapter_test',
-            null,
-            10
-        );
-    }
-
-    /**
-     * @test
-     */
     public function it_can_rollback_transaction(): void
     {
         $testStream = $this->getTestStream();
@@ -394,29 +295,11 @@ final class PDOEventStoreAdapterTest extends TestCase
 
         $this->adapter->rollback();
 
-        $result = $this->adapter->loadEvents(new StreamName('Prooph\Model\User'), ['tag' => 'person']);
+        $metadataMatcher = new MetadataMatcher();
+        $metadataMatcher = $metadataMatcher->withMetadataMatch('tag', Operator::EQUALS(), 'person');
+        $result = $this->adapter->loadEvents(new StreamName('Prooph\Model\User'), 0, null, $metadataMatcher);
 
         $this->assertFalse($result->valid());
-    }
-
-    /**
-     * @test
-     */
-    public function it_rolls_back_transaction_after_timeout(): void
-    {
-        $testStream = $this->getTestStream();
-
-        $this->adapter->beginTransaction();
-
-        $this->adapter->create($testStream);
-
-        sleep(120);
-
-        // hack: see: https://github.com/MySQL/mongo-php-driver/issues/132
-        $this->manager = new Manager('MySQL://localhost:27017');
-        $cursor = $this->manager->executeQuery($this->dbName . '.user_stream', new \MySQL\Driver\Query([]));
-
-        $this->assertEquals(0, count($cursor->toArray()));
     }
 
     /**
@@ -429,72 +312,6 @@ final class PDOEventStoreAdapterTest extends TestCase
 
         $this->adapter->beginTransaction();
         $this->adapter->beginTransaction();
-    }
-
-    /**
-     * @test
-     */
-    public function it_uses_custom_stream_collection_map(): void
-    {
-        $this->adapter = new PDOEventStoreAdapter(
-            new FQCNMessageFactory(),
-            new NoOpMessageConverter(),
-            $this->manager,
-            $this->dbName,
-            null,
-            3,
-            [
-                'Prooph\Model\User' => 'test_collection_name'
-            ]
-        );
-
-        $testStream = $this->getTestStream();
-
-        $this->adapter->beginTransaction();
-
-        $this->adapter->create($testStream);
-
-        $this->adapter->commit();
-
-        $collectionContent = $this->manager->executeQuery($this->dbName . '.test_collection_name', new Query([]));
-
-        $this->assertEquals(1, count($collectionContent));
-    }
-
-    /**
-     * @test
-     */
-    public function it_throws_exception_when_trying_to_write_to_different_streams_in_one_transaction(): void
-    {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Cannot write to different streams in one transaction');
-
-        $this->adapter = new PDOEventStoreAdapter(
-            new FQCNMessageFactory(),
-            new NoOpMessageConverter(),
-            null,
-            3,
-            [
-                'Prooph\Model\User' => 'test_collection_name'
-            ]
-        );
-
-        $testStream = $this->getTestStream();
-
-        $this->adapter->beginTransaction();
-
-        $this->adapter->create($testStream);
-
-        $streamEvent = UserCreated::with(
-            ['name' => 'Max Mustermann', 'email' => 'contact@prooph.de'],
-            1
-        );
-
-        $streamEvent = $streamEvent->withAddedMetadata('tag', 'person');
-
-        $this->adapter->appendTo(new StreamName('another_one'), new \ArrayIterator([$streamEvent]));
-
-        $this->adapter->commit();
     }
 
     /**
