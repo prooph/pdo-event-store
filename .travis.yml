@@ -22,8 +22,7 @@ before_script:
   - composer update --prefer-source $DEPENDENCIES
 
 script:
-  - if [[ $DRIVER == 'mysql' ]]; then cp phpunit.xml.mysql phpunit.xml; fi
-  - if [[ $DRIVER == 'postgres' ]]; then cp phpunit.xml.postgres phpunit.xml; fi
+  - cp phpunit.xml.$DRIVER phpunit.xml
   - ./vendor/bin/phpunit --coverage-text --coverage-clover ./build/logs/clover.xml
   - ./vendor/bin/php-cs-fixer fix -v --diff --dry-run
   - ./vendor/bin/docheader check src/ tests/
