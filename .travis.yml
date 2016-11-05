@@ -14,22 +14,18 @@ matrix:
         - EXECUTE_CS_CHECK=true
         - TEST_COVERAGE=true
         - DRIVER="pdo_mysql"
-        - EXCLUDE="--exclude-group pdo_pqsql"
     - php: 7.1
       env:
-        - DEPENDENCIES="--prefer-lowest --prefer-stable"
+        - DEPENDENCIES="lowest"
         - DRIVER="pdo_mysql"
-        - EXCLUDE="--exclude-group pdo_pqsql"
     - php: 7.1
       env:
         - DEPENDENCIES=""
         - DRIVER="pdo_pgsql"
-        - EXCLUDE="--exclude-group pdo_mysql"
     - php: 7.1
       env:
-        - DEPENDENCIES="--prefer-lowest --prefer-stable"
+        - DEPENDENCIES="lowest"
         - DRIVER="pdo_pgsql"
-        - EXCLUDE="--exclude-group pdo_mysql"
 
 cache:
   directories:
@@ -41,11 +37,12 @@ before_script:
   - if [[ $DRIVER == 'pdo_mysql' ]]; then mysql -e 'create database event_store_tests;'; fi
   - if [[ $DRIVER == 'pdo_pgsql' ]]; then psql -c 'create database event_store_tests;' -U postgres; fi
   - composer self-update
-  - composer update --prefer-source $DEPENDENCIES
+  - if [[ $DEPENDENCIES == 'lowest' ]]; then composer update --prefer-source --prefer-lowest --prefer-stable; fi
+  - if [[ $DEPENDENCIES != 'lowest' ]]; then composer update --prefer-source; fi
 
 script:
   - cp phpunit.xml.$DRIVER phpunit.xml
-  - ./vendor/bin/phpunit --coverage-text --coverage-clover ./build/logs/clover.xml $EXCLUDE
+  - ./vendor/bin/phpunit --coverage-text --coverage-clover ./build/logs/clover.xml
   - if [[ $EXECUTE_CS_CHECK == 'true' ]]; then ./vendor/bin/php-cs-fixer fix -v --diff --dry-run; fi
   - if [[ $EXECUTE_CS_CHECK == 'true' ]]; then ./vendor/bin/docheader check src/ tests/; fi
 
