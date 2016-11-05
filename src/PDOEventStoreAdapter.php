@@ -190,7 +190,7 @@ EOT;
 
         $result = $statement->execute($data);
 
-        if ($statement->errorCode() === $this->indexingStrategy->uniqueViolationErrorCode()) {
+        if (in_array($statement->errorCode(), $this->indexingStrategy->uniqueViolationErrorCodes(), true)) {
             throw new ConcurrencyException();
         }
 
@@ -330,15 +330,21 @@ EOT;
     public function createSchemaFor(StreamName $streamName): void
     {
         $schema = $this->getSqlSchemaFor($streamName);
-        $statement = $this->connection->prepare($schema);
-        $result = $statement->execute();
+        foreach ($schema as $command) {
+            $statement = $this->connection->prepare($command);
+            $result = $statement->execute();
 
-        if (! $result) {
-            throw new RuntimeException('Error during createSchemaFor: ' . join('; ', $statement->errorInfo()));
+            if (! $result) {
+                throw new RuntimeException('Error during createSchemaFor: ' . join('; ', $statement->errorInfo()));
+            }
         }
     }
 
-    public function getSqlSchemaFor(StreamName $streamName)
+    /**
+     * @param StreamName $streamName
+     * @return string[]
+     */
+    public function getSqlSchemaFor(StreamName $streamName): array
     {
         $tableName = $this->tableNameGeneratorStrategy->__invoke($streamName);
         return $this->indexingStrategy->createSchema($tableName);

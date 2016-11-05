@@ -15,9 +15,10 @@ use PHPUnit_Framework_TestCase as TestCase;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\Adapter\Exception\RuntimeException;
-use Prooph\EventStore\Adapter\PDO\IndexingStrategy\MySQLMultipleStreamsPerAggregate;
-use Prooph\EventStore\Adapter\PDO\IndexingStrategy\MySQLOneStreamPerAggregate;
-use Prooph\EventStore\Adapter\PDO\IndexingStrategy\PostgresOneStreamPerAggregate;
+use Prooph\EventStore\Adapter\PDO\IndexingStrategy\MySQLSingleStreamStrategy;
+use Prooph\EventStore\Adapter\PDO\IndexingStrategy\MySQLAggregateStreamStrategy;
+use Prooph\EventStore\Adapter\PDO\IndexingStrategy\PostgresAggregateStreamStrategy;
+use Prooph\EventStore\Adapter\PDO\IndexingStrategy\PostgresSingleStreamStrategy;
 use Prooph\EventStore\Adapter\PDO\JsonQuerier\MySQL;
 use Prooph\EventStore\Adapter\PDO\JsonQuerier\Postgres;
 use Prooph\EventStore\Adapter\PDO\PDOEventStoreAdapter;
@@ -76,7 +77,7 @@ final class PDOEventStoreAdapterTest extends TestCase
                     new NoOpMessageConverter(),
                     $connection,
                     new MySQL(),
-                    new MySQLOneStreamPerAggregate(),
+                    new MySQLAggregateStreamStrategy(),
                     new Sha1()
                 );
                 break;
@@ -86,7 +87,7 @@ final class PDOEventStoreAdapterTest extends TestCase
                     new NoOpMessageConverter(),
                     $connection,
                     new Postgres(),
-                    new PostgresOneStreamPerAggregate(),
+                    new PostgresAggregateStreamStrategy(),
                     new Sha1()
                 );
                 break;
@@ -260,7 +261,7 @@ final class PDOEventStoreAdapterTest extends TestCase
             new NoOpMessageConverter(),
             $this->connection,
             new MySQL(),
-            new MySQLMultipleStreamsPerAggregate(),
+            new MySQLSingleStreamStrategy(),
             new Sha1()
         );
 
@@ -343,7 +344,7 @@ final class PDOEventStoreAdapterTest extends TestCase
             new NoOpMessageConverter(),
             $this->connection,
             new Postgres(),
-            new PostgresMultipleStreamsPerAggregate(),
+            new PostgresSingleStreamStrategy(),
             new Sha1()
         );
 

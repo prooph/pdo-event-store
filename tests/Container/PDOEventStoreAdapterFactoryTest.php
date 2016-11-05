@@ -43,7 +43,7 @@ final class PDOEventStoreAdapterFactoryTest extends TestCase
         $container->has(MessageFactory::class)->willReturn(false)->shouldBeCalled();
         $container->has(MessageConverter::class)->willReturn(false)->shouldBeCalled();
         $container->get(MySQL::class)->willReturn(new MySQL())->shouldBeCalled();
-        $container->get(IndexingStrategy\MySQLOneStreamPerAggregate::class)->willReturn(new IndexingStrategy\MySQLOneStreamPerAggregate())->shouldBeCalled();
+        $container->get(IndexingStrategy\MySQLAggregateStreamStrategy::class)->willReturn(new IndexingStrategy\MySQLAggregateStreamStrategy())->shouldBeCalled();
         $container->get(TableNameGeneratorStrategy\Sha1::class)->willReturn(new TableNameGeneratorStrategy\Sha1())->shouldBeCalled();
 
         $factory = new PDOEventStoreAdapterFactory();
@@ -71,7 +71,7 @@ final class PDOEventStoreAdapterFactoryTest extends TestCase
         $container->has(MessageConverter::class)->willReturn(true)->shouldBeCalled();
         $container->get(MessageConverter::class)->willReturn(new NoOpMessageConverter())->shouldBeCalled();
         $container->get(MySQL::class)->willReturn(new MySQL())->shouldBeCalled();
-        $container->get(IndexingStrategy\MySQLOneStreamPerAggregate::class)->willReturn(new IndexingStrategy\MySQLOneStreamPerAggregate())->shouldBeCalled();
+        $container->get(IndexingStrategy\MySQLAggregateStreamStrategy::class)->willReturn(new IndexingStrategy\MySQLAggregateStreamStrategy())->shouldBeCalled();
         $container->get(TableNameGeneratorStrategy\Sha1::class)->willReturn(new TableNameGeneratorStrategy\Sha1())->shouldBeCalled();
 
         $eventStoreName = 'custom';

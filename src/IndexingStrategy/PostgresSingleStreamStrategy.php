@@ -14,11 +14,15 @@ namespace Prooph\EventStore\Adapter\PDO\IndexingStrategy;
 
 use Prooph\EventStore\Adapter\PDO\IndexingStrategy;
 
-final class PostgresOneStreamPerAggregate implements IndexingStrategy
+final class PostgresSingleStreamStrategy implements IndexingStrategy
 {
-    public function createSchema(string $tableName): string
+    /**
+     * @param string $tableName
+     * @return string[]
+     */
+    public function createSchema(string $tableName): array
     {
-        return <<<EOT
+        $statement = <<<EOT
 CREATE TABLE $tableName (
     no SERIAL,
     event_id CHAR(36) NOT NULL,
@@ -27,18 +31,28 @@ CREATE TABLE $tableName (
     metadata JSONB NOT NULL,
     created_at CHAR(26) NOT NULL,
     PRIMARY KEY (no),
+    CONSTRAINT version_not_null CHECK ((metadata->>'_version') IS NOT NULL),
+    CONSTRAINT version_aggregate_type CHECK ((metadata->>'_aggregate_type') IS NOT NULL),
+    CONSTRAINT version_aggregate_id CHECK ((metadata->>'_aggregate_id') IS NOT NULL),  
     UNIQUE (event_id)
 );
 EOT;
+        return [
+            $statement,
+            "CREATE UNIQUE INDEX  on $tableName ((metadata->>'_version'), (metadata->>'_aggregate_id'));"
+        ];
     }
 
     public function oneStreamPerAggregate(): bool
     {
-        return true;
+        return false;
     }
 
-    public function uniqueViolationErrorCode(): string
+    /**
+     * @return string[]
+     */
+    public function uniqueViolationErrorCodes(): array
     {
-        return "23505";
+        return ["23000", "23505"];
     }
 }

@@ -14,11 +14,15 @@ namespace Prooph\EventStore\Adapter\PDO\IndexingStrategy;
 
 use Prooph\EventStore\Adapter\PDO\IndexingStrategy;
 
-final class MySQLMultipleStreamsPerAggregate implements IndexingStrategy
+final class MySQLSingleStreamStrategy implements IndexingStrategy
 {
-    public function createSchema(string $tableName): string
+    /**
+     * @param string $tableName
+     * @return string[]
+     */
+    public function createSchema(string $tableName): array
     {
-        return <<<EOT
+        $statement = <<<EOT
 CREATE TABLE `$tableName` (
     `no` INT(11) NOT NULL AUTO_INCREMENT,
     `event_id` CHAR(36) COLLATE utf8_bin NOT NULL,
@@ -33,6 +37,7 @@ CREATE TABLE `$tableName` (
     UNIQUE KEY `ix_unique_event` (`version`, `aggregate_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 EOT;
+        return [$statement];
     }
 
     public function oneStreamPerAggregate(): bool
@@ -40,8 +45,11 @@ EOT;
         return false;
     }
 
-    public function uniqueViolationErrorCode(): string
+    /**
+     * @return string[]
+     */
+    public function uniqueViolationErrorCodes(): array
     {
-        return "23000";
+        return ["23000"];
     }
 }

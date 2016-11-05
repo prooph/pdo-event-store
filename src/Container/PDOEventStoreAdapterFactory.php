@@ -21,7 +21,7 @@ use Prooph\Common\Messaging\MessageConverter;
 use Prooph\Common\Messaging\MessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\Adapter\Exception\InvalidArgumentException;
-use Prooph\EventStore\Adapter\PDO\IndexingStrategy\MySQLOneStreamPerAggregate;
+use Prooph\EventStore\Adapter\PDO\IndexingStrategy\MySQLAggregateStreamStrategy;
 use Prooph\EventStore\Adapter\PDO\JsonQuerier\MySQL;
 use Prooph\EventStore\Adapter\PDO\PDOEventStoreAdapter;
 use Prooph\EventStore\Adapter\PDO\TableNameGeneratorStrategy\Sha1;
@@ -142,7 +142,7 @@ final class PDOEventStoreAdapterFactory implements RequiresConfig, RequiresConfi
                         'port' => 3306,
                     ],
                     'json_querier' => MySQL::class,
-                    'indexing_strategy' => MySQLOneStreamPerAggregate::class,
+                    'indexing_strategy' => MySQLAggregateStreamStrategy::class,
                     'table_name_generator_strategy' => Sha1::class,
                     'load_batch_size' => 1000,
                     'event_streams_table' => 'event_streams',
