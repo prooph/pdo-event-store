@@ -3,7 +3,7 @@ language: php
 sudo: required
 
 addons:
-  postgresql: "9.4"
+  postgresql: '9.4'
 
 matrix:
   fast_finish: true
@@ -29,6 +29,11 @@ matrix:
         - DEPENDENCIES="--prefer-lowest --prefer-stable"
         - DRIVER="pdo_pgsql"
         - EXCLUDE="--exclude-group=pdo_mysql"
+
+cache:
+  directories:
+    - $HOME/.composer/cache
+    - $HOME/.local
 
 before_script:
   - if [[ $DRIVER == 'pdo_mysql' ]]; then bash .travis.install-mysql-5.7.sh; fi
