@@ -18,5 +18,5 @@ interface IndexingStrategy
 
     public function oneStreamPerAggregate(): bool;
 
-    public function duplicateEntryErrorCode(): string;
+    public function uniqueViolationErrorCode(): string;
 }

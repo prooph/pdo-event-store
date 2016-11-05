@@ -19,6 +19,6 @@ final class Sha1 implements TableNameGeneratorStrategy
 {
     public function __invoke(StreamName $streamName): string
     {
-        return sha1($streamName->toString());
+        return '_' . sha1($streamName->toString());
     }
 }

@@ -17,8 +17,11 @@ use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\Adapter\Exception\RuntimeException;
 use Prooph\EventStore\Adapter\PDO\IndexingStrategy\MySQLMultipleStreamsPerAggregate;
 use Prooph\EventStore\Adapter\PDO\IndexingStrategy\MySQLOneStreamPerAggregate;
+use Prooph\EventStore\Adapter\PDO\IndexingStrategy\PostgresOneStreamPerAggregate;
+use Prooph\EventStore\Adapter\PDO\JsonQuerier\MySQL;
+use Prooph\EventStore\Adapter\PDO\JsonQuerier\Postgres;
 use Prooph\EventStore\Adapter\PDO\PDOEventStoreAdapter;
-use Prooph\EventStore\Adapter\PDO\Sha1TableNameGeneratorStrategy;
+use Prooph\EventStore\Adapter\PDO\TableNameGeneratorStrategy\Sha1;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;
@@ -42,28 +45,54 @@ final class PDOEventStoreAdapterTest extends TestCase
 
     protected function setUp(): void
     {
-        $databaseName = TestUtil::getDatabaseName();
         $this->connection = TestUtil::getConnection();
-        $this->connection->exec("CREATE DATABASE $databaseName;");
-        $this->connection->exec("use $databaseName;");
-        $this->connection->exec(file_get_contents(__DIR__ . '/../scripts/mysql_event_streams_table.sql'));
+        switch (TestUtil::getDatabaseVendor()) {
+            case 'pdo_mysql':
+                $this->connection->exec(file_get_contents(__DIR__ . '/../scripts/mysql_event_streams_table.sql'));
+                break;
+            case 'pdo_pgsql':
+                $this->connection->exec(file_get_contents(__DIR__ . '/../scripts/postgres_event_streams_table.sql'));
+                break;
+            default:
+                throw new \RuntimeException('Unknown database vendor');
+
+        }
+
         $this->createAdapter($this->connection);
     }
 
     protected function tearDown(): void
     {
-        $this->connection->exec('DROP DATABASE ' . TestUtil::getDatabaseName() . ';');
+        $this->connection->exec('DROP TABLE event_streams;');
+        $this->connection->exec('DROP TABLE _' . sha1('Prooph\Model\User'));
     }
 
     protected function createAdapter(PDO $connection): void
     {
-        $this->adapter = new PDOEventStoreAdapter(
-            new FQCNMessageFactory(),
-            new NoOpMessageConverter(),
-            $connection,
-            new MySQLOneStreamPerAggregate(),
-            new Sha1TableNameGeneratorStrategy()
-        );
+        switch (TestUtil::getDatabaseVendor()) {
+            case 'pdo_mysql':
+                $this->adapter = new PDOEventStoreAdapter(
+                    new FQCNMessageFactory(),
+                    new NoOpMessageConverter(),
+                    $connection,
+                    new MySQL(),
+                    new MySQLOneStreamPerAggregate(),
+                    new Sha1()
+                );
+                break;
+            case 'pdo_pgsql':
+                $this->adapter = new PDOEventStoreAdapter(
+                    new FQCNMessageFactory(),
+                    new NoOpMessageConverter(),
+                    $connection,
+                    new Postgres(),
+                    new PostgresOneStreamPerAggregate(),
+                    new Sha1()
+                );
+                break;
+            default:
+                throw new \RuntimeException('Unknown database vendor');
+        }
     }
 
     /**
@@ -183,21 +212,12 @@ final class PDOEventStoreAdapterTest extends TestCase
 
     /**
      * @test
-     * @group mysql
+     * @group pdo_mysql
      */
-    public function it_fails_to_write_with_duplicate_version_and_one_stream_per_aggregate_strategy(): void
+    public function it_fails_to_write_with_duplicate_version_and_one_stream_per_aggregate_strategy_on_pdo_mysql(): void
     {
         $this->expectException(ConcurrencyException::class);
 
-        /*
-        $this->adapter = new PDOEventStoreAdapter(
-            new FQCNMessageFactory(),
-            new NoOpMessageConverter(),
-            $this->connection,
-            new MySQLMultipleStreamsPerAggregate(),
-            new Sha1TableNameGeneratorStrategy()
-        );
-*/
         $streamEvent = UserCreated::with(
             ['name' => 'Max Mustermann', 'email' => 'contact@prooph.de'],
             1
@@ -229,9 +249,9 @@ final class PDOEventStoreAdapterTest extends TestCase
 
     /**
      * @test
-     * @group mysql
+     * @group pdo_mysql
      */
-    public function it_fails_to_write_with_duplicate_version_and_mulitple_streams_per_aggregate_strategy(): void
+    public function it_fails_to_write_with_duplicate_version_and_mulitple_streams_per_aggregate_strategy_on_pdo_mysql(): void
     {
         $this->expectException(ConcurrencyException::class);
 
@@ -239,8 +259,92 @@ final class PDOEventStoreAdapterTest extends TestCase
             new FQCNMessageFactory(),
             new NoOpMessageConverter(),
             $this->connection,
+            new MySQL(),
             new MySQLMultipleStreamsPerAggregate(),
-            new Sha1TableNameGeneratorStrategy()
+            new Sha1()
+        );
+
+        $streamEvent = UserCreated::with(
+            ['name' => 'Max Mustermann', 'email' => 'contact@prooph.de'],
+            1
+        );
+
+        $aggregateId = Uuid::uuid4()->toString();
+
+        $streamEvent = $streamEvent->withAddedMetadata('tag', 'person');
+        $streamEvent = $streamEvent->withAddedMetadata('_aggregate_id', $aggregateId);
+        $streamEvent = $streamEvent->withAddedMetadata('_aggregate_type', 'user');
+
+        $stream = new Stream(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
+
+        $this->expectException(ConcurrencyException::class);
+
+        $this->adapter->create($stream);
+
+        $streamEvent = UsernameChanged::with(
+            ['name' => 'John Doe'],
+            1
+        );
+
+        $streamEvent = $streamEvent->withAddedMetadata('tag', 'person');
+        $streamEvent = $streamEvent->withAddedMetadata('_aggregate_id', $aggregateId);
+        $streamEvent = $streamEvent->withAddedMetadata('_aggregate_type', 'user');
+
+        $this->adapter->appendTo(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
+    }
+
+    /**
+     * @test
+     * @group pdo_pgsql
+     */
+    public function it_fails_to_write_with_duplicate_version_and_one_stream_per_aggregate_strategy_on_pdo_pgsql(): void
+    {
+        $this->expectException(ConcurrencyException::class);
+
+        $streamEvent = UserCreated::with(
+            ['name' => 'Max Mustermann', 'email' => 'contact@prooph.de'],
+            1
+        );
+
+        $aggregateId = Uuid::uuid4()->toString();
+
+        $streamEvent = $streamEvent->withAddedMetadata('tag', 'person');
+        $streamEvent = $streamEvent->withAddedMetadata('_aggregate_id', $aggregateId);
+        $streamEvent = $streamEvent->withAddedMetadata('_aggregate_type', 'user');
+
+        $stream = new Stream(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
+
+        $this->expectException(ConcurrencyException::class);
+
+        $this->adapter->create($stream);
+
+        $streamEvent = UsernameChanged::with(
+            ['name' => 'John Doe'],
+            1
+        );
+
+        $streamEvent = $streamEvent->withAddedMetadata('tag', 'person');
+        $streamEvent = $streamEvent->withAddedMetadata('_aggregate_id', $aggregateId);
+        $streamEvent = $streamEvent->withAddedMetadata('_aggregate_type', 'user');
+
+        $this->adapter->appendTo(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
+    }
+
+    /**
+     * @test
+     * @group pdo_pgsql
+     */
+    public function it_fails_to_write_with_duplicate_version_and_mulitple_streams_per_aggregate_strategy_on_pdo_pgsql(): void
+    {
+        $this->expectException(ConcurrencyException::class);
+
+        $this->adapter = new PDOEventStoreAdapter(
+            new FQCNMessageFactory(),
+            new NoOpMessageConverter(),
+            $this->connection,
+            new Postgres(),
+            new PostgresMultipleStreamsPerAggregate(),
+            new Sha1()
         );
 
         $streamEvent = UserCreated::with(

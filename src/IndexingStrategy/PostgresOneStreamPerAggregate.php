@@ -14,21 +14,21 @@ namespace Prooph\EventStore\Adapter\PDO\IndexingStrategy;
 
 use Prooph\EventStore\Adapter\PDO\IndexingStrategy;
 
-final class MySQLOneStreamPerAggregate implements IndexingStrategy
+final class PostgresOneStreamPerAggregate implements IndexingStrategy
 {
     public function createSchema(string $tableName): string
     {
         return <<<EOT
-CREATE TABLE `$tableName` (
-    `no` INT(11) NOT NULL AUTO_INCREMENT,
-    `event_id` CHAR(36) COLLATE utf8_bin NOT NULL,
-    `event_name` VARCHAR(100) COLLATE utf8_bin NOT NULL,
-    `payload` JSON NOT NULL,
-    `metadata` JSON NOT NULL,
-    `created_at` CHAR(26) COLLATE utf8_bin NOT NULL,
-    PRIMARY KEY (`no`),
-    UNIQUE KEY `ix_event_id` (`event_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+CREATE TABLE $tableName (
+    no SERIAL,
+    event_id CHAR(36) NOT NULL,
+    event_name VARCHAR(100) NOT NULL,
+    payload JSONB NOT NULL,
+    metadata JSONB NOT NULL,
+    created_at CHAR(26) NOT NULL,
+    PRIMARY KEY (no),
+    UNIQUE (event_id)
+);
 EOT;
     }
 
@@ -39,6 +39,6 @@ EOT;
 
     public function uniqueViolationErrorCode(): string
     {
-        return "23000";
+        return "23505";
     }
 }

@@ -2,8 +2,8 @@ language: php
 
 sudo: required
 
-services:
-  - postgresql
+addons:
+  postgresql: "9.4"
 
 matrix:
   fast_finish: true
@@ -13,19 +13,33 @@ matrix:
         - DEPENDENCIES=""
         - TEST_COVERAGE=true
         - DRIVER="pdo_mysql"
+        - EXCLUDE="--exclude-group=pdo_pqsql"
     - php: 7.1
       env:
         - DEPENDENCIES="--prefer-lowest --prefer-stable"
         - DRIVER="pdo_mysql"
+        - EXCLUDE="--exclude-group=pdo_pqsql"
+    - php: 7.1
+      env:
+        - DEPENDENCIES=""
+        - DRIVER="pdo_pgsql"
+        - EXCLUDE="--exclude-group=pdo_mysql"
+    - php: 7.1
+      env:
+        - DEPENDENCIES="--prefer-lowest --prefer-stable"
+        - DRIVER="pdo_pgsql"
+        - EXCLUDE="--exclude-group=pdo_mysql"
 
 before_script:
-  - bash .travis.install-mysql-5.7.sh
+  - if [[ $DRIVER == 'pdo_mysql' ]]; then bash .travis.install-mysql-5.7.sh; fi
+  - if [[ $DRIVER == 'pdo_mysql' ]]; then mysql -e 'create database event_store_tests;'; fi
+  - if [[ $DRIVER == 'pdo_pgsql' ]]; then psql -c 'create database event_store_tests;' -U postgres; fi
   - composer self-update
   - composer update --prefer-source $DEPENDENCIES
 
 script:
   - cp phpunit.xml.$DRIVER phpunit.xml
-  - ./vendor/bin/phpunit --coverage-text --coverage-clover ./build/logs/clover.xml
+  - ./vendor/bin/phpunit $EXCLUDE --coverage-text --coverage-clover ./build/logs/clover.xml
   - ./vendor/bin/php-cs-fixer fix -v --diff --dry-run
   - ./vendor/bin/docheader check src/ tests/
 

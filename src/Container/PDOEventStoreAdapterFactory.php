@@ -22,6 +22,7 @@ use Prooph\Common\Messaging\MessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\Adapter\Exception\InvalidArgumentException;
 use Prooph\EventStore\Adapter\PDO\IndexingStrategy\MySQLOneStreamPerAggregate;
+use Prooph\EventStore\Adapter\PDO\JsonQuerier\MySQL;
 use Prooph\EventStore\Adapter\PDO\PDOEventStoreAdapter;
 use Prooph\EventStore\Adapter\PDO\TableNameGeneratorStrategy\Sha1;
 
@@ -39,8 +40,12 @@ final class PDOEventStoreAdapterFactory implements RequiresConfig, RequiresConfi
      */
     private $driverSchemeAliases = [
         'pdo_mysql'  => 'mysql',
-        'pdo_pgsql'  => 'postgres',
-        'pdo_sqlite' => 'sqlite',
+        'pdo_pgsql'  => 'pgsql',
+    ];
+
+    private $driverSchemeSeparators = [
+        'pdo_mysql'  => ';',
+        'pdo_pgsql'  => ' ',
     ];
 
     /**
@@ -81,10 +86,12 @@ final class PDOEventStoreAdapterFactory implements RequiresConfig, RequiresConfi
         if (isset($config['connection_service'])) {
             $connection = $container->get($config['connection_service']);
         } else {
-            $dsn = $this->driverSchemeAliases[$config['connection_options']['driver']] . ':'
-                . 'host=' . $config['connection_options']['host'] . ';'
-                . 'port=' . $config['connection_options']['port'] . ';'
-                . 'dbname=' . $config['connection_options']['dbname'];
+            $separator = $this->driverSchemeSeparators[$config['connection_options']['driver']];
+            $dsn = $this->driverSchemeAliases[$config['connection_options']['driver']] . ':';
+            $dsn .= 'host=' . $config['connection_options']['host'] . $separator;
+            $dsn .= 'port=' . $config['connection_options']['port'] . $separator;
+            $dsn .= 'dbname=' . $config['connection_options']['dbname'] . $separator;
+            $dsn = rtrim($dsn);
             $user = $config['connection_options']['user'];
             $password = $config['connection_options']['password'];
             $connection = new PDO($dsn, $user, $password);
@@ -98,6 +105,8 @@ final class PDOEventStoreAdapterFactory implements RequiresConfig, RequiresConfi
             ? $container->get(MessageConverter::class)
             : new NoOpMessageConverter();
 
+        $jsonQuerier = $container->get($config['json_querier']);
+
         $indexingStrategy = $container->get($config['indexing_strategy']);
 
         $tableNameGeneratorStrategy = $container->get($config['table_name_generator_strategy']);
@@ -106,6 +115,7 @@ final class PDOEventStoreAdapterFactory implements RequiresConfig, RequiresConfi
             $messageFactory,
             $messageConverter,
             $connection,
+            $jsonQuerier,
             $indexingStrategy,
             $tableNameGeneratorStrategy,
             $config['load_batch_size'],
@@ -131,6 +141,7 @@ final class PDOEventStoreAdapterFactory implements RequiresConfig, RequiresConfi
                         'dbname' => 'event_store',
                         'port' => 3306,
                     ],
+                    'json_querier' => MySQL::class,
                     'indexing_strategy' => MySQLOneStreamPerAggregate::class,
                     'table_name_generator_strategy' => Sha1::class,
                     'load_batch_size' => 1000,
