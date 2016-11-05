@@ -21,16 +21,23 @@ class TestUtil
      */
     private static $driverSchemeAliases = [
         'pdo_mysql'  => 'mysql',
-        'pdo_pgsql'  => 'postgres',
-        'pdo_sqlite' => 'sqlite',
+        'pdo_pgsql'  => 'pgsql',
+    ];
+
+    private static $driverSchemeSeparators = [
+        'pdo_mysql'  => ';',
+        'pdo_pgsql'  => ' ',
     ];
 
     public static function getConnection(): PDO
     {
         $connectionParams = self::getConnectionParams();
+        $separator = self::$driverSchemeSeparators[$connectionParams['driver']];
         $dsn = self::$driverSchemeAliases[$connectionParams['driver']] . ':';
-        $dsn .= 'host=' . $connectionParams['host'] . ';';
-        $dsn .= 'port=' . $connectionParams['port'] . ';';
+        $dsn .= 'host=' . $connectionParams['host'] . $separator;
+        $dsn .= 'port=' . $connectionParams['port'] . $separator;
+        $dsn .= 'dbname=' . $connectionParams['dbname'] . $separator;
+        $dsn = rtrim($dsn);
         $connection = new PDO($dsn, $connectionParams['user'], $connectionParams['password']);
 
         return $connection;
@@ -38,7 +45,20 @@ class TestUtil
 
     public static function getDatabaseName(): string
     {
-        return $GLOBALS['db_name'] ?? 'event_store_tests';
+        if (! self::hasRequiredConnectionParams()) {
+            throw new \RuntimeException('No connection params given');
+        }
+
+        return $GLOBALS['db_name'];
+    }
+
+    public static function getDatabaseVendor(): string
+    {
+        if (! self::hasRequiredConnectionParams()) {
+            throw new \RuntimeException('No connection params given');
+        }
+
+        return $GLOBALS['db_type'];
     }
 
     public static function getConnectionParams(): array

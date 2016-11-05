@@ -10,15 +10,19 @@
 
 declare(strict_types=1);
 
-namespace Prooph\EventStore\Adapter\PDO\TableNameGeneratorStrategy;
+namespace Prooph\EventStore\Adapter\PDO\JsonQuerier;
 
-use Prooph\EventStore\Adapter\PDO\TableNameGeneratorStrategy;
-use Prooph\EventStore\Stream\StreamName;
+use Prooph\EventStore\Adapter\PDO\JsonQuerier;
 
-final class Sha1 implements TableNameGeneratorStrategy
+final class Postgres implements JsonQuerier
 {
-    public function __invoke(StreamName $streamName): string
+    public function metadata(string $field): string
     {
-        return '_' . sha1($streamName->toString());
+        return "metadata->>'$field'";
+    }
+
+    public function payload(string $field): string
+    {
+        return "payload->>'$field'";
     }
 }

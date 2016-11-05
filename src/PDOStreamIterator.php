@@ -163,7 +163,7 @@ final class PDOStreamIterator implements Iterator
         if ($this->currentKey !== 0) {
             $this->batchPosition = 0;
             $this->statement = $this->buildStatement($this->sql, $this->fromNumber);
-//var_dump($this->statement->)
+
             $this->statement->execute();
             $this->statement->setFetchMode(PDO::FETCH_OBJ);
 
@@ -176,7 +176,7 @@ final class PDOStreamIterator implements Iterator
 
     private function buildStatement(array $sql, int $fromNumber): PDOStatement
     {
-        $query = $sql['from'] . " WHERE `no` >= $fromNumber ";
+        $query = $sql['from'] . " WHERE no >= $fromNumber ";
         if (isset($sql['where'])) {
             $query .= 'AND ';
             $query .= implode(' AND ', $sql['where']);

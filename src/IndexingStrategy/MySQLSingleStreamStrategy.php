@@ -14,25 +14,30 @@ namespace Prooph\EventStore\Adapter\PDO\IndexingStrategy;
 
 use Prooph\EventStore\Adapter\PDO\IndexingStrategy;
 
-final class MySQLMultipleStreamsPerAggregate implements IndexingStrategy
+final class MySQLSingleStreamStrategy implements IndexingStrategy
 {
-    public function createSchema(string $tableName): string
+    /**
+     * @param string $tableName
+     * @return string[]
+     */
+    public function createSchema(string $tableName): array
     {
-        return <<<EOT
+        $statement = <<<EOT
 CREATE TABLE `$tableName` (
     `no` INT(11) NOT NULL AUTO_INCREMENT,
-    `event_id` CHAR(36) COLLATE utf8_unicode_ci NOT NULL,
-    `event_name` VARCHAR(100) COLLATE utf8_unicode_ci NOT NULL,
+    `event_id` CHAR(36) COLLATE utf8_bin NOT NULL,
+    `event_name` VARCHAR(100) COLLATE utf8_bin NOT NULL,
     `payload` JSON NOT NULL,
     `metadata` JSON NOT NULL,
-    `created_at` CHAR(26) COLLATE utf8_unicode_ci NOT NULL,
+    `created_at` CHAR(26) COLLATE utf8_bin NOT NULL,
     `version` INT(11) GENERATED ALWAYS AS (JSON_EXTRACT(metadata, '$._version')) STORED NOT NULL UNIQUE KEY,
     `aggregate_id` char(38) CHARACTER SET utf8 COLLATE utf8_bin GENERATED ALWAYS AS (JSON_EXTRACT(metadata, '$._aggregate_id')) STORED NOT NULL UNIQUE KEY,
     `aggregate_type` varchar(150) GENERATED ALWAYS AS (JSON_EXTRACT(metadata, '$._aggregate_type')) STORED NOT NULL,
     PRIMARY KEY (`no`),
     UNIQUE KEY `ix_unique_event` (`version`, `aggregate_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 EOT;
+        return [$statement];
     }
 
     public function oneStreamPerAggregate(): bool
@@ -40,8 +45,11 @@ EOT;
         return false;
     }
 
-    public function duplicateEntryErrorCode(): string
+    /**
+     * @return string[]
+     */
+    public function uniqueViolationErrorCodes(): array
     {
-        return "23000";
+        return ["23000"];
     }
 }

@@ -17,6 +17,7 @@ use Prooph\Common\Messaging\MessageConverter;
 use Prooph\Common\Messaging\MessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\Adapter\PDO\IndexingStrategy;
+use Prooph\EventStore\Adapter\PDO\JsonQuerier\MySQL;
 use Prooph\EventStore\Adapter\PDO\PDOEventStoreAdapter;
 use Prooph\EventStore\Adapter\PDO\Container\PDOEventStoreAdapterFactory;
 use Prooph\EventStore\Adapter\PDO\TableNameGeneratorStrategy;
@@ -41,7 +42,8 @@ final class PDOEventStoreAdapterFactoryTest extends TestCase
         $container->get('config')->willReturn($config)->shouldBeCalled();
         $container->has(MessageFactory::class)->willReturn(false)->shouldBeCalled();
         $container->has(MessageConverter::class)->willReturn(false)->shouldBeCalled();
-        $container->get(IndexingStrategy\MySQLOneStreamPerAggregate::class)->willReturn(new IndexingStrategy\MySQLOneStreamPerAggregate())->shouldBeCalled();
+        $container->get(MySQL::class)->willReturn(new MySQL())->shouldBeCalled();
+        $container->get(IndexingStrategy\MySQLAggregateStreamStrategy::class)->willReturn(new IndexingStrategy\MySQLAggregateStreamStrategy())->shouldBeCalled();
         $container->get(TableNameGeneratorStrategy\Sha1::class)->willReturn(new TableNameGeneratorStrategy\Sha1())->shouldBeCalled();
 
         $factory = new PDOEventStoreAdapterFactory();
@@ -56,7 +58,6 @@ final class PDOEventStoreAdapterFactoryTest extends TestCase
     public function it_creates_adapter_via_connection_options(): void
     {
         $connection = TestUtil::getConnection();
-        $connection->exec('CREATE DATABASE ' . TestUtil::getDatabaseName());
         $config['prooph']['event_store']['custom']['adapter']['options'] = [
             'connection_options' => TestUtil::getConnectionParams(),
         ];
@@ -68,13 +69,13 @@ final class PDOEventStoreAdapterFactoryTest extends TestCase
         $container->get(MessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
         $container->has(MessageConverter::class)->willReturn(true)->shouldBeCalled();
         $container->get(MessageConverter::class)->willReturn(new NoOpMessageConverter())->shouldBeCalled();
-        $container->get(IndexingStrategy\MySQLOneStreamPerAggregate::class)->willReturn(new IndexingStrategy\MySQLOneStreamPerAggregate())->shouldBeCalled();
+        $container->get(MySQL::class)->willReturn(new MySQL())->shouldBeCalled();
+        $container->get(IndexingStrategy\MySQLAggregateStreamStrategy::class)->willReturn(new IndexingStrategy\MySQLAggregateStreamStrategy())->shouldBeCalled();
         $container->get(TableNameGeneratorStrategy\Sha1::class)->willReturn(new TableNameGeneratorStrategy\Sha1())->shouldBeCalled();
 
         $eventStoreName = 'custom';
         $adapter = PDOEventStoreAdapterFactory::$eventStoreName($container->reveal());
 
         $this->assertInstanceOf(PDOEventStoreAdapter::class, $adapter);
-        $connection->exec('DROP DATABASE ' . TestUtil::getDatabaseName());
     }
 }

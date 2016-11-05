@@ -12,7 +12,6 @@ namespace Prooph\EventStore\Adapter\PDO;
 
 use Iterator;
 use PDO;
-use Prooph\Common\Messaging\DomainEvent;
 use Prooph\Common\Messaging\MessageConverter;
 use Prooph\Common\Messaging\MessageFactory;
 use Prooph\EventStore\Adapter\Adapter;
@@ -39,6 +38,11 @@ final class PDOEventStoreAdapter implements Adapter, CanHandleTransaction
      * @var PDO
      */
     private $connection;
+
+    /**
+     * @var JsonQuerier
+     */
+    private $jsonQuerier;
 
     /**
      * @var IndexingStrategy
@@ -69,6 +73,7 @@ final class PDOEventStoreAdapter implements Adapter, CanHandleTransaction
         MessageFactory $messageFactory,
         MessageConverter $messageConverter,
         PDO $connection,
+        JsonQuerier $jsonQuerier,
         IndexingStrategy $indexingStrategy,
         TableNameGeneratorStrategy $tableNameGeneratorStrategy,
         int $loadBatchSize = 10000,
@@ -77,6 +82,7 @@ final class PDOEventStoreAdapter implements Adapter, CanHandleTransaction
         $this->messageFactory             = $messageFactory;
         $this->messageConverter           = $messageConverter;
         $this->connection                 = $connection;
+        $this->jsonQuerier                = $jsonQuerier;
         $this->indexingStrategy           = $indexingStrategy;
         $this->tableNameGeneratorStrategy = $tableNameGeneratorStrategy;
         $this->loadBatchSize              = $loadBatchSize;
@@ -89,14 +95,14 @@ final class PDOEventStoreAdapter implements Adapter, CanHandleTransaction
         $streamName = $streamName->toString();
 
         $sql = <<<EOT
-SELECT `metadata` FROM `$eventStreamsTable`
-WHERE `real_stream_name` = :streamName'; 
+SELECT metadata FROM $eventStreamsTable
+WHERE real_stream_name = :streamName'; 
 EOT;
         $statement = $this->connection->prepare($sql);
         $result = $statement->execute(['streamName' => $streamName]);
 
         if (! $result) {
-            throw new RuntimeException('Error during fetchStreamMetadata');
+            throw new RuntimeException('Error during fetchStreamMetadata: ' . join('; ', $statement->errorInfo()));
         }
 
         $stream = $statement->fetch(PDO::FETCH_OBJ);
@@ -114,14 +120,14 @@ EOT;
         $streamName = $streamName->toString();
 
         $sql = <<<EOT
-SELECT `metadata` FROM `$eventStreamsTable`
-WHERE `real_stream_name` = :streamName'; 
+SELECT metadata FROM $eventStreamsTable
+WHERE real_stream_name = :streamName'; 
 EOT;
         $statement = $this->connection->prepare($sql);
         $result = $statement->execute(['streamName' => $streamName]);
 
         if (! $result) {
-            throw new RuntimeException('Error during fetchStreamMetadata');
+            throw new RuntimeException('Error during fetchStreamMetadata: ' . join('; ', $statement->errorInfo()));
         }
 
         $stream = $statement->fetch(PDO::FETCH_OBJ);
@@ -146,15 +152,15 @@ EOT;
     public function appendTo(StreamName $streamName, Iterator $streamEvents): void
     {
         $columnNames = [
-            '`event_id`',
-            '`event_name`',
-            '`payload`',
-            '`metadata`',
-            '`created_at`'
+            'event_id',
+            'event_name',
+            'payload',
+            'metadata',
+            'created_at'
         ];
 
         if ($this->indexingStrategy->oneStreamPerAggregate()) {
-            $columnNames[] = '`no`';
+            $columnNames[] = 'no';
         }
 
         $data = [];
@@ -178,18 +184,18 @@ EOT;
         $rowPlaces = '(' . implode(', ', array_fill(0, count($columnNames), '?')) . ')';
         $allPlaces = implode(', ', array_fill(0, $countEntries, $rowPlaces));
 
-        $sql = 'INSERT INTO `' . $tableName . '` (' . implode(', ', $columnNames) . ') VALUES ' . $allPlaces;
+        $sql = 'INSERT INTO ' . $tableName . ' (' . implode(', ', $columnNames) . ') VALUES ' . $allPlaces;
 
         $statement = $this->connection->prepare($sql);
 
         $result = $statement->execute($data);
 
-        if ($statement->errorCode() === $this->indexingStrategy->duplicateEntryErrorCode()) {
+        if (in_array($statement->errorCode(), $this->indexingStrategy->uniqueViolationErrorCodes(), true)) {
             throw new ConcurrencyException();
         }
 
         if (! $result) {
-            throw new RuntimeException('Error during appendTo');
+            throw new RuntimeException('Error during appendTo: ' . join('; ', $statement->errorInfo()));
         }
     }
 
@@ -225,8 +231,8 @@ EOT;
 
         $tableName = $this->tableNameGeneratorStrategy->__invoke($streamName);
         $sql = [
-            'from' => "SELECT * FROM `$tableName`",
-            'orderBy' => "ORDER BY `no` ASC",
+            'from' => "SELECT * FROM $tableName",
+            'orderBy' => "ORDER BY no ASC",
         ];
 
         foreach ($metadataMatcher->data() as $key => $v) {
@@ -235,7 +241,7 @@ EOT;
             if (is_string($value)) {
                 $value = "'$value'";
             }
-            $sql['where'][] = "metadata->\"$.$key\" $operator $value";
+            $sql['where'][] = $this->jsonQuerier->metadata($key) . " $operator $value";
         }
 
         return new PDOStreamIterator($this->connection, $this->messageFactory, $sql, $this->loadBatchSize, $fromNumber, $count);
@@ -253,8 +259,8 @@ EOT;
 
         $tableName = $this->tableNameGeneratorStrategy->__invoke($streamName);
         $sql = [
-            'from' => "SELECT * FROM `$tableName`",
-            'orderBy' => "ORDER BY `no` DESC",
+            'from' => "SELECT * FROM $tableName",
+            'orderBy' => "ORDER BY no DESC",
         ];
 
         foreach ($metadataMatcher->data() as $key => $v) {
@@ -263,7 +269,7 @@ EOT;
             if (is_string($value)) {
                 $value = "'$value'";
             }
-            $sql['where'][] = "`$key`` $operator $value";
+            $sql['where'][] = $this->jsonQuerier->metadata($key) . " $operator $value";
         }
 
         return new PDOStreamIterator($this->connection, $this->messageFactory, $sql, $this->loadBatchSize, $fromNumber, $count);
@@ -305,7 +311,7 @@ EOT;
         $metadata = json_encode($stream->metadata());
 
         $sql = <<<EOT
-INSERT INTO `$this->eventStreamsTable` (`real_stream_name`, `stream_name`, `metadata`)
+INSERT INTO $this->eventStreamsTable (real_stream_name, stream_name, metadata)
 VALUES (:realStreamName, :streamName, :metadata);
 EOT;
 
@@ -317,22 +323,28 @@ EOT;
         ]);
 
         if (! $result) {
-            throw new RuntimeException('Error during addStreamToStreamsTable');
+            throw new RuntimeException('Error during addStreamToStreamsTable: ' . join('; ', $statement->errorInfo()));
         }
     }
 
     public function createSchemaFor(StreamName $streamName): void
     {
         $schema = $this->getSqlSchemaFor($streamName);
-        $statement = $this->connection->prepare($schema);
-        $result = $statement->execute();
+        foreach ($schema as $command) {
+            $statement = $this->connection->prepare($command);
+            $result = $statement->execute();
 
-        if (! $result) {
-            throw new RuntimeException('Error during createSchemaFor');
+            if (! $result) {
+                throw new RuntimeException('Error during createSchemaFor: ' . join('; ', $statement->errorInfo()));
+            }
         }
     }
 
-    public function getSqlSchemaFor(StreamName $streamName)
+    /**
+     * @param StreamName $streamName
+     * @return string[]
+     */
+    public function getSqlSchemaFor(StreamName $streamName): array
     {
         $tableName = $this->tableNameGeneratorStrategy->__invoke($streamName);
         return $this->indexingStrategy->createSchema($tableName);

@@ -14,9 +14,16 @@ namespace Prooph\EventStore\Adapter\PDO;
 
 interface IndexingStrategy
 {
-    public function createSchema(string $tableName): string;
+    /**
+     * @param string $tableName
+     * @return string[]
+     */
+    public function createSchema(string $tableName): array;
 
     public function oneStreamPerAggregate(): bool;
 
-    public function duplicateEntryErrorCode(): string;
+    /**
+     * @return string[]
+     */
+    public function uniqueViolationErrorCodes(): array;
 }
