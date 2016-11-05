@@ -58,7 +58,6 @@ final class PDOEventStoreAdapterFactoryTest extends TestCase
     public function it_creates_adapter_via_connection_options(): void
     {
         $connection = TestUtil::getConnection();
-        $connection->exec('CREATE DATABASE ' . TestUtil::getDatabaseName());
         $config['prooph']['event_store']['custom']['adapter']['options'] = [
             'connection_options' => TestUtil::getConnectionParams(),
         ];
@@ -78,6 +77,5 @@ final class PDOEventStoreAdapterFactoryTest extends TestCase
         $adapter = PDOEventStoreAdapterFactory::$eventStoreName($container->reveal());
 
         $this->assertInstanceOf(PDOEventStoreAdapter::class, $adapter);
-        $connection->exec('DROP DATABASE ' . TestUtil::getDatabaseName());
     }
 }
