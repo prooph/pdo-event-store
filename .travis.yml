@@ -11,6 +11,7 @@ matrix:
     - php: 7.1
       env:
         - DEPENDENCIES=""
+        - EXECUTE_CS_CHECK=true
         - TEST_COVERAGE=true
         - DRIVER="pdo_mysql"
         - EXCLUDE="--exclude-group=pdo_pqsql"
@@ -45,8 +46,8 @@ before_script:
 script:
   - cp phpunit.xml.$DRIVER phpunit.xml
   - ./vendor/bin/phpunit $EXCLUDE --coverage-text --coverage-clover ./build/logs/clover.xml
-  - ./vendor/bin/php-cs-fixer fix -v --diff --dry-run
-  - ./vendor/bin/docheader check src/ tests/
+  - if [[ $EXECUTE_CS_CHECK == 'true' ]]; then ./vendor/bin/php-cs-fixer fix -v --diff --dry-run; fi
+  - if [[ $EXECUTE_CS_CHECK == 'true' ]]; then ./vendor/bin/docheader check src/ tests/; fi
 
 after_success:
   - if [[ $TEST_COVERAGE == 'true' ]]; then php vendor/bin/coveralls -v; fi
