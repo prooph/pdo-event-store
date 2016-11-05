@@ -32,6 +32,6 @@
         <var name="db_username" value="postgres" />
         <var name="db_password" value="" />
         <var name="db_name" value="event_store_tests" />
-        <var name="db_port" value="3306"/>
+        <var name="db_port" value="5432"/>
     </php>
 </phpunit>
