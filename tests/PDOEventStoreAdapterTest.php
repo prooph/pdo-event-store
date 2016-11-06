@@ -111,13 +111,9 @@ final class PDOEventStoreAdapterTest extends TestCase
 
         $metadataMatcher = new MetadataMatcher();
         $metadataMatcher->withMetadataMatch('tag', Operator::EQUALS(), 'person');
-        $streamEvents = $this->adapter->loadEvents(new StreamName('Prooph\Model\User'), 0, null, $metadataMatcher);
+        $streamEvents = $this->adapter->loadEvents(new StreamName('Prooph\Model\User'), 1, null, $metadataMatcher);
 
-        $count = 0;
-        foreach ($streamEvents as $event) {
-            $count++;
-        }
-        $this->assertEquals(1, $count);
+        $this->assertEquals(1, iterator_count($streamEvents));
 
         $testStream->streamEvents()->rewind();
         $streamEvents->rewind();

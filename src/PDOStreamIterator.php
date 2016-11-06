@@ -79,6 +79,10 @@ final class PDOStreamIterator implements Iterator
         ?int $count,
         bool $forward
     ) {
+        if (null === $count) {
+            $count = PHP_INT_MAX;
+        }
+
         $this->connection = $connection;
         $this->messageFactory = $messageFactory;
         $this->sql = $sql;
@@ -197,9 +201,9 @@ final class PDOStreamIterator implements Iterator
             : $this->batchSize;
 
         if ($this->forward) {
-            $query = $sql['from'] . " WHERE no >= $fromNumber ";
+            $query = $sql['from'] . " WHERE no >= $fromNumber";
         } else {
-            $query = $sql['from'] . " WHERE no <= $fromNumber ";
+            $query = $sql['from'] . " WHERE no <= $fromNumber";
         }
         if (isset($sql['where'])) {
             $query .= 'AND ';
