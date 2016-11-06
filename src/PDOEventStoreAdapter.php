@@ -201,7 +201,7 @@ EOT;
 
     public function load(
         StreamName $streamName,
-        int $fromNumber = 0,
+        int $fromNumber = 1,
         int $count = null
     ): ?Stream {
         $events = $this->loadEvents($streamName, $fromNumber, $count);
@@ -221,7 +221,7 @@ EOT;
 
     public function loadEvents(
         StreamName $streamName,
-        int $fromNumber = 0,
+        int $fromNumber = 1,
         int $count = null,
         MetadataMatcher $metadataMatcher = null
     ): Iterator {
@@ -244,7 +244,15 @@ EOT;
             $sql['where'][] = $this->jsonQuerier->metadata($key) . " $operator $value";
         }
 
-        return new PDOStreamIterator($this->connection, $this->messageFactory, $sql, $this->loadBatchSize, $fromNumber, $count);
+        return new PDOStreamIterator(
+            $this->connection,
+            $this->messageFactory,
+            $sql,
+            $this->loadBatchSize,
+            $fromNumber,
+            $count,
+            true
+        );
     }
 
     public function loadEventsReverse(
@@ -272,7 +280,15 @@ EOT;
             $sql['where'][] = $this->jsonQuerier->metadata($key) . " $operator $value";
         }
 
-        return new PDOStreamIterator($this->connection, $this->messageFactory, $sql, $this->loadBatchSize, $fromNumber, $count);
+        return new PDOStreamIterator(
+            $this->connection,
+            $this->messageFactory,
+            $sql,
+            $this->loadBatchSize,
+            $fromNumber,
+            $count,
+            false
+        );
     }
 
     /**
