@@ -65,13 +65,19 @@ final class PDOStreamIterator implements Iterator
      */
     private $count;
 
+    /**
+     * @var bool
+     */
+    private $forward;
+
     public function __construct(
         PDO $connection,
         MessageFactory $messageFactory,
         array $sql,
-        int $batchSize = 10000,
+        ?int $batchSize,
         int $fromNumber = 0,
-        int $count = null
+        ?int $count,
+        bool $forward
     ) {
         $this->connection = $connection;
         $this->messageFactory = $messageFactory;
@@ -79,6 +85,7 @@ final class PDOStreamIterator implements Iterator
         $this->batchSize = $batchSize;
         $this->fromNumber = $fromNumber;
         $this->count = $count;
+        $this->forward = $forward;
 
         $this->rewind();
     }
@@ -111,8 +118,9 @@ final class PDOStreamIterator implements Iterator
      */
     public function next()
     {
-        if ($this->count === $this->currentKey) {
+        if (($this->count - 1) === $this->currentKey) {
             $this->currentKey = -1;
+            $this->currentItem = false;
             return;
         }
 
@@ -122,7 +130,13 @@ final class PDOStreamIterator implements Iterator
             $this->currentKey++;
         } else {
             $this->batchPosition++;
-            $this->statement = $this->buildStatement($this->sql, $this->batchSize * $this->batchPosition);
+            if ($this->forward) {
+                $limit = $this->batchSize * $this->batchPosition + $this->fromNumber;
+
+            } else {
+                $limit = $this->fromNumber - $this->batchSize * $this->batchPosition;
+            }
+            $this->statement = $this->buildStatement($this->sql, $limit);
             $this->statement->execute();
             $this->statement->setFetchMode(PDO::FETCH_OBJ);
 
@@ -130,6 +144,8 @@ final class PDOStreamIterator implements Iterator
 
             if (false === $this->currentItem) {
                 $this->currentKey = -1;
+            } else {
+                $this->currentKey++;
             }
         }
     }
@@ -176,13 +192,21 @@ final class PDOStreamIterator implements Iterator
 
     private function buildStatement(array $sql, int $fromNumber): PDOStatement
     {
-        $query = $sql['from'] . " WHERE no >= $fromNumber ";
+        $limit = $this->count < ($this->batchSize * ($this->batchPosition + 1))
+            ? $this->count - ($this->batchSize * $this->batchPosition)
+            : $this->batchSize;
+
+        if ($this->forward) {
+            $query = $sql['from'] . " WHERE no >= $fromNumber ";
+        } else {
+            $query = $sql['from'] . " WHERE no <= $fromNumber ";
+        }
         if (isset($sql['where'])) {
             $query .= 'AND ';
             $query .= implode(' AND ', $sql['where']);
         }
         $query .= ' ' . $sql['orderBy'];
-        $query .= " LIMIT $this->batchSize;";
+        $query .= " LIMIT $limit;";
 
         return $this->connection->prepare($query);
     }

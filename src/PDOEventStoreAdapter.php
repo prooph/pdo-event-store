@@ -244,7 +244,15 @@ EOT;
             $sql['where'][] = $this->jsonQuerier->metadata($key) . " $operator $value";
         }
 
-        return new PDOStreamIterator($this->connection, $this->messageFactory, $sql, $this->loadBatchSize, $fromNumber, $count);
+        return new PDOStreamIterator(
+            $this->connection,
+            $this->messageFactory,
+            $sql,
+            $this->loadBatchSize,
+            $fromNumber,
+            $count,
+            true
+        );
     }
 
     public function loadEventsReverse(
@@ -272,7 +280,15 @@ EOT;
             $sql['where'][] = $this->jsonQuerier->metadata($key) . " $operator $value";
         }
 
-        return new PDOStreamIterator($this->connection, $this->messageFactory, $sql, $this->loadBatchSize, $fromNumber, $count);
+        return new PDOStreamIterator(
+            $this->connection,
+            $this->messageFactory,
+            $sql,
+            $this->loadBatchSize,
+            $fromNumber,
+            $count,
+            false
+        );
     }
 
     /**
