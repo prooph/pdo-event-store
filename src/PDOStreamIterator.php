@@ -136,7 +136,6 @@ final class PDOStreamIterator implements Iterator
             $this->batchPosition++;
             if ($this->forward) {
                 $limit = $this->batchSize * $this->batchPosition + $this->fromNumber;
-
             } else {
                 $limit = $this->fromNumber - $this->batchSize * $this->batchPosition;
             }
