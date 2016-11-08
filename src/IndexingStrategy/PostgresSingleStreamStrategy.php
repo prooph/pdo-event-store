@@ -31,9 +31,9 @@ CREATE TABLE $tableName (
     metadata JSONB NOT NULL,
     created_at CHAR(26) NOT NULL,
     PRIMARY KEY (no),
-    CONSTRAINT version_not_null CHECK ((metadata->>'_aggregate_version') IS NOT NULL),
-    CONSTRAINT version_aggregate_type CHECK ((metadata->>'_aggregate_type') IS NOT NULL),
-    CONSTRAINT version_aggregate_id CHECK ((metadata->>'_aggregate_id') IS NOT NULL),  
+    CONSTRAINT aggregate_version_not_null CHECK ((metadata->>'_aggregate_version') IS NOT NULL),
+    CONSTRAINT aggregate_type_not_null CHECK ((metadata->>'_aggregate_type') IS NOT NULL),
+    CONSTRAINT aggregate_id_not_null CHECK ((metadata->>'_aggregate_id') IS NOT NULL),
     UNIQUE (event_id)
 );
 EOT;

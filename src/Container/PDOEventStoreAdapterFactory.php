@@ -22,7 +22,6 @@ use Prooph\Common\Messaging\MessageConverter;
 use Prooph\Common\Messaging\MessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\Adapter\Exception\InvalidArgumentException;
-use Prooph\EventStore\Adapter\PDO\IndexingStrategy\MySQLAggregateStreamStrategy;
 use Prooph\EventStore\Adapter\PDO\JsonQuerier\MySQL;
 use Prooph\EventStore\Adapter\PDO\PDOEventStoreAdapter;
 use Prooph\EventStore\Adapter\PDO\TableNameGeneratorStrategy\Sha1;
