@@ -31,7 +31,7 @@ CREATE TABLE $tableName (
     metadata JSONB NOT NULL,
     created_at CHAR(26) NOT NULL,
     PRIMARY KEY (no),
-    CONSTRAINT version_not_null CHECK ((metadata->>'_version') IS NOT NULL),
+    CONSTRAINT version_not_null CHECK ((metadata->>'_aggregate_version') IS NOT NULL),
     CONSTRAINT version_aggregate_type CHECK ((metadata->>'_aggregate_type') IS NOT NULL),
     CONSTRAINT version_aggregate_id CHECK ((metadata->>'_aggregate_id') IS NOT NULL),  
     UNIQUE (event_id)
@@ -39,7 +39,7 @@ CREATE TABLE $tableName (
 EOT;
         return [
             $statement,
-            "CREATE UNIQUE INDEX  on $tableName ((metadata->>'_version'), (metadata->>'_aggregate_id'));"
+            "CREATE UNIQUE INDEX  on $tableName ((metadata->>'_aggregate_version'), (metadata->>'_aggregate_id'));"
         ];
     }
 

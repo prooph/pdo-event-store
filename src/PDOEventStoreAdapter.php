@@ -175,7 +175,7 @@ EOT;
             $data[] = $streamEvent->createdAt()->format('Y-m-d\TH:i:s.u');
 
             if ($this->indexingStrategy->oneStreamPerAggregate()) {
-                $data[] = $streamEvent->metadata()['_version'];
+                $data[] = $streamEvent->metadata()['_aggregate_version'];
             }
         }
 

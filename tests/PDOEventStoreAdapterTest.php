@@ -126,7 +126,7 @@ final class PDOEventStoreAdapterTest extends TestCase
         $this->assertEquals('ProophTest\EventStore\Mock\UserCreated', $event->messageName());
         $this->assertEquals('contact@prooph.de', $event->payload()['email']);
         $this->assertEquals(1, $event->version());
-        $this->assertEquals(['tag' => 'person', '_version' => 1], $event->metadata());
+        $this->assertEquals(['tag' => 'person', '_aggregate_version' => 1], $event->metadata());
     }
 
     /**

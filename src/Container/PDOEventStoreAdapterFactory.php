@@ -14,6 +14,7 @@ use Interop\Config\ConfigurationTrait;
 use Interop\Config\ProvidesDefaultOptions;
 use Interop\Config\RequiresConfig;
 use Interop\Config\RequiresConfigId;
+use Interop\Config\RequiresMandatoryOptions;
 use Interop\Container\ContainerInterface;
 use PDO;
 use Prooph\Common\Messaging\FQCNMessageFactory;
@@ -26,7 +27,11 @@ use Prooph\EventStore\Adapter\PDO\JsonQuerier\MySQL;
 use Prooph\EventStore\Adapter\PDO\PDOEventStoreAdapter;
 use Prooph\EventStore\Adapter\PDO\TableNameGeneratorStrategy\Sha1;
 
-final class PDOEventStoreAdapterFactory implements RequiresConfig, RequiresConfigId, ProvidesDefaultOptions
+final class PDOEventStoreAdapterFactory implements
+    ProvidesDefaultOptions,
+    RequiresConfig,
+    RequiresConfigId,
+    RequiresMandatoryOptions
 {
     use ConfigurationTrait;
 
@@ -141,13 +146,23 @@ final class PDOEventStoreAdapterFactory implements RequiresConfig, RequiresConfi
                         'dbname' => 'event_store',
                         'port' => 3306,
                     ],
-                    'json_querier' => MySQL::class,
-                    'indexing_strategy' => MySQLAggregateStreamStrategy::class,
                     'table_name_generator_strategy' => Sha1::class,
                     'load_batch_size' => 1000,
                     'event_streams_table' => 'event_streams',
-                ]
-            ]
+                ],
+            ],
+        ];
+    }
+
+    public function mandatoryOptions(): array
+    {
+        return [
+            'adapter' => [
+                'options' => [
+                    'json_querier',
+                    'indexing_strategy',
+                ],
+            ],
         ];
     }
 }

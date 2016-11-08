@@ -32,6 +32,8 @@ final class PDOEventStoreAdapterFactoryTest extends TestCase
     {
         $config['prooph']['event_store']['default']['adapter']['options'] = [
             'connection_service' => 'my_connection',
+            'json_querier' => MySQL::class,
+            'indexing_strategy' => IndexingStrategy\MySQLAggregateStreamStrategy::class,
         ];
 
         $connection = TestUtil::getConnection();
@@ -57,9 +59,10 @@ final class PDOEventStoreAdapterFactoryTest extends TestCase
      */
     public function it_creates_adapter_via_connection_options(): void
     {
-        $connection = TestUtil::getConnection();
         $config['prooph']['event_store']['custom']['adapter']['options'] = [
             'connection_options' => TestUtil::getConnectionParams(),
+            'json_querier' => MySQL::class,
+            'indexing_strategy' => IndexingStrategy\MySQLAggregateStreamStrategy::class,
         ];
 
         $container = $this->prophesize(ContainerInterface::class);
