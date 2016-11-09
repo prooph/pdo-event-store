@@ -211,7 +211,7 @@ final class PDOEventStoreAdapterTest extends TestCase
      * @test
      * @group pdo_mysql
      */
-    public function it_fails_to_write_with_duplicate_version_and_one_stream_per_aggregate_strategy_on_pdo_mysql(): void
+    public function it_fails_to_write_with_duplicate_version_and_single_stream_per_aggregate_strategy_on_pdo_mysql(): void
     {
         $this->expectException(ConcurrencyException::class);
 
@@ -227,8 +227,6 @@ final class PDOEventStoreAdapterTest extends TestCase
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_type', 'user');
 
         $stream = new Stream(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
-
-        $this->expectException(ConcurrencyException::class);
 
         $this->adapter->create($stream);
 
@@ -248,7 +246,7 @@ final class PDOEventStoreAdapterTest extends TestCase
      * @test
      * @group pdo_mysql
      */
-    public function it_fails_to_write_with_duplicate_version_and_mulitple_streams_per_aggregate_strategy_on_pdo_mysql(): void
+    public function it_fails_to_write_with_duplicate_version_and_aggregate_stream_strategy_on_pdo_mysql(): void
     {
         $this->expectException(ConcurrencyException::class);
 
@@ -274,8 +272,6 @@ final class PDOEventStoreAdapterTest extends TestCase
 
         $stream = new Stream(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
 
-        $this->expectException(ConcurrencyException::class);
-
         $this->adapter->create($stream);
 
         $streamEvent = UsernameChanged::with(
@@ -294,7 +290,7 @@ final class PDOEventStoreAdapterTest extends TestCase
      * @test
      * @group pdo_pgsql
      */
-    public function it_fails_to_write_with_duplicate_version_and_one_stream_per_aggregate_strategy_on_pdo_pgsql(): void
+    public function it_fails_to_write_with_duplicate_version_and_aggregate_stream_strategy_on_pdo_pgsql(): void
     {
         $this->expectException(ConcurrencyException::class);
 
@@ -310,8 +306,6 @@ final class PDOEventStoreAdapterTest extends TestCase
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_type', 'user');
 
         $stream = new Stream(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
-
-        $this->expectException(ConcurrencyException::class);
 
         $this->adapter->create($stream);
 
@@ -356,8 +350,6 @@ final class PDOEventStoreAdapterTest extends TestCase
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_type', 'user');
 
         $stream = new Stream(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
-
-        $this->expectException(ConcurrencyException::class);
 
         $this->adapter->create($stream);
 
