@@ -1,10 +1,10 @@
-# event-store-pdo-adapter
+# pdo-event-store
 
-[![Build Status](https://travis-ci.org/prooph/event-store-pdo-adapter.svg?branch=master)](https://travis-ci.org/prooph/event-store-pdo-adapter)
-[![Coverage Status](https://coveralls.io/repos/prooph/event-store-pdo-adapter/badge.svg?branch=master&service=github)](https://coveralls.io/github/prooph/event-store-pdo-adapter?branch=master)
+[![Build Status](https://travis-ci.org/prooph/pdo-event-store.svg?branch=master)](https://travis-ci.org/prooph/pdo-event-store)
+[![Coverage Status](https://coveralls.io/repos/prooph/pdo-event-store/badge.svg?branch=master&service=github)](https://coveralls.io/github/prooph/pdo-event-store?branch=master)
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/prooph/improoph)
 
-PDO Adapter for [Prooph EventStore](https://github.com/prooph/event-store)
+PDO EventStore implementation for [Prooph EventStore](https://github.com/prooph/event-store)
 
 Requirements
 ------------

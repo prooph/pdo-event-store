@@ -1,6 +1,6 @@
 {
-    "name": "prooph/event-store-pdo-adapter",
-    "description": "PDO Adapter for ProophEventStore",
+    "name": "prooph/pdo-event-store",
+    "description": "Prooph PDO EventStore",
     "homepage": "http://getprooph.org/",
     "license": "BSD-3-Clause",
     "authors": [
@@ -41,12 +41,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Prooph\\EventStore\\Adapter\\PDO\\": "src/"
+            "Prooph\\EventStore\\PDO\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "ProophTest\\EventStore\\Adapter\\PDO\\": "tests/",
+            "ProophTest\\EventStore\\PDO\\": "tests/",
             "ProophTest\\EventStore\\": "vendor/prooph/event-store/tests/"
         }
     },

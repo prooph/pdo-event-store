@@ -10,7 +10,7 @@
          syntaxCheck="false"
          bootstrap="vendor/autoload.php"
 >
-    <testsuite name="Prooph EventStore PDO Adapter Test Suite">
+    <testsuite name="Prooph PDO EventStore Test Suite">
         <directory>./tests/</directory>
     </testsuite>
 

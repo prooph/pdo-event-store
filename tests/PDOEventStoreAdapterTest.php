@@ -1,6 +1,6 @@
 <?php
 /**
- * This file is part of the prooph/event-store-pdo-adapter.
+ * This file is part of the prooph/pdo-event-store.
  * (c) 2016-2016 prooph software GmbH <contact@prooph.de>
  * (c) 2016-2016 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
@@ -8,21 +8,21 @@
  * file that was distributed with this source code.
  */
 
-namespace ProophTest\EventStore\Adapter\PDO;
+namespace ProophTest\EventStore\PDO;
 
 use PDO;
 use PHPUnit_Framework_TestCase as TestCase;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\Adapter\Exception\RuntimeException;
-use Prooph\EventStore\Adapter\PDO\IndexingStrategy\MySQLSingleStreamStrategy;
-use Prooph\EventStore\Adapter\PDO\IndexingStrategy\MySQLAggregateStreamStrategy;
-use Prooph\EventStore\Adapter\PDO\IndexingStrategy\PostgresAggregateStreamStrategy;
-use Prooph\EventStore\Adapter\PDO\IndexingStrategy\PostgresSingleStreamStrategy;
-use Prooph\EventStore\Adapter\PDO\JsonQuerier\MySQL;
-use Prooph\EventStore\Adapter\PDO\JsonQuerier\Postgres;
-use Prooph\EventStore\Adapter\PDO\PDOEventStoreAdapter;
-use Prooph\EventStore\Adapter\PDO\TableNameGeneratorStrategy\Sha1;
+use Prooph\EventStore\PDO\IndexingStrategy\MySQLSingleStreamStrategy;
+use Prooph\EventStore\PDO\IndexingStrategy\MySQLAggregateStreamStrategy;
+use Prooph\EventStore\PDO\IndexingStrategy\PostgresAggregateStreamStrategy;
+use Prooph\EventStore\PDO\IndexingStrategy\PostgresSingleStreamStrategy;
+use Prooph\EventStore\PDO\JsonQuerier\MySQL;
+use Prooph\EventStore\PDO\JsonQuerier\Postgres;
+use Prooph\EventStore\PDO\PDOEventStoreAdapter;
+use Prooph\EventStore\PDO\TableNameGeneratorStrategy\Sha1;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;

@@ -1,6 +1,6 @@
 <?php
 /**
- * This file is part of the prooph/event-store-pdo-adapter.
+ * This file is part of the prooph/pdo-event-store.
  * (c) 2016-2016 prooph software GmbH <contact@prooph.de>
  * (c) 2016-2016 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
@@ -8,7 +8,7 @@
  * file that was distributed with this source code.
  */
 
-namespace ProophTest\EventStore\Adapter\PDO\Container;
+namespace ProophTest\EventStore\PDO\Container;
 
 use Interop\Container\ContainerInterface;
 use PHPUnit_Framework_TestCase as TestCase;
@@ -16,12 +16,12 @@ use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\MessageConverter;
 use Prooph\Common\Messaging\MessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
-use Prooph\EventStore\Adapter\PDO\IndexingStrategy;
-use Prooph\EventStore\Adapter\PDO\JsonQuerier\MySQL;
-use Prooph\EventStore\Adapter\PDO\PDOEventStoreAdapter;
-use Prooph\EventStore\Adapter\PDO\Container\PDOEventStoreAdapterFactory;
-use Prooph\EventStore\Adapter\PDO\TableNameGeneratorStrategy;
-use ProophTest\EventStore\Adapter\PDO\TestUtil;
+use Prooph\EventStore\PDO\IndexingStrategy;
+use Prooph\EventStore\PDO\JsonQuerier\MySQL;
+use Prooph\EventStore\PDO\PDOEventStoreAdapter;
+use Prooph\EventStore\PDO\Container\PDOEventStoreAdapterFactory;
+use Prooph\EventStore\PDO\TableNameGeneratorStrategy;
+use ProophTest\EventStore\PDO\TestUtil;
 
 final class PDOEventStoreAdapterFactoryTest extends TestCase
 {

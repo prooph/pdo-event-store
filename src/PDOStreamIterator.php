@@ -1,6 +1,6 @@
 <?php
 /**
- * This file is part of the prooph/event-store-pdo-adapter.
+ * This file is part of the prooph/pdo-event-store.
  * (c) 2016-2016 prooph software GmbH <contact@prooph.de>
  * (c) 2016-2016 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
@@ -8,7 +8,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Prooph\EventStore\Adapter\PDO;
+namespace Prooph\EventStore\PDO;
 
 use Iterator;
 use PDO;
