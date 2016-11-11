@@ -51,7 +51,7 @@ final class PDOEventStoreAdapterFactoryTest extends TestCase
         $factory = new PDOEventStoreAdapterFactory();
         $adapter = $factory($container->reveal());
 
-        $this->assertInstanceOf(PDOEventStoreAdapter::class, $adapter);
+        self::assertInstanceOf(PDOEventStoreAdapter::class, $adapter);
     }
 
     /**
@@ -79,6 +79,6 @@ final class PDOEventStoreAdapterFactoryTest extends TestCase
         $eventStoreName = 'custom';
         $adapter = PDOEventStoreAdapterFactory::$eventStoreName($container->reveal());
 
-        $this->assertInstanceOf(PDOEventStoreAdapter::class, $adapter);
+        self::assertInstanceOf(PDOEventStoreAdapter::class, $adapter);
     }
 }
