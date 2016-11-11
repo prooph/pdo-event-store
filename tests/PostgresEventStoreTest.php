@@ -12,16 +12,17 @@ namespace ProophTest\EventStore\PDO;
 
 use PDO;
 use PHPUnit_Framework_TestCase as TestCase;
+use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
+use Prooph\EventStore\CanControlTransactionActionEventEmitterAware;
 use Prooph\EventStore\Exception\RuntimeException;
+use Prooph\EventStore\Exception\TransactionAlreadyStarted;
 use Prooph\EventStore\PDO\IndexingStrategy\MySQLSingleStreamStrategy;
 use Prooph\EventStore\PDO\IndexingStrategy\MySQLAggregateStreamStrategy;
 use Prooph\EventStore\PDO\IndexingStrategy\PostgresAggregateStreamStrategy;
 use Prooph\EventStore\PDO\IndexingStrategy\PostgresSingleStreamStrategy;
-use Prooph\EventStore\PDO\JsonQuerier\MySQL;
-use Prooph\EventStore\PDO\JsonQuerier\Postgres;
-use Prooph\EventStore\PDO\PDOEventStoreAdapter;
+use Prooph\EventStore\PDO\PostgresEventStore;
 use Prooph\EventStore\PDO\TableNameGeneratorStrategy\Sha1;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Metadata\MetadataMatcher;
@@ -32,12 +33,12 @@ use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
 use Ramsey\Uuid\Uuid;
 
-final class PDOEventStoreAdapterTest extends TestCase
+final class PostgresEventStoreTest extends TestCase
 {
     /**
-     * @var PDOEventStoreAdapter
+     * @var PostgresEventStore
      */
-    private $adapter;
+    private $eventStore;
 
     /**
      * @var PDO
@@ -72,21 +73,34 @@ final class PDOEventStoreAdapterTest extends TestCase
     {
         switch (TestUtil::getDatabaseVendor()) {
             case 'pdo_mysql':
-                $this->adapter = new PDOEventStoreAdapter(
+                $this->eventStore = new MySQLEventStore(
+                    new ProophActionEventEmitter([
+                        CanControlTransactionActionEventEmitterAware::EVENT_APPEND_TO,
+                        CanControlTransactionActionEventEmitterAware::EVENT_CREATE,
+                        CanControlTransactionActionEventEmitterAware::EVENT_LOAD,
+                        CanControlTransactionActionEventEmitterAware::EVENT_LOAD_REVERSE,
+                    ]),
                     new FQCNMessageFactory(),
                     new NoOpMessageConverter(),
                     $connection,
-                    new MySQL(),
                     new MySQLAggregateStreamStrategy(),
                     new Sha1()
                 );
                 break;
             case 'pdo_pgsql':
-                $this->adapter = new PDOEventStoreAdapter(
+                $this->eventStore = new PostgresEventStore(
+                    new ProophActionEventEmitter([
+                        CanControlTransactionActionEventEmitterAware::EVENT_APPEND_TO,
+                        CanControlTransactionActionEventEmitterAware::EVENT_CREATE,
+                        CanControlTransactionActionEventEmitterAware::EVENT_LOAD,
+                        CanControlTransactionActionEventEmitterAware::EVENT_LOAD_REVERSE,
+                        CanControlTransactionActionEventEmitterAware::EVENT_BEGIN_TRANSACTION,
+                        CanControlTransactionActionEventEmitterAware::EVENT_COMMIT,
+                        CanControlTransactionActionEventEmitterAware::EVENT_ROLLBACK,
+                    ]),
                     new FQCNMessageFactory(),
                     new NoOpMessageConverter(),
                     $connection,
-                    new Postgres(),
                     new PostgresAggregateStreamStrategy(),
                     new Sha1()
                 );
@@ -103,18 +117,19 @@ final class PDOEventStoreAdapterTest extends TestCase
     {
         $testStream = $this->getTestStream();
 
-        $this->adapter->beginTransaction();
+        $this->eventStore->beginTransaction();
 
-        $this->adapter->create($testStream);
+        $this->eventStore->create($testStream);
 
-        $this->adapter->commit();
+        $this->eventStore->commit();
 
         $metadataMatcher = new MetadataMatcher();
         $metadataMatcher->withMetadataMatch('tag', Operator::EQUALS(), 'person');
-        $streamEvents = $this->adapter->loadEvents(new StreamName('Prooph\Model\User'), 1, null, $metadataMatcher);
+        $stream = $this->eventStore->load(new StreamName('Prooph\Model\User'), 1, null, $metadataMatcher);
 
-        $this->assertEquals(1, iterator_count($streamEvents));
+        $this->assertCount(1, $stream->streamEvents());
 
+        $streamEvents = $stream->streamEvents();
         $testStream->streamEvents()->rewind();
         $streamEvents->rewind();
 
@@ -134,7 +149,7 @@ final class PDOEventStoreAdapterTest extends TestCase
      */
     public function it_appends_events_to_a_stream(): void
     {
-        $this->adapter->create($this->getTestStream());
+        $this->eventStore->create($this->getTestStream());
 
         $streamEvent = UsernameChanged::with(
             ['name' => 'John Doe'],
@@ -143,9 +158,9 @@ final class PDOEventStoreAdapterTest extends TestCase
 
         $streamEvent = $streamEvent->withAddedMetadata('tag', 'person');
 
-        $this->adapter->appendTo(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
+        $this->eventStore->appendTo(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
 
-        $stream = $this->adapter->load(new StreamName('Prooph\Model\User'));
+        $stream = $this->eventStore->load(new StreamName('Prooph\Model\User'));
 
         $this->assertEquals('Prooph\Model\User', $stream->streamName()->toString());
 
@@ -170,7 +185,7 @@ final class PDOEventStoreAdapterTest extends TestCase
      */
     public function it_loads_events_from_position(): void
     {
-        $this->adapter->create($this->getTestStream());
+        $this->eventStore->create($this->getTestStream());
 
         $streamEvent1 = UsernameChanged::with(
             ['name' => 'John Doe'],
@@ -186,9 +201,9 @@ final class PDOEventStoreAdapterTest extends TestCase
 
         $streamEvent2 = $streamEvent2->withAddedMetadata('tag', 'person');
 
-        $this->adapter->appendTo(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent1, $streamEvent2]));
+        $this->eventStore->appendTo(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent1, $streamEvent2]));
 
-        $stream = $this->adapter->load(new StreamName('Prooph\Model\User'), 2);
+        $stream = $this->eventStore->load(new StreamName('Prooph\Model\User'), 2);
 
         $this->assertEquals('Prooph\Model\User', $stream->streamName()->toString());
 
@@ -228,7 +243,7 @@ final class PDOEventStoreAdapterTest extends TestCase
 
         $stream = new Stream(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
 
-        $this->adapter->create($stream);
+        $this->eventStore->create($stream);
 
         $streamEvent = UsernameChanged::with(
             ['name' => 'John Doe'],
@@ -239,7 +254,7 @@ final class PDOEventStoreAdapterTest extends TestCase
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_id', $aggregateId);
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_type', 'user');
 
-        $this->adapter->appendTo(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
+        $this->eventStore->appendTo(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
     }
 
     /**
@@ -250,11 +265,16 @@ final class PDOEventStoreAdapterTest extends TestCase
     {
         $this->expectException(ConcurrencyException::class);
 
-        $this->adapter = new PDOEventStoreAdapter(
+        $this->eventStore = new MySQLEventStore(
+            new ProophActionEventEmitter([
+                CanControlTransactionActionEventEmitterAware::EVENT_APPEND_TO,
+                CanControlTransactionActionEventEmitterAware::EVENT_CREATE,
+                CanControlTransactionActionEventEmitterAware::EVENT_LOAD,
+                CanControlTransactionActionEventEmitterAware::EVENT_LOAD_REVERSE,
+            ]),
             new FQCNMessageFactory(),
             new NoOpMessageConverter(),
             $this->connection,
-            new MySQL(),
             new MySQLSingleStreamStrategy(),
             new Sha1()
         );
@@ -272,7 +292,7 @@ final class PDOEventStoreAdapterTest extends TestCase
 
         $stream = new Stream(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
 
-        $this->adapter->create($stream);
+        $this->eventStore->create($stream);
 
         $streamEvent = UsernameChanged::with(
             ['name' => 'John Doe'],
@@ -283,7 +303,7 @@ final class PDOEventStoreAdapterTest extends TestCase
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_id', $aggregateId);
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_type', 'user');
 
-        $this->adapter->appendTo(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
+        $this->eventStore->appendTo(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
     }
 
     /**
@@ -307,7 +327,7 @@ final class PDOEventStoreAdapterTest extends TestCase
 
         $stream = new Stream(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
 
-        $this->adapter->create($stream);
+        $this->eventStore->create($stream);
 
         $streamEvent = UsernameChanged::with(
             ['name' => 'John Doe'],
@@ -318,7 +338,7 @@ final class PDOEventStoreAdapterTest extends TestCase
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_id', $aggregateId);
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_type', 'user');
 
-        $this->adapter->appendTo(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
+        $this->eventStore->appendTo(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
     }
 
     /**
@@ -329,11 +349,19 @@ final class PDOEventStoreAdapterTest extends TestCase
     {
         $this->expectException(ConcurrencyException::class);
 
-        $this->adapter = new PDOEventStoreAdapter(
+        $this->eventStore = new PostgresEventStore(
+            new ProophActionEventEmitter([
+                CanControlTransactionActionEventEmitterAware::EVENT_APPEND_TO,
+                CanControlTransactionActionEventEmitterAware::EVENT_CREATE,
+                CanControlTransactionActionEventEmitterAware::EVENT_LOAD,
+                CanControlTransactionActionEventEmitterAware::EVENT_LOAD_REVERSE,
+                CanControlTransactionActionEventEmitterAware::EVENT_BEGIN_TRANSACTION,
+                CanControlTransactionActionEventEmitterAware::EVENT_COMMIT,
+                CanControlTransactionActionEventEmitterAware::EVENT_ROLLBACK,
+            ]),
             new FQCNMessageFactory(),
             new NoOpMessageConverter(),
             $this->connection,
-            new Postgres(),
             new PostgresSingleStreamStrategy(),
             new Sha1()
         );
@@ -351,7 +379,7 @@ final class PDOEventStoreAdapterTest extends TestCase
 
         $stream = new Stream(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
 
-        $this->adapter->create($stream);
+        $this->eventStore->create($stream);
 
         $streamEvent = UsernameChanged::with(
             ['name' => 'John Doe'],
@@ -362,7 +390,7 @@ final class PDOEventStoreAdapterTest extends TestCase
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_id', $aggregateId);
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_type', 'user');
 
-        $this->adapter->appendTo(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
+        $this->eventStore->appendTo(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
     }
 
     /**
@@ -372,7 +400,7 @@ final class PDOEventStoreAdapterTest extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $this->adapter->create(new Stream(new StreamName('Prooph\Model\User'), new \ArrayIterator([])));
+        $this->eventStore->create(new Stream(new StreamName('Prooph\Model\User'), new \ArrayIterator([])));
     }
 
     /**
@@ -382,17 +410,17 @@ final class PDOEventStoreAdapterTest extends TestCase
     {
         $testStream = $this->getTestStream();
 
-        $this->adapter->beginTransaction();
+        $this->eventStore->beginTransaction();
 
-        $this->adapter->create($testStream);
+        $this->eventStore->create($testStream);
 
-        $this->adapter->rollback();
+        $this->eventStore->rollback();
 
         $metadataMatcher = new MetadataMatcher();
         $metadataMatcher = $metadataMatcher->withMetadataMatch('tag', Operator::EQUALS(), 'person');
-        $result = $this->adapter->loadEvents(new StreamName('Prooph\Model\User'), 0, null, $metadataMatcher);
+        $stream = $this->eventStore->load(new StreamName('Prooph\Model\User'), 1, null, $metadataMatcher);
 
-        $this->assertFalse($result->valid());
+        $this->assertFalse($stream->streamEvents()->valid());
     }
 
     /**
@@ -400,11 +428,10 @@ final class PDOEventStoreAdapterTest extends TestCase
      */
     public function it_throws_exception_when_second_transaction_started(): void
     {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Transaction already started');
+        $this->expectException(TransactionAlreadyStarted::class);
 
-        $this->adapter->beginTransaction();
-        $this->adapter->beginTransaction();
+        $this->eventStore->beginTransaction();
+        $this->eventStore->beginTransaction();
     }
 
     /**
@@ -412,8 +439,8 @@ final class PDOEventStoreAdapterTest extends TestCase
      */
     public function it_can_commit_empty_transaction(): void
     {
-        $this->adapter->beginTransaction();
-        $this->adapter->commit();
+        $this->eventStore->beginTransaction();
+        $this->eventStore->commit();
     }
 
     /**
@@ -421,8 +448,8 @@ final class PDOEventStoreAdapterTest extends TestCase
      */
     public function it_can_rollback_empty_transaction(): void
     {
-        $this->adapter->beginTransaction();
-        $this->adapter->rollback();
+        $this->eventStore->beginTransaction();
+        $this->eventStore->rollback();
     }
 
     private function getTestStream(): Stream
