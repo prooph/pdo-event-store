@@ -17,7 +17,7 @@ use Prooph\Common\Event\ActionEvent;
 use Prooph\Common\Event\ActionEventEmitter;
 use Prooph\Common\Messaging\MessageConverter;
 use Prooph\Common\Messaging\MessageFactory;
-use Prooph\EventStore\AbstractCanControlTransactionActionEventEmitterAwareEventStore;
+use Prooph\EventStore\AbstractActionEventEmitterAwareEventStore;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Exception\StreamNotFound;
 use Prooph\EventStore\Metadata\MetadataMatcher;
@@ -26,7 +26,7 @@ use Prooph\EventStore\PDO\Exception\RuntimeException;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 
-final class PostgresEventStore extends AbstractCanControlTransactionActionEventEmitterAwareEventStore
+final class MySQLEventStore extends AbstractActionEventEmitterAwareEventStore
 {
     /**
      * @var MessageFactory
@@ -76,8 +76,8 @@ final class PostgresEventStore extends AbstractCanControlTransactionActionEventE
         int $loadBatchSize = 10000,
         string $eventStreamsTable = 'event_streams'
     ) {
-        if (! extension_loaded('pdo_pgsql')) {
-            throw ExtensionNotLoaded::with('pdo_pgsql');
+        if (! extension_loaded('pdo_mysql')) {
+            throw ExtensionNotLoaded::with('pdo_mysql');
         }
 
         $this->actionEventEmitter = $actionEventEmitter;
@@ -94,10 +94,26 @@ final class PostgresEventStore extends AbstractCanControlTransactionActionEventE
 
             $streamName = $stream->streamName();
 
-            $this->createSchemaFor($streamName);
-            $this->addStreamToStreamsTable($stream);
+            try {
+                $tableName = $this->tableNameGeneratorStrategy->__invoke($streamName);
+                $this->createSchemaFor($tableName);
+            } catch (RuntimeException $e) {
+                $this->connection->exec("DROP TABLE $tableName;");
+                throw $e;
+            }
 
-            $this->appendTo($streamName, $stream->streamEvents());
+            $this->connection->beginTransaction();
+
+            try {
+                $this->addStreamToStreamsTable($stream);
+                $this->appendTo($streamName, $stream->streamEvents());
+            } catch (\Throwable $e) {
+                $this->connection->rollBack();
+
+                throw $e;
+            }
+
+            $this->connection->commit();
 
             $event->setParam('result', true);
         });
@@ -141,9 +157,18 @@ final class PostgresEventStore extends AbstractCanControlTransactionActionEventE
 
             $sql = 'INSERT INTO ' . $tableName . ' (' . implode(', ', $columnNames) . ') VALUES ' . $allPlaces;
 
-            $statement = $this->connection->prepare($sql);
+            $this->connection->beginTransaction();
 
-            $result = $statement->execute($data);
+            try {
+                $statement = $this->connection->prepare($sql);
+                $result = $statement->execute($data);
+            } catch (\Throwable $e) {
+                $this->connection->rollBack();
+
+                throw $e;
+            }
+
+            $this->connection->commit();
 
             if (in_array($statement->errorCode(), $this->indexingStrategy->uniqueViolationErrorCodes(), true)) {
                 throw new ConcurrencyException();
@@ -233,24 +258,6 @@ final class PostgresEventStore extends AbstractCanControlTransactionActionEventE
                 )
             ));
         });
-
-        $this->actionEventEmitter->attachListener(self::EVENT_BEGIN_TRANSACTION, function (ActionEvent $event): void {
-            $this->connection->beginTransaction();
-
-            $event->setParam('inTransaction', true);
-        });
-
-        $this->actionEventEmitter->attachListener(self::EVENT_COMMIT, function (ActionEvent $event): void {
-            $this->connection->commit();
-
-            $event->setParam('inTransaction', false);
-        });
-
-        $this->actionEventEmitter->attachListener(self::EVENT_ROLLBACK, function (ActionEvent $event): void {
-            $this->connection->rollBack();
-
-            $event->setParam('inTransaction', false);
-        });
     }
 
     public function hasStream(StreamName $streamName): bool
@@ -324,9 +331,8 @@ EOT;
         }
     }
 
-    private function createSchemaFor(StreamName $streamName): void
+    private function createSchemaFor(string $tableName): void
     {
-        $tableName = $this->tableNameGeneratorStrategy->__invoke($streamName);
         $schema = $this->indexingStrategy->createSchema($tableName);
 
         foreach ($schema as $command) {
