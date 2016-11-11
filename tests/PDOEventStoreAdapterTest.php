@@ -113,7 +113,7 @@ final class PDOEventStoreAdapterTest extends TestCase
         $metadataMatcher->withMetadataMatch('tag', Operator::EQUALS(), 'person');
         $streamEvents = $this->adapter->loadEvents(new StreamName('Prooph\Model\User'), 1, null, $metadataMatcher);
 
-        $this->assertEquals(1, iterator_count($streamEvents));
+        self::assertEquals(1, iterator_count($streamEvents));
 
         $testStream->streamEvents()->rewind();
         $streamEvents->rewind();
@@ -121,12 +121,12 @@ final class PDOEventStoreAdapterTest extends TestCase
         $testEvent = $testStream->streamEvents()->current();
         $event = $streamEvents->current();
 
-        $this->assertEquals($testEvent->uuid()->toString(), $event->uuid()->toString());
-        $this->assertEquals($testEvent->createdAt()->format('Y-m-d\TH:i:s.uO'), $event->createdAt()->format('Y-m-d\TH:i:s.uO'));
-        $this->assertEquals('ProophTest\EventStore\Mock\UserCreated', $event->messageName());
-        $this->assertEquals('contact@prooph.de', $event->payload()['email']);
-        $this->assertEquals(1, $event->version());
-        $this->assertEquals(['tag' => 'person', '_aggregate_version' => 1], $event->metadata());
+        self::assertEquals($testEvent->uuid()->toString(), $event->uuid()->toString());
+        self::assertEquals($testEvent->createdAt()->format('Y-m-d\TH:i:s.uO'), $event->createdAt()->format('Y-m-d\TH:i:s.uO'));
+        self::assertEquals('ProophTest\EventStore\Mock\UserCreated', $event->messageName());
+        self::assertEquals('contact@prooph.de', $event->payload()['email']);
+        self::assertEquals(1, $event->version());
+        self::assertEquals(['tag' => 'person', '_aggregate_version' => 1], $event->metadata());
     }
 
     /**
@@ -147,7 +147,7 @@ final class PDOEventStoreAdapterTest extends TestCase
 
         $stream = $this->adapter->load(new StreamName('Prooph\Model\User'));
 
-        $this->assertEquals('Prooph\Model\User', $stream->streamName()->toString());
+        self::assertEquals('Prooph\Model\User', $stream->streamName()->toString());
 
         $count = 0;
         $lastEvent = null;
@@ -155,14 +155,14 @@ final class PDOEventStoreAdapterTest extends TestCase
             $count++;
             $lastEvent = $event;
         }
-        $this->assertEquals(2, $count);
-        $this->assertInstanceOf(UsernameChanged::class, $lastEvent);
+        self::assertEquals(2, $count);
+        self::assertInstanceOf(UsernameChanged::class, $lastEvent);
         $messageConverter = new NoOpMessageConverter();
 
         $streamEventData = $messageConverter->convertToArray($streamEvent);
         $lastEventData = $messageConverter->convertToArray($lastEvent);
 
-        $this->assertEquals($streamEventData, $lastEventData);
+        self::assertEquals($streamEventData, $lastEventData);
     }
 
     /**
@@ -190,21 +190,21 @@ final class PDOEventStoreAdapterTest extends TestCase
 
         $stream = $this->adapter->load(new StreamName('Prooph\Model\User'), 2);
 
-        $this->assertEquals('Prooph\Model\User', $stream->streamName()->toString());
+        self::assertEquals('Prooph\Model\User', $stream->streamName()->toString());
 
-        $this->assertTrue($stream->streamEvents()->valid());
+        self::assertTrue($stream->streamEvents()->valid());
         $event = $stream->streamEvents()->current();
-        $this->assertEquals(0, $stream->streamEvents()->key());
-        $this->assertEquals('John Doe', $event->payload()['name']);
+        self::assertEquals(0, $stream->streamEvents()->key());
+        self::assertEquals('John Doe', $event->payload()['name']);
 
         $stream->streamEvents()->next();
-        $this->assertTrue($stream->streamEvents()->valid());
+        self::assertTrue($stream->streamEvents()->valid());
         $event = $stream->streamEvents()->current();
-        $this->assertEquals(1, $stream->streamEvents()->key());
-        $this->assertEquals('Jane Doe', $event->payload()['name']);
+        self::assertEquals(1, $stream->streamEvents()->key());
+        self::assertEquals('Jane Doe', $event->payload()['name']);
 
         $stream->streamEvents()->next();
-        $this->assertFalse($stream->streamEvents()->valid());
+        self::assertFalse($stream->streamEvents()->valid());
     }
 
     /**
@@ -392,7 +392,7 @@ final class PDOEventStoreAdapterTest extends TestCase
         $metadataMatcher = $metadataMatcher->withMetadataMatch('tag', Operator::EQUALS(), 'person');
         $result = $this->adapter->loadEvents(new StreamName('Prooph\Model\User'), 0, null, $metadataMatcher);
 
-        $this->assertFalse($result->valid());
+        self::assertFalse($result->valid());
     }
 
     /**
