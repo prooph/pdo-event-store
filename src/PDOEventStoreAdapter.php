@@ -14,15 +14,14 @@ use Iterator;
 use PDO;
 use Prooph\Common\Messaging\MessageConverter;
 use Prooph\Common\Messaging\MessageFactory;
-use Prooph\EventStore\Adapter\Adapter;
-use Prooph\EventStore\Adapter\Exception\RuntimeException;
-use Prooph\EventStore\Adapter\Feature\CanHandleTransaction;
+use Prooph\EventStore\Exception\RuntimeException;
+use Prooph\EventStore\CanControlTransaction;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Metadata\MetadataMatcher;
-use Prooph\EventStore\Stream\Stream;
-use Prooph\EventStore\Stream\StreamName;
+use Prooph\EventStore\Stream;
+use Prooph\EventStore\StreamName;
 
-final class PDOEventStoreAdapter implements Adapter, CanHandleTransaction
+final class PDOEventStoreAdapter implements CanControlTransaction
 {
     /**
      * @var MessageFactory
@@ -364,5 +363,10 @@ EOT;
     {
         $tableName = $this->tableNameGeneratorStrategy->__invoke($streamName);
         return $this->indexingStrategy->createSchema($tableName);
+    }
+
+    public function isInTransaction(): bool
+    {
+        return $this->inTransaction;
     }
 }
