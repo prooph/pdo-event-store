@@ -181,10 +181,37 @@ final class PostgresEventStore extends AbstractCanControlTransactionActionEventE
                 $sql['where'][] = "metadata->>'$key' $operator $value";
             }
 
+            if (null === $count) {
+                $count = PHP_INT_MAX;
+            }
+
+            $limit = $count < $this->loadBatchSize
+                ? $count
+                : $this->loadBatchSize;
+
+            $query = $sql['from'] . " WHERE no >= $fromNumber";
+
+            if (isset($sql['where'])) {
+                $query .= 'AND ';
+                $query .= implode(' AND ', $sql['where']);
+            }
+            $query .= ' ' . $sql['orderBy'];
+            $query .= " LIMIT $limit;";
+
+            $statement = $this->connection->prepare($query);
+            $statement->setFetchMode(PDO::FETCH_OBJ);
+            $statement->execute();
+
+            if (0 === $statement->rowCount()) {
+                $event->setParam('stream', false);
+                return;
+            }
+
             $event->setParam('stream', new Stream(
                 $streamName,
                 new PDOStreamIterator(
                     $this->connection,
+                    $statement,
                     $this->messageFactory,
                     $sql,
                     $this->loadBatchSize,
