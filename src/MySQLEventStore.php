@@ -89,34 +89,45 @@ final class MySQLEventStore extends AbstractActionEventEmitterAwareEventStore
         $this->loadBatchSize = $loadBatchSize;
         $this->eventStreamsTable = $eventStreamsTable;
 
-        $actionEventEmitter->attachListener(self::EVENT_CREATE, function (ActionEvent $event): void {
-            $stream = $event->getParam('stream');
+        $actionEventEmitter->attachListener(
+            self::EVENT_CREATE,
+            function (ActionEvent $event) use ($actionEventEmitter): void {
+                $stream = $event->getParam('stream');
 
-            $streamName = $stream->streamName();
+                $streamName = $stream->streamName();
 
-            try {
-                $tableName = $this->tableNameGeneratorStrategy->__invoke($streamName);
-                $this->createSchemaFor($tableName);
-            } catch (RuntimeException $e) {
-                $this->connection->exec("DROP TABLE $tableName;");
-                throw $e;
+                try {
+                    $tableName = $this->tableNameGeneratorStrategy->__invoke($streamName);
+                    $this->createSchemaFor($tableName);
+                } catch (RuntimeException $e) {
+                    $this->connection->exec("DROP TABLE $tableName;");
+                    throw $e;
+                }
+
+                $this->connection->beginTransaction();
+
+                $actionEventEmitter->attachListener(
+                    self::EVENT_APPEND_TO,
+                    function (ActionEvent $event): void {
+                        $event->setParam('isInTransaction', true);
+                    },
+                    1000
+                );
+
+                try {
+                    $this->addStreamToStreamsTable($stream);
+                    $this->appendTo($streamName, $stream->streamEvents());
+                } catch (\Throwable $e) {
+                    $this->connection->rollBack();
+
+                    throw $e;
+                }
+
+                $this->connection->commit();
+
+                $event->setParam('result', true);
             }
-
-            $this->connection->beginTransaction();
-
-            try {
-                $this->addStreamToStreamsTable($stream);
-                $this->appendTo($streamName, $stream->streamEvents());
-            } catch (\Throwable $e) {
-                $this->connection->rollBack();
-
-                throw $e;
-            }
-
-            $this->connection->commit();
-
-            $event->setParam('result', true);
-        });
+        );
 
         $actionEventEmitter->attachListener(self::EVENT_APPEND_TO, function (ActionEvent $event): void {
             $streamName = $event->getParam('streamName');
@@ -150,6 +161,11 @@ final class MySQLEventStore extends AbstractActionEventEmitterAwareEventStore
                 }
             }
 
+            if (empty($data)) {
+                $event->setParam('result', true);
+                return;
+            }
+
             $tableName = $this->tableNameGeneratorStrategy->__invoke($streamName);
 
             $rowPlaces = '(' . implode(', ', array_fill(0, count($columnNames), '?')) . ')';
@@ -157,25 +173,35 @@ final class MySQLEventStore extends AbstractActionEventEmitterAwareEventStore
 
             $sql = 'INSERT INTO ' . $tableName . ' (' . implode(', ', $columnNames) . ') VALUES ' . $allPlaces;
 
-            $this->connection->beginTransaction();
+            $isInTransaction = $event->getParam('isInTransaction', false);
+
+            if (! $isInTransaction) {
+                $this->connection->beginTransaction();
+            }
 
             try {
                 $statement = $this->connection->prepare($sql);
                 $result = $statement->execute($data);
             } catch (\Throwable $e) {
-                $this->connection->rollBack();
+                if (! $isInTransaction) {
+                    $this->connection->rollBack();
+                }
 
-                throw $e;
+                $event->setParam('result', false);
+                return;
             }
 
-            $this->connection->commit();
+            if (! $isInTransaction) {
+                $this->connection->commit();
+            }
 
             if (in_array($statement->errorCode(), $this->indexingStrategy->uniqueViolationErrorCodes(), true)) {
                 throw new ConcurrencyException();
             }
 
             if (! $result) {
-                throw new RuntimeException('Error during appendTo: ' . implode('; ', $statement->errorInfo()));
+                $event->setParam('result', false);
+                return;
             }
 
             $event->setParam('result', true);
@@ -187,6 +213,10 @@ final class MySQLEventStore extends AbstractActionEventEmitterAwareEventStore
             $count = $event->getParam('count');
             $metadataMatcher = $event->getParam('metadataMatcher');
 
+            if (null === $count) {
+                $count = PHP_INT_MAX;
+            }
+
             if (null === $metadataMatcher) {
                 $metadataMatcher = new MetadataMatcher();
             }
@@ -197,17 +227,18 @@ final class MySQLEventStore extends AbstractActionEventEmitterAwareEventStore
                 'orderBy' => "ORDER BY no ASC",
             ];
 
-            foreach ($metadataMatcher->data() as $key => $v) {
-                $operator = $v['operator']->getValue();
-                $value = $v['value'];
-                if (is_string($value)) {
-                    $value = "'$value'";
+            foreach ($metadataMatcher->data() as $match) {
+                $field = $match['field'];
+                $operator = $match['operator']->getValue();
+                $value = $match['value'];
+                if (is_bool($value)) {
+                    $value = var_export($value, true);
+                    $sql['where'][] = "metadata->\"$.$field\" $operator $value";
+                } else if (is_string($value)) {
+                    $sql['where'][] = "metadata->\"$.$field\" $operator '$value'";
+                } else {
+                    $sql['where'][] = "metadata->\"$.$field\" $operator $value";
                 }
-                $sql['where'][] = "metadata->>'$key' $operator $value";
-            }
-
-            if (null === $count) {
-                $count = PHP_INT_MAX;
             }
 
             $limit = $count < $this->loadBatchSize
@@ -217,7 +248,7 @@ final class MySQLEventStore extends AbstractActionEventEmitterAwareEventStore
             $query = $sql['from'] . " WHERE no >= $fromNumber";
 
             if (isset($sql['where'])) {
-                $query .= 'AND ';
+                $query .= ' AND ';
                 $query .= implode(' AND ', $sql['where']);
             }
             $query .= ' ' . $sql['orderBy'];
@@ -253,6 +284,10 @@ final class MySQLEventStore extends AbstractActionEventEmitterAwareEventStore
             $count = $event->getParam('count');
             $metadataMatcher = $event->getParam('metadataMatcher');
 
+            if (null === $count) {
+                $count = PHP_INT_MAX;
+            }
+
             if (null === $metadataMatcher) {
                 $metadataMatcher = new MetadataMatcher();
             }
@@ -263,19 +298,50 @@ final class MySQLEventStore extends AbstractActionEventEmitterAwareEventStore
                 'orderBy' => "ORDER BY no DESC",
             ];
 
-            foreach ($metadataMatcher->data() as $key => $v) {
-                $operator = $v['operator']->getValue();
-                $value = $v['value'];
-                if (is_string($value)) {
-                    $value = "'$value'";
+            foreach ($metadataMatcher->data() as $match) {
+                $field = $match['field'];
+                $operator = $match['operator']->getValue();
+                $value = $match['value'];
+
+                if (is_bool($value)) {
+                    $value = var_export($value, true);
+                    $sql['where'][] = "metadata->\"$.$field\" $operator $value";
+                } else if (is_string($value)) {
+                    $sql['where'][] = "metadata->\"$.$field\" $operator '$value'";
+                } else {
+                    $sql['where'][] = "metadata->\"$.$field\" $operator $value";
                 }
-                $sql['where'][] = "metadata->>'$key' $operator $value";
+            }
+
+            $limit = $count < $this->loadBatchSize
+                ? $count
+                : $this->loadBatchSize;
+
+            $query = $sql['from'] . " WHERE no <= $fromNumber";
+
+            if (isset($sql['where'])) {
+                $query .= ' AND ';
+                $query .= implode(' AND ', $sql['where']);
+            }
+
+            $query .= ' ' . $sql['orderBy'];
+            $query .= " LIMIT $limit;";
+
+            $statement = $this->connection->prepare($query);
+
+            $statement->setFetchMode(PDO::FETCH_OBJ);
+            $statement->execute();
+
+            if (0 === $statement->rowCount()) {
+                $event->setParam('stream', false);
+                return;
             }
 
             $event->setParam('stream', new Stream(
                 $streamName,
                 new PDOStreamIterator(
                     $this->connection,
+                    $statement,
                     $this->messageFactory,
                     $sql,
                     $this->loadBatchSize,
@@ -317,18 +383,19 @@ EOT;
 
         $sql = <<<EOT
 SELECT metadata FROM $eventStreamsTable
-WHERE real_stream_name = :streamName'; 
+WHERE real_stream_name = :streamName; 
 EOT;
+
         $statement = $this->connection->prepare($sql);
         $result = $statement->execute(['streamName' => $streamName->toString()]);
 
         if (! $result) {
-            throw new RuntimeException('Error during fetchStreamMetadata: ' . implode('; ', $statement->errorInfo()));
+            throw StreamNotFound::with($streamName);
         }
 
         $stream = $statement->fetch(PDO::FETCH_OBJ);
 
-        if (null === $stream) {
+        if (! $stream) {
             throw StreamNotFound::with($streamName);
         }
 

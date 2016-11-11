@@ -182,14 +182,14 @@ final class PostgresEventStore extends AbstractCanControlTransactionActionEventE
                 'orderBy' => "ORDER BY no ASC",
             ];
 
-            foreach ($metadataMatcher->data() as $v) {
-                $key = $v['key'];
-                $operator = $v['operator']->getValue();
-                $value = $v['value'];
+            foreach ($metadataMatcher->data() as $match) {
+                $field = $match['field'];
+                $operator = $match['operator']->getValue();
+                $value = $match['value'];
                 if (is_bool($value)) {
                     $value = var_export($value, true);
                 }
-                $sql['where'][] = "metadata ->> '$key' $operator '$value'";
+                $sql['where'][] = "metadata ->> '$field' $operator '$value'";
             }
 
             $limit = $count < $this->loadBatchSize
@@ -249,16 +249,16 @@ final class PostgresEventStore extends AbstractCanControlTransactionActionEventE
                 'orderBy' => "ORDER BY no DESC",
             ];
 
-            foreach ($metadataMatcher->data() as $v) {
-                $key = $v['key'];
-                $operator = $v['operator']->getValue();
-                $value = $v['value'];
+            foreach ($metadataMatcher->data() as $match) {
+                $field = $match['field'];
+                $operator = $match['operator']->getValue();
+                $value = $match['value'];
 
                 if (is_bool($value)) {
                     $value = var_export($value, true);
                 }
 
-                $sql['where'][] = "metadata ->> '$key' $operator '$value''";
+                $sql['where'][] = "metadata ->> '$field' $operator '$value''";
             }
 
             $limit = $count < $this->loadBatchSize

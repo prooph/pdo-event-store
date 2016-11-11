@@ -204,8 +204,9 @@ final class PDOStreamIterator implements Iterator
         } else {
             $query = $sql['from'] . " WHERE no <= $fromNumber";
         }
+
         if (isset($sql['where'])) {
-            $query .= 'AND ';
+            $query .= ' AND ';
             $query .= implode(' AND ', $sql['where']);
         }
         $query .= ' ' . $sql['orderBy'];

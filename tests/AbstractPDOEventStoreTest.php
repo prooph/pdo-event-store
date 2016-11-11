@@ -245,12 +245,13 @@ abstract class AbstractPDOEventStoreTest extends TestCase
         $metadataMatcher = $metadataMatcher->withMetadataMatch('snapshot', Operator::EQUALS(), true);
 
         $stream = $this->eventStore->load($stream->streamName(), 1, null, $metadataMatcher);
+        $streamEvents = $stream->streamEvents();
 
-        $this->assertCount(1, $stream->streamEvents());
+        $this->assertCount(1, $streamEvents);
 
-        $stream->streamEvents()->rewind();
+        $streamEvents->rewind();
 
-        $this->assertTrue($stream->streamEvents()->current()->metadata()['snapshot']);
+        $this->assertTrue($streamEvents->current()->metadata()['snapshot']);
     }
 
     /**
@@ -564,7 +565,7 @@ abstract class AbstractPDOEventStoreTest extends TestCase
     /**
      * @test
      */
-    public function it_throws_stream_not_found_exception_if_adapter_loads_nothing(): void
+    public function it_throws_stream_not_found_exception_if_it_loads_nothing(): void
     {
         $this->expectException(StreamNotFound::class);
 
