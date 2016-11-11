@@ -242,7 +242,7 @@ EOT;
             if (is_string($value)) {
                 $value = "'$value'";
             }
-            $sql['where'][] = $this->jsonQuerier->metadata($key) . " $operator $value";
+            $sql['where'][] = $this->jsonQuerier->metadata((string) $key) . " $operator $value";
         }
 
         return new PDOStreamIterator(
