@@ -299,7 +299,7 @@ EOT;
         $result = $statement->execute(['streamName' => $streamName->toString()]);
 
         if (! $result) {
-            throw new RuntimeException('Error during fetchStreamMetadata: ' . implode('; ', $statement->errorInfo()));
+            return false;
         }
 
         $stream = $statement->fetch(PDO::FETCH_OBJ);

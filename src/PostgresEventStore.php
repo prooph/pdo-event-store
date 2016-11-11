@@ -134,6 +134,11 @@ final class PostgresEventStore extends AbstractCanControlTransactionActionEventE
                 }
             }
 
+            if (empty($data)) {
+                $event->setParam('result', true);
+                return;
+            }
+
             $tableName = $this->tableNameGeneratorStrategy->__invoke($streamName);
 
             $rowPlaces = '(' . implode(', ', array_fill(0, count($columnNames), '?')) . ')';
@@ -150,7 +155,8 @@ final class PostgresEventStore extends AbstractCanControlTransactionActionEventE
             }
 
             if (! $result) {
-                throw new RuntimeException('Error during appendTo: ' . implode('; ', $statement->errorInfo()));
+                $event->setParam('result', false);
+                return;
             }
 
             $event->setParam('result', true);
@@ -162,6 +168,10 @@ final class PostgresEventStore extends AbstractCanControlTransactionActionEventE
             $count = $event->getParam('count');
             $metadataMatcher = $event->getParam('metadataMatcher');
 
+            if (null === $count) {
+                $count = PHP_INT_MAX;
+            }
+
             if (null === $metadataMatcher) {
                 $metadataMatcher = new MetadataMatcher();
             }
@@ -172,17 +182,14 @@ final class PostgresEventStore extends AbstractCanControlTransactionActionEventE
                 'orderBy' => "ORDER BY no ASC",
             ];
 
-            foreach ($metadataMatcher->data() as $key => $v) {
+            foreach ($metadataMatcher->data() as $v) {
+                $key = $v['key'];
                 $operator = $v['operator']->getValue();
                 $value = $v['value'];
-                if (is_string($value)) {
-                    $value = "'$value'";
+                if (is_bool($value)) {
+                    $value = var_export($value, true);
                 }
-                $sql['where'][] = "metadata->>'$key' $operator $value";
-            }
-
-            if (null === $count) {
-                $count = PHP_INT_MAX;
+                $sql['where'][] = "metadata ->> '$key' $operator '$value'";
             }
 
             $limit = $count < $this->loadBatchSize
@@ -192,7 +199,7 @@ final class PostgresEventStore extends AbstractCanControlTransactionActionEventE
             $query = $sql['from'] . " WHERE no >= $fromNumber";
 
             if (isset($sql['where'])) {
-                $query .= 'AND ';
+                $query .= ' AND ';
                 $query .= implode(' AND ', $sql['where']);
             }
             $query .= ' ' . $sql['orderBy'];
@@ -228,6 +235,10 @@ final class PostgresEventStore extends AbstractCanControlTransactionActionEventE
             $count = $event->getParam('count');
             $metadataMatcher = $event->getParam('metadataMatcher');
 
+            if (null === $count) {
+                $count = PHP_INT_MAX;
+            }
+
             if (null === $metadataMatcher) {
                 $metadataMatcher = new MetadataMatcher();
             }
@@ -238,19 +249,47 @@ final class PostgresEventStore extends AbstractCanControlTransactionActionEventE
                 'orderBy' => "ORDER BY no DESC",
             ];
 
-            foreach ($metadataMatcher->data() as $key => $v) {
+            foreach ($metadataMatcher->data() as $v) {
+                $key = $v['key'];
                 $operator = $v['operator']->getValue();
                 $value = $v['value'];
-                if (is_string($value)) {
-                    $value = "'$value'";
+
+                if (is_bool($value)) {
+                    $value = var_export($value, true);
                 }
-                $sql['where'][] = "metadata->>'$key' $operator $value";
+
+                $sql['where'][] = "metadata ->> '$key' $operator '$value''";
+            }
+
+            $limit = $count < $this->loadBatchSize
+                ? $count
+                : $this->loadBatchSize;
+
+            $query = $sql['from'] . " WHERE no <= $fromNumber";
+
+            if (isset($sql['where'])) {
+                $query .= ' AND ';
+                $query .= implode(' AND ', $sql['where']);
+            }
+
+            $query .= ' ' . $sql['orderBy'];
+            $query .= " LIMIT $limit;";
+
+            $statement = $this->connection->prepare($query);
+
+            $statement->setFetchMode(PDO::FETCH_OBJ);
+            $statement->execute();
+
+            if (0 === $statement->rowCount()) {
+                $event->setParam('stream', false);
+                return;
             }
 
             $event->setParam('stream', new Stream(
                 $streamName,
                 new PDOStreamIterator(
                     $this->connection,
+                    $statement,
                     $this->messageFactory,
                     $sql,
                     $this->loadBatchSize,
@@ -292,7 +331,7 @@ EOT;
         $result = $statement->execute(['streamName' => $streamName->toString()]);
 
         if (! $result) {
-            throw new RuntimeException('Error during fetchStreamMetadata: ' . implode('; ', $statement->errorInfo()));
+            return false;
         }
 
         $stream = $statement->fetch(PDO::FETCH_OBJ);
@@ -310,18 +349,19 @@ EOT;
 
         $sql = <<<EOT
 SELECT metadata FROM $eventStreamsTable
-WHERE real_stream_name = :streamName'; 
+WHERE real_stream_name = :streamName; 
 EOT;
+
         $statement = $this->connection->prepare($sql);
         $result = $statement->execute(['streamName' => $streamName->toString()]);
 
         if (! $result) {
-            throw new RuntimeException('Error during fetchStreamMetadata: ' . implode('; ', $statement->errorInfo()));
+            throw StreamNotFound::with($streamName);
         }
 
         $stream = $statement->fetch(PDO::FETCH_OBJ);
 
-        if (null === $stream) {
+        if (! $stream) {
             throw StreamNotFound::with($streamName);
         }
 

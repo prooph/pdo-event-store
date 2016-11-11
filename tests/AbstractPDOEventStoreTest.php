@@ -22,6 +22,7 @@ use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception\StreamExistsAlready;
 use Prooph\EventStore\Exception\StreamNotFound;
 use Prooph\EventStore\Metadata\MetadataMatcher;
+use Prooph\EventStore\Metadata\Operator;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\TestDomainEvent;
@@ -48,7 +49,6 @@ abstract class AbstractPDOEventStoreTest extends TestCase
 
     /**
      * @test
-     * @group pp
      */
     public function it_appends_events_to_a_stream(): void
     {
@@ -74,6 +74,7 @@ abstract class AbstractPDOEventStoreTest extends TestCase
             $lastEvent = $event;
         }
         $this->assertEquals(2, $count);
+
         $this->assertInstanceOf(UsernameChanged::class, $lastEvent);
         $messageConverter = new NoOpMessageConverter();
 
@@ -153,16 +154,6 @@ abstract class AbstractPDOEventStoreTest extends TestCase
         $recordedEvents = [];
 
         $this->eventStore->getActionEventEmitter()->attachListener(
-            'create',
-            function (ActionEvent $event) use (&$recordedEvents): void {
-                foreach ($event->getParam('streamEvents', new \ArrayIterator()) as $recordedEvent) {
-                    $recordedEvents[] = $recordedEvent;
-                }
-            },
-            -1000
-        );
-
-        $this->eventStore->getActionEventEmitter()->attachListener(
             'appendTo',
             function (ActionEvent $event) use (&$recordedEvents): void {
                 foreach ($event->getParam('streamEvents', new \ArrayIterator()) as $recordedEvent) {
@@ -179,9 +170,9 @@ abstract class AbstractPDOEventStoreTest extends TestCase
             2
         );
 
-        $this->eventStore->appendTo(new StreamName('user'), new ArrayIterator([$secondStreamEvent]));
+        $this->eventStore->appendTo(new StreamName('Prooph\Model\User'), new ArrayIterator([$secondStreamEvent]));
 
-        $this->assertEquals(2, count($recordedEvents));
+        $this->assertCount(2, $recordedEvents);
     }
 
     /**
@@ -243,7 +234,7 @@ abstract class AbstractPDOEventStoreTest extends TestCase
 
         $streamEventWithMetadata = TestDomainEvent::with(
             ['name' => 'Alex', 'email' => 'contact@prooph.de'],
-            1
+            2
         );
 
         $streamEventWithMetadata = $streamEventWithMetadata->withAddedMetadata('snapshot', true);
@@ -552,6 +543,8 @@ abstract class AbstractPDOEventStoreTest extends TestCase
      */
     public function it_uses_stream_provided_by_listener_when_listener_stops_propagation(): void
     {
+        $this->expectException(StreamNotFound::class);
+
         $stream = $this->getTestStream();
 
         $this->eventStore->create($stream);
@@ -559,15 +552,13 @@ abstract class AbstractPDOEventStoreTest extends TestCase
         $this->eventStore->getActionEventEmitter()->attachListener(
             'load',
             function (ActionEvent $event): void {
-                $event->setParam('stream', new Stream(new StreamName('user'), new ArrayIterator()));
+                $event->setParam('stream', new Stream(new StreamName('stream'), new ArrayIterator()));
                 $event->stopPropagation(true);
             },
             1000
         );
 
-        $emptyStream = $this->eventStore->load($stream->streamName());
-
-        $this->assertCount(0, $emptyStream->streamEvents());
+        $this->eventStore->load($stream->streamName());
     }
 
     /**
@@ -585,14 +576,11 @@ abstract class AbstractPDOEventStoreTest extends TestCase
     /**
      * @test
      */
-    public function it_returns_null_when_asked_for_unknown_stream_metadata(): void
+    public function it_throws_exception_when_asked_for_unknown_stream_metadata(): void
     {
         $this->expectException(StreamNotFound::class);
 
-        $streamName = $this->prophesize(StreamName::class);
-        $streamName->toString()->willReturn('unknown')->shouldBeCalled();
-
-        $this->eventStore->fetchStreamMetadata($streamName->reveal());
+        $this->eventStore->fetchStreamMetadata(new StreamName('unknown'));
     }
 
     /**
@@ -600,23 +588,11 @@ abstract class AbstractPDOEventStoreTest extends TestCase
      */
     public function it_returns_metadata_when_asked_for_stream_metadata(): void
     {
-        $streamName = $this->prophesize(StreamName::class);
-        $streamName->toString()->willReturn('test')->shouldBeCalled();
-        $streamName = $streamName->reveal();
+        $stream = new Stream(new StreamName('Prooph\Model\User'), new ArrayIterator(), ['foo' => 'bar']);
 
-        $stream = $this->prophesize(Stream::class);
-        $stream->streamName()->willReturn($streamName);
-        $stream->metadata()->willReturn(['foo' => 'bar'])->shouldBeCalled();
-        $stream->streamEvents()->willReturn(new \ArrayIterator());
+        $this->eventStore->create($stream);
 
-        $this->eventStore->create($stream->reveal());
-
-        $this->assertEquals(
-            [
-                'foo' => 'bar'
-            ],
-            $this->eventStore->fetchStreamMetadata($streamName)
-        );
+        $this->assertEquals(['foo' => 'bar'], $this->eventStore->fetchStreamMetadata($stream->streamName()));
     }
 
     /**
@@ -631,16 +607,9 @@ abstract class AbstractPDOEventStoreTest extends TestCase
         $event = $event->withAddedMetadata('int3', 6);
         $event = $event->withAddedMetadata('int4', 7);
 
-        $streamName = $this->prophesize(StreamName::class);
-        $streamName->toString()->willReturn('test')->shouldBeCalled();
-        $streamName = $streamName->reveal();
+        $stream = new Stream(new StreamName('Prooph\Model\User'), new ArrayIterator([$event]));
 
-        $stream = $this->prophesize(Stream::class);
-        $stream->streamName()->willReturn($streamName);
-        $stream->metadata()->willReturn([])->shouldBeCalled();
-        $stream->streamEvents()->willReturn(new \ArrayIterator([$event]));
-
-        $this->eventStore->create($stream->reveal());
+        $this->eventStore->create($stream);
 
         $metadataMatcher = new MetadataMatcher();
         $metadataMatcher = $metadataMatcher->withMetadataMatch('foo', Operator::EQUALS(), 'bar');
@@ -650,7 +619,7 @@ abstract class AbstractPDOEventStoreTest extends TestCase
         $metadataMatcher = $metadataMatcher->withMetadataMatch('int3', Operator::LOWER_THAN(), 7);
         $metadataMatcher = $metadataMatcher->withMetadataMatch('int4', Operator::LOWER_THAN_EQUALS(), 7);
 
-        $stream = $this->eventStore->load($streamName, 1, null, $metadataMatcher);
+        $stream = $this->eventStore->load($stream->streamName(), 1, null, $metadataMatcher);
 
         $this->assertCount(1, $stream->streamEvents());
     }
@@ -662,15 +631,21 @@ abstract class AbstractPDOEventStoreTest extends TestCase
     {
         $this->expectException(StreamNotFound::class);
 
-        $streamName = $this->prophesize(StreamName::class);
-        $streamName->toString()->willReturn('test');
+        $event = UserCreated::with(['name' => 'Alex'], 1);
 
-        $this->eventStore->appendTo($streamName->reveal(), new \ArrayIterator());
+        $this->eventStore->appendTo(new StreamName('unknown'), new ArrayIterator([$event]));
     }
 
     /**
      * @test
-     * @group by
+     */
+    public function it_appends_empty_stream(): void
+    {
+        $this->eventStore->appendTo(new StreamName('something'), new ArrayIterator());
+    }
+
+    /**
+     * @test
      */
     public function it_throws_exception_when_trying_to_load_non_existing_stream(): void
     {
@@ -691,16 +666,6 @@ abstract class AbstractPDOEventStoreTest extends TestCase
 
         $streamEvent = $streamEvent->withAddedMetadata('tag', 'person');
 
-        return new Stream(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
-    }
-
-    /**
-     * @test
-     */
-    public function it_throws_exception_when_empty_stream_created(): void
-    {
-        $this->expectException(RuntimeException::class);
-
-        $this->eventStore->create(new Stream(new StreamName('Prooph\Model\User'), new \ArrayIterator([])));
+        return new Stream(new StreamName('Prooph\Model\User'), new ArrayIterator([$streamEvent]));
     }
 }
