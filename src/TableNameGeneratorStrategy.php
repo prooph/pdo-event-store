@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Prooph\EventStore\PDO;
 
-use Prooph\EventStore\Stream\StreamName;
+use Prooph\EventStore\StreamName;
 
 interface TableNameGeneratorStrategy
 {

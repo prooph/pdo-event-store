@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Prooph\EventStore\PDO\TableNameGeneratorStrategy;
 
 use Prooph\EventStore\PDO\TableNameGeneratorStrategy;
-use Prooph\EventStore\Stream\StreamName;
+use Prooph\EventStore\StreamName;
 
 final class Sha1 implements TableNameGeneratorStrategy
 {
