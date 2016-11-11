@@ -47,6 +47,6 @@ EOT;
      */
     public function uniqueViolationErrorCodes(): array
     {
-        return ["23000"];
+        return ['23000'];
     }
 }
