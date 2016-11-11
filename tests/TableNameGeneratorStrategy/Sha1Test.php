@@ -26,7 +26,7 @@ final class Sha1Test extends TestCase
      */
     public function it_should_sha1_stream_name(): void
     {
-        self::assertSame(
+        $this->assertSame(
             '_df4e1fe47cf415fe345ca7dd7f5419c60c83d6ce',
             (new Sha1())->__invoke(new StreamName('stream-name'))
         );

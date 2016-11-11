@@ -26,7 +26,7 @@ final class PostgresTest extends TestCase
     public function it_should_select_data_from_metadata()
     {
         $sut = new Postgres();
-        self::assertSame('metadata->>\'metadata_data\'', $sut->metadata('metadata_data'));
+        $this->assertSame('metadata->>\'metadata_data\'', $sut->metadata('metadata_data'));
     }
 
     /**
@@ -35,6 +35,6 @@ final class PostgresTest extends TestCase
     public function it_should_select_data_from_payload()
     {
         $sut = new Postgres();
-        self::assertSame('payload->>\'payload_data\'', $sut->payload('payload_data'));
+        $this->assertSame('payload->>\'payload_data\'', $sut->payload('payload_data'));
     }
 }
