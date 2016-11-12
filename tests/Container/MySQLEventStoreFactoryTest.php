@@ -27,7 +27,7 @@ final class MySQLEventStoreFactoryTest extends TestCase
      */
     public function it_creates_adapter_via_connection_service(): void
     {
-        $config['prooph']['event_store']['default']['adapter']['options'] = [
+        $config['prooph']['event_store']['default'] = [
             'connection_service' => 'my_connection',
             'indexing_strategy' => IndexingStrategy\MySQLAggregateStreamStrategy::class,
         ];
@@ -54,7 +54,7 @@ final class MySQLEventStoreFactoryTest extends TestCase
      */
     public function it_creates_adapter_via_connection_options(): void
     {
-        $config['prooph']['event_store']['custom']['adapter']['options'] = [
+        $config['prooph']['event_store']['custom'] = [
             'connection_options' => TestUtil::getConnectionParams(),
             'indexing_strategy' => IndexingStrategy\MySQLAggregateStreamStrategy::class,
         ];

@@ -40,23 +40,19 @@ final class MySQLEventStoreFactory extends AbstractEventStoreFactory
     public function defaultOptions(): array
     {
         return [
-            'adapter' => [
-                'options' => [
-                    'connection_options' => [
-                        'driver' => 'pdo_mysql',
-                        'user' => 'root',
-                        'password' => '',
-                        'host' => '127.0.0.1',
-                        'dbname' => 'event_store',
-                        'port' => 3306,
-                    ],
-                    'table_name_generator_strategy' => Sha1::class,
-                    'load_batch_size' => 1000,
-                    'event_streams_table' => 'event_streams',
-                    'message_converter' => NoOpMessageConverter::class,
-                    'message_factory' => FQCNMessageFactory::class,
-                ],
+            'connection_options' => [
+                'driver' => 'pdo_mysql',
+                'user' => 'root',
+                'password' => '',
+                'host' => '127.0.0.1',
+                'dbname' => 'event_store',
+                'port' => 3306,
             ],
+            'table_name_generator_strategy' => Sha1::class,
+            'load_batch_size' => 1000,
+            'event_streams_table' => 'event_streams',
+            'message_converter' => NoOpMessageConverter::class,
+            'message_factory' => FQCNMessageFactory::class,
         ];
     }
 }

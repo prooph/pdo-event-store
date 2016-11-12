@@ -83,7 +83,7 @@ abstract class AbstractEventStoreFactory implements
     public function __invoke(ContainerInterface $container): EventStore
     {
         $config = $container->get('config');
-        $config = $this->options($config, $this->configId)['adapter']['options'];
+        $config = $this->options($config, $this->configId);
 
         if (isset($config['connection_service'])) {
             $connection = $container->get($config['connection_service']);
@@ -125,11 +125,7 @@ abstract class AbstractEventStoreFactory implements
     public function mandatoryOptions(): array
     {
         return [
-            'adapter' => [
-                'options' => [
-                    'indexing_strategy',
-                ],
-            ],
+            'indexing_strategy',
         ];
     }
 }
