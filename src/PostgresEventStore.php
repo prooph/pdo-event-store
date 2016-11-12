@@ -130,6 +130,10 @@ final class PostgresEventStore extends AbstractCanControlTransactionActionEventE
                 $data[] = $streamEvent->createdAt()->format('Y-m-d\TH:i:s.u');
 
                 if ($this->indexingStrategy->oneStreamPerAggregate()) {
+                    if (! isset($streamEvent->metadata()['_aggregate_version'])) {
+                        throw new RuntimeException('_aggregate_version is missing in metadata');
+                    }
+
                     $data[] = $streamEvent->metadata()['_aggregate_version'];
                 }
             }
