@@ -628,6 +628,20 @@ abstract class AbstractPDOEventStoreTest extends TestCase
     /**
      * @test
      */
+    public function it_can_check_for_stream_existence(): void
+    {
+        $streamName = new StreamName('Prooph\Model\User');
+
+        $this->assertFalse($this->eventStore->hasStream($streamName));
+
+        $this->eventStore->create($this->getTestStream());
+
+        $this->assertTrue($this->eventStore->hasStream($streamName));
+    }
+
+    /**
+     * @test
+     */
     public function it_throws_exception_when_trying_to_append_on_non_existing_stream(): void
     {
         $this->expectException(StreamNotFound::class);

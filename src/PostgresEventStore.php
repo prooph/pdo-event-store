@@ -324,10 +324,11 @@ final class PostgresEventStore extends AbstractCanControlTransactionActionEventE
         $eventStreamsTable = $this->eventStreamsTable;
 
         $sql = <<<EOT
-SELECT metadata FROM $eventStreamsTable
-WHERE real_stream_name = :streamName'; 
+SELECT stream_name FROM $eventStreamsTable
+WHERE real_stream_name = :streamName;
 EOT;
         $statement = $this->connection->prepare($sql);
+
         $result = $statement->execute(['streamName' => $streamName->toString()]);
 
         if (! $result) {
@@ -336,8 +337,8 @@ EOT;
 
         $stream = $statement->fetch(PDO::FETCH_OBJ);
 
-        if (null === $stream) {
-            throw StreamNotFound::with($streamName);
+        if (false === $stream) {
+            return false;
         }
 
         return true;
