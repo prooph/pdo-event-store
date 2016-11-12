@@ -234,7 +234,7 @@ final class MySQLEventStore extends AbstractActionEventEmitterAwareEventStore
                 if (is_bool($value)) {
                     $value = var_export($value, true);
                     $sql['where'][] = "metadata->\"$.$field\" $operator $value";
-                } else if (is_string($value)) {
+                } elseif (is_string($value)) {
                     $sql['where'][] = "metadata->\"$.$field\" $operator '$value'";
                 } else {
                     $sql['where'][] = "metadata->\"$.$field\" $operator $value";
@@ -306,7 +306,7 @@ final class MySQLEventStore extends AbstractActionEventEmitterAwareEventStore
                 if (is_bool($value)) {
                     $value = var_export($value, true);
                     $sql['where'][] = "metadata->\"$.$field\" $operator $value";
-                } else if (is_string($value)) {
+                } elseif (is_string($value)) {
                     $sql['where'][] = "metadata->\"$.$field\" $operator '$value'";
                 } else {
                     $sql['where'][] = "metadata->\"$.$field\" $operator $value";

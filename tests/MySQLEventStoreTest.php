@@ -14,7 +14,7 @@ use PDO;
 use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
-use Prooph\EventStore\CanControlTransactionActionEventEmitterAware;
+use Prooph\EventStore\ActionEventEmitterAware;
 use Prooph\EventStore\PDO\IndexingStrategy\MySQLSingleStreamStrategy;
 use Prooph\EventStore\PDO\IndexingStrategy\MySQLAggregateStreamStrategy;
 use Prooph\EventStore\PDO\MySQLEventStore;
@@ -52,10 +52,10 @@ final class MySQLEventStoreTest extends AbstractPDOEventStoreTest
     {
         return new MySQLEventStore(
             new ProophActionEventEmitter([
-                CanControlTransactionActionEventEmitterAware::EVENT_APPEND_TO,
-                CanControlTransactionActionEventEmitterAware::EVENT_CREATE,
-                CanControlTransactionActionEventEmitterAware::EVENT_LOAD,
-                CanControlTransactionActionEventEmitterAware::EVENT_LOAD_REVERSE,
+                ActionEventEmitterAware::EVENT_APPEND_TO,
+                ActionEventEmitterAware::EVENT_CREATE,
+                ActionEventEmitterAware::EVENT_LOAD,
+                ActionEventEmitterAware::EVENT_LOAD_REVERSE,
             ]),
             new FQCNMessageFactory(),
             new NoOpMessageConverter(),
@@ -108,10 +108,10 @@ final class MySQLEventStoreTest extends AbstractPDOEventStoreTest
 
         $this->eventStore = new MySQLEventStore(
             new ProophActionEventEmitter([
-                CanControlTransactionActionEventEmitterAware::EVENT_APPEND_TO,
-                CanControlTransactionActionEventEmitterAware::EVENT_CREATE,
-                CanControlTransactionActionEventEmitterAware::EVENT_LOAD,
-                CanControlTransactionActionEventEmitterAware::EVENT_LOAD_REVERSE,
+                ActionEventEmitterAware::EVENT_APPEND_TO,
+                ActionEventEmitterAware::EVENT_CREATE,
+                ActionEventEmitterAware::EVENT_LOAD,
+                ActionEventEmitterAware::EVENT_LOAD_REVERSE,
             ]),
             new FQCNMessageFactory(),
             new NoOpMessageConverter(),
