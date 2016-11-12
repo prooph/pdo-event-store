@@ -22,7 +22,6 @@ matrix:
     - php: 7.1
       env:
         - DEPENDENCIES=""
-        - EXECUTE_CS_CHECK=true
         - TEST_COVERAGE=true
         - DRIVER="pdo_mysql"
         - DB=maria_db_10
@@ -38,7 +37,6 @@ matrix:
     - php: 7.1
       env:
         - DEPENDENCIES=""
-        - EXECUTE_CS_CHECK=true
         - TEST_COVERAGE=true
         - DRIVER="pdo_mysql"
         - DB=maria_db_10.1
