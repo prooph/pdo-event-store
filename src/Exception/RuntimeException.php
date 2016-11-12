@@ -10,19 +10,10 @@
 
 declare(strict_types=1);
 
-namespace Prooph\EventStore\PDO\JsonQuerier;
+namespace Prooph\EventStore\PDO\Exception;
 
-use Prooph\EventStore\PDO\JsonQuerier;
+use Prooph\EventStore\Exception\RuntimeException as EventStoreRuntimeException;
 
-final class MySQL implements JsonQuerier
+class RuntimeException extends EventStoreRuntimeException implements PDOEventStoreException
 {
-    public function metadata(string $field): string
-    {
-        return "metadata->\"$.$field\"";
-    }
-
-    public function payload(string $field): string
-    {
-        return "payload->\"$.$field\"";
-    }
 }

@@ -1,31 +1,54 @@
 language: php
 
-sudo: required
-
-addons:
-  postgresql: '9.4'
+sudo: false
 
 matrix:
   fast_finish: true
   include:
     - php: 7.1
+      sudo: true
       env:
         - DEPENDENCIES=""
         - EXECUTE_CS_CHECK=true
         - TEST_COVERAGE=true
         - DRIVER="pdo_mysql"
+        - DB=mysql_5.7
     - php: 7.1
+      sudo: true
       env:
         - DEPENDENCIES="lowest"
         - DRIVER="pdo_mysql"
+        - DB=mysql_5.7
     - php: 7.1
       env:
         - DEPENDENCIES=""
         - DRIVER="pdo_pgsql"
+        - DB=postgres_9.4
+      addons:
+        postgresql: '9.4'
     - php: 7.1
       env:
         - DEPENDENCIES="lowest"
         - DRIVER="pdo_pgsql"
+        - DB=postgres_9.4
+      addons:
+        postgresql: '9.4'
+    - php: 7.1
+      dist: trusty
+      env:
+        - DEPENDENCIES=""
+        - DRIVER="pdo_pgsql"
+        - DB=postgres_9.5
+      addons:
+        postgresql: '9.5'
+    - php: 7.1
+      dist: trusty
+      env:
+        - DEPENDENCIES="lowest"
+        - DRIVER="pdo_pgsql"
+        - DB=postgres_9.5
+      addons:
+        postgresql: '9.5'
 
 cache:
   directories:
@@ -33,7 +56,7 @@ cache:
     - $HOME/.local
 
 before_script:
-  - if [[ $DRIVER == 'pdo_mysql' ]]; then bash .travis.install-mysql-5.7.sh; fi
+  - if [[ $DB == 'mysql_5.7' ]]; then bash .travis.install-mysql-5.7.sh; fi
   - if [[ $DRIVER == 'pdo_mysql' ]]; then mysql -e 'create database event_store_tests;'; fi
   - if [[ $DRIVER == 'pdo_pgsql' ]]; then psql -c 'create database event_store_tests;' -U postgres; fi
   - composer self-update

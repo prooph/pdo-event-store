@@ -19,15 +19,11 @@ use Interop\Config\RequiresConfigId;
 use Interop\Config\RequiresMandatoryOptions;
 use Interop\Container\ContainerInterface;
 use PDO;
-use Prooph\Common\Messaging\FQCNMessageFactory;
-use Prooph\Common\Messaging\MessageConverter;
-use Prooph\Common\Messaging\MessageFactory;
-use Prooph\Common\Messaging\NoOpMessageConverter;
+use Prooph\Common\Event\ActionEventEmitter;
+use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception\InvalidArgumentException;
-use Prooph\EventStore\PDO\PDOEventStoreAdapter;
-use Prooph\EventStore\PDO\TableNameGeneratorStrategy\Sha1;
 
-final class PDOEventStoreAdapterFactory implements
+abstract class AbstractEventStoreFactory implements
     ProvidesDefaultOptions,
     RequiresConfig,
     RequiresConfigId,
@@ -62,13 +58,14 @@ final class PDOEventStoreAdapterFactory implements
      * <code>
      * <?php
      * return [
-     *     PDOEventStoreAdapter::class => [PDOEventStoreAdapterFactory::class, 'service_name'],
+     *     MySQLEventStore::class => [MySQLEventStoreFactory::class, 'service_name'],
+     *     PostgresEventStore::class => [PostgresEventStoreFactory::class, 'service_name'],
      * ];
      * </code>
      *
      * @throws InvalidArgumentException
      */
-    public static function __callStatic(string $name, array $arguments): PDOEventStoreAdapter
+    public static function __callStatic(string $name, array $arguments): EventStore
     {
         if (! isset($arguments[0]) || ! $arguments[0] instanceof ContainerInterface) {
             throw new InvalidArgumentException(
@@ -83,10 +80,10 @@ final class PDOEventStoreAdapterFactory implements
         $this->configId = $configId;
     }
 
-    public function __invoke(ContainerInterface $container): PDOEventStoreAdapter
+    public function __invoke(ContainerInterface $container): EventStore
     {
         $config = $container->get('config');
-        $config = $this->options($config, $this->configId)['adapter']['options'];
+        $config = $this->options($config, $this->configId);
 
         if (isset($config['connection_service'])) {
             $connection = $container->get($config['connection_service']);
@@ -102,67 +99,33 @@ final class PDOEventStoreAdapterFactory implements
             $connection = new PDO($dsn, $user, $password);
         }
 
-        $messageFactory = $container->has(MessageFactory::class)
-            ? $container->get(MessageFactory::class)
-            : new FQCNMessageFactory();
+        $eventStoreClassName = $this->eventStoreClassName();
 
-        $messageConverter = $container->has(MessageConverter::class)
-            ? $container->get(MessageConverter::class)
-            : new NoOpMessageConverter();
-
-        $jsonQuerier = $container->get($config['json_querier']);
-
-        $indexingStrategy = $container->get($config['indexing_strategy']);
-
-        $tableNameGeneratorStrategy = $container->get($config['table_name_generator_strategy']);
-
-        return new PDOEventStoreAdapter(
-            $messageFactory,
-            $messageConverter,
+        return new $eventStoreClassName(
+            $this->createActionEventEmitter(),
+            $container->get($config['message_factory']),
+            $messageConverter = $container->get($config['message_converter']),
             $connection,
-            $jsonQuerier,
-            $indexingStrategy,
-            $tableNameGeneratorStrategy,
+            $container->get($config['indexing_strategy']),
+            $container->get($config['table_name_generator_strategy']),
             $config['load_batch_size'],
             $config['event_streams_table']
         );
     }
+
+    abstract protected function createActionEventEmitter(): ActionEventEmitter;
+
+    abstract protected function eventStoreClassName(): string;
 
     public function dimensions(): array
     {
         return ['prooph', 'event_store'];
     }
 
-    public function defaultOptions(): array
-    {
-        return [
-            'adapter' => [
-                'options' => [
-                    'connection_options' => [
-                        'driver' => 'pdo_mysql',
-                        'user' => 'root',
-                        'password' => '',
-                        'host' => '127.0.0.1',
-                        'dbname' => 'event_store',
-                        'port' => 3306,
-                    ],
-                    'table_name_generator_strategy' => Sha1::class,
-                    'load_batch_size' => 1000,
-                    'event_streams_table' => 'event_streams',
-                ],
-            ],
-        ];
-    }
-
     public function mandatoryOptions(): array
     {
         return [
-            'adapter' => [
-                'options' => [
-                    'json_querier',
-                    'indexing_strategy',
-                ],
-            ],
+            'indexing_strategy',
         ];
     }
 }

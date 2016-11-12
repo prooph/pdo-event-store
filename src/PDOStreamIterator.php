@@ -43,12 +43,12 @@ final class PDOStreamIterator implements Iterator
     /**
      * @var array|false
      */
-    private $currentItem;
+    private $currentItem = null;
 
     /**
      * @var int
      */
-    private $currentKey;
+    private $currentKey = -1;
 
     /**
      * @var int
@@ -74,18 +74,16 @@ final class PDOStreamIterator implements Iterator
 
     public function __construct(
         PDO $connection,
+        PDOStatement $statement,
         MessageFactory $messageFactory,
         array $sql,
         ?int $batchSize,
         int $fromNumber = 0,
-        ?int $count,
+        int $count,
         bool $forward
     ) {
-        if (null === $count) {
-            $count = PHP_INT_MAX;
-        }
-
         $this->connection = $connection;
+        $this->statement = $statement;
         $this->messageFactory = $messageFactory;
         $this->sql = $sql;
         $this->batchSize = $batchSize;
@@ -93,7 +91,7 @@ final class PDOStreamIterator implements Iterator
         $this->count = $count;
         $this->forward = $forward;
 
-        $this->rewind();
+        $this->next();
     }
 
     /**
@@ -206,8 +204,9 @@ final class PDOStreamIterator implements Iterator
         } else {
             $query = $sql['from'] . " WHERE no <= $fromNumber";
         }
+
         if (isset($sql['where'])) {
-            $query .= 'AND ';
+            $query .= ' AND ';
             $query .= implode(' AND ', $sql['where']);
         }
         $query .= ' ' . $sql['orderBy'];
