@@ -2,9 +2,6 @@ language: php
 
 sudo: required
 
-addons:
-  postgresql: '9.4'
-
 matrix:
   fast_finish: true
   include:
@@ -22,10 +19,50 @@ matrix:
       env:
         - DEPENDENCIES=""
         - DRIVER="pdo_pgsql"
+      addons:
+        postgresql: '9.2'
     - php: 7.1
       env:
         - DEPENDENCIES="lowest"
         - DRIVER="pdo_pgsql"
+      addons:
+        postgresql: '9.2'
+    - php: 7.1
+      env:
+        - DEPENDENCIES=""
+        - DRIVER="pdo_pgsql"
+      addons:
+        postgresql: '9.3'
+    - php: 7.1
+      env:
+        - DEPENDENCIES="lowest"
+        - DRIVER="pdo_pgsql"
+      addons:
+        postgresql: '9.3'
+    - php: 7.1
+      env:
+        - DEPENDENCIES=""
+        - DRIVER="pdo_pgsql"
+      addons:
+        postgresql: '9.4'
+    - php: 7.1
+      env:
+        - DEPENDENCIES="lowest"
+        - DRIVER="pdo_pgsql"
+      addons:
+        postgresql: '9.4'
+    - php: 7.1
+      env:
+        - DEPENDENCIES=""
+        - DRIVER="pdo_pgsql"
+      addons:
+        postgresql: '9.5'
+    - php: 7.1
+      env:
+        - DEPENDENCIES="lowest"
+        - DRIVER="pdo_pgsql"
+      addons:
+        postgresql: '9.5'
 
 cache:
   directories:
