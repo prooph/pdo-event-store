@@ -10,6 +10,7 @@
 
 namespace ProophTest\EventStore\PDO\Container;
 
+use Assert\InvalidArgumentException;
 use Interop\Container\ContainerInterface;
 use PHPUnit_Framework_TestCase as TestCase;
 use Prooph\Common\Messaging\FQCNMessageFactory;
@@ -71,5 +72,16 @@ final class MySQLEventStoreFactoryTest extends TestCase
         $adapter = MySQLEventStoreFactory::$eventStoreName($container->reveal());
 
         $this->assertInstanceOf(MySQLEventStore::class, $adapter);
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_invalid_container_given(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $eventStoreName = 'custom';
+        MySQLEventStoreFactory::$eventStoreName('invalid container');
     }
 }

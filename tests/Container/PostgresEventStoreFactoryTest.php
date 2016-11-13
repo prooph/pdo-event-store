@@ -14,6 +14,7 @@ use Interop\Container\ContainerInterface;
 use PHPUnit_Framework_TestCase as TestCase;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
+use Prooph\EventStore\Exception\InvalidArgumentException;
 use Prooph\EventStore\PDO\Container\PostgresEventStoreFactory;
 use Prooph\EventStore\PDO\IndexingStrategy;
 use Prooph\EventStore\PDO\PostgresEventStore;
@@ -71,5 +72,16 @@ final class PostgresEventStoreFactoryTest extends TestCase
         $adapter = PostgresEventStoreFactory::$eventStoreName($container->reveal());
 
         $this->assertInstanceOf(PostgresEventStore::class, $adapter);
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_invalid_container_given(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $eventStoreName = 'custom';
+        PostgresEventStoreFactory::$eventStoreName('invalid container');
     }
 }
