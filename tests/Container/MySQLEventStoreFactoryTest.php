@@ -10,11 +10,11 @@
 
 namespace ProophTest\EventStore\PDO\Container;
 
-use Assert\InvalidArgumentException;
 use Interop\Container\ContainerInterface;
 use PHPUnit_Framework_TestCase as TestCase;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
+use Prooph\EventStore\PDO\Exception\InvalidArgumentException;
 use Prooph\EventStore\PDO\IndexingStrategy;
 use Prooph\EventStore\PDO\MySQLEventStore;
 use Prooph\EventStore\PDO\Container\MySQLEventStoreFactory;

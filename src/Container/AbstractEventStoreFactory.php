@@ -21,7 +21,7 @@ use Interop\Container\ContainerInterface;
 use PDO;
 use Prooph\Common\Event\ActionEventEmitter;
 use Prooph\EventStore\EventStore;
-use Prooph\EventStore\Exception\InvalidArgumentException;
+use Prooph\EventStore\PDO\Exception\InvalidArgumentException;
 
 abstract class AbstractEventStoreFactory implements
     ProvidesDefaultOptions,
