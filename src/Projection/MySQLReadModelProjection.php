@@ -13,9 +13,10 @@ declare(strict_types=1);
 namespace Prooph\EventStore\PDO\Projection;
 
 use PDO;
-use Prooph\EventStore\PDO\PostgresEventStore;
+use Prooph\EventStore\PDO\MySQLEventStore;
+use Prooph\EventStore\Projection\ReadModelProjection;
 
-final class PostgresProjection extends AbstractPDOProjection
+final class MySQLReadModelProjection extends AbstractPDOReadModelProjection
 {
     use PDOQueryTrait;
 
@@ -25,17 +26,12 @@ final class PostgresProjection extends AbstractPDOProjection
     protected $projectionsTable;
 
     public function __construct(
-        PostgresEventStore $eventStore,
+        MySQLEventStore $eventStore,
         PDO $connection,
-        string $eventStreamsTable,
         string $projectionsTable,
         string $name,
-        bool $emitEnabled
+        ReadModelProjection $readModelProjection
     ) {
-        parent::__construct($eventStore, $connection, $eventStreamsTable, $projectionsTable, $name, $emitEnabled);
-
-        $this->connection = $connection;
-        $this->eventStreamsTable = $eventStreamsTable;
-        $this->projectionsTable = $projectionsTable;
+        parent::__construct($eventStore, $connection, $projectionsTable, $name, $readModelProjection);
     }
 }

@@ -14,12 +14,11 @@ namespace Prooph\EventStore\PDO\Projection;
 
 use PDO;
 use Prooph\EventStore\PDO\PostgresEventStore;
-use Prooph\EventStore\Projection\AbstractReadModelProjection;
 use Prooph\EventStore\Projection\ReadModelProjection;
 
-final class PostgresReadModelProjection extends AbstractReadModelProjection
+final class PostgresReadModelProjection extends AbstractPDOReadModelProjection
 {
-    use PostgresQueryTrait;
+    use PDOQueryTrait;
 
     /**
      * @var string
@@ -33,40 +32,6 @@ final class PostgresReadModelProjection extends AbstractReadModelProjection
         string $name,
         ReadModelProjection $readModelProjection
     ) {
-        parent::__construct($eventStore, $name, $readModelProjection);
-
-        $this->connection = $connection;
-        $this->projectionsTable = $projectionsTable;
-    }
-
-    protected function load(): void
-    {
-        $sql = <<<EOT
-SELECT position, state FROM $this->projectionsTable WHERE name = '$this->name' ORDER BY no DESC LIMIT 1;
-EOT;
-        $statement = $this->connection->prepare($sql);
-        $statement->execute();
-
-        $result = $statement->fetch(PDO::FETCH_OBJ);
-
-        if (! $result) {
-            return;
-        }
-
-        $this->position->merge(json_decode($result->position, true));
-        $this->state = json_decode($result->state, true);
-    }
-
-    protected function persist(): void
-    {
-        $sql = <<<EOT
-INSERT INTO $this->projectionsTable (name, position, state) VALUES (?, ?, ?); 
-EOT;
-        $statement = $this->connection->prepare($sql);
-        $statement->execute([
-                $this->name,
-                json_encode($this->position->streamPositions()),
-                json_encode($this->state)]
-        );
+        parent::__construct($eventStore, $connection, $projectionsTable, $name, $readModelProjection);
     }
 }

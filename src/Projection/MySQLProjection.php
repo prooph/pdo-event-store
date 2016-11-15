@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace Prooph\EventStore\PDO\Projection;
 
 use PDO;
-use Prooph\EventStore\PDO\PostgresEventStore;
+use Prooph\EventStore\PDO\MySQLEventStore;
 
-final class PostgresProjection extends AbstractPDOProjection
+final class MySQLProjection extends AbstractPDOProjection
 {
     use PDOQueryTrait;
 
@@ -25,7 +25,7 @@ final class PostgresProjection extends AbstractPDOProjection
     protected $projectionsTable;
 
     public function __construct(
-        PostgresEventStore $eventStore,
+        MySQLEventStore $eventStore,
         PDO $connection,
         string $eventStreamsTable,
         string $projectionsTable,

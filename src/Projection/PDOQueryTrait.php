@@ -18,7 +18,7 @@ use PDO;
 use Prooph\EventStore\Projection\Position;
 use Prooph\EventStore\Projection\Query;
 
-trait PostgresQueryTrait
+trait PDOQueryTrait
 {
     /**
      * @var PDO
