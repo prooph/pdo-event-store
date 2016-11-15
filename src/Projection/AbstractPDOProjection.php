@@ -13,8 +13,10 @@ declare(strict_types=1);
 namespace Prooph\EventStore\PDO\Projection;
 
 use PDO;
+use Prooph\EventStore\CanControlTransaction;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Projection\AbstractProjection;
+use Prooph\EventStore\StreamName;
 
 abstract class AbstractPDOProjection extends AbstractProjection
 {
@@ -73,7 +75,9 @@ EOT;
 
     protected function resetProjection(): void
     {
-        $this->connection->beginTransaction();
+        if ($this->eventStore instanceof CanControlTransaction) {
+            $this->eventStore->beginTransaction();
+        }
 
         $deleteProjectionSql = <<<EOT
 DELETE FROM $this->projectionsTable WHERE name = ?;
@@ -81,47 +85,10 @@ EOT;
         $statement = $this->connection->prepare($deleteProjectionSql);
         $statement->execute([$this->name]);
 
-        if ($this->emitEnabled) {
-            $deleteEventStreamTableEntrySql = <<<EOT
-DELETE FROM $this->eventStreamsTable WHERE real_stream_name = ?;
-EOT;
-            $statement = $this->connection->prepare($deleteEventStreamTableEntrySql);
-            $statement->execute([$this->name]);
+        $this->eventStore->delete(new StreamName($this->name));
 
-            $deleteEventStreamSql = <<<EOT
-DROP TABLE ?;
-EOT;
-            $statement = $this->connection->prepare($deleteEventStreamSql);
-            $statement->execute('_' . sha1($this->name)); // @todo: make EventStore::deleteStream() method??
+        if ($this->eventStore instanceof CanControlTransaction) {
+            $this->eventStore->beginTransaction();
         }
-
-        $this->connection->commit();
-    }
-
-    public function delete(bool $deleteEmittedEvents): void
-    {
-        $this->connection->beginTransaction();
-
-        $deleteProjectionSql = <<<EOT
-DELETE FROM $this->projectionsTable WHERE name = ?;
-EOT;
-        $statement = $this->connection->prepare($deleteProjectionSql);
-        $statement->execute([$this->name]);
-
-        if ($deleteEmittedEvents && $this->emitEnabled) {
-            $deleteEventStreamTableEntrySql = <<<EOT
-DELETE FROM $this->eventStreamsTable WHERE real_stream_name = ?;
-EOT;
-            $statement = $this->connection->prepare($deleteEventStreamTableEntrySql);
-            $statement->execute([$this->name]);
-
-            $deleteEventStreamSql = <<<EOT
-DROP TABLE ?;
-EOT;
-            $statement = $this->connection->prepare($deleteEventStreamSql);
-            $statement->execute('_' . sha1($this->name)); // @todo: make EventStore::deleteStream() method??
-        }
-
-        $this->connection->commit();
     }
 }

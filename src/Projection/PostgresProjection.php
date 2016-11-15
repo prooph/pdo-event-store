@@ -14,6 +14,7 @@ namespace Prooph\EventStore\PDO\Projection;
 
 use PDO;
 use Prooph\EventStore\PDO\PostgresEventStore;
+use Prooph\EventStore\StreamName;
 
 final class PostgresProjection extends AbstractPDOProjection
 {
@@ -23,6 +24,11 @@ final class PostgresProjection extends AbstractPDOProjection
      * @var string
      */
     protected $projectionsTable;
+
+    /**
+     * @var PostgresEventStore
+     */
+    protected $eventStore;
 
     public function __construct(
         PostgresEventStore $eventStore,
@@ -37,5 +43,22 @@ final class PostgresProjection extends AbstractPDOProjection
         $this->connection = $connection;
         $this->eventStreamsTable = $eventStreamsTable;
         $this->projectionsTable = $projectionsTable;
+    }
+
+    public function delete(bool $deleteEmittedEvents): void
+    {
+        $this->eventStore->beginTransaction();
+
+        $deleteProjectionSql = <<<EOT
+DELETE FROM $this->projectionsTable WHERE name = ?;
+EOT;
+        $statement = $this->connection->prepare($deleteProjectionSql);
+        $statement->execute([$this->name]);
+
+        if ($deleteEmittedEvents) {
+            $this->eventStore->delete(new StreamName($this->name));
+        }
+
+        $this->eventStore->commit();
     }
 }

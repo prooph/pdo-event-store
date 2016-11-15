@@ -29,6 +29,7 @@ final class PostgresEventStoreFactory extends AbstractEventStoreFactory
             CanControlTransactionActionEventEmitterAware::EVENT_CREATE,
             CanControlTransactionActionEventEmitterAware::EVENT_LOAD,
             CanControlTransactionActionEventEmitterAware::EVENT_LOAD_REVERSE,
+            CanControlTransactionActionEventEmitterAware::EVENT_DELETE,
             CanControlTransactionActionEventEmitterAware::EVENT_BEGIN_TRANSACTION,
             CanControlTransactionActionEventEmitterAware::EVENT_COMMIT,
             CanControlTransactionActionEventEmitterAware::EVENT_ROLLBACK,
