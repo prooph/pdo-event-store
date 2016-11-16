@@ -373,11 +373,12 @@ EOT;
             $statement = $this->connection->prepare($deleteEventStreamTableEntrySql);
             $statement->execute([$streamName->toString()]);
 
+            $encodedStreamName = $this->tableNameGeneratorStrategy->__invoke($streamName);
             $deleteEventStreamSql = <<<EOT
-DROP TABLE IF EXISTS ?;
+DROP TABLE IF EXISTS $encodedStreamName;
 EOT;
             $statement = $this->connection->prepare($deleteEventStreamSql);
-            $statement->execute($this->tableNameGeneratorStrategy->__invoke($streamName->toString()));
+            $statement->execute();
 
             if (! $isInTransaction) {
                 $this->connection->commit();

@@ -29,9 +29,17 @@ final class MySQLEventStoreReadModelProjection extends AbstractPDOReadModelProje
         MySQLEventStore $eventStore,
         PDO $connection,
         string $projectionsTable,
+        string $eventStreamsTable,
         string $name,
         ReadModelProjection $readModelProjection
     ) {
-        parent::__construct($eventStore, $connection, $projectionsTable, $name, $readModelProjection);
+        parent::__construct(
+            $eventStore,
+            $connection,
+            $projectionsTable,
+            $eventStreamsTable,
+            $name,
+            $readModelProjection
+        );
     }
 }
