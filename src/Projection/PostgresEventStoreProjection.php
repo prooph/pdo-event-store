@@ -21,11 +21,6 @@ final class PostgresEventStoreProjection extends AbstractPDOProjection
     use PDOQueryTrait;
 
     /**
-     * @var string
-     */
-    protected $projectionsTable;
-
-    /**
      * @var PostgresEventStore
      */
     protected $eventStore;
@@ -33,16 +28,12 @@ final class PostgresEventStoreProjection extends AbstractPDOProjection
     public function __construct(
         PostgresEventStore $eventStore,
         PDO $connection,
+        string $name,
         string $eventStreamsTable,
         string $projectionsTable,
-        string $name,
         bool $emitEnabled
     ) {
-        parent::__construct($eventStore, $connection, $eventStreamsTable, $projectionsTable, $name, $emitEnabled);
-
-        $this->connection = $connection;
-        $this->eventStreamsTable = $eventStreamsTable;
-        $this->projectionsTable = $projectionsTable;
+        parent::__construct($eventStore, $connection, $name, $eventStreamsTable, $projectionsTable, $emitEnabled);
     }
 
     public function delete(bool $deleteEmittedEvents): void

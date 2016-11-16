@@ -28,18 +28,18 @@ final class PostgresEventStoreReadModelProjection extends AbstractPDOReadModelPr
     public function __construct(
         PostgresEventStore $eventStore,
         PDO $connection,
-        string $projectionsTable,
-        string $eventStreamsTable,
         string $name,
-        ReadModelProjection $readModelProjection
+        ReadModelProjection $readModelProjection,
+        string $eventStreamsTable,
+        string $projectionsTable
     ) {
         parent::__construct(
             $eventStore,
             $connection,
-            $projectionsTable,
-            $eventStreamsTable,
             $name,
-            $readModelProjection
+            $readModelProjection,
+            $eventStreamsTable,
+            $projectionsTable
         );
     }
 }
