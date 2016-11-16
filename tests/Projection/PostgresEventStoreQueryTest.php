@@ -14,16 +14,11 @@ namespace ProophTest\EventStore\Projection;
 
 use ArrayIterator;
 use Prooph\Common\Messaging\Message;
-use Prooph\EventStore\Exception\InvalidArgumentException;
-use Prooph\EventStore\Exception\RuntimeException;
 use Prooph\EventStore\PDO\Projection\PostgresEventStoreQuery;
-use Prooph\EventStore\Projection\InMemoryEventStoreQuery;
-use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
 use ProophTest\EventStore\PDO\Projection\AbstractPostgresEventStoreProjectionTest;
-use ProophTest\EventStore\TestCase;
 
 /**
  * @group pdo_pgsql

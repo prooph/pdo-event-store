@@ -16,7 +16,6 @@ use ArrayIterator;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\Exception\RuntimeException;
 use Prooph\EventStore\PDO\Projection\PostgresEventStoreReadModelProjection;
-use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\ReadModelProjectionMock;
 use ProophTest\EventStore\Mock\UserCreated;

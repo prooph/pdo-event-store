@@ -17,13 +17,11 @@ use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\Exception\RuntimeException;
 use Prooph\EventStore\Exception\StreamNotFound;
 use Prooph\EventStore\PDO\Projection\PostgresEventStoreProjection;
-use Prooph\EventStore\Projection\InMemoryEventStoreProjection;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
 use ProophTest\EventStore\PDO\Projection\AbstractPostgresEventStoreProjectionTest;
-use ProophTest\EventStore\TestCase;
 
 /**
  * @group pdo_pgsql
