@@ -20,20 +20,6 @@ matrix:
         - DRIVER="pdo_mysql"
         - DB=mysql_5.7
     - php: 7.1
-      env:
-        - DEPENDENCIES=""
-        - DRIVER="pdo_pgsql"
-        - DB=postgres_9.4
-      addons:
-        postgresql: '9.4'
-    - php: 7.1
-      env:
-        - DEPENDENCIES="lowest"
-        - DRIVER="pdo_pgsql"
-        - DB=postgres_9.4
-      addons:
-        postgresql: '9.4'
-    - php: 7.1
       dist: trusty
       env:
         - DEPENDENCIES=""

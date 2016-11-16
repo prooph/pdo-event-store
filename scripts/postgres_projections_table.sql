@@ -4,5 +4,5 @@ CREATE TABLE projections (
   position JSONB,
   state JSONB,
   PRIMARY KEY (no),
-  INDEX name
+  UNIQUE (name)
 );

@@ -68,14 +68,23 @@ EOT;
     protected function persist(): void
     {
         $sql = <<<EOT
-INSERT INTO $this->projectionsTable (name, position, state) VALUES (?, ?, ?); 
+INSERT INTO $this->projectionsTable (name, position, state) 
+VALUES (?, ?, ?) 
+ON CONFLICT (name) 
+DO UPDATE SET position = ?, state = ?; 
 EOT;
+
+        $jsonEncodedPosition = json_encode($this->position->streamPositions());
+        $jsonEncodedState = json_encode($this->state);
+
         $statement = $this->connection->prepare($sql);
         $statement->execute([
             $this->name,
-            json_encode($this->position->streamPositions()),
-            json_encode($this->state)]
-        );
+            $jsonEncodedPosition,
+            $jsonEncodedState,
+            $jsonEncodedPosition,
+            $jsonEncodedState,
+        ]);
     }
 
     protected function resetProjection(): void
