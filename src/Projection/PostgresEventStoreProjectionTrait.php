@@ -83,7 +83,6 @@ EOT;
 UPDATE $this->projectionsTable SET position = ?, state = ?, locked = ? 
 WHERE name = ? 
 EOT;
-
         $statement = $this->connection->prepare($sql);
         $statement->execute([
             json_encode($this->position->streamPositions()),
