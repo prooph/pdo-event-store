@@ -48,7 +48,7 @@ EOT;
         $statement->execute();
 
         $row = $statement->fetch(PDO::FETCH_OBJ);
-//die;
+
         if (false === $row) {
             $sql = <<<EOT
 INSERT INTO $this->projectionsTable (name, position, state, locked) 
