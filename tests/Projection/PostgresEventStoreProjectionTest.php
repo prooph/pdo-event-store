@@ -81,19 +81,17 @@ class PostgresEventStoreProjectionTest extends AbstractPostgresEventStoreProject
             'projections',
             true
         );
-        try {
-            $projection
-        ->fromStream('user-123')
-        ->whenAny(
-            function (array $state, Message $event): array {
-                $this->linkTo('foo', $event);
-                return $state;
-            }
-        )
-        ->run();
-        } catch (\Throwable $e) {
-            die;
-        }
+
+        $projection
+            ->fromStream('user-123')
+            ->whenAny(
+                function (array $state, Message $event): array {
+                    $this->linkTo('foo', $event);
+                    return $state;
+                }
+            )
+            ->run();
+
         $streams = $this->eventStore->load(new StreamName('foo'));
         $events = $streams->streamEvents();
 
