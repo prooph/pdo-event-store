@@ -39,9 +39,9 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
         $projection = new MySQLEventStoreProjection(
             $this->eventStore,
             $this->connection,
+            'test_projection',
             'event_streams',
             'projections',
-            'test_projection',
             true
         );
 
@@ -75,9 +75,9 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
         $projection = new MySQLEventStoreProjection(
             $this->eventStore,
             $this->connection,
+            'test_projection',
             'event_streams',
             'projections',
-            'test_projection',
             true
         );
 
@@ -107,9 +107,9 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
         $projection = new MySQLEventStoreProjection(
             $this->eventStore,
             $this->connection,
+            'test_projection',
             'event_streams',
             'projections',
-            'test_projection',
             true
         );
 
@@ -145,9 +145,9 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
         $projection = new MySQLEventStoreProjection(
             $this->eventStore,
             $this->connection,
+            'test_projection',
             'event_streams',
             'projections',
-            'test_projection',
             true
         );
 
@@ -185,9 +185,9 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
         $projection = new MySQLEventStoreProjection(
             $this->eventStore,
             $this->connection,
+            'test_projection',
             'event_streams',
             'projections',
-            'test_projection',
             false
         );
 
@@ -209,9 +209,9 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
         $projection = new MySQLEventStoreProjection(
             $this->eventStore,
             $this->connection,
+            'test_projection',
             'event_streams',
             'projections',
-            'test_projection',
             false
         );
 

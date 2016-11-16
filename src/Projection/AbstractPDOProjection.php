@@ -25,14 +25,19 @@ abstract class AbstractPDOProjection extends AbstractProjection
     /**
      * @var string
      */
+    protected $eventStreamsTable;
+
+    /**
+     * @var string
+     */
     protected $projectionsTable;
 
     public function __construct(
         EventStore $eventStore,
         PDO $connection,
+        string $name,
         string $eventStreamsTable,
         string $projectionsTable,
-        string $name,
         bool $emitEnabled
     ) {
         parent::__construct($eventStore, $name, $emitEnabled);

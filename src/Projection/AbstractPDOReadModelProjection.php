@@ -24,26 +24,26 @@ abstract class AbstractPDOReadModelProjection extends AbstractReadModelProjectio
     /**
      * @var string
      */
-    protected $projectionsTable;
+    protected $eventStreamsTable;
 
     /**
      * @var string
      */
-    protected $eventStreamsTable;
+    protected $projectionsTable;
 
     public function __construct(
         EventStore $eventStore,
         PDO $connection,
-        string $projectionsTable,
-        string $eventStreamsTable,
         string $name,
-        ReadModelProjection $readModelProjection
+        ReadModelProjection $readModelProjection,
+        string $eventStreamsTable,
+        string $projectionsTable
     ) {
         parent::__construct($eventStore, $name, $readModelProjection);
 
         $this->connection = $connection;
-        $this->projectionsTable = $projectionsTable;
         $this->eventStreamsTable = $eventStreamsTable;
+        $this->projectionsTable = $projectionsTable;
     }
 
     protected function load(): void

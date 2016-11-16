@@ -38,10 +38,10 @@ class MySQLEventStoreReadModelProjectionTest extends AbstractMySQLEventStoreProj
         $projection = new MySQLEventStoreReadModelProjection(
             $this->eventStore,
             $this->connection,
-            'projections',
-            'event_streams',
             'test_projection',
-            $readModel
+            $readModel,
+            'event_streams',
+            'projections'
         );
 
         $projection
@@ -61,10 +61,10 @@ class MySQLEventStoreReadModelProjectionTest extends AbstractMySQLEventStoreProj
         $projection = new MySQLEventStoreReadModelProjection(
             $this->eventStore,
             $this->connection,
-            'projections',
-            'event_streams',
             'test_projection',
-            $readModel
+            $readModel,
+            'event_streams',
+            'projections'
         );
 
         $projection
@@ -96,10 +96,10 @@ class MySQLEventStoreReadModelProjectionTest extends AbstractMySQLEventStoreProj
         $projection = new MySQLEventStoreReadModelProjection(
             $this->eventStore,
             $this->connection,
-            'projections',
-            'event_streams',
             'test_projection',
-            $readModel
+            $readModel,
+            'event_streams',
+            'projections'
         );
 
         $projection
@@ -129,10 +129,10 @@ class MySQLEventStoreReadModelProjectionTest extends AbstractMySQLEventStoreProj
         $projection = new MySQLEventStoreReadModelProjection(
             $this->eventStore,
             $this->connection,
-            'projections',
-            'event_streams',
             'test_projection',
-            $readModel
+            $readModel,
+            'event_streams',
+            'projections'
         );
 
         $projection
@@ -161,10 +161,10 @@ class MySQLEventStoreReadModelProjectionTest extends AbstractMySQLEventStoreProj
         $projection = new MySQLEventStoreReadModelProjection(
             $this->eventStore,
             $this->connection,
-            'projections',
-            'event_streams',
             'test_projection',
-            $readModel
+            $readModel,
+            'event_streams',
+            'projections'
         );
         $projection->run();
     }
