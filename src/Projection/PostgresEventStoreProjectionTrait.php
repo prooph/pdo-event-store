@@ -66,7 +66,7 @@ EOT;
                 throw new RuntimeException('Another projection process is already running');
             }
             return;
-        } else if ($row->locked !== null) {
+        } elseif ($row->locked !== null) {
             throw new RuntimeException('Another projection process is already running');
         }
     }

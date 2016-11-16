@@ -81,8 +81,8 @@ class PostgresEventStoreProjectionTest extends AbstractPostgresEventStoreProject
             'projections',
             true
         );
-try {
-    $projection
+        try {
+            $projection
         ->fromStream('user-123')
         ->whenAny(
             function (array $state, Message $event): array {
@@ -91,9 +91,9 @@ try {
             }
         )
         ->run();
-} catch (\Throwable $e) {
-    die;
-}
+        } catch (\Throwable $e) {
+            die;
+        }
         $streams = $this->eventStore->load(new StreamName('foo'));
         $events = $streams->streamEvents();
 

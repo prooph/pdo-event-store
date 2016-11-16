@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace Prooph\EventStore\PDO\Projection;
 
 use PDO;
-use Prooph\EventStore\PDO\Exception\RuntimeException;
 use Prooph\EventStore\PDO\MySQLEventStore;
 use Prooph\EventStore\Projection\ReadModelProjection;
 
