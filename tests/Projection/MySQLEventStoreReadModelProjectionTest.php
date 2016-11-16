@@ -22,7 +22,7 @@ use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
 
 /**
- * @group pdo_pgsql
+ * @group pdo_mysql
  */
 class MySQLEventStoreReadModelProjectionTest extends AbstractMySQLEventStoreProjectionTest
 {
