@@ -16,7 +16,7 @@ use PDO;
 use Prooph\EventStore\PDO\MySQLEventStore;
 use Prooph\EventStore\Projection\ReadModelProjection;
 
-final class MySQLReadModelProjection extends AbstractPDOReadModelProjection
+final class MySQLEventStoreReadModelProjection extends AbstractPDOReadModelProjection
 {
     use PDOQueryTrait;
 

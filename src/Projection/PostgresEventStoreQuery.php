@@ -13,13 +13,13 @@ declare(strict_types=1);
 namespace Prooph\EventStore\PDO\Projection;
 
 use PDO;
-use Prooph\EventStore\PDO\MySQLEventStore;
+use Prooph\EventStore\PDO\PostgresEventStore;
 
-final class MySQLQuery extends AbstractPDOQuery
+final class PostgresEventStoreQuery extends AbstractPDOQuery
 {
     use PDOQueryTrait;
 
-    public function __construct(MySQLEventStore $eventStore, PDO $connection, string $eventStreamsTable)
+    public function __construct(PostgresEventStore $eventStore, PDO $connection, string $eventStreamsTable)
     {
         parent::__construct($eventStore, $connection, $eventStreamsTable);
     }

@@ -13,10 +13,11 @@ declare(strict_types=1);
 namespace Prooph\EventStore\PDO\Projection;
 
 use PDO;
-use Prooph\EventStore\PDO\PostgresEventStore;
-use Prooph\EventStore\StreamName;
+use Prooph\Common\Event\ActionEvent;
+use Prooph\EventStore\ActionEventEmitterAware;
+use Prooph\EventStore\PDO\MySQLEventStore;
 
-final class PostgresProjection extends AbstractPDOProjection
+final class MySQLEventStoreProjection extends AbstractPDOProjection
 {
     use PDOQueryTrait;
 
@@ -26,12 +27,12 @@ final class PostgresProjection extends AbstractPDOProjection
     protected $projectionsTable;
 
     /**
-     * @var PostgresEventStore
+     * @var MySQLEventStore
      */
     protected $eventStore;
 
     public function __construct(
-        PostgresEventStore $eventStore,
+        MySQLEventStore $eventStore,
         PDO $connection,
         string $eventStreamsTable,
         string $projectionsTable,
@@ -47,7 +48,15 @@ final class PostgresProjection extends AbstractPDOProjection
 
     public function delete(bool $deleteEmittedEvents): void
     {
-        $this->eventStore->beginTransaction();
+        $this->connection->beginTransaction();
+
+        $listener = $this->eventStore->getActionEventEmitter()->attachListener(
+            ActionEventEmitterAware::EVENT_APPEND_TO,
+            function (ActionEvent $event): void {
+                $event->setParam('isInTransaction', true);
+            },
+            1000
+        );
 
         $deleteProjectionSql = <<<EOT
 DELETE FROM $this->projectionsTable WHERE name = ?;
@@ -59,6 +68,8 @@ EOT;
             $this->eventStore->delete(new StreamName($this->name));
         }
 
-        $this->eventStore->commit();
+        $this->connection->commit();
+
+        $this->eventStore->getActionEventEmitter()->detachListener($listener);
     }
 }

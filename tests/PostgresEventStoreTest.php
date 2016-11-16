@@ -52,6 +52,12 @@ final class PostgresEventStoreTest extends AbstractPDOEventStoreTest
         $this->eventStore = $this->createEventStore($this->connection);
     }
 
+    protected function tearDown(): void
+    {
+        $this->connection->exec('DROP TABLE event_streams;');
+        $this->connection->exec('DROP TABLE _' . sha1('Prooph\Model\User'));
+    }
+
     protected function createEventStore(PDO $connection): PostgresEventStore
     {
         return new PostgresEventStore(

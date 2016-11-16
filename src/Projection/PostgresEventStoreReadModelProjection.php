@@ -16,7 +16,7 @@ use PDO;
 use Prooph\EventStore\PDO\PostgresEventStore;
 use Prooph\EventStore\Projection\ReadModelProjection;
 
-final class PostgresReadModelProjection extends AbstractPDOReadModelProjection
+final class PostgresEventStoreReadModelProjection extends AbstractPDOReadModelProjection
 {
     use PDOQueryTrait;
 
@@ -29,9 +29,17 @@ final class PostgresReadModelProjection extends AbstractPDOReadModelProjection
         PostgresEventStore $eventStore,
         PDO $connection,
         string $projectionsTable,
+        string $eventStreamsTable,
         string $name,
         ReadModelProjection $readModelProjection
     ) {
-        parent::__construct($eventStore, $connection, $projectionsTable, $name, $readModelProjection);
+        parent::__construct(
+            $eventStore,
+            $connection,
+            $projectionsTable,
+            $eventStreamsTable,
+            $name,
+            $readModelProjection
+        );
     }
 }
