@@ -13,11 +13,13 @@ declare(strict_types=1);
 namespace Prooph\EventStore\PDO\Projection;
 
 use PDO;
+use Prooph\EventStore\PDO\Exception\RuntimeException;
 use Prooph\EventStore\PDO\MySQLEventStore;
 use Prooph\EventStore\Projection\ReadModelProjection;
 
 final class MySQLEventStoreReadModelProjection extends AbstractPDOReadModelProjection
 {
+    use MySQLEventStoreProjectionTrait;
     use PDOQueryTrait;
 
     /**
@@ -41,27 +43,5 @@ final class MySQLEventStoreReadModelProjection extends AbstractPDOReadModelProje
             $eventStreamsTable,
             $projectionsTable
         );
-    }
-
-    protected function persist(): void
-    {
-        $sql = <<<EOT
-INSERT INTO $this->projectionsTable (name, position, state) 
-VALUES (?, ?, ?) 
-ON DUPLICATE KEY 
-UPDATE position = ?, state = ?; 
-EOT;
-
-        $jsonEncodedPosition = json_encode($this->position->streamPositions());
-        $jsonEncodedState = json_encode($this->state);
-
-        $statement = $this->connection->prepare($sql);
-        $statement->execute([
-            $this->name,
-            $jsonEncodedPosition,
-            $jsonEncodedState,
-            $jsonEncodedPosition,
-            $jsonEncodedState,
-        ]);
     }
 }

@@ -15,6 +15,7 @@ namespace Prooph\EventStore\PDO\Projection;
 use PDO;
 use Prooph\EventStore\CanControlTransaction;
 use Prooph\EventStore\EventStore;
+use Prooph\EventStore\PDO\Exception\RuntimeException;
 use Prooph\EventStore\Projection\AbstractProjection;
 use Prooph\EventStore\StreamName;
 
@@ -45,6 +46,24 @@ abstract class AbstractPDOProjection extends AbstractProjection
         $this->connection = $connection;
         $this->eventStreamsTable = $eventStreamsTable;
         $this->projectionsTable = $projectionsTable;
+    }
+
+    /**
+     * @throws RuntimeException
+     */
+    abstract protected function acquireLock(): void;
+
+    abstract protected function releaseLock(): void;
+
+    public function run(): void
+    {
+        $this->acquireLock();
+
+        try {
+            parent::run();
+        } finally {
+            $this->releaseLock();
+        }
     }
 
     protected function load(): void

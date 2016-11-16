@@ -20,6 +20,7 @@ use Prooph\EventStore\StreamName;
 
 final class MySQLEventStoreProjection extends AbstractPDOProjection
 {
+    use MySQLEventStoreProjectionTrait;
     use PDOQueryTrait;
 
     /**
@@ -63,27 +64,5 @@ EOT;
         $this->connection->commit();
 
         $this->eventStore->getActionEventEmitter()->detachListener($listener);
-    }
-
-    protected function persist(): void
-    {
-        $sql = <<<EOT
-INSERT INTO $this->projectionsTable (name, position, state) 
-VALUES (?, ?, ?) 
-ON DUPLICATE KEY 
-UPDATE position = ?, state = ?; 
-EOT;
-
-        $jsonEncodedPosition = json_encode($this->position->streamPositions());
-        $jsonEncodedState = json_encode($this->state);
-
-        $statement = $this->connection->prepare($sql);
-        $statement->execute([
-            $this->name,
-            $jsonEncodedPosition,
-            $jsonEncodedState,
-            $jsonEncodedPosition,
-            $jsonEncodedState,
-        ]);
     }
 }
