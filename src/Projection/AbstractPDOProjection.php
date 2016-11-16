@@ -88,7 +88,7 @@ EOT;
         $this->eventStore->delete(new StreamName($this->name));
 
         if ($this->eventStore instanceof CanControlTransaction) {
-            $this->eventStore->beginTransaction();
+            $this->eventStore->commit();
         }
     }
 }

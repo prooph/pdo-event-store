@@ -79,7 +79,7 @@ EOT;
     public function fromAll(): Query
     {
         $sql = <<<EOT
-SELECT real_stream_name FROM $this->eventStreamsTable;
+SELECT real_stream_name FROM $this->eventStreamsTable WHERE real_stream_name NOT LIKE '$%';
 EOT;
         $statement = $this->connection->prepare($sql);
         $statement->execute();

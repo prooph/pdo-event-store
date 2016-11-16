@@ -71,9 +71,17 @@ abstract class AbstractPostgresEventStoreProjectionTest extends TestCase
 
     protected function tearDown(): void
     {
+        // these tables are used in every test case
         $this->connection->exec('DROP TABLE event_streams;');
         $this->connection->exec('DROP TABLE projections;');
         $this->connection->exec('DROP TABLE _' . sha1('user-123'));
+        // these tables are used only in some test cases
+        $this->connection->exec('DROP TABLE IF EXISTS _' . sha1('user-234'));
+        $this->connection->exec('DROP TABLE IF EXISTS _' . sha1('$iternal-345'));
+        $this->connection->exec('DROP TABLE IF EXISTS _' . sha1('guest-345'));
+        $this->connection->exec('DROP TABLE IF EXISTS _' . sha1('guest-456'));
+        $this->connection->exec('DROP TABLE IF EXISTS _' . sha1('foo'));
+        $this->connection->exec('DROP TABLE IF EXISTS _' . sha1('test_projection'));
     }
 
     protected function prepareEventStream(string $name): void
