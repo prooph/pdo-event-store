@@ -34,6 +34,7 @@ CREATE TABLE `$tableName` (
     `aggregate_id` char(38) CHARACTER SET utf8 COLLATE utf8_bin GENERATED ALWAYS AS (JSON_EXTRACT(metadata, '$._aggregate_id')) STORED NOT NULL UNIQUE KEY,
     `aggregate_type` varchar(150) GENERATED ALWAYS AS (JSON_EXTRACT(metadata, '$._aggregate_type')) STORED NOT NULL,
     PRIMARY KEY (`no`),
+    UNIQUE KEY `ix_event_id` (`event_id`),
     UNIQUE KEY `ix_unique_event` (`version`, `aggregate_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 EOT;

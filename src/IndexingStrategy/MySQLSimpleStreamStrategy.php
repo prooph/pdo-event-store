@@ -30,7 +30,8 @@ CREATE TABLE `$tableName` (
     `payload` JSON NOT NULL,
     `metadata` JSON NOT NULL,
     `created_at` CHAR(26) COLLATE utf8_bin NOT NULL,
-    PRIMARY KEY (`no`)
+    PRIMARY KEY (`no`),
+    UNIQUE KEY `ix_event_id` (`event_id`),
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 EOT;
         return [$statement];

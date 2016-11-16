@@ -19,6 +19,7 @@ use Prooph\EventStore\Projection\ReadModelProjection;
 final class PostgresEventStoreReadModelProjection extends AbstractPDOReadModelProjection
 {
     use PDOQueryTrait;
+    use PostgresEventStoreProjectionTrait;
 
     /**
      * @var string
@@ -41,27 +42,5 @@ final class PostgresEventStoreReadModelProjection extends AbstractPDOReadModelPr
             $eventStreamsTable,
             $projectionsTable
         );
-    }
-
-    protected function persist(): void
-    {
-        $sql = <<<EOT
-INSERT INTO $this->projectionsTable (name, position, state) 
-VALUES (?, ?, ?) 
-ON CONFLICT (name) 
-DO UPDATE SET position = ?, state = ?; 
-EOT;
-
-        $jsonEncodedPosition = json_encode($this->position->streamPositions());
-        $jsonEncodedState = json_encode($this->state);
-
-        $statement = $this->connection->prepare($sql);
-        $statement->execute([
-            $this->name,
-            $jsonEncodedPosition,
-            $jsonEncodedState,
-            $jsonEncodedPosition,
-            $jsonEncodedState,
-        ]);
     }
 }

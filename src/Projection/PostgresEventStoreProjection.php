@@ -19,6 +19,7 @@ use Prooph\EventStore\StreamName;
 final class PostgresEventStoreProjection extends AbstractPDOProjection
 {
     use PDOQueryTrait;
+    use PostgresEventStoreProjectionTrait;
 
     /**
      * @var PostgresEventStore
@@ -51,27 +52,5 @@ EOT;
         }
 
         $this->eventStore->commit();
-    }
-
-    protected function persist(): void
-    {
-        $sql = <<<EOT
-INSERT INTO $this->projectionsTable (name, position, state) 
-VALUES (?, ?, ?) 
-ON CONFLICT (name) 
-DO UPDATE SET position = ?, state = ?; 
-EOT;
-
-        $jsonEncodedPosition = json_encode($this->position->streamPositions());
-        $jsonEncodedState = json_encode($this->state);
-
-        $statement = $this->connection->prepare($sql);
-        $statement->execute([
-            $this->name,
-            $jsonEncodedPosition,
-            $jsonEncodedState,
-            $jsonEncodedPosition,
-            $jsonEncodedState,
-        ]);
     }
 }

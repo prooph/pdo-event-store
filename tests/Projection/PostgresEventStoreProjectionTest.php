@@ -30,6 +30,7 @@ class PostgresEventStoreProjectionTest extends AbstractPostgresEventStoreProject
 {
     /**
      * @test
+     * @group ff
      */
     public function it_links_to_and_loads_and_continues_again(): void
     {
@@ -80,17 +81,19 @@ class PostgresEventStoreProjectionTest extends AbstractPostgresEventStoreProject
             'projections',
             true
         );
-
-        $projection
-            ->fromStream('user-123')
-            ->whenAny(
-                function (array $state, Message $event): array {
-                    $this->linkTo('foo', $event);
-                    return $state;
-                }
-            )
-            ->run();
-
+try {
+    $projection
+        ->fromStream('user-123')
+        ->whenAny(
+            function (array $state, Message $event): array {
+                $this->linkTo('foo', $event);
+                return $state;
+            }
+        )
+        ->run();
+} catch (\Throwable $e) {
+    die;
+}
         $streams = $this->eventStore->load(new StreamName('foo'));
         $events = $streams->streamEvents();
 

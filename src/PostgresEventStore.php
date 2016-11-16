@@ -151,6 +151,10 @@ final class PostgresEventStore extends AbstractCanControlTransactionActionEventE
             $sql = 'INSERT INTO ' . $tableName . ' (' . implode(', ', $columnNames) . ') VALUES ' . $allPlaces;
 
             $statement = $this->connection->prepare($sql);
+/*
+            var_dump($streamName->toString());
+            var_dump($sql, $data);
+*/
 
             $result = $statement->execute($data);
 
