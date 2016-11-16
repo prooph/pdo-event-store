@@ -13,7 +13,7 @@ Requirements
 - PDO_MySQL Extension or PDO_PGSQL Extension
 
 For MySQL you need server version >= 5.7.
-For Postgres you need server version >= 9.5.
+For Postgres you need server version >= 9.4.
 
 Setup
 -----
