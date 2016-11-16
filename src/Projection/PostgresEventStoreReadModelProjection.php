@@ -42,4 +42,26 @@ final class PostgresEventStoreReadModelProjection extends AbstractPDOReadModelPr
             $projectionsTable
         );
     }
+
+    protected function persist(): void
+    {
+        $sql = <<<EOT
+INSERT INTO $this->projectionsTable (name, position, state) 
+VALUES (?, ?, ?) 
+ON CONFLICT (name) 
+DO UPDATE SET position = ?, state = ?; 
+EOT;
+
+        $jsonEncodedPosition = json_encode($this->position->streamPositions());
+        $jsonEncodedState = json_encode($this->state);
+
+        $statement = $this->connection->prepare($sql);
+        $statement->execute([
+            $this->name,
+            $jsonEncodedPosition,
+            $jsonEncodedState,
+            $jsonEncodedPosition,
+            $jsonEncodedState,
+        ]);
+    }
 }

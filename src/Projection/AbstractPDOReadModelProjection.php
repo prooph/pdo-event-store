@@ -63,17 +63,4 @@ EOT;
         $this->position->merge(json_decode($result->position, true));
         $this->state = json_decode($result->state, true);
     }
-
-    protected function persist(): void
-    {
-        $sql = <<<EOT
-INSERT INTO $this->projectionsTable (name, position, state) VALUES (?, ?, ?); 
-EOT;
-        $statement = $this->connection->prepare($sql);
-        $statement->execute([
-                $this->name,
-                json_encode($this->position->streamPositions()),
-                json_encode($this->state)]
-        );
-    }
 }
