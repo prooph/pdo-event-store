@@ -4,5 +4,5 @@ CREATE TABLE `projections` (
   `position` JSON,
   `state` JSON,
   PRIMARY KEY (`no`),
-  INDEX `ix_name` (`name`)
+  UNIQUE KEY `ix_name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
