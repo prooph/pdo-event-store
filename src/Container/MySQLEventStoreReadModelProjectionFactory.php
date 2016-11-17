@@ -20,4 +20,9 @@ final class MySQLEventStoreReadModelProjectionFactory extends AbstractPDOEventSt
     {
         return MySQLEventStoreReadModelProjection::class;
     }
+
+    protected function getEventStoreFactoryClassName(): string
+    {
+        return MySQLEventStoreFactory::class;
+    }
 }

@@ -87,7 +87,8 @@ abstract class AbstractProjectionFactory implements
     protected function getEventStore(ContainerInterface $container, $config): EventStore
     {
         $eventStoreName = $config['event_store'];
-        return MySQLEventStoreFactory::$eventStoreName($container);
+        $eventStoreFactoryClassName = $this->getEventStoreFactoryClassName();
+        return $eventStoreFactoryClassName::$eventStoreName($container);
     }
 
     protected function getConnection(ContainerInterface $container, $config): PDO
@@ -108,4 +109,6 @@ abstract class AbstractProjectionFactory implements
 
         return $connection;
     }
+
+    abstract protected function getEventStoreFactoryClassName(): string;
 }

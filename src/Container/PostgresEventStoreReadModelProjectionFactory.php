@@ -20,4 +20,9 @@ final class PostgresEventStoreReadModelProjectionFactory extends AbstractPDOEven
     {
         return PostgresEventStoreReadModelProjection::class;
     }
+
+    protected function getEventStoreFactoryClassName(): string
+    {
+        return PostgresEventStoreFactory::class;
+    }
 }

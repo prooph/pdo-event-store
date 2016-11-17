@@ -20,4 +20,9 @@ final class MySQLEventStoreQueryFactory extends AbstractPDOEventStoreQueryFactor
     {
         return MySQLEventStoreQuery::class;
     }
+
+    protected function getEventStoreFactoryClassName(): string
+    {
+        return MySQLEventStoreFactory::class;
+    }
 }

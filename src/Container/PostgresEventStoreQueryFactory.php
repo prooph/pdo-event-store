@@ -20,4 +20,9 @@ final class PostgresEventStoreQueryFactory extends AbstractPDOEventStoreQueryFac
     {
         return PostgresEventStoreQuery::class;
     }
+
+    protected function getEventStoreFactoryClassName(): string
+    {
+        return PostgresEventStoreFactory::class;
+    }
 }

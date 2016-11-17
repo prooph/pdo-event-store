@@ -21,4 +21,9 @@ final class PostgresEventStoreProjectionFactory extends AbstractPDOEventStorePro
     {
         return PostgresEventStoreProjection::class;
     }
+
+    protected function getEventStoreFactoryClassName(): string
+    {
+        return PostgresEventStoreFactory::class;
+    }
 }
