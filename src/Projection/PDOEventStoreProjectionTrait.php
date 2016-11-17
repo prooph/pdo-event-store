@@ -20,7 +20,7 @@ trait PDOEventStoreProjectionTrait
     {
         $sql = <<<EOT
 INSERT INTO $this->projectionsTable (name, position, state, locked_until)
-VALUES (?, '{}', '{}', null);
+VALUES (?, '{}', '{}', NULL);
 EOT;
         $statement = $this->connection->prepare($sql);
         // we ignore any occuring error here (duplicate projection)
@@ -37,7 +37,7 @@ EOT;
         $lockUntilString = $now->modify('+' . (string) $this->lockTimeoutMs . ' ms')->format('Y-m-d\TH:i:s.u');
 
         $sql = <<<EOT
-UPDATE $this->projectionsTable SET locked_until = ? WHERE name = ? AND (locked_until IS NuLL OR locked_until < ?);
+UPDATE $this->projectionsTable SET locked_until = ? WHERE name = ? AND (locked_until IS NULL OR locked_until < ?);
 EOT;
         $statement = $this->connection->prepare($sql);
         $statement->execute([$lockUntilString, $this->name, $nowString]);
