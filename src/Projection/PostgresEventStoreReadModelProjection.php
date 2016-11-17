@@ -19,7 +19,7 @@ use Prooph\EventStore\Projection\ReadModelProjection;
 final class PostgresEventStoreReadModelProjection extends AbstractPDOReadModelProjection
 {
     use PDOQueryTrait;
-    use PostgresEventStoreProjectionTrait;
+    use PDOEventStoreProjectionTrait;
 
     /**
      * @var string

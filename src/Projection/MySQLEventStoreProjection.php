@@ -20,7 +20,7 @@ use Prooph\EventStore\StreamName;
 
 final class MySQLEventStoreProjection extends AbstractPDOProjection
 {
-    use MySQLEventStoreProjectionTrait;
+    use PDOEventStoreProjectionTrait;
     use PDOQueryTrait;
 
     /**
@@ -34,9 +34,18 @@ final class MySQLEventStoreProjection extends AbstractPDOProjection
         string $name,
         string $eventStreamsTable,
         string $projectionsTable,
+        int $lockTimeoutMs,
         bool $emitEnabled
     ) {
-        parent::__construct($eventStore, $connection, $name, $eventStreamsTable, $projectionsTable, $emitEnabled);
+        parent::__construct(
+            $eventStore,
+            $connection,
+            $name,
+            $eventStreamsTable,
+            $projectionsTable,
+            $lockTimeoutMs,
+            $emitEnabled
+        );
     }
 
     public function delete(bool $deleteEmittedEvents): void

@@ -85,10 +85,6 @@ EOT;
 
         $result = $statement->fetch(PDO::FETCH_OBJ);
 
-        if (! $result) {
-            return;
-        }
-
         $this->position->merge(json_decode($result->position, true));
         $this->state = json_decode($result->state, true);
     }

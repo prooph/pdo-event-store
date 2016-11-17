@@ -42,6 +42,7 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
             'test_projection',
             'event_streams',
             'projections',
+            1000,
             true
         );
 
@@ -78,6 +79,7 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
             'test_projection',
             'event_streams',
             'projections',
+            1000,
             true
         );
 
@@ -110,6 +112,7 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
             'test_projection',
             'event_streams',
             'projections',
+            1000,
             true
         );
 
@@ -148,6 +151,7 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
             'test_projection',
             'event_streams',
             'projections',
+            1000,
             true
         );
 
@@ -188,6 +192,7 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
             'test_projection',
             'event_streams',
             'projections',
+            1000,
             false
         );
 
@@ -212,9 +217,62 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
             'test_projection',
             'event_streams',
             'projections',
+            1000,
             false
         );
 
         $projection->run();
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_trying_to_run_two_projections_at_the_same_time(): void
+    {
+        $this->expectException(\Prooph\EventStore\PDO\Exception\RuntimeException::class);
+        $this->expectExceptionMessage('Another projection process is already running');
+
+        $this->prepareEventStream('user-123');
+        $this->eventStore->create(new Stream(new StreamName('foo'), new ArrayIterator()));
+
+        $projection = new MySQLEventStoreProjection(
+            $this->eventStore,
+            $this->connection,
+            'test_projection',
+            'event_streams',
+            'projections',
+            1000,
+            true
+        );
+
+        $eventStore = $this->eventStore;
+        $connection = $this->connection;
+
+        $projection
+            ->fromStream('user-123')
+            ->whenAny(
+                function (array $state, Message $event) use ($eventStore, $connection): array {
+                    $projection = new MySQLEventStoreProjection(
+                        $eventStore,
+                        $connection,
+                        'test_projection',
+                        'event_streams',
+                        'projections',
+                        1000,
+                        true
+                    );
+
+                    $projection
+                        ->fromStream('user-123')
+                        ->whenAny(
+                            function (array $state, Message $event): array {
+                                $this->linkTo('foo', $event);
+                                return $state;
+                            }
+                        )
+                        ->run();
+                }
+            )
+            ->run();
     }
 }

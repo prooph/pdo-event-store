@@ -14,7 +14,7 @@ namespace Prooph\EventStore\PDO\Projection;
 
 use Prooph\EventStore\PDO\Exception\RuntimeException;
 
-trait PostgresEventStoreProjectionTrait
+trait PDOEventStoreProjectionTrait
 {
     protected function createProjection(): void
     {
