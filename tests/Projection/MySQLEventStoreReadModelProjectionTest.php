@@ -15,7 +15,6 @@ namespace ProophTest\EventStore\PDO\Projection;
 use ArrayIterator;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\Exception\RuntimeException;
-use Prooph\EventStore\Exception\StreamNotFound;
 use Prooph\EventStore\PDO\Projection\MySQLEventStoreReadModelProjection;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\ReadModelProjectionMock;
