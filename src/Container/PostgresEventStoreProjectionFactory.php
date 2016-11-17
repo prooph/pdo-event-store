@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace Prooph\EventStore\PDO\Container;
 
-use Prooph\EventStore\PDO\Projection\MySQLEventStoreProjection;
 use Prooph\EventStore\PDO\Projection\PostgresEventStoreProjection;
 
 final class PostgresEventStoreProjectionFactory extends AbstractPDOEventStoreProjectionFactory
