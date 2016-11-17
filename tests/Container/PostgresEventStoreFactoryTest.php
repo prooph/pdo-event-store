@@ -45,9 +45,9 @@ final class PostgresEventStoreFactoryTest extends TestCase
         $container->get(TableNameGeneratorStrategy\Sha1::class)->willReturn(new TableNameGeneratorStrategy\Sha1())->shouldBeCalled();
 
         $factory = new PostgresEventStoreFactory();
-        $adapter = $factory($container->reveal());
+        $eventStore = $factory($container->reveal());
 
-        $this->assertInstanceOf(PostgresEventStore::class, $adapter);
+        $this->assertInstanceOf(PostgresEventStore::class, $eventStore);
     }
 
     /**
@@ -69,9 +69,9 @@ final class PostgresEventStoreFactoryTest extends TestCase
         $container->get(TableNameGeneratorStrategy\Sha1::class)->willReturn(new TableNameGeneratorStrategy\Sha1())->shouldBeCalled();
 
         $eventStoreName = 'custom';
-        $adapter = PostgresEventStoreFactory::$eventStoreName($container->reveal());
+        $eventStore = PostgresEventStoreFactory::$eventStoreName($container->reveal());
 
-        $this->assertInstanceOf(PostgresEventStore::class, $adapter);
+        $this->assertInstanceOf(PostgresEventStore::class, $eventStore);
     }
 
     /**

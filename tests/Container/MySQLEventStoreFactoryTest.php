@@ -45,9 +45,9 @@ final class MySQLEventStoreFactoryTest extends TestCase
         $container->get(TableNameGeneratorStrategy\Sha1::class)->willReturn(new TableNameGeneratorStrategy\Sha1())->shouldBeCalled();
 
         $factory = new MySQLEventStoreFactory();
-        $adapter = $factory($container->reveal());
+        $eventStore = $factory($container->reveal());
 
-        $this->assertInstanceOf(MySQLEventStore::class, $adapter);
+        $this->assertInstanceOf(MySQLEventStore::class, $eventStore);
     }
 
     /**
@@ -69,9 +69,9 @@ final class MySQLEventStoreFactoryTest extends TestCase
         $container->get(TableNameGeneratorStrategy\Sha1::class)->willReturn(new TableNameGeneratorStrategy\Sha1())->shouldBeCalled();
 
         $eventStoreName = 'custom';
-        $adapter = MySQLEventStoreFactory::$eventStoreName($container->reveal());
+        $eventStore = MySQLEventStoreFactory::$eventStoreName($container->reveal());
 
-        $this->assertInstanceOf(MySQLEventStore::class, $adapter);
+        $this->assertInstanceOf(MySQLEventStore::class, $eventStore);
     }
 
     /**
