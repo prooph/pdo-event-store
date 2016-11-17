@@ -3,7 +3,7 @@ CREATE TABLE projections (
   name VARCHAR(150) NOT NULL,
   position JSONB,
   state JSONB,
-  locked VARCHAR(150),
+  locked_until CHAR(26),
   PRIMARY KEY (no),
   UNIQUE (name)
 );

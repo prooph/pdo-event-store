@@ -32,7 +32,8 @@ final class PostgresEventStoreReadModelProjection extends AbstractPDOReadModelPr
         string $name,
         ReadModelProjection $readModelProjection,
         string $eventStreamsTable,
-        string $projectionsTable
+        string $projectionsTable,
+        int $lockTimeoutMs
     ) {
         parent::__construct(
             $eventStore,
@@ -40,7 +41,8 @@ final class PostgresEventStoreReadModelProjection extends AbstractPDOReadModelPr
             $name,
             $readModelProjection,
             $eventStreamsTable,
-            $projectionsTable
+            $projectionsTable,
+            $lockTimeoutMs
         );
     }
 }

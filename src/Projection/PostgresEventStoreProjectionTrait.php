@@ -12,28 +12,19 @@ declare(strict_types=1);
 
 namespace Prooph\EventStore\PDO\Projection;
 
-use PDO;
 use Prooph\EventStore\PDO\Exception\RuntimeException;
 
 trait PostgresEventStoreProjectionTrait
 {
-    /**
-     * @var \PDO
-     */
-    protected $connection;
-
-    /**
-     * @var string
-     */
-    private $uniqueId;
-
-    private function uniqueId(): string
+    protected function createProjection(): void
     {
-        if (null === $this->uniqueId) {
-            $this->uniqueId = (string) random_int(0, PHP_INT_MAX);
-        }
-
-        return $this->uniqueId;
+        $sql = <<<EOT
+INSERT INTO $this->projectionsTable (name, position, state, locked_until)
+VALUES (?, '{}', '{}', null);
+EOT;
+        $statement = $this->connection->prepare($sql);
+        // we ignore any occuring error here (duplicate projection)
+        $statement->execute([$this->name]);
     }
 
     /**
@@ -41,53 +32,44 @@ trait PostgresEventStoreProjectionTrait
      */
     protected function acquireLock(): void
     {
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+        $nowString = $now->format('Y-m-d\TH:i:s.u');
+        $lockUntilString = $now->modify('+' . (string) $this->lockTimeoutMs . ' ms')->format('Y-m-d\TH:i:s.u');
+
         $sql = <<<EOT
-SELECT locked FROM $this->projectionsTable WHERE name = '$this->name';
+UPDATE $this->projectionsTable SET locked_until = ? WHERE name = ? AND (locked_until IS NuLL OR locked_until < ?);
 EOT;
         $statement = $this->connection->prepare($sql);
-        $statement->execute();
+        $statement->execute([$lockUntilString, $this->name, $nowString]);
 
-        $row = $statement->fetch(PDO::FETCH_OBJ);
-
-        if (false === $row) {
-            $sql = <<<EOT
-INSERT INTO $this->projectionsTable (name, position, state, locked) 
-VALUES (?, ?, ?, ?);
-EOT;
-            $statement = $this->connection->prepare($sql);
-            $statement->execute([
-                $this->name,
-                '{}',
-                '{}',
-                $this->uniqueId()
-            ]);
-
-            if ($statement->errorCode() !== '00000') {
-                throw new RuntimeException('Another projection process is already running');
-            }
-            return;
-        } elseif ($row->locked !== null) {
+        if ($statement->rowCount() !== 1) {
             throw new RuntimeException('Another projection process is already running');
         }
     }
 
     protected function releaseLock(): void
     {
-        $statement = $this->connection->prepare("UPDATE $this->projectionsTable SET locked = NULL WHERE name = '$this->name';");
-        $statement->execute();
+        $sql = <<<EOT
+UPDATE $this->projectionsTable SET locked_until = NULL WHERE name = ?;
+EOT;
+        $statement = $this->connection->prepare($sql);
+        $statement->execute([$this->name]);
     }
 
     protected function persist(): void
     {
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+        $lockUntilString = $now->modify('+' . (string) $this->lockTimeoutMs . ' ms')->format('Y-m-d\TH:i:s.u');
+
         $sql = <<<EOT
-UPDATE $this->projectionsTable SET position = ?, state = ?, locked = ? 
+UPDATE $this->projectionsTable SET position = ?, state = ?, locked_until = ? 
 WHERE name = ? 
 EOT;
         $statement = $this->connection->prepare($sql);
         $statement->execute([
             json_encode($this->position->streamPositions()),
             json_encode($this->state),
-            $this->uniqueId(),
+            $lockUntilString,
             $this->name,
         ]);
     }

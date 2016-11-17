@@ -41,7 +41,8 @@ class PostgresEventStoreReadModelProjectionTest extends AbstractPostgresEventSto
             'test_projection',
             $readModel,
             'event_streams',
-            'projections'
+            'projections',
+            1000
         );
 
         $projection
@@ -64,7 +65,8 @@ class PostgresEventStoreReadModelProjectionTest extends AbstractPostgresEventSto
             'test_projection',
             $readModel,
             'event_streams',
-            'projections'
+            'projections',
+            1000
         );
 
         $projection
@@ -99,7 +101,8 @@ class PostgresEventStoreReadModelProjectionTest extends AbstractPostgresEventSto
             'test_projection',
             $readModel,
             'event_streams',
-            'projections'
+            'projections',
+            1000
         );
 
         $projection
@@ -132,7 +135,8 @@ class PostgresEventStoreReadModelProjectionTest extends AbstractPostgresEventSto
             'test_projection',
             $readModel,
             'event_streams',
-            'projections'
+            'projections',
+            1000
         );
 
         $projection
@@ -164,7 +168,8 @@ class PostgresEventStoreReadModelProjectionTest extends AbstractPostgresEventSto
             'test_projection',
             $readModel,
             'event_streams',
-            'projections'
+            'projections',
+            1000
         );
         $projection->run();
     }
