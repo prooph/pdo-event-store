@@ -22,7 +22,7 @@ use PDO;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\PDO\Exception\InvalidArgumentException;
 
-abstract class AbstractEventStoreProjectionFactory implements
+abstract class AbstractProjectionFactory implements
     ProvidesDefaultOptions,
     RequiresConfig,
     RequiresConfigId,
@@ -57,7 +57,7 @@ abstract class AbstractEventStoreProjectionFactory implements
      * <code>
      * <?php
      * return [
-     *     MySQLEventStoreProjection::class => [MySQLEventStoreProjectionFactory::class, 'service_name'],
+     *     MySQLEventStoreProjection::class => [MySQLProjectionFactory::class, 'service_name'],
      *     PostgresEventStoreProjection::class => [PostgresEventStoreProjectionFactory::class, 'service_name'],
      * ];
      * </code>

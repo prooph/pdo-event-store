@@ -12,12 +12,13 @@ declare(strict_types=1);
 
 namespace Prooph\EventStore\PDO\Container;
 
-use Prooph\EventStore\PDO\Projection\MySQLEventStoreReadModelProjection;
+use Prooph\EventStore\PDO\Projection\MySQLEventStoreProjection;
+use Prooph\EventStore\PDO\Projection\PostgresEventStoreProjection;
 
-final class MySQLEventStoreReadModelProjectionFactory extends AbstractPDOEventStoreReadModelProjectionFactory
+final class PostgresEventStoreProjectionFactory extends AbstractPDOEventStoreProjectionFactory
 {
     protected function getInstanceClassName(): string
     {
-        return MySQLEventStoreReadModelProjection::class;
+        return PostgresEventStoreProjection::class;
     }
 }

@@ -12,45 +12,12 @@ declare(strict_types=1);
 
 namespace Prooph\EventStore\PDO\Container;
 
-use Interop\Container\ContainerInterface;
 use Prooph\EventStore\PDO\Projection\MySQLEventStoreQuery;
 
-final class MySQLEventStoreQueryFactory extends AbstractEventStoreProjectionFactory
+final class MySQLEventStoreQueryFactory extends AbstractPDOEventStoreQueryFactory
 {
-    public function __invoke(ContainerInterface $container): MySQLEventStoreQuery
+    protected function getInstanceClassName(): string
     {
-        $config = $container->get('config');
-        $config = $this->options($config, $this->configId);
-
-        $connection = $this->getConnection($container, $config);
-        $eventStore = $this->getEventStore($container, $config);
-
-        return new MySQLEventStoreQuery(
-            $eventStore,
-            $connection,
-            $config['event_streams_table']
-        );
-    }
-
-    public function defaultOptions(): array
-    {
-        return [
-            'connection_options' => [
-                'driver' => 'pdo_mysql',
-                'user' => 'root',
-                'password' => '',
-                'host' => '127.0.0.1',
-                'dbname' => 'event_store',
-                'port' => 3306,
-            ],
-            'event_streams_table' => 'event_streams',
-        ];
-    }
-
-    public function mandatoryOptions(): array
-    {
-        return [
-            'event_store',
-        ];
+        return MySQLEventStoreQuery::class;
     }
 }
