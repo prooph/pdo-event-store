@@ -13,11 +13,11 @@ declare(strict_types=1);
 namespace Prooph\EventStore\PDO\Container;
 
 use Interop\Container\ContainerInterface;
-use Prooph\EventStore\PDO\Projection\MySQLEventStoreReadModelProjection;
+use Prooph\EventStore\PDO\Projection\MySQLEventStoreQuery;
 
-final class MySQLEventStoreReadModelProjectionFactory extends AbstractEventStoreProjectionFactory
+final class MySQLEventStoreQueryFactory extends AbstractEventStoreProjectionFactory
 {
-    public function __invoke(ContainerInterface $container): MySQLEventStoreReadModelProjection
+    public function __invoke(ContainerInterface $container): MySQLEventStoreQuery
     {
         $config = $container->get('config');
         $config = $this->options($config, $this->configId);
@@ -25,14 +25,10 @@ final class MySQLEventStoreReadModelProjectionFactory extends AbstractEventStore
         $connection = $this->getConnection($container, $config);
         $eventStore = $this->getEventStore($container, $config);
 
-        return new MySQLEventStoreReadModelProjection(
+        return new MySQLEventStoreQuery(
             $eventStore,
             $connection,
-            $this->configId,
-            $container->get($config['read_model']),
-            $config['event_streams_table'],
-            $config['projections_table'],
-            $config['lock_timeout_ms']
+            $config['event_streams_table']
         );
     }
 
@@ -48,8 +44,6 @@ final class MySQLEventStoreReadModelProjectionFactory extends AbstractEventStore
                 'port' => 3306,
             ],
             'event_streams_table' => 'event_streams',
-            'projections_table' => 'projection',
-            'lock_timeout_ms' => 1000,
         ];
     }
 
@@ -57,7 +51,6 @@ final class MySQLEventStoreReadModelProjectionFactory extends AbstractEventStore
     {
         return [
             'event_store',
-            'read_model',
         ];
     }
 }

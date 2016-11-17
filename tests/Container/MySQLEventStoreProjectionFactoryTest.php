@@ -17,8 +17,6 @@ use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\PDO\Container\MySQLEventStoreProjectionFactory;
 use Prooph\EventStore\PDO\Exception\InvalidArgumentException;
 use Prooph\EventStore\PDO\IndexingStrategy;
-use Prooph\EventStore\PDO\MySQLEventStore;
-use Prooph\EventStore\PDO\Container\MySQLEventStoreFactory;
 use Prooph\EventStore\PDO\Projection\MySQLEventStoreProjection;
 use Prooph\EventStore\PDO\TableNameGeneratorStrategy;
 use ProophTest\EventStore\PDO\TestUtil;

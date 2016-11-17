@@ -14,15 +14,14 @@ use Interop\Container\ContainerInterface;
 use PHPUnit_Framework_TestCase as TestCase;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
-use Prooph\EventStore\PDO\Container\MySQLEventStoreReadModelProjectionFactory;
+use Prooph\EventStore\PDO\Container\MySQLEventStoreQueryFactory;
 use Prooph\EventStore\PDO\Exception\InvalidArgumentException;
 use Prooph\EventStore\PDO\IndexingStrategy;
-use Prooph\EventStore\PDO\Projection\MySQLEventStoreReadModelProjection;
+use Prooph\EventStore\PDO\Projection\MySQLEventStoreQuery;
 use Prooph\EventStore\PDO\TableNameGeneratorStrategy;
-use ProophTest\EventStore\Mock\ReadModelProjectionMock;
 use ProophTest\EventStore\PDO\TestUtil;
 
-final class MySQLEventStoreReadModelProjectionFactoryTest extends TestCase
+final class MySQLEventStoreQueryFactoryTest extends TestCase
 {
     /**
      * @test
@@ -40,10 +39,6 @@ final class MySQLEventStoreReadModelProjectionFactoryTest extends TestCase
                 'foo' => [
                     'event_store' => 'projection',
                     'connection_service' => 'my_connection',
-                    'read_model' => 'areadmodel',
-                    'event_streams_table' => 'event_streams',
-                    'projections_table' => 'projection',
-                    'lock_timeout_ms' => 1000,
                 ],
             ],
         ];
@@ -58,12 +53,11 @@ final class MySQLEventStoreReadModelProjectionFactoryTest extends TestCase
         $container->get(NoOpMessageConverter::class)->willReturn(new NoOpMessageConverter())->shouldBeCalled();
         $container->get(IndexingStrategy\MySQLSimpleStreamStrategy::class)->willReturn(new IndexingStrategy\MySQLSimpleStreamStrategy())->shouldBeCalled();
         $container->get(TableNameGeneratorStrategy\Sha1::class)->willReturn(new TableNameGeneratorStrategy\Sha1())->shouldBeCalled();
-        $container->get('areadmodel')->willReturn(new ReadModelProjectionMock())->shouldBeCalled();
 
-        $factory = new MySQLEventStoreReadModelProjectionFactory('foo');
+        $factory = new MySQLEventStoreQueryFactory('foo');
         $projection = $factory($container->reveal());
 
-        $this->assertInstanceOf(MySQLEventStoreReadModelProjection::class, $projection);
+        $this->assertInstanceOf(MySQLEventStoreQuery::class, $projection);
     }
 
     /**
@@ -82,10 +76,6 @@ final class MySQLEventStoreReadModelProjectionFactoryTest extends TestCase
                 'foo' => [
                     'event_store' => 'projection',
                     'connection_options' => TestUtil::getConnectionParams(),
-                    'read_model' => 'areadmodel',
-                    'event_streams_table' => 'event_streams',
-                    'projections_table' => 'projection',
-                    'lock_timeout_ms' => 1000,
                 ],
             ],
         ];
@@ -99,12 +89,11 @@ final class MySQLEventStoreReadModelProjectionFactoryTest extends TestCase
         $container->get(NoOpMessageConverter::class)->willReturn(new NoOpMessageConverter())->shouldBeCalled();
         $container->get(IndexingStrategy\MySQLSimpleStreamStrategy::class)->willReturn(new IndexingStrategy\MySQLSimpleStreamStrategy())->shouldBeCalled();
         $container->get(TableNameGeneratorStrategy\Sha1::class)->willReturn(new TableNameGeneratorStrategy\Sha1())->shouldBeCalled();
-        $container->get('areadmodel')->willReturn(new ReadModelProjectionMock())->shouldBeCalled();
 
         $projectionName = 'foo';
-        $projection = MySQLEventStoreReadModelProjectionFactory::$projectionName($container->reveal());
+        $projection = MySQLEventStoreQueryFactory::$projectionName($container->reveal());
 
-        $this->assertInstanceOf(MySQLEventStoreReadModelProjection::class, $projection);
+        $this->assertInstanceOf(MySQLEventStoreQuery::class, $projection);
     }
 
     /**
@@ -115,6 +104,6 @@ final class MySQLEventStoreReadModelProjectionFactoryTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         $projectionName = 'foo';
-        MySQLEventStoreReadModelProjectionFactory::$projectionName('invalid container');
+        MySQLEventStoreQueryFactory::$projectionName('invalid container');
     }
 }
