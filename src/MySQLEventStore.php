@@ -106,7 +106,7 @@ final class MySQLEventStore extends AbstractActionEventEmitterAwareEventStore
 
                 $this->connection->beginTransaction();
 
-                $actionEventEmitter->attachListener(
+                $listener = $actionEventEmitter->attachListener(
                     self::EVENT_APPEND_TO,
                     function (ActionEvent $event): void {
                         $event->setParam('isInTransaction', true);
@@ -119,11 +119,13 @@ final class MySQLEventStore extends AbstractActionEventEmitterAwareEventStore
                     $this->appendTo($streamName, $stream->streamEvents());
                 } catch (\Throwable $e) {
                     $this->connection->rollBack();
-
+                    $actionEventEmitter->detachListener($listener);
                     throw $e;
                 }
 
                 $this->connection->commit();
+
+                $actionEventEmitter->detachListener($listener);
 
                 $event->setParam('result', true);
             }
@@ -354,6 +356,35 @@ final class MySQLEventStore extends AbstractActionEventEmitterAwareEventStore
                     false
                 )
             ));
+        });
+
+        $actionEventEmitter->attachListener(self::EVENT_DELETE, function (ActionEvent $event): void {
+            $streamName = $event->getParam('streamName');
+
+            $isInTransaction = $event->getParam('isInTransaction', false);
+
+            if (! $isInTransaction) {
+                $this->connection->beginTransaction();
+            }
+
+            $deleteEventStreamTableEntrySql = <<<EOT
+DELETE FROM $this->eventStreamsTable WHERE real_stream_name = ?;
+EOT;
+            $statement = $this->connection->prepare($deleteEventStreamTableEntrySql);
+            $statement->execute([$streamName->toString()]);
+
+            $encodedStreamName = $this->tableNameGeneratorStrategy->__invoke($streamName);
+            $deleteEventStreamSql = <<<EOT
+DROP TABLE IF EXISTS $encodedStreamName;
+EOT;
+            $statement = $this->connection->prepare($deleteEventStreamSql);
+            $statement->execute();
+
+            if (! $isInTransaction) {
+                $this->connection->commit();
+            }
+
+            $event->setParam('result', true);
         });
     }
 

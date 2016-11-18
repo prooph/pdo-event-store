@@ -304,6 +304,25 @@ final class PostgresEventStore extends AbstractCanControlTransactionActionEventE
             ));
         });
 
+        $actionEventEmitter->attachListener(self::EVENT_DELETE, function (ActionEvent $event): void {
+            $streamName = $event->getParam('streamName');
+
+            $deleteEventStreamTableEntrySql = <<<EOT
+DELETE FROM $this->eventStreamsTable WHERE real_stream_name = ?;
+EOT;
+            $statement = $this->connection->prepare($deleteEventStreamTableEntrySql);
+            $statement->execute([$streamName->toString()]);
+
+            $encodedStreamName = $this->tableNameGeneratorStrategy->__invoke($streamName);
+            $deleteEventStreamSql = <<<EOT
+DROP TABLE IF EXISTS $encodedStreamName;
+EOT;
+            $statement = $this->connection->prepare($deleteEventStreamSql);
+            $statement->execute();
+
+            $event->setParam('result', true);
+        });
+
         $this->actionEventEmitter->attachListener(self::EVENT_BEGIN_TRANSACTION, function (ActionEvent $event): void {
             $this->connection->beginTransaction();
 

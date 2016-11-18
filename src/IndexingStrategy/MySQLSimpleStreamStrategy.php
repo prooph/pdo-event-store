@@ -14,7 +14,7 @@ namespace Prooph\EventStore\PDO\IndexingStrategy;
 
 use Prooph\EventStore\PDO\IndexingStrategy;
 
-final class MySQLSingleStreamStrategy implements IndexingStrategy
+final class MySQLSimpleStreamStrategy implements IndexingStrategy
 {
     /**
      * @param string $tableName
@@ -30,12 +30,8 @@ CREATE TABLE `$tableName` (
     `payload` JSON NOT NULL,
     `metadata` JSON NOT NULL,
     `created_at` CHAR(26) COLLATE utf8_bin NOT NULL,
-    `version` INT(11) GENERATED ALWAYS AS (JSON_EXTRACT(metadata, '$._aggregate_version')) STORED NOT NULL UNIQUE KEY,
-    `aggregate_id` char(38) CHARACTER SET utf8 COLLATE utf8_bin GENERATED ALWAYS AS (JSON_EXTRACT(metadata, '$._aggregate_id')) STORED NOT NULL UNIQUE KEY,
-    `aggregate_type` varchar(150) GENERATED ALWAYS AS (JSON_EXTRACT(metadata, '$._aggregate_type')) STORED NOT NULL,
     PRIMARY KEY (`no`),
-    UNIQUE KEY `ix_event_id` (`event_id`),
-    UNIQUE KEY `ix_unique_event` (`version`, `aggregate_id`)
+    UNIQUE KEY `ix_event_id` (`event_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 EOT;
         return [$statement];

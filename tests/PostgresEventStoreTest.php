@@ -52,6 +52,12 @@ final class PostgresEventStoreTest extends AbstractPDOEventStoreTest
         $this->eventStore = $this->createEventStore($this->connection);
     }
 
+    protected function tearDown(): void
+    {
+        $this->connection->exec('DROP TABLE event_streams;');
+        $this->connection->exec('DROP TABLE _' . sha1('Prooph\Model\User'));
+    }
+
     protected function createEventStore(PDO $connection): PostgresEventStore
     {
         return new PostgresEventStore(
@@ -60,6 +66,7 @@ final class PostgresEventStoreTest extends AbstractPDOEventStoreTest
                 CanControlTransactionActionEventEmitterAware::EVENT_CREATE,
                 CanControlTransactionActionEventEmitterAware::EVENT_LOAD,
                 CanControlTransactionActionEventEmitterAware::EVENT_LOAD_REVERSE,
+                CanControlTransactionActionEventEmitterAware::EVENT_DELETE,
                 CanControlTransactionActionEventEmitterAware::EVENT_BEGIN_TRANSACTION,
                 CanControlTransactionActionEventEmitterAware::EVENT_COMMIT,
                 CanControlTransactionActionEventEmitterAware::EVENT_ROLLBACK,
@@ -119,6 +126,7 @@ final class PostgresEventStoreTest extends AbstractPDOEventStoreTest
                 CanControlTransactionActionEventEmitterAware::EVENT_CREATE,
                 CanControlTransactionActionEventEmitterAware::EVENT_LOAD,
                 CanControlTransactionActionEventEmitterAware::EVENT_LOAD_REVERSE,
+                CanControlTransactionActionEventEmitterAware::EVENT_DELETE,
                 CanControlTransactionActionEventEmitterAware::EVENT_BEGIN_TRANSACTION,
                 CanControlTransactionActionEventEmitterAware::EVENT_COMMIT,
                 CanControlTransactionActionEventEmitterAware::EVENT_ROLLBACK,

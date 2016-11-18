@@ -14,23 +14,33 @@ use Interop\Container\ContainerInterface;
 use PHPUnit_Framework_TestCase as TestCase;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
+use Prooph\EventStore\PDO\Container\PostgresEventStoreQueryFactory;
 use Prooph\EventStore\PDO\Exception\InvalidArgumentException;
 use Prooph\EventStore\PDO\IndexingStrategy;
-use Prooph\EventStore\PDO\MySQLEventStore;
-use Prooph\EventStore\PDO\Container\MySQLEventStoreFactory;
+use Prooph\EventStore\PDO\Projection\PostgresEventStoreQuery;
 use Prooph\EventStore\PDO\TableNameGeneratorStrategy;
 use ProophTest\EventStore\PDO\TestUtil;
 
-final class MySQLEventStoreFactoryTest extends TestCase
+final class PostgresEventStoreQueryFactoryTest extends TestCase
 {
     /**
      * @test
      */
     public function it_creates_adapter_via_connection_service(): void
     {
-        $config['prooph']['event_store']['default'] = [
-            'connection_service' => 'my_connection',
-            'indexing_strategy' => IndexingStrategy\MySQLAggregateStreamStrategy::class,
+        $config['prooph'] = [
+            'event_store' => [
+                'projection' => [
+                    'connection_service' => 'my_connection',
+                    'indexing_strategy' => IndexingStrategy\PostgresSimpleStreamStrategy::class,
+                ],
+            ],
+            'event_store_projection' => [
+                'foo' => [
+                    'event_store' => 'projection',
+                    'connection_service' => 'my_connection',
+                ],
+            ],
         ];
 
         $connection = TestUtil::getConnection();
@@ -41,13 +51,13 @@ final class MySQLEventStoreFactoryTest extends TestCase
         $container->get('config')->willReturn($config)->shouldBeCalled();
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
         $container->get(NoOpMessageConverter::class)->willReturn(new NoOpMessageConverter())->shouldBeCalled();
-        $container->get(IndexingStrategy\MySQLAggregateStreamStrategy::class)->willReturn(new IndexingStrategy\MySQLAggregateStreamStrategy())->shouldBeCalled();
+        $container->get(IndexingStrategy\PostgresSimpleStreamStrategy::class)->willReturn(new IndexingStrategy\PostgresSimpleStreamStrategy())->shouldBeCalled();
         $container->get(TableNameGeneratorStrategy\Sha1::class)->willReturn(new TableNameGeneratorStrategy\Sha1())->shouldBeCalled();
 
-        $factory = new MySQLEventStoreFactory();
-        $eventStore = $factory($container->reveal());
+        $factory = new PostgresEventStoreQueryFactory('foo');
+        $projection = $factory($container->reveal());
 
-        $this->assertInstanceOf(MySQLEventStore::class, $eventStore);
+        $this->assertInstanceOf(PostgresEventStoreQuery::class, $projection);
     }
 
     /**
@@ -55,23 +65,35 @@ final class MySQLEventStoreFactoryTest extends TestCase
      */
     public function it_creates_adapter_via_connection_options(): void
     {
-        $config['prooph']['event_store']['custom'] = [
-            'connection_options' => TestUtil::getConnectionParams(),
-            'indexing_strategy' => IndexingStrategy\MySQLAggregateStreamStrategy::class,
+        $config['prooph'] = [
+            'event_store' => [
+                'projection' => [
+                    'connection_service' => 'my_connection',
+                    'indexing_strategy' => IndexingStrategy\PostgresSimpleStreamStrategy::class,
+                ],
+            ],
+            'event_store_projection' => [
+                'foo' => [
+                    'event_store' => 'projection',
+                    'connection_options' => TestUtil::getConnectionParams(),
+                ],
+            ],
         ];
 
-        $container = $this->prophesize(ContainerInterface::class);
+        $connection = TestUtil::getConnection();
 
+        $container = $this->prophesize(ContainerInterface::class);
         $container->get('config')->willReturn($config)->shouldBeCalled();
+        $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
         $container->get(NoOpMessageConverter::class)->willReturn(new NoOpMessageConverter())->shouldBeCalled();
-        $container->get(IndexingStrategy\MySQLAggregateStreamStrategy::class)->willReturn(new IndexingStrategy\MySQLAggregateStreamStrategy())->shouldBeCalled();
+        $container->get(IndexingStrategy\PostgresSimpleStreamStrategy::class)->willReturn(new IndexingStrategy\PostgresSimpleStreamStrategy())->shouldBeCalled();
         $container->get(TableNameGeneratorStrategy\Sha1::class)->willReturn(new TableNameGeneratorStrategy\Sha1())->shouldBeCalled();
 
-        $eventStoreName = 'custom';
-        $eventStore = MySQLEventStoreFactory::$eventStoreName($container->reveal());
+        $projectionName = 'foo';
+        $projection = PostgresEventStoreQueryFactory::$projectionName($container->reveal());
 
-        $this->assertInstanceOf(MySQLEventStore::class, $eventStore);
+        $this->assertInstanceOf(PostgresEventStoreQuery::class, $projection);
     }
 
     /**
@@ -81,7 +103,7 @@ final class MySQLEventStoreFactoryTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        $eventStoreName = 'custom';
-        MySQLEventStoreFactory::$eventStoreName('invalid container');
+        $projectionName = 'foo';
+        PostgresEventStoreQueryFactory::$projectionName('invalid container');
     }
 }
