@@ -235,16 +235,19 @@ class MySQLEventStoreReadModelProjectionTest extends AbstractMySQLEventStoreProj
             })
             ->fromStream('user-123')
             ->whenAny(function (array $state, Message $event): array {
-                $state['count']++;
-
-                if ($state['count'] === 10) {
+                if ($event instanceof UsernameChanged) {
                     $this->stop();
+                    return $state;
                 }
+
+                $state['count']++;
+                $this->readModelProjection()->insert('name', $event->payload()['name']);
 
                 return $state;
             })
             ->run();
 
-        $this->assertEquals(10, $projection->getState()['count']);
+        $this->assertEquals(1, $projection->getState()['count']);
+        $this->assertEquals('Alex', $readModel->read('name'));
     }
 }
