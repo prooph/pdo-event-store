@@ -57,14 +57,6 @@ final class MySQLEventStoreReadModelProjection extends AbstractPDOReadModelProje
     {
         $this->connection->beginTransaction();
 
-        $listener = $this->eventStore->getActionEventEmitter()->attachListener(
-            ActionEventEmitterAware::EVENT_APPEND_TO,
-            function (ActionEvent $event): void {
-                $event->setParam('isInTransaction', true);
-            },
-            1000
-        );
-
         $deleteProjectionSql = <<<EOT
 DELETE FROM $this->projectionsTable WHERE name = ?;
 EOT;
@@ -72,8 +64,6 @@ EOT;
         $statement->execute([$this->name]);
 
         $this->connection->commit();
-
-        $this->eventStore->getActionEventEmitter()->detachListener($listener);
 
         parent::delete($deleteEmittedEvents);
     }

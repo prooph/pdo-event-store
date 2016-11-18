@@ -53,7 +53,7 @@ final class MySQLEventStoreProjection extends AbstractPDOProjection
         $this->connection->beginTransaction();
 
         $listener = $this->eventStore->getActionEventEmitter()->attachListener(
-            ActionEventEmitterAware::EVENT_APPEND_TO,
+            ActionEventEmitterAware::EVENT_DELETE,
             function (ActionEvent $event): void {
                 $event->setParam('isInTransaction', true);
             },
