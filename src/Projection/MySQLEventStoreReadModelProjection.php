@@ -13,8 +13,6 @@ declare(strict_types=1);
 namespace Prooph\EventStore\PDO\Projection;
 
 use PDO;
-use Prooph\Common\Event\ActionEvent;
-use Prooph\EventStore\ActionEventEmitterAware;
 use Prooph\EventStore\PDO\MySQLEventStore;
 use Prooph\EventStore\Projection\ReadModelProjection;
 
