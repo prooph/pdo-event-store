@@ -209,4 +209,42 @@ class MySQLEventStoreReadModelProjectionTest extends AbstractMySQLEventStoreProj
         );
         $projection->run();
     }
+
+    /**
+     * @test
+     */
+    public function it_can_be_stopped_while_processing()
+    {
+        $this->prepareEventStream('user-123');
+
+        $readModel = new ReadModelProjectionMock();
+
+        $projection = new MySQLEventStoreReadModelProjection(
+            $this->eventStore,
+            $this->connection,
+            'test_projection',
+            $readModel,
+            'event_streams',
+            'projections',
+            1000
+        );
+
+        $projection
+            ->init(function (): array {
+                return ['count' => 0];
+            })
+            ->fromStream('user-123')
+            ->whenAny(function (array $state, Message $event): array {
+                $state['count']++;
+
+                if ($state['count'] === 10) {
+                    $this->stop();
+                }
+
+                return $state;
+            })
+            ->run();
+
+        $this->assertEquals(10, $projection->getState()['count']);
+    }
 }
