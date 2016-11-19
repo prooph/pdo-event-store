@@ -57,6 +57,8 @@ abstract class AbstractPostgresEventStoreProjectionTest extends TestCase
                 CanControlTransactionActionEventEmitterAware::EVENT_LOAD,
                 CanControlTransactionActionEventEmitterAware::EVENT_LOAD_REVERSE,
                 CanControlTransactionActionEventEmitterAware::EVENT_DELETE,
+                CanControlTransactionActionEventEmitterAware::EVENT_HAS_STREAM,
+                CanControlTransactionActionEventEmitterAware::EVENT_FETCH_STREAM_METADATA,
                 CanControlTransactionActionEventEmitterAware::EVENT_BEGIN_TRANSACTION,
                 CanControlTransactionActionEventEmitterAware::EVENT_COMMIT,
                 CanControlTransactionActionEventEmitterAware::EVENT_ROLLBACK,
