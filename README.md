@@ -22,4 +22,7 @@ For MySQL run the script in `scripts/mysql_event_streams_table.sql` on your serv
 
 For Postgres run the script in `scripts/postgres_event_streams_table` on your server.
 
-This will setup the event_streams_table;
+This will setup the required event streams table.
+
+If you want to use the projections, run additionally the scripts `scripts/mysql_projections_table.sql` (for MySQL)
+or `scripts/postgres_projections_table.sql` (for Postgres) on your server.

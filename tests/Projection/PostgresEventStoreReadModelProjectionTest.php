@@ -209,4 +209,45 @@ class PostgresEventStoreReadModelProjectionTest extends AbstractPostgresEventSto
         );
         $projection->run();
     }
+
+    /**
+     * @test
+     */
+    public function it_can_be_stopped_while_processing()
+    {
+        $this->prepareEventStream('user-123');
+
+        $readModel = new ReadModelProjectionMock();
+
+        $projection = new PostgresEventStoreReadModelProjection(
+            $this->eventStore,
+            $this->connection,
+            'test_projection',
+            $readModel,
+            'event_streams',
+            'projections',
+            1000
+        );
+
+        $projection
+            ->init(function (): array {
+                return ['count' => 0];
+            })
+            ->fromStream('user-123')
+            ->whenAny(function (array $state, Message $event): array {
+                if ($event instanceof UsernameChanged) {
+                    $this->stop();
+                    return $state;
+                }
+
+                $state['count']++;
+                $this->readModelProjection()->insert('name', $event->payload()['name']);
+
+                return $state;
+            })
+            ->run();
+
+        $this->assertEquals(1, $projection->getState()['count']);
+        $this->assertEquals('Alex', $readModel->read('name'));
+    }
 }
