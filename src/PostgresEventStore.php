@@ -19,7 +19,6 @@ use Prooph\Common\Messaging\MessageConverter;
 use Prooph\Common\Messaging\MessageFactory;
 use Prooph\EventStore\AbstractCanControlTransactionActionEventEmitterAwareEventStore;
 use Prooph\EventStore\Exception\ConcurrencyException;
-use Prooph\EventStore\Exception\StreamNotFound;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\PDO\Exception\ExtensionNotLoaded;
 use Prooph\EventStore\PDO\Exception\RuntimeException;
