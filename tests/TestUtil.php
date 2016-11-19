@@ -14,7 +14,7 @@ namespace ProophTest\EventStore\PDO;
 
 use PDO;
 
-class TestUtil
+abstract class TestUtil
 {
     /**
      * List of URL schemes from a database URL and their mappings to driver.
