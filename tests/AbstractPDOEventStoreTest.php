@@ -16,8 +16,8 @@ use ArrayIterator;
 use PDO;
 use PHPUnit_Framework_TestCase as TestCase;
 use Prooph\Common\Event\ActionEvent;
+use Prooph\Common\Event\ActionEventEmitter;
 use Prooph\Common\Messaging\NoOpMessageConverter;
-use Prooph\EventStore\ActionEventEmitterAware;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception\StreamExistsAlready;
 use Prooph\EventStore\Exception\StreamNotFound;
@@ -32,7 +32,7 @@ use ProophTest\EventStore\Mock\UsernameChanged;
 abstract class AbstractPDOEventStoreTest extends TestCase
 {
     /**
-     * @var EventStore|ActionEventEmitterAware
+     * @var EventStore|ActionEventEmitter
      */
     protected $eventStore;
 
