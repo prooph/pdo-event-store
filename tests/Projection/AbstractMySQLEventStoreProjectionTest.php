@@ -19,7 +19,6 @@ use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\ActionEventEmitterAwareEventStore;
-use Prooph\EventStore\ActionEventEmitterAwareEventStoreEventStore;
 use Prooph\EventStore\PDO\IndexingStrategy\MySQLSimpleStreamStrategy;
 use Prooph\EventStore\PDO\MySQLEventStore;
 use Prooph\EventStore\PDO\TableNameGeneratorStrategy\Sha1;
