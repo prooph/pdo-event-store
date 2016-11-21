@@ -23,7 +23,6 @@ use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\PDO\Exception\ExtensionNotLoaded;
 use Prooph\EventStore\PDO\Exception\RuntimeException;
 use Prooph\EventStore\Stream;
-use Prooph\EventStore\StreamName;
 
 final class MySQLEventStore extends AbstractActionEventEmitterAwareEventStore
 {
