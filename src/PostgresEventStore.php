@@ -19,7 +19,6 @@ use Prooph\Common\Messaging\MessageConverter;
 use Prooph\Common\Messaging\MessageFactory;
 use Prooph\EventStore\AbstractCanControlTransactionActionEventEmitterAwareEventStore;
 use Prooph\EventStore\Exception\ConcurrencyException;
-use Prooph\EventStore\Exception\StreamNotFound;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\PDO\Exception\ExtensionNotLoaded;
 use Prooph\EventStore\PDO\Exception\RuntimeException;
@@ -340,56 +339,48 @@ EOT;
 
             $event->setParam('inTransaction', false);
         });
-    }
 
-    public function hasStream(StreamName $streamName): bool
-    {
-        $eventStreamsTable = $this->eventStreamsTable;
+        $this->actionEventEmitter->attachListener(self::EVENT_HAS_STREAM, function (ActionEvent $event): void {
+            $streamName = $event->getParam('streamName');
+            $eventStreamsTable = $this->eventStreamsTable;
 
-        $sql = <<<EOT
+            $sql = <<<EOT
 SELECT stream_name FROM $eventStreamsTable
 WHERE real_stream_name = :streamName;
 EOT;
-        $statement = $this->connection->prepare($sql);
+            $statement = $this->connection->prepare($sql);
 
-        $result = $statement->execute(['streamName' => $streamName->toString()]);
+            $statement->execute(['streamName' => $streamName->toString()]);
 
-        if (! $result) {
-            return false;
-        }
+            $stream = $statement->fetch(PDO::FETCH_OBJ);
 
-        $stream = $statement->fetch(PDO::FETCH_OBJ);
+            if (false === $stream) {
+                $event->setParam('result', false);
+            } else {
+                $event->setParam('result', true);
+            }
+        });
 
-        if (false === $stream) {
-            return false;
-        }
+        $this->actionEventEmitter->attachListener(self::EVENT_FETCH_STREAM_METADATA, function (ActionEvent $event): void {
+            $streamName = $event->getParam('streamName');
+            $eventStreamsTable = $this->eventStreamsTable;
 
-        return true;
-    }
-
-    public function fetchStreamMetadata(StreamName $streamName): array
-    {
-        $eventStreamsTable = $this->eventStreamsTable;
-
-        $sql = <<<EOT
+            $sql = <<<EOT
 SELECT metadata FROM $eventStreamsTable
 WHERE real_stream_name = :streamName; 
 EOT;
 
-        $statement = $this->connection->prepare($sql);
-        $result = $statement->execute(['streamName' => $streamName->toString()]);
+            $statement = $this->connection->prepare($sql);
+            $statement->execute(['streamName' => $streamName->toString()]);
 
-        if (! $result) {
-            throw StreamNotFound::with($streamName);
-        }
+            $stream = $statement->fetch(PDO::FETCH_OBJ);
 
-        $stream = $statement->fetch(PDO::FETCH_OBJ);
-
-        if (! $stream) {
-            throw StreamNotFound::with($streamName);
-        }
-
-        return json_decode($stream->metadata, true);
+            if (! $stream) {
+                $event->setParam('metadata', false);
+            } else {
+                $event->setParam('metadata', json_decode($stream->metadata, true));
+            }
+        });
     }
 
     private function addStreamToStreamsTable(Stream $stream): void
