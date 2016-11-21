@@ -17,7 +17,7 @@ use Prooph\Common\Event\ActionEvent;
 use Prooph\Common\Event\ActionEventEmitter;
 use Prooph\Common\Messaging\MessageConverter;
 use Prooph\Common\Messaging\MessageFactory;
-use Prooph\EventStore\AbstractCanControlTransactionActionEventEmitterAwareEventStore;
+use Prooph\EventStore\AbstractTransactionalActionEventEmitterEventStore;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\PDO\Exception\ExtensionNotLoaded;
@@ -25,7 +25,7 @@ use Prooph\EventStore\PDO\Exception\RuntimeException;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 
-final class PostgresEventStore extends AbstractCanControlTransactionActionEventEmitterAwareEventStore
+final class PostgresEventStore extends AbstractTransactionalActionEventEmitterEventStore
 {
     /**
      * @var MessageFactory

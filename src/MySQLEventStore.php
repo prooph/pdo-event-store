@@ -17,14 +17,14 @@ use Prooph\Common\Event\ActionEvent;
 use Prooph\Common\Event\ActionEventEmitter;
 use Prooph\Common\Messaging\MessageConverter;
 use Prooph\Common\Messaging\MessageFactory;
-use Prooph\EventStore\AbstractActionEventEmitterAwareEventStore;
+use Prooph\EventStore\AbstractActionEventEmitterEventStore;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\PDO\Exception\ExtensionNotLoaded;
 use Prooph\EventStore\PDO\Exception\RuntimeException;
 use Prooph\EventStore\Stream;
 
-final class MySQLEventStore extends AbstractActionEventEmitterAwareEventStore
+final class MySQLEventStore extends AbstractActionEventEmitterEventStore
 {
     /**
      * @var MessageFactory
