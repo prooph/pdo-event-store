@@ -44,7 +44,7 @@ matrix:
     - php: 7.1
       dist: trusty
       env:
-        - DEPENDENCIES="lowest"
+        - DEPENDENCIES="--prefer-lowest --prefer-stable"
         - DRIVER="pdo_pgsql"
         - DB=postgres_9.5
       addons:
@@ -60,8 +60,7 @@ before_script:
   - if [[ $DRIVER == 'pdo_mysql' ]]; then mysql -e 'create database event_store_tests;'; fi
   - if [[ $DRIVER == 'pdo_pgsql' ]]; then psql -c 'create database event_store_tests;' -U postgres; fi
   - composer self-update
-  - if [[ $DEPENDENCIES == 'lowest' ]]; then composer update --prefer-source --prefer-lowest --prefer-stable; fi
-  - if [[ $DEPENDENCIES != 'lowest' ]]; then composer update --prefer-source; fi
+  - composer update --prefer-source $DEPENDENCIES
 
 script:
   - cp phpunit.xml.$DRIVER phpunit.xml

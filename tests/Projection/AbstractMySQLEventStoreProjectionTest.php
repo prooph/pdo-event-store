@@ -18,7 +18,8 @@ use PHPUnit_Framework_TestCase as TestCase;
 use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
-use Prooph\EventStore\ActionEventEmitterAware;
+use Prooph\EventStore\ActionEventEmitterAwareEventStore;
+use Prooph\EventStore\ActionEventEmitterAwareEventStoreEventStore;
 use Prooph\EventStore\PDO\IndexingStrategy\MySQLSimpleStreamStrategy;
 use Prooph\EventStore\PDO\MySQLEventStore;
 use Prooph\EventStore\PDO\TableNameGeneratorStrategy\Sha1;
@@ -52,13 +53,13 @@ abstract class AbstractMySQLEventStoreProjectionTest extends TestCase
 
         $this->eventStore = new MySQLEventStore(
             new ProophActionEventEmitter([
-                ActionEventEmitterAware::EVENT_APPEND_TO,
-                ActionEventEmitterAware::EVENT_CREATE,
-                ActionEventEmitterAware::EVENT_LOAD,
-                ActionEventEmitterAware::EVENT_LOAD_REVERSE,
-                ActionEventEmitterAware::EVENT_DELETE,
-                ActionEventEmitterAware::EVENT_HAS_STREAM,
-                ActionEventEmitterAware::EVENT_FETCH_STREAM_METADATA,
+                ActionEventEmitterAwareEventStore::EVENT_APPEND_TO,
+                ActionEventEmitterAwareEventStore::EVENT_CREATE,
+                ActionEventEmitterAwareEventStore::EVENT_LOAD,
+                ActionEventEmitterAwareEventStore::EVENT_LOAD_REVERSE,
+                ActionEventEmitterAwareEventStore::EVENT_DELETE,
+                ActionEventEmitterAwareEventStore::EVENT_HAS_STREAM,
+                ActionEventEmitterAwareEventStore::EVENT_FETCH_STREAM_METADATA,
             ]),
             new FQCNMessageFactory(),
             new NoOpMessageConverter(),
