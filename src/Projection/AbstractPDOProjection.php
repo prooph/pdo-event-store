@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Prooph\EventStore\PDO\Projection;
 
 use PDO;
-use Prooph\EventStore\CanControlTransactionEventStore;
+use Prooph\EventStore\TransactionalEventStore;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\PDO\Exception\RuntimeException;
 use Prooph\EventStore\Projection\AbstractProjection;
@@ -96,7 +96,7 @@ EOT;
 
     protected function resetProjection(): void
     {
-        if ($this->eventStore instanceof CanControlTransactionEventStore) {
+        if ($this->eventStore instanceof TransactionalEventStore) {
             $this->eventStore->beginTransaction();
         }
 
@@ -108,7 +108,7 @@ EOT;
 
         $this->eventStore->delete(new StreamName($this->name));
 
-        if ($this->eventStore instanceof CanControlTransactionEventStore) {
+        if ($this->eventStore instanceof TransactionalEventStore) {
             $this->eventStore->commit();
         }
     }

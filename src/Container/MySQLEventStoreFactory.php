@@ -16,7 +16,7 @@ use Prooph\Common\Event\ActionEventEmitter;
 use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
-use Prooph\EventStore\ActionEventEmitterAwareEventStore;
+use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\PDO\MySQLEventStore;
 use Prooph\EventStore\PDO\TableNameGeneratorStrategy\Sha1;
 
@@ -25,13 +25,13 @@ final class MySQLEventStoreFactory extends AbstractEventStoreFactory
     protected function createActionEventEmitter(): ActionEventEmitter
     {
         return new ProophActionEventEmitter([
-            ActionEventEmitterAwareEventStore::EVENT_APPEND_TO,
-            ActionEventEmitterAwareEventStore::EVENT_CREATE,
-            ActionEventEmitterAwareEventStore::EVENT_LOAD,
-            ActionEventEmitterAwareEventStore::EVENT_LOAD_REVERSE,
-            ActionEventEmitterAwareEventStore::EVENT_DELETE,
-            ActionEventEmitterAwareEventStore::EVENT_HAS_STREAM,
-            ActionEventEmitterAwareEventStore::EVENT_FETCH_STREAM_METADATA,
+            ActionEventEmitterEventStore::EVENT_APPEND_TO,
+            ActionEventEmitterEventStore::EVENT_CREATE,
+            ActionEventEmitterEventStore::EVENT_LOAD,
+            ActionEventEmitterEventStore::EVENT_LOAD_REVERSE,
+            ActionEventEmitterEventStore::EVENT_DELETE,
+            ActionEventEmitterEventStore::EVENT_HAS_STREAM,
+            ActionEventEmitterEventStore::EVENT_FETCH_STREAM_METADATA,
         ]);
     }
 

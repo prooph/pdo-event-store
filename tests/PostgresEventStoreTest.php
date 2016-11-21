@@ -14,7 +14,6 @@ use PDO;
 use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
-use Prooph\EventStore\CanControlTransactionActionEventEmitterAwareEventStore;
 use Prooph\EventStore\Exception\StreamNotFound;
 use Prooph\EventStore\Exception\TransactionAlreadyStarted;
 use Prooph\EventStore\PDO\IndexingStrategy\PostgresAggregateStreamStrategy;
@@ -26,6 +25,7 @@ use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
+use Prooph\EventStore\TransactionalActionEventEmitterEventStore;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
 use Ramsey\Uuid\Uuid;
@@ -62,16 +62,16 @@ final class PostgresEventStoreTest extends AbstractPDOEventStoreTest
     {
         return new PostgresEventStore(
             new ProophActionEventEmitter([
-                CanControlTransactionActionEventEmitterAwareEventStore::EVENT_APPEND_TO,
-                CanControlTransactionActionEventEmitterAwareEventStore::EVENT_CREATE,
-                CanControlTransactionActionEventEmitterAwareEventStore::EVENT_LOAD,
-                CanControlTransactionActionEventEmitterAwareEventStore::EVENT_LOAD_REVERSE,
-                CanControlTransactionActionEventEmitterAwareEventStore::EVENT_DELETE,
-                CanControlTransactionActionEventEmitterAwareEventStore::EVENT_HAS_STREAM,
-                CanControlTransactionActionEventEmitterAwareEventStore::EVENT_FETCH_STREAM_METADATA,
-                CanControlTransactionActionEventEmitterAwareEventStore::EVENT_BEGIN_TRANSACTION,
-                CanControlTransactionActionEventEmitterAwareEventStore::EVENT_COMMIT,
-                CanControlTransactionActionEventEmitterAwareEventStore::EVENT_ROLLBACK,
+                TransactionalActionEventEmitterEventStore::EVENT_APPEND_TO,
+                TransactionalActionEventEmitterEventStore::EVENT_CREATE,
+                TransactionalActionEventEmitterEventStore::EVENT_LOAD,
+                TransactionalActionEventEmitterEventStore::EVENT_LOAD_REVERSE,
+                TransactionalActionEventEmitterEventStore::EVENT_DELETE,
+                TransactionalActionEventEmitterEventStore::EVENT_HAS_STREAM,
+                TransactionalActionEventEmitterEventStore::EVENT_FETCH_STREAM_METADATA,
+                TransactionalActionEventEmitterEventStore::EVENT_BEGIN_TRANSACTION,
+                TransactionalActionEventEmitterEventStore::EVENT_COMMIT,
+                TransactionalActionEventEmitterEventStore::EVENT_ROLLBACK,
             ]),
             new FQCNMessageFactory(),
             new NoOpMessageConverter(),
@@ -124,16 +124,16 @@ final class PostgresEventStoreTest extends AbstractPDOEventStoreTest
 
         $this->eventStore = new PostgresEventStore(
             new ProophActionEventEmitter([
-                CanControlTransactionActionEventEmitterAwareEventStore::EVENT_APPEND_TO,
-                CanControlTransactionActionEventEmitterAwareEventStore::EVENT_CREATE,
-                CanControlTransactionActionEventEmitterAwareEventStore::EVENT_LOAD,
-                CanControlTransactionActionEventEmitterAwareEventStore::EVENT_LOAD_REVERSE,
-                CanControlTransactionActionEventEmitterAwareEventStore::EVENT_DELETE,
-                CanControlTransactionActionEventEmitterAwareEventStore::EVENT_HAS_STREAM,
-                CanControlTransactionActionEventEmitterAwareEventStore::EVENT_FETCH_STREAM_METADATA,
-                CanControlTransactionActionEventEmitterAwareEventStore::EVENT_BEGIN_TRANSACTION,
-                CanControlTransactionActionEventEmitterAwareEventStore::EVENT_COMMIT,
-                CanControlTransactionActionEventEmitterAwareEventStore::EVENT_ROLLBACK,
+                TransactionalActionEventEmitterEventStore::EVENT_APPEND_TO,
+                TransactionalActionEventEmitterEventStore::EVENT_CREATE,
+                TransactionalActionEventEmitterEventStore::EVENT_LOAD,
+                TransactionalActionEventEmitterEventStore::EVENT_LOAD_REVERSE,
+                TransactionalActionEventEmitterEventStore::EVENT_DELETE,
+                TransactionalActionEventEmitterEventStore::EVENT_HAS_STREAM,
+                TransactionalActionEventEmitterEventStore::EVENT_FETCH_STREAM_METADATA,
+                TransactionalActionEventEmitterEventStore::EVENT_BEGIN_TRANSACTION,
+                TransactionalActionEventEmitterEventStore::EVENT_COMMIT,
+                TransactionalActionEventEmitterEventStore::EVENT_ROLLBACK,
             ]),
             new FQCNMessageFactory(),
             new NoOpMessageConverter(),

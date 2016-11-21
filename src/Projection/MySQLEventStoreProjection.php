@@ -14,7 +14,7 @@ namespace Prooph\EventStore\PDO\Projection;
 
 use PDO;
 use Prooph\Common\Event\ActionEvent;
-use Prooph\EventStore\ActionEventEmitterAwareEventStore;
+use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\PDO\MySQLEventStore;
 use Prooph\EventStore\StreamName;
 
@@ -53,7 +53,7 @@ final class MySQLEventStoreProjection extends AbstractPDOProjection
         $this->connection->beginTransaction();
 
         $listener = $this->eventStore->getActionEventEmitter()->attachListener(
-            ActionEventEmitterAwareEventStore::EVENT_DELETE,
+            ActionEventEmitterEventStore::EVENT_DELETE,
             function (ActionEvent $event): void {
                 $event->setParam('isInTransaction', true);
             },
