@@ -50,6 +50,10 @@
             "ProophTest\\EventStore\\": "vendor/prooph/event-store/tests/"
         }
     },
+    "scripts": {
+        "cs": "php-cs-fixer fix -v --diff --dry-run",
+        "cs-fix": "php-cs-fixer fix -v --diff"
+    },
     "repositories": [
       {
         "type": "git",
