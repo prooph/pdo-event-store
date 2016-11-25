@@ -16,10 +16,6 @@ class ExtensionNotLoaded extends RuntimeException
 {
     public static function with(string $extensionNme): ExtensionNotLoaded
     {
-        return new self(
-            sprintf(
-                'Extension "' . $extensionNme . '" is not loaded'
-            )
-        );
+        return new self(sprintf('Extension "%s" is not loaded', $extensionNme));
     }
 }
