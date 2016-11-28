@@ -30,7 +30,6 @@ class PostgresEventStoreProjectionTest extends AbstractPostgresEventStoreProject
 {
     /**
      * @test
-     * @group ff
      */
     public function it_links_to_and_loads_and_continues_again(): void
     {
