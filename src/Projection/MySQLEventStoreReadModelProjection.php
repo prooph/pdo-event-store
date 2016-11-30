@@ -38,7 +38,8 @@ final class MySQLEventStoreReadModelProjection extends AbstractPDOReadModelProje
         ReadModelProjection $readModelProjection,
         string $eventStreamsTable,
         string $projectionsTable,
-        int $lockTimeoutMs
+        int $lockTimeoutMs,
+        int $cacheSize
     ) {
         parent::__construct(
             $eventStore,
@@ -47,7 +48,8 @@ final class MySQLEventStoreReadModelProjection extends AbstractPDOReadModelProje
             $readModelProjection,
             $eventStreamsTable,
             $projectionsTable,
-            $lockTimeoutMs
+            $lockTimeoutMs,
+            $cacheSize
         );
     }
 

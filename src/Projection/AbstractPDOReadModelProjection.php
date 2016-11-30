@@ -44,9 +44,10 @@ abstract class AbstractPDOReadModelProjection extends AbstractReadModelProjectio
         ReadModelProjection $readModelProjection,
         string $eventStreamsTable,
         string $projectionsTable,
-        int $lockTimeoutMs
+        int $lockTimeoutMs,
+        int $cacheSize
     ) {
-        parent::__construct($eventStore, $name, $readModelProjection);
+        parent::__construct($eventStore, $name, $readModelProjection, $cacheSize);
 
         $this->connection = $connection;
         $this->eventStreamsTable = $eventStreamsTable;
@@ -63,13 +64,13 @@ abstract class AbstractPDOReadModelProjection extends AbstractReadModelProjectio
 
     abstract protected function releaseLock(): void;
 
-    public function run(): void
+    public function run(bool $keepRunning = true): void
     {
         $this->createProjection();
         $this->acquireLock();
 
         try {
-            parent::run();
+            parent::run($keepRunning);
         } finally {
             $this->releaseLock();
         }

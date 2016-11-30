@@ -17,7 +17,6 @@ use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\Exception\RuntimeException;
 use Prooph\EventStore\Exception\StreamNotFound;
 use Prooph\EventStore\PDO\Projection\PostgresEventStoreProjection;
-use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
@@ -34,7 +33,6 @@ class PostgresEventStoreProjectionTest extends AbstractPostgresEventStoreProject
     public function it_links_to_and_loads_and_continues_again(): void
     {
         $this->prepareEventStream('user-123');
-        $this->eventStore->create(new Stream(new StreamName('foo'), new ArrayIterator()));
 
         $projection = new PostgresEventStoreProjection(
             $this->eventStore,
@@ -43,7 +41,8 @@ class PostgresEventStoreProjectionTest extends AbstractPostgresEventStoreProject
             'event_streams',
             'projections',
             1000,
-            true
+            true,
+            100
         );
 
         $projection
@@ -85,7 +84,8 @@ class PostgresEventStoreProjectionTest extends AbstractPostgresEventStoreProject
             'event_streams',
             'projections',
             1000,
-            true
+            true,
+            100
         );
 
         $projection
@@ -123,7 +123,8 @@ class PostgresEventStoreProjectionTest extends AbstractPostgresEventStoreProject
             'event_streams',
             'projections',
             1000,
-            true
+            true,
+            100
         );
 
         $projection
@@ -163,7 +164,8 @@ class PostgresEventStoreProjectionTest extends AbstractPostgresEventStoreProject
             'event_streams',
             'projections',
             1000,
-            true
+            true,
+            100
         );
 
         $projection
@@ -206,7 +208,8 @@ class PostgresEventStoreProjectionTest extends AbstractPostgresEventStoreProject
             'event_streams',
             'projections',
             1000,
-            false
+            false,
+            100
         );
 
         $projection
@@ -231,7 +234,8 @@ class PostgresEventStoreProjectionTest extends AbstractPostgresEventStoreProject
             'event_streams',
             'projections',
             1000,
-            false
+            false,
+            100
         );
 
         $projection->run();
@@ -246,7 +250,6 @@ class PostgresEventStoreProjectionTest extends AbstractPostgresEventStoreProject
         $this->expectExceptionMessage('Another projection process is already running');
 
         $this->prepareEventStream('user-123');
-        $this->eventStore->create(new Stream(new StreamName('foo'), new ArrayIterator()));
 
         $projection = new PostgresEventStoreProjection(
             $this->eventStore,
@@ -255,7 +258,8 @@ class PostgresEventStoreProjectionTest extends AbstractPostgresEventStoreProject
             'event_streams',
             'projections',
             1000,
-            true
+            true,
+            100
         );
 
         $eventStore = $this->eventStore;
@@ -272,7 +276,8 @@ class PostgresEventStoreProjectionTest extends AbstractPostgresEventStoreProject
                         'event_streams',
                         'projections',
                         1000,
-                        true
+                        true,
+                        100
                     );
 
                     $projection

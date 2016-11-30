@@ -45,9 +45,10 @@ abstract class AbstractPDOProjection extends AbstractProjection
         string $eventStreamsTable,
         string $projectionsTable,
         int $lockTimeoutMs,
-        bool $emitEnabled
+        bool $emitEnabled,
+        int $cacheSize
     ) {
-        parent::__construct($eventStore, $name, $emitEnabled);
+        parent::__construct($eventStore, $name, $emitEnabled, $cacheSize);
 
         $this->connection = $connection;
         $this->eventStreamsTable = $eventStreamsTable;
@@ -64,13 +65,13 @@ abstract class AbstractPDOProjection extends AbstractProjection
 
     abstract protected function releaseLock(): void;
 
-    public function run(): void
+    public function run(bool $keepRunning = true): void
     {
         $this->createProjection();
         $this->acquireLock();
 
         try {
-            parent::run();
+            parent::run($keepRunning);
         } finally {
             $this->releaseLock();
         }

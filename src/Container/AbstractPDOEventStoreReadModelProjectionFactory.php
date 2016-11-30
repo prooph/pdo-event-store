@@ -35,7 +35,8 @@ abstract class AbstractPDOEventStoreReadModelProjectionFactory extends AbstractP
             $container->get($config['read_model']),
             $config['event_streams_table'],
             $config['projections_table'],
-            $config['lock_timeout_ms']
+            $config['lock_timeout_ms'],
+            $config['cache_size']
         );
     }
 
@@ -53,6 +54,7 @@ abstract class AbstractPDOEventStoreReadModelProjectionFactory extends AbstractP
             'event_streams_table' => 'event_streams',
             'projections_table' => 'projection',
             'lock_timeout_ms' => 1000,
+            'cache_size' => 10000,
         ];
     }
 
