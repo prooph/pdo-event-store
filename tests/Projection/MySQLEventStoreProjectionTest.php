@@ -51,6 +51,11 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
             ->whenAny(
                 function (array $state, Message $event): array {
                     $this->linkTo('foo', $event);
+
+                    if ($event->metadata()['_aggregate_version'] === 50) {
+                        $this->stop();
+                    }
+
                     return $state;
                 }
             )
@@ -88,6 +93,11 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
             ->whenAny(
                 function (array $state, Message $event): array {
                     $this->linkTo('foo', $event);
+
+                    if ($event->metadata()['_aggregate_version'] === 100) {
+                        $this->stop();
+                    }
+
                     return $state;
                 }
             )
@@ -121,6 +131,7 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
             ->when([
                 UserCreated::class => function (array $state, UserCreated $event): void {
                     $this->emit($event);
+                    $this->stop();
                 }
             ])
             ->run();
@@ -160,6 +171,7 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
             ->when([
                 UserCreated::class => function (array $state, UserCreated $event): array {
                     $this->emit($event);
+                    $this->stop();
                     return $state;
                 }
             ])
@@ -275,41 +287,5 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
                 }
             )
             ->run();
-    }
-
-    /**
-     * @test
-     */
-    public function it_can_be_stopped_while_processing()
-    {
-        $this->prepareEventStream('user-123');
-
-        $projection = new MySQLEventStoreProjection(
-            $this->eventStore,
-            $this->connection,
-            'test_projection',
-            'event_streams',
-            'projections',
-            1000,
-            false
-        );
-
-        $projection
-            ->init(function (): array {
-                return ['count' => 0];
-            })
-            ->fromStream('user-123')
-            ->whenAny(function (array $state, Message $event): array {
-                $state['count']++;
-
-                if ($state['count'] === 10) {
-                    $this->stop();
-                }
-
-                return $state;
-            })
-            ->run();
-
-        $this->assertEquals(10, $projection->getState()['count']);
     }
 }
