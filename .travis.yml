@@ -53,9 +53,12 @@ matrix:
 cache:
   directories:
     - $HOME/.composer/cache
+    - $HOME/.php-cs-fixer
     - $HOME/.local
 
 before_script:
+  - mkdir -p "$HOME/.php-cs-fixer"
+  - phpenv config-rm xdebug.ini
   - if [[ $DB == 'mysql_5.7' ]]; then bash .travis.install-mysql-5.7.sh; fi
   - if [[ $DRIVER == 'pdo_mysql' ]]; then mysql -e 'create database event_store_tests;'; fi
   - if [[ $DRIVER == 'pdo_pgsql' ]]; then psql -c 'create database event_store_tests;' -U postgres; fi
@@ -64,7 +67,7 @@ before_script:
 
 script:
   - cp phpunit.xml.$DRIVER phpunit.xml
-  - ./vendor/bin/phpunit --coverage-text --coverage-clover ./build/logs/clover.xml
+  - if [[ $TEST_COVERAGE == 'true' ]]; then php -dzend_extension=xdebug.so ./vendor/bin/phpunit --coverage-text --coverage-clover ./build/logs/clover.xml; else ./vendor/bin/phpunit; fi
   - if [[ $EXECUTE_CS_CHECK == 'true' ]]; then ./vendor/bin/php-cs-fixer fix -v --diff --dry-run; fi
   - if [[ $EXECUTE_CS_CHECK == 'true' ]]; then ./vendor/bin/docheader check src/ tests/; fi
 
