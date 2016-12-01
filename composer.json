@@ -50,6 +50,11 @@
             "ProophTest\\EventStore\\": "vendor/prooph/event-store/tests/"
         }
     },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0-dev"
+        }
+    },
     "scripts": {
         "cs": "php-cs-fixer fix -v --diff --dry-run",
         "cs-fix": "php-cs-fixer fix -v --diff"
