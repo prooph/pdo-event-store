@@ -68,11 +68,11 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
         $events = [];
         for ($i = 51; $i < 100; $i++) {
             $events[] = UsernameChanged::with([
-                'name' => uniqid('name_')
+                'name' => uniqid('name_'),
             ], $i);
         }
         $events[] = UsernameChanged::with([
-            'name' => 'Oliver'
+            'name' => 'Oliver',
         ], 100);
 
         $this->eventStore->appendTo(new StreamName('user-123'), new ArrayIterator($events));
@@ -133,7 +133,7 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
                 UserCreated::class => function (array $state, UserCreated $event): void {
                     $this->emit($event);
                     $this->stop();
-                }
+                },
             ])
             ->run();
 
@@ -174,8 +174,9 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
                 UserCreated::class => function (array $state, UserCreated $event): array {
                     $this->emit($event);
                     $this->stop();
+
                     return $state;
-                }
+                },
             ])
             ->run();
 
@@ -285,6 +286,7 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
                         ->whenAny(
                             function (array $state, Message $event): array {
                                 $this->linkTo('foo', $event);
+
                                 return $state;
                             }
                         )

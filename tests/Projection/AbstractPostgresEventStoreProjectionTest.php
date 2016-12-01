@@ -18,12 +18,12 @@ use PHPUnit_Framework_TestCase as TestCase;
 use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
-use Prooph\EventStore\TransactionalActionEventEmitterEventStore;
 use Prooph\EventStore\PDO\IndexingStrategy\PostgresSimpleStreamStrategy;
 use Prooph\EventStore\PDO\PostgresEventStore;
 use Prooph\EventStore\PDO\TableNameGeneratorStrategy\Sha1;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
+use Prooph\EventStore\TransactionalActionEventEmitterEventStore;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
 use ProophTest\EventStore\PDO\TestUtil;
@@ -90,15 +90,15 @@ abstract class AbstractPostgresEventStoreProjectionTest extends TestCase
     {
         $events = [];
         $events[] = UserCreated::with([
-            'name' => 'Alex'
+            'name' => 'Alex',
         ], 1);
         for ($i = 2; $i < 50; $i++) {
             $events[] = UsernameChanged::with([
-                'name' => uniqid('name_')
+                'name' => uniqid('name_'),
             ], $i);
         }
         $events[] = UsernameChanged::with([
-            'name' => 'Sascha'
+            'name' => 'Sascha',
         ], 50);
 
         $this->eventStore->create(new Stream(new StreamName($name), new ArrayIterator($events)));

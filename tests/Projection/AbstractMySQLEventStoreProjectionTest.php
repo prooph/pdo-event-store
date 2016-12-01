@@ -87,15 +87,15 @@ abstract class AbstractMySQLEventStoreProjectionTest extends TestCase
     {
         $events = [];
         $events[] = UserCreated::with([
-            'name' => 'Alex'
+            'name' => 'Alex',
         ], 1);
         for ($i = 2; $i < 50; $i++) {
             $events[] = UsernameChanged::with([
-                'name' => uniqid('name_')
+                'name' => uniqid('name_'),
             ], $i);
         }
         $events[] = UsernameChanged::with([
-            'name' => 'Sascha'
+            'name' => 'Sascha',
         ], 50);
 
         $this->eventStore->create(new Stream(new StreamName($name), new ArrayIterator($events)));

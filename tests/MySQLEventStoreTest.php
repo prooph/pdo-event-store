@@ -8,6 +8,8 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace ProophTest\EventStore\PDO;
 
 use PDO;
@@ -15,11 +17,11 @@ use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\ActionEventEmitterEventStore;
-use Prooph\EventStore\PDO\IndexingStrategy\MySQLSingleStreamStrategy;
+use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\PDO\IndexingStrategy\MySQLAggregateStreamStrategy;
+use Prooph\EventStore\PDO\IndexingStrategy\MySQLSingleStreamStrategy;
 use Prooph\EventStore\PDO\MySQLEventStore;
 use Prooph\EventStore\PDO\TableNameGeneratorStrategy\Sha1;
-use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\UserCreated;

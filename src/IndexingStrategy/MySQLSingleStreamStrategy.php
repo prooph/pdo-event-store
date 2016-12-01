@@ -38,6 +38,7 @@ CREATE TABLE `$tableName` (
     UNIQUE KEY `ix_unique_event` (`version`, `aggregate_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 EOT;
+
         return [$statement];
     }
 

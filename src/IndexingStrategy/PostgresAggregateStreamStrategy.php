@@ -34,6 +34,7 @@ CREATE TABLE $tableName (
     UNIQUE (event_id)
 );
 EOT;
+
         return [$statement];
     }
 

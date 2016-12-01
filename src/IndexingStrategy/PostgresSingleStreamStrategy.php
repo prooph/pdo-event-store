@@ -37,9 +37,10 @@ CREATE TABLE $tableName (
     UNIQUE (event_id)
 );
 EOT;
+
         return [
             $statement,
-            "CREATE UNIQUE INDEX  on $tableName ((metadata->>'_aggregate_version'), (metadata->>'_aggregate_id'));"
+            "CREATE UNIQUE INDEX  on $tableName ((metadata->>'_aggregate_version'), (metadata->>'_aggregate_id'));",
         ];
     }
 

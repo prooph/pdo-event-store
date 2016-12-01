@@ -58,7 +58,7 @@ class MySQLEventStoreReadModelProjectionTest extends AbstractMySQLEventStoreProj
                     if ($event->metadata()['_aggregate_version'] === 50) {
                         $this->stop();
                     }
-                }
+                },
             ])
             ->run();
 
@@ -67,11 +67,11 @@ class MySQLEventStoreReadModelProjectionTest extends AbstractMySQLEventStoreProj
         $events = [];
         for ($i = 51; $i < 100; $i++) {
             $events[] = UsernameChanged::with([
-                'name' => uniqid('name_')
+                'name' => uniqid('name_'),
             ], $i);
         }
         $events[] = UsernameChanged::with([
-            'name' => 'Oliver'
+            'name' => 'Oliver',
         ], 100);
 
         $this->eventStore->appendTo(new StreamName('user-123'), new ArrayIterator($events));
@@ -99,7 +99,7 @@ class MySQLEventStoreReadModelProjectionTest extends AbstractMySQLEventStoreProj
                     if ($event->metadata()['_aggregate_version'] === 100) {
                         $this->stop();
                     }
-                }
+                },
             ])
             ->run();
 
@@ -169,8 +169,9 @@ class MySQLEventStoreReadModelProjectionTest extends AbstractMySQLEventStoreProj
                 UserCreated::class => function (array $state, UserCreated $event): array {
                     $this->readModelProjection()->insert('name', $event->payload()['name']);
                     $this->stop();
+
                     return $state;
-                }
+                },
             ])
             ->run();
 

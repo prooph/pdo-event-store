@@ -20,13 +20,13 @@ abstract class TestUtil
      * List of URL schemes from a database URL and their mappings to driver.
      */
     private static $driverSchemeAliases = [
-        'pdo_mysql'  => 'mysql',
-        'pdo_pgsql'  => 'pgsql',
+        'pdo_mysql' => 'mysql',
+        'pdo_pgsql' => 'pgsql',
     ];
 
     private static $driverSchemeSeparators = [
-        'pdo_mysql'  => ';',
-        'pdo_pgsql'  => ' ',
+        'pdo_mysql' => ';',
+        'pdo_pgsql' => ' ',
     ];
 
     public static function getConnection(): PDO
@@ -90,7 +90,7 @@ abstract class TestUtil
             'password' => $GLOBALS['db_password'],
             'host' => $GLOBALS['db_host'],
             'dbname' => $GLOBALS['db_name'],
-            'port' => $GLOBALS['db_port']
+            'port' => $GLOBALS['db_port'],
         ];
     }
 }

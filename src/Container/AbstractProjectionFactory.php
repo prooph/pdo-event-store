@@ -39,13 +39,13 @@ abstract class AbstractProjectionFactory implements
      * @var array
      */
     private $driverSchemeAliases = [
-        'pdo_mysql'  => 'mysql',
-        'pdo_pgsql'  => 'pgsql',
+        'pdo_mysql' => 'mysql',
+        'pdo_pgsql' => 'pgsql',
     ];
 
     private $driverSchemeSeparators = [
-        'pdo_mysql'  => ';',
-        'pdo_pgsql'  => ' ',
+        'pdo_mysql' => ';',
+        'pdo_pgsql' => ' ',
     ];
 
     /**
@@ -71,6 +71,7 @@ abstract class AbstractProjectionFactory implements
                 sprintf('The first argument must be of type %s', ContainerInterface::class)
             );
         }
+
         return (new static($name))->__invoke($arguments[0]);
     }
 
@@ -88,6 +89,7 @@ abstract class AbstractProjectionFactory implements
     {
         $eventStoreName = $config['event_store'];
         $eventStoreFactoryClassName = $this->getEventStoreFactoryClassName();
+
         return $eventStoreFactoryClassName::$eventStoreName($container);
     }
 

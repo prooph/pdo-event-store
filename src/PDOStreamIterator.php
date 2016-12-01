@@ -78,7 +78,7 @@ final class PDOStreamIterator implements Iterator
         MessageFactory $messageFactory,
         array $sql,
         ?int $batchSize,
-        int $fromNumber = 0,
+        int $fromNumber,
         int $count,
         bool $forward
     ) {
@@ -113,7 +113,7 @@ final class PDOStreamIterator implements Iterator
             'uuid' => $this->currentItem->event_id,
             'created_at' => $createdAt,
             'payload' => json_decode($this->currentItem->payload, true),
-            'metadata' => json_decode($this->currentItem->metadata, true)
+            'metadata' => json_decode($this->currentItem->metadata, true),
         ]);
     }
 
@@ -125,6 +125,7 @@ final class PDOStreamIterator implements Iterator
         if (($this->count - 1) === $this->currentKey) {
             $this->currentKey = -1;
             $this->currentItem = false;
+
             return;
         }
 

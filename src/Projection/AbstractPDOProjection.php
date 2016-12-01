@@ -13,11 +13,11 @@ declare(strict_types=1);
 namespace Prooph\EventStore\PDO\Projection;
 
 use PDO;
-use Prooph\EventStore\TransactionalEventStore;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\PDO\Exception\RuntimeException;
 use Prooph\EventStore\Projection\AbstractProjection;
 use Prooph\EventStore\StreamName;
+use Prooph\EventStore\TransactionalEventStore;
 
 abstract class AbstractPDOProjection extends AbstractProjection
 {

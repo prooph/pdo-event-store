@@ -8,21 +8,23 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace ProophTest\EventStore\PDO;
 
 use PDO;
 use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
+use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Exception\StreamNotFound;
 use Prooph\EventStore\Exception\TransactionAlreadyStarted;
+use Prooph\EventStore\Metadata\MetadataMatcher;
+use Prooph\EventStore\Metadata\Operator;
 use Prooph\EventStore\PDO\IndexingStrategy\PostgresAggregateStreamStrategy;
 use Prooph\EventStore\PDO\IndexingStrategy\PostgresSingleStreamStrategy;
 use Prooph\EventStore\PDO\PostgresEventStore;
 use Prooph\EventStore\PDO\TableNameGeneratorStrategy\Sha1;
-use Prooph\EventStore\Exception\ConcurrencyException;
-use Prooph\EventStore\Metadata\MetadataMatcher;
-use Prooph\EventStore\Metadata\Operator;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use Prooph\EventStore\TransactionalActionEventEmitterEventStore;

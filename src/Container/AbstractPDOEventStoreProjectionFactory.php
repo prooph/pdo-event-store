@@ -28,6 +28,7 @@ abstract class AbstractPDOEventStoreProjectionFactory extends AbstractProjection
         $eventStore = $this->getEventStore($container, $config);
 
         $instanceClassName = $this->getInstanceClassName();
+
         return new $instanceClassName(
             $eventStore,
             $connection,

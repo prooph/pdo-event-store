@@ -138,7 +138,7 @@ final class MySQLEventStore extends AbstractActionEventEmitterEventStore
                 'event_name',
                 'payload',
                 'metadata',
-                'created_at'
+                'created_at',
             ];
 
             if ($this->indexingStrategy->oneStreamPerAggregate()) {
@@ -167,6 +167,7 @@ final class MySQLEventStore extends AbstractActionEventEmitterEventStore
 
             if (empty($data)) {
                 $event->setParam('result', true);
+
                 return;
             }
 
@@ -192,6 +193,7 @@ final class MySQLEventStore extends AbstractActionEventEmitterEventStore
                 }
 
                 $event->setParam('result', false);
+
                 return;
             }
 
@@ -205,6 +207,7 @@ final class MySQLEventStore extends AbstractActionEventEmitterEventStore
 
             if (! $result) {
                 $event->setParam('result', false);
+
                 return;
             }
 
@@ -228,7 +231,7 @@ final class MySQLEventStore extends AbstractActionEventEmitterEventStore
             $tableName = $this->tableNameGeneratorStrategy->__invoke($streamName);
             $sql = [
                 'from' => "SELECT * FROM $tableName",
-                'orderBy' => "ORDER BY no ASC",
+                'orderBy' => 'ORDER BY no ASC',
             ];
 
             foreach ($metadataMatcher->data() as $match) {
@@ -264,6 +267,7 @@ final class MySQLEventStore extends AbstractActionEventEmitterEventStore
 
             if (0 === $statement->rowCount()) {
                 $event->setParam('stream', false);
+
                 return;
             }
 
@@ -299,7 +303,7 @@ final class MySQLEventStore extends AbstractActionEventEmitterEventStore
             $tableName = $this->tableNameGeneratorStrategy->__invoke($streamName);
             $sql = [
                 'from' => "SELECT * FROM $tableName",
-                'orderBy' => "ORDER BY no DESC",
+                'orderBy' => 'ORDER BY no DESC',
             ];
 
             foreach ($metadataMatcher->data() as $match) {
@@ -338,6 +342,7 @@ final class MySQLEventStore extends AbstractActionEventEmitterEventStore
 
             if (0 === $statement->rowCount()) {
                 $event->setParam('stream', false);
+
                 return;
             }
 
@@ -445,7 +450,7 @@ EOT;
         $result = $statement->execute([
             ':realStreamName' => $realStreamName,
             ':streamName' => $streamName,
-            ':metadata' => $metadata
+            ':metadata' => $metadata,
         ]);
 
         if (! $result) {

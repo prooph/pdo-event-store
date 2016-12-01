@@ -16,9 +16,9 @@ use Prooph\Common\Event\ActionEventEmitter;
 use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
-use Prooph\EventStore\TransactionalActionEventEmitterEventStore;
 use Prooph\EventStore\PDO\PostgresEventStore;
 use Prooph\EventStore\PDO\TableNameGeneratorStrategy\Sha1;
+use Prooph\EventStore\TransactionalActionEventEmitterEventStore;
 
 final class PostgresEventStoreFactory extends AbstractEventStoreFactory
 {
@@ -42,7 +42,6 @@ final class PostgresEventStoreFactory extends AbstractEventStoreFactory
     {
         return PostgresEventStore::class;
     }
-
 
     public function defaultOptions(): array
     {

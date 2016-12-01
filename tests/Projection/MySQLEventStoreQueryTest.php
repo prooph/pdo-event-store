@@ -46,8 +46,9 @@ class MySQLEventStoreQueryTest extends AbstractMySQLEventStoreProjectionTest
             ->when([
                 UsernameChanged::class => function (array $state, UsernameChanged $event): array {
                     $state['count']++;
+
                     return $state;
-                }
+                },
             ])
             ->run();
 
@@ -82,6 +83,7 @@ class MySQLEventStoreQueryTest extends AbstractMySQLEventStoreProjectionTest
             ->whenAny(
                 function (array $state, Message $event): array {
                     $state['count']++;
+
                     return $state;
                 }
             )
@@ -113,6 +115,7 @@ class MySQLEventStoreQueryTest extends AbstractMySQLEventStoreProjectionTest
             ->whenAny(
                 function (array $state, Message $event): array {
                     $state['count']++;
+
                     return $state;
                 }
             )
@@ -143,6 +146,7 @@ class MySQLEventStoreQueryTest extends AbstractMySQLEventStoreProjectionTest
             ->whenAny(
                 function (array $state, Message $event): array {
                     $state['count']++;
+
                     return $state;
                 }
             )
@@ -175,8 +179,9 @@ class MySQLEventStoreQueryTest extends AbstractMySQLEventStoreProjectionTest
             ->when([
                 UserCreated::class => function (array $state, Message $event): array {
                     $state['count']++;
+
                     return $state;
-                }
+                },
             ])
             ->run();
 
@@ -201,8 +206,9 @@ class MySQLEventStoreQueryTest extends AbstractMySQLEventStoreProjectionTest
             ->when([
                 UsernameChanged::class => function (array $state, Message $event): array {
                     $state['count']++;
+
                     return $state;
-                }
+                },
             ])
             ->run();
 
@@ -211,7 +217,7 @@ class MySQLEventStoreQueryTest extends AbstractMySQLEventStoreProjectionTest
         $events = [];
         for ($i = 51; $i <= 100; $i++) {
             $events[] = UsernameChanged::with([
-                'name' => uniqid('name_')
+                'name' => uniqid('name_'),
             ], $i);
         }
 

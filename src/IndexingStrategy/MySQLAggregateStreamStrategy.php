@@ -34,6 +34,7 @@ CREATE TABLE `$tableName` (
     UNIQUE KEY `ix_event_id` (`event_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 EOT;
+
         return [$statement];
     }
 
