@@ -18,9 +18,8 @@ use PHPUnit_Framework_TestCase as TestCase;
 use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
-use Prooph\EventStore\PDO\IndexingStrategy\PostgresSimpleStreamStrategy;
+use Prooph\EventStore\PDO\PersistenceStrategy\PostgresSimpleStreamStrategy;
 use Prooph\EventStore\PDO\PostgresEventStore;
-use Prooph\EventStore\PDO\TableNameGeneratorStrategy\Sha1;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use Prooph\EventStore\TransactionalActionEventEmitterEventStore;
@@ -66,8 +65,7 @@ abstract class AbstractPostgresEventStoreProjectionTest extends TestCase
             new FQCNMessageFactory(),
             new NoOpMessageConverter(),
             TestUtil::getConnection(),
-            new PostgresSimpleStreamStrategy(),
-            new Sha1()
+            new PostgresSimpleStreamStrategy()
         );
     }
 

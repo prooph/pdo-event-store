@@ -10,12 +10,13 @@
 
 declare(strict_types=1);
 
-namespace Prooph\EventStore\PDO\IndexingStrategy;
+namespace Prooph\EventStore\PDO\PersistenceStrategy;
 
-use Prooph\Common\Messaging\Message;
-use Prooph\EventStore\PDO\IndexingStrategy;
+use Iterator;
+use Prooph\EventStore\PDO\PersistenceStrategy;
+use Prooph\EventStore\StreamName;
 
-final class MySQLSimpleStreamStrategy implements IndexingStrategy
+final class MySQLSimpleStreamStrategy implements PersistenceStrategy
 {
     /**
      * @param string $tableName
@@ -50,13 +51,17 @@ EOT;
         ];
     }
 
-    public function prepareData(Message $message, array $data): array
+    public function prepareData(Iterator $streamEvents): array
     {
-        $data[] = $message->uuid()->toString();
-        $data[] = $message->messageName();
-        $data[] = json_encode($message->payload());
-        $data[] = json_encode($message->metadata());
-        $data[] = $message->createdAt()->format('Y-m-d\TH:i:s.u');
+        $data = [];
+
+        foreach ($streamEvents as $event) {
+            $data[] = $event->uuid()->toString();
+            $data[] = $event->messageName();
+            $data[] = json_encode($event->payload());
+            $data[] = json_encode($event->metadata());
+            $data[] = $event->createdAt()->format('Y-m-d\TH:i:s.u');
+        }
 
         return $data;
     }
@@ -67,5 +72,10 @@ EOT;
     public function uniqueViolationErrorCodes(): array
     {
         return ['23000'];
+    }
+
+    public function generateTableName(StreamName $streamName): string
+    {
+        return '_' . sha1($streamName->toString());
     }
 }

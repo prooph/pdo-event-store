@@ -19,10 +19,9 @@ use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\PDO\Exception\RuntimeException;
-use Prooph\EventStore\PDO\IndexingStrategy\MySQLAggregateStreamStrategy;
-use Prooph\EventStore\PDO\IndexingStrategy\MySQLSingleStreamStrategy;
 use Prooph\EventStore\PDO\MySQLEventStore;
-use Prooph\EventStore\PDO\TableNameGeneratorStrategy\Sha1;
+use Prooph\EventStore\PDO\PersistenceStrategy\MySQLAggregateStreamStrategy;
+use Prooph\EventStore\PDO\PersistenceStrategy\MySQLSingleStreamStrategy;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\TestDomainEvent;
@@ -67,8 +66,7 @@ final class MySQLEventStoreTest extends AbstractPDOEventStoreTest
             new FQCNMessageFactory(),
             new NoOpMessageConverter(),
             $connection,
-            new MySQLAggregateStreamStrategy(),
-            new Sha1()
+            new MySQLAggregateStreamStrategy()
         );
     }
 
@@ -126,8 +124,7 @@ final class MySQLEventStoreTest extends AbstractPDOEventStoreTest
             new FQCNMessageFactory(),
             new NoOpMessageConverter(),
             $this->connection,
-            new MySQLSingleStreamStrategy(),
-            new Sha1()
+            new MySQLSingleStreamStrategy()
         );
 
         $streamEvent = UserCreated::with(

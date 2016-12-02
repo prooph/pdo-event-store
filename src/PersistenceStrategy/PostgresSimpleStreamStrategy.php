@@ -10,13 +10,13 @@
 
 declare(strict_types=1);
 
-namespace Prooph\EventStore\PDO\IndexingStrategy;
+namespace Prooph\EventStore\PDO\PersistenceStrategy;
 
-use Prooph\Common\Messaging\Message;
-use Prooph\EventStore\PDO\Exception;
-use Prooph\EventStore\PDO\IndexingStrategy;
+use Iterator;
+use Prooph\EventStore\PDO\PersistenceStrategy;
+use Prooph\EventStore\StreamName;
 
-final class PostgresAggregateStreamStrategy implements IndexingStrategy
+final class PostgresSimpleStreamStrategy implements PersistenceStrategy
 {
     /**
      * @param string $tableName
@@ -37,13 +37,14 @@ CREATE TABLE $tableName (
 );
 EOT;
 
-        return [$statement];
+        return [
+            $statement,
+        ];
     }
 
     public function columnNames(): array
     {
         return [
-            'no',
             'event_id',
             'event_name',
             'payload',
@@ -52,18 +53,17 @@ EOT;
         ];
     }
 
-    public function prepareData(Message $message, array $data): array
+    public function prepareData(Iterator $streamEvents): array
     {
-        if (! isset($message->metadata()['_aggregate_version'])) {
-            throw new Exception\RuntimeException('_aggregate_version is missing in metadata');
-        }
+        $data = [];
 
-        $data[] = $message->metadata()['_aggregate_version'];
-        $data[] = $message->uuid()->toString();
-        $data[] = $message->messageName();
-        $data[] = json_encode($message->payload());
-        $data[] = json_encode($message->metadata());
-        $data[] = $message->createdAt()->format('Y-m-d\TH:i:s.u');
+        foreach ($streamEvents as $event) {
+            $data[] = $event->uuid()->toString();
+            $data[] = $event->messageName();
+            $data[] = json_encode($event->payload());
+            $data[] = json_encode($event->metadata());
+            $data[] = $event->createdAt()->format('Y-m-d\TH:i:s.u');
+        }
 
         return $data;
     }
@@ -74,5 +74,10 @@ EOT;
     public function uniqueViolationErrorCodes(): array
     {
         return ['23000', '23505'];
+    }
+
+    public function generateTableName(StreamName $streamName): string
+    {
+        return '_' . sha1($streamName->toString());
     }
 }

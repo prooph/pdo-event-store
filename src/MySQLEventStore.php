@@ -42,14 +42,9 @@ final class MySQLEventStore extends AbstractActionEventEmitterEventStore
     private $connection;
 
     /**
-     * @var IndexingStrategy
+     * @var PersistenceStrategy
      */
-    private $indexingStrategy;
-
-    /**
-     * @var TableNameGeneratorStrategy
-     */
-    private $tableNameGeneratorStrategy;
+    private $persistenceStrategy;
 
     /**
      * @var int
@@ -69,8 +64,7 @@ final class MySQLEventStore extends AbstractActionEventEmitterEventStore
         MessageFactory $messageFactory,
         MessageConverter $messageConverter,
         PDO $connection,
-        IndexingStrategy $indexingStrategy,
-        TableNameGeneratorStrategy $tableNameGeneratorStrategy,
+        PersistenceStrategy $persistenceStrategy,
         int $loadBatchSize = 10000,
         string $eventStreamsTable = 'event_streams'
     ) {
@@ -82,8 +76,7 @@ final class MySQLEventStore extends AbstractActionEventEmitterEventStore
         $this->messageFactory = $messageFactory;
         $this->messageConverter = $messageConverter;
         $this->connection = $connection;
-        $this->indexingStrategy = $indexingStrategy;
-        $this->tableNameGeneratorStrategy = $tableNameGeneratorStrategy;
+        $this->persistenceStrategy = $persistenceStrategy;
         $this->loadBatchSize = $loadBatchSize;
         $this->eventStreamsTable = $eventStreamsTable;
 
@@ -95,7 +88,7 @@ final class MySQLEventStore extends AbstractActionEventEmitterEventStore
                 $streamName = $stream->streamName();
 
                 try {
-                    $tableName = $this->tableNameGeneratorStrategy->__invoke($streamName);
+                    $tableName = $this->persistenceStrategy->generateTableName($streamName);
                     $this->createSchemaFor($tableName);
                 } catch (RuntimeException $e) {
                     $this->connection->exec("DROP TABLE $tableName;");
@@ -133,15 +126,9 @@ final class MySQLEventStore extends AbstractActionEventEmitterEventStore
             $streamName = $event->getParam('streamName');
             $streamEvents = $event->getParam('streamEvents');
 
-            $columnNames = $this->indexingStrategy->columnNames();
-
-            $data = [];
-            $countEntries = 0;
-
-            foreach ($streamEvents as $streamEvent) {
-                $countEntries++;
-                $data = $this->indexingStrategy->prepareData($streamEvent, $data);
-            }
+            $countEntries = iterator_count($streamEvents);
+            $columnNames = $this->persistenceStrategy->columnNames();
+            $data = $this->persistenceStrategy->prepareData($streamEvents);
 
             if (empty($data)) {
                 $event->setParam('result', true);
@@ -149,7 +136,7 @@ final class MySQLEventStore extends AbstractActionEventEmitterEventStore
                 return;
             }
 
-            $tableName = $this->tableNameGeneratorStrategy->__invoke($streamName);
+            $tableName = $this->persistenceStrategy->generateTableName($streamName);
 
             $rowPlaces = '(' . implode(', ', array_fill(0, count($columnNames), '?')) . ')';
             $allPlaces = implode(', ', array_fill(0, $countEntries, $rowPlaces));
@@ -179,7 +166,7 @@ final class MySQLEventStore extends AbstractActionEventEmitterEventStore
                 $this->connection->commit();
             }
 
-            if (in_array($statement->errorCode(), $this->indexingStrategy->uniqueViolationErrorCodes(), true)) {
+            if (in_array($statement->errorCode(), $this->persistenceStrategy->uniqueViolationErrorCodes(), true)) {
                 throw new ConcurrencyException();
             }
 
@@ -206,7 +193,7 @@ final class MySQLEventStore extends AbstractActionEventEmitterEventStore
                 $metadataMatcher = new MetadataMatcher();
             }
 
-            $tableName = $this->tableNameGeneratorStrategy->__invoke($streamName);
+            $tableName = $this->persistenceStrategy->generateTableName($streamName);
             $sql = [
                 'from' => "SELECT * FROM $tableName",
                 'orderBy' => 'ORDER BY no ASC',
@@ -278,7 +265,7 @@ final class MySQLEventStore extends AbstractActionEventEmitterEventStore
                 $metadataMatcher = new MetadataMatcher();
             }
 
-            $tableName = $this->tableNameGeneratorStrategy->__invoke($streamName);
+            $tableName = $this->persistenceStrategy->generateTableName($streamName);
             $sql = [
                 'from' => "SELECT * FROM $tableName",
                 'orderBy' => 'ORDER BY no DESC',
@@ -354,7 +341,7 @@ EOT;
             $statement = $this->connection->prepare($deleteEventStreamTableEntrySql);
             $statement->execute([$streamName->toString()]);
 
-            $encodedStreamName = $this->tableNameGeneratorStrategy->__invoke($streamName);
+            $encodedStreamName = $this->persistenceStrategy->generateTableName($streamName);
             $deleteEventStreamSql = <<<EOT
 DROP TABLE IF EXISTS $encodedStreamName;
 EOT;
@@ -416,7 +403,7 @@ EOT;
     private function addStreamToStreamsTable(Stream $stream): void
     {
         $realStreamName = $stream->streamName()->toString();
-        $streamName = $this->tableNameGeneratorStrategy->__invoke($stream->streamName());
+        $streamName = $this->persistenceStrategy->generateTableName($stream->streamName());
         $metadata = json_encode($stream->metadata());
 
         $sql = <<<EOT
@@ -438,7 +425,7 @@ EOT;
 
     private function createSchemaFor(string $tableName): void
     {
-        $schema = $this->indexingStrategy->createSchema($tableName);
+        $schema = $this->persistenceStrategy->createSchema($tableName);
 
         foreach ($schema as $command) {
             $statement = $this->connection->prepare($command);

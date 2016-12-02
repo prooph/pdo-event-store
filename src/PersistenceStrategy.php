@@ -12,9 +12,10 @@ declare(strict_types=1);
 
 namespace Prooph\EventStore\PDO;
 
-use Prooph\Common\Messaging\Message;
+use Iterator;
+use Prooph\EventStore\StreamName;
 
-interface IndexingStrategy
+interface PersistenceStrategy
 {
     /**
      * @param string $tableName
@@ -24,10 +25,12 @@ interface IndexingStrategy
 
     public function columnNames(): array;
 
-    public function prepareData(Message $message, array $data): array;
+    public function prepareData(Iterator $streamEvents): array;
 
     /**
      * @return string[]
      */
     public function uniqueViolationErrorCodes(): array;
+
+    public function generateTableName(StreamName $streamName): string;
 }

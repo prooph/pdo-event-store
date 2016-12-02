@@ -22,10 +22,9 @@ use Prooph\EventStore\Exception\TransactionAlreadyStarted;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;
 use Prooph\EventStore\PDO\Exception\RuntimeException;
-use Prooph\EventStore\PDO\IndexingStrategy\PostgresAggregateStreamStrategy;
-use Prooph\EventStore\PDO\IndexingStrategy\PostgresSingleStreamStrategy;
+use Prooph\EventStore\PDO\PersistenceStrategy\PostgresAggregateStreamStrategy;
+use Prooph\EventStore\PDO\PersistenceStrategy\PostgresSingleStreamStrategy;
 use Prooph\EventStore\PDO\PostgresEventStore;
-use Prooph\EventStore\PDO\TableNameGeneratorStrategy\Sha1;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use Prooph\EventStore\TransactionalActionEventEmitterEventStore;
@@ -80,8 +79,7 @@ final class PostgresEventStoreTest extends AbstractPDOEventStoreTest
             new FQCNMessageFactory(),
             new NoOpMessageConverter(),
             $connection,
-            new PostgresAggregateStreamStrategy(),
-            new Sha1()
+            new PostgresAggregateStreamStrategy()
         );
     }
 
@@ -142,8 +140,7 @@ final class PostgresEventStoreTest extends AbstractPDOEventStoreTest
             new FQCNMessageFactory(),
             new NoOpMessageConverter(),
             $this->connection,
-            new PostgresSingleStreamStrategy(),
-            new Sha1()
+            new PostgresSingleStreamStrategy()
         );
 
         $streamEvent = UserCreated::with(
