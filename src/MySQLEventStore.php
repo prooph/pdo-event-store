@@ -140,7 +140,7 @@ final class MySQLEventStore extends AbstractActionEventEmitterEventStore
 
             foreach ($streamEvents as $streamEvent) {
                 $countEntries++;
-                $this->indexingStrategy->prepareData($streamEvent, $data);
+                $data = $this->indexingStrategy->prepareData($streamEvent, $data);
             }
 
             if (empty($data)) {

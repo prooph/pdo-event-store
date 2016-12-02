@@ -50,13 +50,15 @@ EOT;
         ];
     }
 
-    public function prepareData(Message $message, array &$data): void
+    public function prepareData(Message $message, array $data): array
     {
         $data[] = $message->uuid()->toString();
         $data[] = $message->messageName();
         $data[] = json_encode($message->payload());
         $data[] = json_encode($message->metadata());
         $data[] = $message->createdAt()->format('Y-m-d\TH:i:s.u');
+
+        return $data;
     }
 
     /**

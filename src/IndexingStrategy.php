@@ -24,7 +24,7 @@ interface IndexingStrategy
 
     public function columnNames(): array;
 
-    public function prepareData(Message $message, array &$data): void;
+    public function prepareData(Message $message, array $data): array;
 
     /**
      * @return string[]

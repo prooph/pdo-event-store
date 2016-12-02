@@ -43,6 +43,7 @@ EOT;
     public function columnNames(): array
     {
         return [
+            'no',
             'event_id',
             'event_name',
             'payload',
@@ -51,7 +52,7 @@ EOT;
         ];
     }
 
-    public function prepareData(Message $message, array &$data): void
+    public function prepareData(Message $message, array $data): array
     {
         if (! isset($message->metadata()['_aggregate_version'])) {
             throw new Exception\RuntimeException('_aggregate_version is missing in metadata');
@@ -63,6 +64,8 @@ EOT;
         $data[] = json_encode($message->payload());
         $data[] = json_encode($message->metadata());
         $data[] = $message->createdAt()->format('Y-m-d\TH:i:s.u');
+
+        return $data;
     }
 
     /**
