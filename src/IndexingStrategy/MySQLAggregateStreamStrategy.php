@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace Prooph\EventStore\PDO\IndexingStrategy;
 
+use Prooph\Common\Messaging\Message;
+use Prooph\EventStore\PDO\Exception;
 use Prooph\EventStore\PDO\IndexingStrategy;
 
 final class MySQLAggregateStreamStrategy implements IndexingStrategy
@@ -38,9 +40,30 @@ EOT;
         return [$statement];
     }
 
-    public function oneStreamPerAggregate(): bool
+    public function columnNames(): array
     {
-        return true;
+        return [
+            'no',
+            'event_id',
+            'event_name',
+            'payload',
+            'metadata',
+            'created_at',
+        ];
+    }
+
+    public function prepareData(Message $message, array &$data): void
+    {
+        if (! isset($message->metadata()['_aggregate_version'])) {
+            throw new Exception\RuntimeException('_aggregate_version is missing in metadata');
+        }
+
+        $data[] = $message->metadata()['_aggregate_version'];
+        $data[] = $message->uuid()->toString();
+        $data[] = $message->messageName();
+        $data[] = json_encode($message->payload());
+        $data[] = json_encode($message->metadata());
+        $data[] = $message->createdAt()->format('Y-m-d\TH:i:s.u');
     }
 
     /**

@@ -133,36 +133,14 @@ final class MySQLEventStore extends AbstractActionEventEmitterEventStore
             $streamName = $event->getParam('streamName');
             $streamEvents = $event->getParam('streamEvents');
 
-            $columnNames = [
-                'event_id',
-                'event_name',
-                'payload',
-                'metadata',
-                'created_at',
-            ];
-
-            if ($this->indexingStrategy->oneStreamPerAggregate()) {
-                $columnNames[] = 'no';
-            }
+            $columnNames = $this->indexingStrategy->columnNames();
 
             $data = [];
             $countEntries = 0;
 
             foreach ($streamEvents as $streamEvent) {
                 $countEntries++;
-                $data[] = $streamEvent->uuid()->toString();
-                $data[] = $streamEvent->messageName();
-                $data[] = json_encode($streamEvent->payload());
-                $data[] = json_encode($streamEvent->metadata());
-                $data[] = $streamEvent->createdAt()->format('Y-m-d\TH:i:s.u');
-
-                if ($this->indexingStrategy->oneStreamPerAggregate()) {
-                    if (! isset($streamEvent->metadata()['_aggregate_version'])) {
-                        throw new RuntimeException('_aggregate_version is missing in metadata');
-                    }
-
-                    $data[] = $streamEvent->metadata()['_aggregate_version'];
-                }
+                $this->indexingStrategy->prepareData($streamEvent, $data);
             }
 
             if (empty($data)) {

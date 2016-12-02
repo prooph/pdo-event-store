@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace Prooph\EventStore\PDO;
 
+use Prooph\Common\Messaging\Message;
+
 interface IndexingStrategy
 {
     /**
@@ -20,7 +22,9 @@ interface IndexingStrategy
      */
     public function createSchema(string $tableName): array;
 
-    public function oneStreamPerAggregate(): bool;
+    public function columnNames(): array;
+
+    public function prepareData(Message $message, array &$data): void;
 
     /**
      * @return string[]

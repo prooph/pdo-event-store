@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Prooph\EventStore\PDO\IndexingStrategy;
 
+use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\PDO\IndexingStrategy;
 
 final class PostgresSimpleStreamStrategy implements IndexingStrategy
@@ -40,9 +41,24 @@ EOT;
         ];
     }
 
-    public function oneStreamPerAggregate(): bool
+    public function columnNames(): array
     {
-        return false;
+        return [
+            'event_id',
+            'event_name',
+            'payload',
+            'metadata',
+            'created_at',
+        ];
+    }
+
+    public function prepareData(Message $message, array &$data): void
+    {
+        $data[] = $message->uuid()->toString();
+        $data[] = $message->messageName();
+        $data[] = json_encode($message->payload());
+        $data[] = json_encode($message->metadata());
+        $data[] = $message->createdAt()->format('Y-m-d\TH:i:s.u');
     }
 
     /**
