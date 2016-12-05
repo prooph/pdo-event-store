@@ -18,12 +18,13 @@ use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\Exception\ConcurrencyException;
-use Prooph\EventStore\PDO\IndexingStrategy\MySQLAggregateStreamStrategy;
-use Prooph\EventStore\PDO\IndexingStrategy\MySQLSingleStreamStrategy;
+use Prooph\EventStore\PDO\Exception\RuntimeException;
 use Prooph\EventStore\PDO\MySQLEventStore;
-use Prooph\EventStore\PDO\TableNameGeneratorStrategy\Sha1;
+use Prooph\EventStore\PDO\PersistenceStrategy\MySQLAggregateStreamStrategy;
+use Prooph\EventStore\PDO\PersistenceStrategy\MySQLSingleStreamStrategy;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
+use ProophTest\EventStore\Mock\TestDomainEvent;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
 use Ramsey\Uuid\Uuid;
@@ -65,8 +66,7 @@ final class MySQLEventStoreTest extends AbstractPDOEventStoreTest
             new FQCNMessageFactory(),
             new NoOpMessageConverter(),
             $connection,
-            new MySQLAggregateStreamStrategy(),
-            new Sha1()
+            new MySQLAggregateStreamStrategy()
         );
     }
 
@@ -124,8 +124,7 @@ final class MySQLEventStoreTest extends AbstractPDOEventStoreTest
             new FQCNMessageFactory(),
             new NoOpMessageConverter(),
             $this->connection,
-            new MySQLSingleStreamStrategy(),
-            new Sha1()
+            new MySQLSingleStreamStrategy()
         );
 
         $streamEvent = UserCreated::with(
@@ -153,5 +152,25 @@ final class MySQLEventStoreTest extends AbstractPDOEventStoreTest
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_type', 'user');
 
         $this->eventStore->appendTo(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_using_aggregate_stream_strategy_if_aggregate_version_is_missing_in_metadata(): void
+    {
+        $this->expectException(RuntimeException::class);
+
+        $event = TestDomainEvent::fromArray([
+            'uuid' => Uuid::uuid4()->toString(),
+            'message_name' => 'test-message',
+            'created_at' => new \DateTimeImmutable('now', new \DateTimeZone('UTC')),
+            'payload' => [],
+            'metadata' => [],
+        ]);
+
+        $stream = new Stream(new StreamName('Prooph\Model\User'), new \ArrayIterator([$event]));
+
+        $this->eventStore->create($stream);
     }
 }

@@ -10,11 +10,13 @@
 
 declare(strict_types=1);
 
-namespace Prooph\EventStore\PDO\IndexingStrategy;
+namespace Prooph\EventStore\PDO\PersistenceStrategy;
 
-use Prooph\EventStore\PDO\IndexingStrategy;
+use Iterator;
+use Prooph\EventStore\PDO\PersistenceStrategy;
+use Prooph\EventStore\StreamName;
 
-final class PostgresSingleStreamStrategy implements IndexingStrategy
+final class PostgresSingleStreamStrategy implements PersistenceStrategy
 {
     /**
      * @param string $tableName
@@ -44,9 +46,30 @@ EOT;
         ];
     }
 
-    public function oneStreamPerAggregate(): bool
+    public function columnNames(): array
     {
-        return false;
+        return [
+            'event_id',
+            'event_name',
+            'payload',
+            'metadata',
+            'created_at',
+        ];
+    }
+
+    public function prepareData(Iterator $streamEvents): array
+    {
+        $data = [];
+
+        foreach ($streamEvents as $event) {
+            $data[] = $event->uuid()->toString();
+            $data[] = $event->messageName();
+            $data[] = json_encode($event->payload());
+            $data[] = json_encode($event->metadata());
+            $data[] = $event->createdAt()->format('Y-m-d\TH:i:s.u');
+        }
+
+        return $data;
     }
 
     /**
@@ -55,5 +78,10 @@ EOT;
     public function uniqueViolationErrorCodes(): array
     {
         return ['23000', '23505'];
+    }
+
+    public function generateTableName(StreamName $streamName): string
+    {
+        return '_' . sha1($streamName->toString());
     }
 }

@@ -18,7 +18,6 @@ use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\PDO\MySQLEventStore;
-use Prooph\EventStore\PDO\TableNameGeneratorStrategy\Sha1;
 
 final class MySQLEventStoreFactory extends AbstractEventStoreFactory
 {
@@ -51,7 +50,6 @@ final class MySQLEventStoreFactory extends AbstractEventStoreFactory
                 'dbname' => 'event_store',
                 'port' => 3306,
             ],
-            'table_name_generator_strategy' => Sha1::class,
             'load_batch_size' => 1000,
             'event_streams_table' => 'event_streams',
             'message_converter' => NoOpMessageConverter::class,

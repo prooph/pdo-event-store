@@ -18,9 +18,8 @@ use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\PDO\Container\MySQLEventStoreFactory;
 use Prooph\EventStore\PDO\Exception\InvalidArgumentException;
-use Prooph\EventStore\PDO\IndexingStrategy;
 use Prooph\EventStore\PDO\MySQLEventStore;
-use Prooph\EventStore\PDO\TableNameGeneratorStrategy;
+use Prooph\EventStore\PDO\PersistenceStrategy;
 use ProophTest\EventStore\PDO\TestUtil;
 
 final class MySQLEventStoreFactoryTest extends TestCase
@@ -32,7 +31,7 @@ final class MySQLEventStoreFactoryTest extends TestCase
     {
         $config['prooph']['event_store']['default'] = [
             'connection_service' => 'my_connection',
-            'indexing_strategy' => IndexingStrategy\MySQLAggregateStreamStrategy::class,
+            'persistence_strategy' => PersistenceStrategy\MySQLAggregateStreamStrategy::class,
         ];
 
         $connection = TestUtil::getConnection();
@@ -43,8 +42,7 @@ final class MySQLEventStoreFactoryTest extends TestCase
         $container->get('config')->willReturn($config)->shouldBeCalled();
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
         $container->get(NoOpMessageConverter::class)->willReturn(new NoOpMessageConverter())->shouldBeCalled();
-        $container->get(IndexingStrategy\MySQLAggregateStreamStrategy::class)->willReturn(new IndexingStrategy\MySQLAggregateStreamStrategy())->shouldBeCalled();
-        $container->get(TableNameGeneratorStrategy\Sha1::class)->willReturn(new TableNameGeneratorStrategy\Sha1())->shouldBeCalled();
+        $container->get(PersistenceStrategy\MySQLAggregateStreamStrategy::class)->willReturn(new PersistenceStrategy\MySQLAggregateStreamStrategy())->shouldBeCalled();
 
         $factory = new MySQLEventStoreFactory();
         $eventStore = $factory($container->reveal());
@@ -59,7 +57,7 @@ final class MySQLEventStoreFactoryTest extends TestCase
     {
         $config['prooph']['event_store']['custom'] = [
             'connection_options' => TestUtil::getConnectionParams(),
-            'indexing_strategy' => IndexingStrategy\MySQLAggregateStreamStrategy::class,
+            'persistence_strategy' => PersistenceStrategy\MySQLAggregateStreamStrategy::class,
         ];
 
         $container = $this->prophesize(ContainerInterface::class);
@@ -67,8 +65,7 @@ final class MySQLEventStoreFactoryTest extends TestCase
         $container->get('config')->willReturn($config)->shouldBeCalled();
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
         $container->get(NoOpMessageConverter::class)->willReturn(new NoOpMessageConverter())->shouldBeCalled();
-        $container->get(IndexingStrategy\MySQLAggregateStreamStrategy::class)->willReturn(new IndexingStrategy\MySQLAggregateStreamStrategy())->shouldBeCalled();
-        $container->get(TableNameGeneratorStrategy\Sha1::class)->willReturn(new TableNameGeneratorStrategy\Sha1())->shouldBeCalled();
+        $container->get(PersistenceStrategy\MySQLAggregateStreamStrategy::class)->willReturn(new PersistenceStrategy\MySQLAggregateStreamStrategy())->shouldBeCalled();
 
         $eventStoreName = 'custom';
         $eventStore = MySQLEventStoreFactory::$eventStoreName($container->reveal());

@@ -17,7 +17,6 @@ use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\PDO\PostgresEventStore;
-use Prooph\EventStore\PDO\TableNameGeneratorStrategy\Sha1;
 use Prooph\EventStore\TransactionalActionEventEmitterEventStore;
 
 final class PostgresEventStoreFactory extends AbstractEventStoreFactory
@@ -54,7 +53,6 @@ final class PostgresEventStoreFactory extends AbstractEventStoreFactory
                 'dbname' => 'event_store',
                 'port' => 5432,
             ],
-            'table_name_generator_strategy' => Sha1::class,
             'load_batch_size' => 1000,
             'event_streams_table' => 'event_streams',
             'message_converter' => NoOpMessageConverter::class,

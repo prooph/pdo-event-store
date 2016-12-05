@@ -18,9 +18,8 @@ use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\PDO\Container\MySQLEventStoreProjectionFactory;
 use Prooph\EventStore\PDO\Exception\InvalidArgumentException;
-use Prooph\EventStore\PDO\IndexingStrategy;
+use Prooph\EventStore\PDO\PersistenceStrategy;
 use Prooph\EventStore\PDO\Projection\MySQLEventStoreProjection;
-use Prooph\EventStore\PDO\TableNameGeneratorStrategy;
 use ProophTest\EventStore\PDO\TestUtil;
 
 final class MySQLEventStoreProjectionFactoryTest extends TestCase
@@ -34,7 +33,7 @@ final class MySQLEventStoreProjectionFactoryTest extends TestCase
             'event_store' => [
                 'projection' => [
                     'connection_service' => 'my_connection',
-                    'indexing_strategy' => IndexingStrategy\MySQLSimpleStreamStrategy::class,
+                    'persistence_strategy' => PersistenceStrategy\MySQLSimpleStreamStrategy::class,
                 ],
             ],
             'event_store_projection' => [
@@ -57,8 +56,7 @@ final class MySQLEventStoreProjectionFactoryTest extends TestCase
         $container->get('config')->willReturn($config)->shouldBeCalled();
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
         $container->get(NoOpMessageConverter::class)->willReturn(new NoOpMessageConverter())->shouldBeCalled();
-        $container->get(IndexingStrategy\MySQLSimpleStreamStrategy::class)->willReturn(new IndexingStrategy\MySQLSimpleStreamStrategy())->shouldBeCalled();
-        $container->get(TableNameGeneratorStrategy\Sha1::class)->willReturn(new TableNameGeneratorStrategy\Sha1())->shouldBeCalled();
+        $container->get(PersistenceStrategy\MySQLSimpleStreamStrategy::class)->willReturn(new PersistenceStrategy\MySQLSimpleStreamStrategy())->shouldBeCalled();
 
         $factory = new MySQLEventStoreProjectionFactory('foo');
         $projection = $factory($container->reveal());
@@ -75,7 +73,7 @@ final class MySQLEventStoreProjectionFactoryTest extends TestCase
             'event_store' => [
                 'projection' => [
                     'connection_service' => 'my_connection',
-                    'indexing_strategy' => IndexingStrategy\MySQLSimpleStreamStrategy::class,
+                    'persistence_strategy' => PersistenceStrategy\MySQLSimpleStreamStrategy::class,
                 ],
             ],
             'event_store_projection' => [
@@ -97,8 +95,7 @@ final class MySQLEventStoreProjectionFactoryTest extends TestCase
         $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
         $container->get(NoOpMessageConverter::class)->willReturn(new NoOpMessageConverter())->shouldBeCalled();
-        $container->get(IndexingStrategy\MySQLSimpleStreamStrategy::class)->willReturn(new IndexingStrategy\MySQLSimpleStreamStrategy())->shouldBeCalled();
-        $container->get(TableNameGeneratorStrategy\Sha1::class)->willReturn(new TableNameGeneratorStrategy\Sha1())->shouldBeCalled();
+        $container->get(PersistenceStrategy\MySQLSimpleStreamStrategy::class)->willReturn(new PersistenceStrategy\MySQLSimpleStreamStrategy())->shouldBeCalled();
 
         $projectionName = 'foo';
         $projection = MySQLEventStoreProjectionFactory::$projectionName($container->reveal());

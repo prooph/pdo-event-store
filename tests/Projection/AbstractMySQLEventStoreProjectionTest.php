@@ -19,9 +19,8 @@ use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\ActionEventEmitterEventStore;
-use Prooph\EventStore\PDO\IndexingStrategy\MySQLSimpleStreamStrategy;
 use Prooph\EventStore\PDO\MySQLEventStore;
-use Prooph\EventStore\PDO\TableNameGeneratorStrategy\Sha1;
+use Prooph\EventStore\PDO\PersistenceStrategy\MySQLSimpleStreamStrategy;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\UserCreated;
@@ -63,8 +62,7 @@ abstract class AbstractMySQLEventStoreProjectionTest extends TestCase
             new FQCNMessageFactory(),
             new NoOpMessageConverter(),
             TestUtil::getConnection(),
-            new MySQLSimpleStreamStrategy(),
-            new Sha1()
+            new MySQLSimpleStreamStrategy()
         );
     }
 

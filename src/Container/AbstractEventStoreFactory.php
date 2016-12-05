@@ -107,8 +107,7 @@ abstract class AbstractEventStoreFactory implements
             $container->get($config['message_factory']),
             $messageConverter = $container->get($config['message_converter']),
             $connection,
-            $container->get($config['indexing_strategy']),
-            $container->get($config['table_name_generator_strategy']),
+            $container->get($config['persistence_strategy']),
             $config['load_batch_size'],
             $config['event_streams_table']
         );
@@ -126,7 +125,7 @@ abstract class AbstractEventStoreFactory implements
     public function mandatoryOptions(): array
     {
         return [
-            'indexing_strategy',
+            'persistence_strategy',
         ];
     }
 }

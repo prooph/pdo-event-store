@@ -18,9 +18,8 @@ use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\PDO\Container\PostgresEventStoreReadModelProjectionFactory;
 use Prooph\EventStore\PDO\Exception\InvalidArgumentException;
-use Prooph\EventStore\PDO\IndexingStrategy;
+use Prooph\EventStore\PDO\PersistenceStrategy;
 use Prooph\EventStore\PDO\Projection\PostgresEventStoreReadModelProjection;
-use Prooph\EventStore\PDO\TableNameGeneratorStrategy;
 use ProophTest\EventStore\Mock\ReadModelProjectionMock;
 use ProophTest\EventStore\PDO\TestUtil;
 
@@ -35,7 +34,7 @@ final class PostgresEventStoreReadModelProjectionFactoryTest extends TestCase
             'event_store' => [
                 'projection' => [
                     'connection_service' => 'my_connection',
-                    'indexing_strategy' => IndexingStrategy\PostgresSimpleStreamStrategy::class,
+                    'persistence_strategy' => PersistenceStrategy\PostgresSimpleStreamStrategy::class,
                 ],
             ],
             'event_store_projection' => [
@@ -58,8 +57,7 @@ final class PostgresEventStoreReadModelProjectionFactoryTest extends TestCase
         $container->get('config')->willReturn($config)->shouldBeCalled();
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
         $container->get(NoOpMessageConverter::class)->willReturn(new NoOpMessageConverter())->shouldBeCalled();
-        $container->get(IndexingStrategy\PostgresSimpleStreamStrategy::class)->willReturn(new IndexingStrategy\PostgresSimpleStreamStrategy())->shouldBeCalled();
-        $container->get(TableNameGeneratorStrategy\Sha1::class)->willReturn(new TableNameGeneratorStrategy\Sha1())->shouldBeCalled();
+        $container->get(PersistenceStrategy\PostgresSimpleStreamStrategy::class)->willReturn(new PersistenceStrategy\PostgresSimpleStreamStrategy())->shouldBeCalled();
         $container->get('areadmodel')->willReturn(new ReadModelProjectionMock())->shouldBeCalled();
 
         $factory = new PostgresEventStoreReadModelProjectionFactory('foo');
@@ -77,7 +75,7 @@ final class PostgresEventStoreReadModelProjectionFactoryTest extends TestCase
             'event_store' => [
                 'projection' => [
                     'connection_service' => 'my_connection',
-                    'indexing_strategy' => IndexingStrategy\PostgresSimpleStreamStrategy::class,
+                    'persistence_strategy' => PersistenceStrategy\PostgresSimpleStreamStrategy::class,
                 ],
             ],
             'event_store_projection' => [
@@ -99,8 +97,7 @@ final class PostgresEventStoreReadModelProjectionFactoryTest extends TestCase
         $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
         $container->get(NoOpMessageConverter::class)->willReturn(new NoOpMessageConverter())->shouldBeCalled();
-        $container->get(IndexingStrategy\PostgresSimpleStreamStrategy::class)->willReturn(new IndexingStrategy\PostgresSimpleStreamStrategy())->shouldBeCalled();
-        $container->get(TableNameGeneratorStrategy\Sha1::class)->willReturn(new TableNameGeneratorStrategy\Sha1())->shouldBeCalled();
+        $container->get(PersistenceStrategy\PostgresSimpleStreamStrategy::class)->willReturn(new PersistenceStrategy\PostgresSimpleStreamStrategy())->shouldBeCalled();
         $container->get('areadmodel')->willReturn(new ReadModelProjectionMock())->shouldBeCalled();
 
         $projectionName = 'foo';

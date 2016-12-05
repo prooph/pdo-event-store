@@ -12,7 +12,10 @@ declare(strict_types=1);
 
 namespace Prooph\EventStore\PDO;
 
-interface IndexingStrategy
+use Iterator;
+use Prooph\EventStore\StreamName;
+
+interface PersistenceStrategy
 {
     /**
      * @param string $tableName
@@ -20,10 +23,14 @@ interface IndexingStrategy
      */
     public function createSchema(string $tableName): array;
 
-    public function oneStreamPerAggregate(): bool;
+    public function columnNames(): array;
+
+    public function prepareData(Iterator $streamEvents): array;
 
     /**
      * @return string[]
      */
     public function uniqueViolationErrorCodes(): array;
+
+    public function generateTableName(StreamName $streamName): string;
 }
