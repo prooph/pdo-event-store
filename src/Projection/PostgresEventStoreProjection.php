@@ -16,7 +16,7 @@ use PDO;
 use Prooph\EventStore\PDO\PostgresEventStore;
 use Prooph\EventStore\StreamName;
 
-class PostgresEventStoreProjection extends AbstractPDOProjection
+final class PostgresEventStoreProjection extends AbstractPDOProjection
 {
     use PDOQueryTrait;
     use PDOEventStoreProjectionTrait;

@@ -18,7 +18,7 @@ use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\PDO\MySQLEventStore;
 use Prooph\EventStore\StreamName;
 
-class MySQLEventStoreProjection extends AbstractPDOProjection
+final class MySQLEventStoreProjection extends AbstractPDOProjection
 {
     use PDOEventStoreProjectionTrait;
     use PDOQueryTrait;
