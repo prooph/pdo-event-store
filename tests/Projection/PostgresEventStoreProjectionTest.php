@@ -83,7 +83,6 @@ class PostgresEventStoreProjectionTest extends AbstractPostgresEventStoreProject
             'event_streams',
             'projections',
             1000,
-            true,
             100
         );
 
@@ -122,7 +121,6 @@ class PostgresEventStoreProjectionTest extends AbstractPostgresEventStoreProject
             'event_streams',
             'projections',
             1000,
-            true,
             100
         );
 
@@ -163,7 +161,6 @@ class PostgresEventStoreProjectionTest extends AbstractPostgresEventStoreProject
             'event_streams',
             'projections',
             1000,
-            true,
             100
         );
 
@@ -205,7 +202,6 @@ class PostgresEventStoreProjectionTest extends AbstractPostgresEventStoreProject
             'event_streams',
             'projections',
             1000,
-            false,
             100
         );
 
@@ -229,7 +225,6 @@ class PostgresEventStoreProjectionTest extends AbstractPostgresEventStoreProject
             'event_streams',
             'projections',
             1000,
-            true,
             100
         );
 
@@ -247,7 +242,6 @@ class PostgresEventStoreProjectionTest extends AbstractPostgresEventStoreProject
                         'event_streams',
                         'projections',
                         1000,
-                        true,
                         100
                     );
 

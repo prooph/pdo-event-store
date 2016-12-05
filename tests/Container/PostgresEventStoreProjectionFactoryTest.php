@@ -43,7 +43,6 @@ final class PostgresEventStoreProjectionFactoryTest extends TestCase
                     'event_streams_table' => 'event_streams',
                     'projections_table' => 'projection',
                     'lock_timeout_ms' => 1000,
-                    'emit_enabled' => true,
                 ],
             ],
         ];
@@ -83,7 +82,6 @@ final class PostgresEventStoreProjectionFactoryTest extends TestCase
                     'event_streams_table' => 'event_streams',
                     'projections_table' => 'projection',
                     'lock_timeout_ms' => 1000,
-                    'emit_enabled' => true,
                 ],
             ],
         ];

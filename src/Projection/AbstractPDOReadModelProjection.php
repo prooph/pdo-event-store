@@ -16,7 +16,7 @@ use PDO;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\PDO\Exception\RuntimeException;
 use Prooph\EventStore\Projection\AbstractReadModelProjection;
-use Prooph\EventStore\Projection\ReadModelProjection;
+use Prooph\EventStore\Projection\ReadModel;
 
 abstract class AbstractPDOReadModelProjection extends AbstractReadModelProjection
 {
@@ -41,13 +41,13 @@ abstract class AbstractPDOReadModelProjection extends AbstractReadModelProjectio
         EventStore $eventStore,
         PDO $connection,
         string $name,
-        ReadModelProjection $readModelProjection,
+        ReadModel $readModel,
         string $eventStreamsTable,
         string $projectionsTable,
         int $lockTimeoutMs,
         int $cacheSize
     ) {
-        parent::__construct($eventStore, $name, $readModelProjection, $cacheSize);
+        parent::__construct($eventStore, $name, $readModel, $cacheSize);
 
         $this->connection = $connection;
         $this->eventStreamsTable = $eventStreamsTable;

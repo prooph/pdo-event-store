@@ -20,7 +20,7 @@ use Prooph\EventStore\PDO\Container\PostgresEventStoreReadModelProjectionFactory
 use Prooph\EventStore\PDO\Exception\InvalidArgumentException;
 use Prooph\EventStore\PDO\PersistenceStrategy;
 use Prooph\EventStore\PDO\Projection\PostgresEventStoreReadModelProjection;
-use ProophTest\EventStore\Mock\ReadModelProjectionMock;
+use ProophTest\EventStore\Mock\ReadModelMock;
 use ProophTest\EventStore\PDO\TestUtil;
 
 final class PostgresEventStoreReadModelProjectionFactoryTest extends TestCase
@@ -58,7 +58,7 @@ final class PostgresEventStoreReadModelProjectionFactoryTest extends TestCase
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
         $container->get(NoOpMessageConverter::class)->willReturn(new NoOpMessageConverter())->shouldBeCalled();
         $container->get(PersistenceStrategy\PostgresSimpleStreamStrategy::class)->willReturn(new PersistenceStrategy\PostgresSimpleStreamStrategy())->shouldBeCalled();
-        $container->get('areadmodel')->willReturn(new ReadModelProjectionMock())->shouldBeCalled();
+        $container->get('areadmodel')->willReturn(new ReadModelMock())->shouldBeCalled();
 
         $factory = new PostgresEventStoreReadModelProjectionFactory('foo');
         $projection = $factory($container->reveal());
@@ -98,7 +98,7 @@ final class PostgresEventStoreReadModelProjectionFactoryTest extends TestCase
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
         $container->get(NoOpMessageConverter::class)->willReturn(new NoOpMessageConverter())->shouldBeCalled();
         $container->get(PersistenceStrategy\PostgresSimpleStreamStrategy::class)->willReturn(new PersistenceStrategy\PostgresSimpleStreamStrategy())->shouldBeCalled();
-        $container->get('areadmodel')->willReturn(new ReadModelProjectionMock())->shouldBeCalled();
+        $container->get('areadmodel')->willReturn(new ReadModelMock())->shouldBeCalled();
 
         $projectionName = 'foo';
         $projection = PostgresEventStoreReadModelProjectionFactory::$projectionName($container->reveal());

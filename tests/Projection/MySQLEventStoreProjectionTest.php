@@ -41,7 +41,6 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
             'event_streams',
             'projections',
             1000,
-            true,
             100
         );
 
@@ -84,7 +83,6 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
             'event_streams',
             'projections',
             1000,
-            true,
             100
         );
 
@@ -123,7 +121,6 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
             'event_streams',
             'projections',
             1000,
-            true,
             100
         );
 
@@ -164,7 +161,6 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
             'event_streams',
             'projections',
             1000,
-            true,
             100
         );
 
@@ -206,7 +202,6 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
             'event_streams',
             'projections',
             1000,
-            false,
             100
         );
 
@@ -230,7 +225,6 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
             'event_streams',
             'projections',
             1000,
-            true,
             100
         );
 
@@ -248,7 +242,6 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
                         'event_streams',
                         'projections',
                         1000,
-                        true,
                         100
                     );
 

@@ -20,7 +20,7 @@ use Prooph\EventStore\PDO\Container\MySQLEventStoreReadModelProjectionFactory;
 use Prooph\EventStore\PDO\Exception\InvalidArgumentException;
 use Prooph\EventStore\PDO\PersistenceStrategy;
 use Prooph\EventStore\PDO\Projection\MySQLEventStoreReadModelProjection;
-use ProophTest\EventStore\Mock\ReadModelProjectionMock;
+use ProophTest\EventStore\Mock\ReadModelMock;
 use ProophTest\EventStore\PDO\TestUtil;
 
 final class MySQLEventStoreReadModelProjectionFactoryTest extends TestCase
@@ -58,7 +58,7 @@ final class MySQLEventStoreReadModelProjectionFactoryTest extends TestCase
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
         $container->get(NoOpMessageConverter::class)->willReturn(new NoOpMessageConverter())->shouldBeCalled();
         $container->get(PersistenceStrategy\MySQLSimpleStreamStrategy::class)->willReturn(new PersistenceStrategy\MySQLSimpleStreamStrategy())->shouldBeCalled();
-        $container->get('areadmodel')->willReturn(new ReadModelProjectionMock())->shouldBeCalled();
+        $container->get('areadmodel')->willReturn(new ReadModelMock())->shouldBeCalled();
 
         $factory = new MySQLEventStoreReadModelProjectionFactory('foo');
         $projection = $factory($container->reveal());
@@ -98,7 +98,7 @@ final class MySQLEventStoreReadModelProjectionFactoryTest extends TestCase
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
         $container->get(NoOpMessageConverter::class)->willReturn(new NoOpMessageConverter())->shouldBeCalled();
         $container->get(PersistenceStrategy\MySQLSimpleStreamStrategy::class)->willReturn(new PersistenceStrategy\MySQLSimpleStreamStrategy())->shouldBeCalled();
-        $container->get('areadmodel')->willReturn(new ReadModelProjectionMock())->shouldBeCalled();
+        $container->get('areadmodel')->willReturn(new ReadModelMock())->shouldBeCalled();
 
         $projectionName = 'foo';
         $projection = MySQLEventStoreReadModelProjectionFactory::$projectionName($container->reveal());

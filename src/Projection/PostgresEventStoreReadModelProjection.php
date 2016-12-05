@@ -14,7 +14,7 @@ namespace Prooph\EventStore\PDO\Projection;
 
 use PDO;
 use Prooph\EventStore\PDO\PostgresEventStore;
-use Prooph\EventStore\Projection\ReadModelProjection;
+use Prooph\EventStore\Projection\ReadModel;
 use Prooph\EventStore\StreamName;
 
 final class PostgresEventStoreReadModelProjection extends AbstractPDOReadModelProjection
@@ -36,7 +36,7 @@ final class PostgresEventStoreReadModelProjection extends AbstractPDOReadModelPr
         PostgresEventStore $eventStore,
         PDO $connection,
         string $name,
-        ReadModelProjection $readModelProjection,
+        ReadModel $readModel,
         string $eventStreamsTable,
         string $projectionsTable,
         int $lockTimeoutMs,
@@ -46,7 +46,7 @@ final class PostgresEventStoreReadModelProjection extends AbstractPDOReadModelPr
             $eventStore,
             $connection,
             $name,
-            $readModelProjection,
+            $readModel,
             $eventStreamsTable,
             $projectionsTable,
             $lockTimeoutMs,

@@ -17,7 +17,7 @@ use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\Exception\RuntimeException;
 use Prooph\EventStore\PDO\Projection\PostgresEventStoreReadModelProjection;
 use Prooph\EventStore\StreamName;
-use ProophTest\EventStore\Mock\ReadModelProjectionMock;
+use ProophTest\EventStore\Mock\ReadModelMock;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
 
@@ -33,7 +33,7 @@ class PostgresEventStoreReadModelProjectionTest extends AbstractPostgresEventSto
     {
         $this->prepareEventStream('user-123');
 
-        $readModel = new ReadModelProjectionMock();
+        $readModel = new ReadModelMock();
 
         $projection = new PostgresEventStoreReadModelProjection(
             $this->eventStore,
@@ -50,10 +50,10 @@ class PostgresEventStoreReadModelProjectionTest extends AbstractPostgresEventSto
             ->fromAll()
             ->when([
                 UserCreated::class => function ($state, Message $event): void {
-                    $this->readModelProjection()->insert('name', $event->payload()['name']);
+                    $this->readModel()->insert('name', $event->payload()['name']);
                 },
                 UsernameChanged::class => function ($state, Message $event): void {
-                    $this->readModelProjection()->update('name', $event->payload()['name']);
+                    $this->readModel()->update('name', $event->payload()['name']);
 
                     if ($event->metadata()['_aggregate_version'] === 50) {
                         $this->stop();
@@ -91,10 +91,10 @@ class PostgresEventStoreReadModelProjectionTest extends AbstractPostgresEventSto
             ->fromAll()
             ->when([
                 UserCreated::class => function ($state, Message $event): void {
-                    $this->readModelProjection()->insert('name', $event->payload()['name']);
+                    $this->readModel()->insert('name', $event->payload()['name']);
                 },
                 UsernameChanged::class => function ($state, Message $event): void {
-                    $this->readModelProjection()->update('name', $event->payload()['name']);
+                    $this->readModel()->update('name', $event->payload()['name']);
 
                     if ($event->metadata()['_aggregate_version'] === 100) {
                         $this->stop();
@@ -113,7 +113,7 @@ class PostgresEventStoreReadModelProjectionTest extends AbstractPostgresEventSto
     {
         $this->prepareEventStream('user-123');
 
-        $readModel = new ReadModelProjectionMock();
+        $readModel = new ReadModelMock();
 
         $projection = new PostgresEventStoreReadModelProjection(
             $this->eventStore,
@@ -128,11 +128,11 @@ class PostgresEventStoreReadModelProjectionTest extends AbstractPostgresEventSto
 
         $projection
             ->init(function (): void {
-                $this->readModelProjection()->insert('name', null);
+                $this->readModel()->insert('name', null);
             })
             ->fromStream('user-123')
             ->whenAny(function ($state, Message $event): void {
-                $this->readModelProjection()->update('name', $event->payload()['name']);
+                $this->readModel()->update('name', $event->payload()['name']);
 
                 if ($event->metadata()['_aggregate_version'] === 50) {
                     $this->stop();
@@ -150,7 +150,7 @@ class PostgresEventStoreReadModelProjectionTest extends AbstractPostgresEventSto
     {
         $this->prepareEventStream('user-123');
 
-        $readModel = new ReadModelProjectionMock();
+        $readModel = new ReadModelMock();
 
         $projection = new PostgresEventStoreReadModelProjection(
             $this->eventStore,
@@ -167,7 +167,7 @@ class PostgresEventStoreReadModelProjectionTest extends AbstractPostgresEventSto
             ->fromStream('user-123')
             ->when([
                 UserCreated::class => function (array $state, UserCreated $event): array {
-                    $this->readModelProjection()->insert('name', $event->payload()['name']);
+                    $this->readModel()->insert('name', $event->payload()['name']);
                     $this->stop();
 
                     return $state;
@@ -189,7 +189,7 @@ class PostgresEventStoreReadModelProjectionTest extends AbstractPostgresEventSto
     {
         $this->expectException(RuntimeException::class);
 
-        $readModel = new ReadModelProjectionMock();
+        $readModel = new ReadModelMock();
 
         $projection = new PostgresEventStoreReadModelProjection(
             $this->eventStore,
