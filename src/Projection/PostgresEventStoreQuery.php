@@ -15,7 +15,7 @@ namespace Prooph\EventStore\PDO\Projection;
 use PDO;
 use Prooph\EventStore\PDO\PostgresEventStore;
 
-final class PostgresEventStoreQuery extends AbstractPDOQuery
+class PostgresEventStoreQuery extends AbstractPDOQuery
 {
     use PDOQueryTrait;
 

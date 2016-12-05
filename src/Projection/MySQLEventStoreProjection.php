@@ -18,7 +18,7 @@ use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\PDO\MySQLEventStore;
 use Prooph\EventStore\StreamName;
 
-final class MySQLEventStoreProjection extends AbstractPDOProjection
+class MySQLEventStoreProjection extends AbstractPDOProjection
 {
     use PDOEventStoreProjectionTrait;
     use PDOQueryTrait;
@@ -35,7 +35,8 @@ final class MySQLEventStoreProjection extends AbstractPDOProjection
         string $eventStreamsTable,
         string $projectionsTable,
         int $lockTimeoutMs,
-        int $cacheSize
+        int $cacheSize,
+        int $persistBlockSize
     ) {
         parent::__construct(
             $eventStore,
@@ -44,7 +45,8 @@ final class MySQLEventStoreProjection extends AbstractPDOProjection
             $eventStreamsTable,
             $projectionsTable,
             $lockTimeoutMs,
-            $cacheSize
+            $cacheSize,
+            $persistBlockSize
         );
     }
 

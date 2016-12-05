@@ -45,9 +45,10 @@ abstract class AbstractPDOReadModelProjection extends AbstractReadModelProjectio
         string $eventStreamsTable,
         string $projectionsTable,
         int $lockTimeoutMs,
-        int $cacheSize
+        int $cacheSize,
+        int $persistBlockSize
     ) {
-        parent::__construct($eventStore, $name, $readModel, $cacheSize);
+        parent::__construct($eventStore, $name, $readModel, $cacheSize, $persistBlockSize);
 
         $this->connection = $connection;
         $this->eventStreamsTable = $eventStreamsTable;

@@ -16,7 +16,7 @@ use PDO;
 use Prooph\EventStore\PDO\MySQLEventStore;
 use Prooph\EventStore\Projection\ReadModel;
 
-final class MySQLEventStoreReadModelProjection extends AbstractPDOReadModelProjection
+class MySQLEventStoreReadModelProjection extends AbstractPDOReadModelProjection
 {
     use PDOEventStoreProjectionTrait;
     use PDOQueryTrait;
@@ -39,7 +39,8 @@ final class MySQLEventStoreReadModelProjection extends AbstractPDOReadModelProje
         string $eventStreamsTable,
         string $projectionsTable,
         int $lockTimeoutMs,
-        int $cacheSize
+        int $cacheSize,
+        int $persistBlockSize
     ) {
         parent::__construct(
             $eventStore,
@@ -49,7 +50,8 @@ final class MySQLEventStoreReadModelProjection extends AbstractPDOReadModelProje
             $eventStreamsTable,
             $projectionsTable,
             $lockTimeoutMs,
-            $cacheSize
+            $cacheSize,
+            $persistBlockSize
         );
     }
 

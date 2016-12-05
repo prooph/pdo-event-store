@@ -16,7 +16,7 @@ use PDO;
 use Prooph\EventStore\PDO\PostgresEventStore;
 use Prooph\EventStore\StreamName;
 
-final class PostgresEventStoreProjection extends AbstractPDOProjection
+class PostgresEventStoreProjection extends AbstractPDOProjection
 {
     use PDOQueryTrait;
     use PDOEventStoreProjectionTrait;
@@ -33,7 +33,8 @@ final class PostgresEventStoreProjection extends AbstractPDOProjection
         string $eventStreamsTable,
         string $projectionsTable,
         int $lockTimeoutMs,
-        int $cacheSize
+        int $cacheSize,
+        int $persistBlockSize
     ) {
         parent::__construct(
             $eventStore,
@@ -42,7 +43,8 @@ final class PostgresEventStoreProjection extends AbstractPDOProjection
             $eventStreamsTable,
             $projectionsTable,
             $lockTimeoutMs,
-            $cacheSize
+            $cacheSize,
+            $persistBlockSize
         );
     }
 
