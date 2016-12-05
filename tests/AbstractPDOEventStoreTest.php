@@ -14,7 +14,7 @@ namespace ProophTest\EventStore\PDO;
 
 use ArrayIterator;
 use PDO;
-use PHPUnit_Framework_TestCase as TestCase;
+use PHPUnit\Framework\TestCase;
 use Prooph\Common\Event\ActionEvent;
 use Prooph\Common\Event\ActionEventEmitter;
 use Prooph\Common\Messaging\NoOpMessageConverter;

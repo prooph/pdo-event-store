@@ -14,7 +14,7 @@ namespace ProophTest\EventStore\PDO\Projection;
 
 use ArrayIterator;
 use PDO;
-use PHPUnit_Framework_TestCase as TestCase;
+use PHPUnit\Framework\TestCase;
 use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;

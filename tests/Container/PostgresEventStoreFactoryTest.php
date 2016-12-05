@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace ProophTest\EventStore\PDO\Container;
 
 use Interop\Container\ContainerInterface;
-use PHPUnit_Framework_TestCase as TestCase;
+use PHPUnit\Framework\TestCase;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\PDO\Container\PostgresEventStoreFactory;
