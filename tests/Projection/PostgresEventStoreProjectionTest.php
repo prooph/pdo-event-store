@@ -41,7 +41,6 @@ class PostgresEventStoreProjectionTest extends AbstractPostgresEventStoreProject
             'event_streams',
             'projections',
             1000,
-            true,
             100
         );
 
@@ -190,35 +189,6 @@ class PostgresEventStoreProjectionTest extends AbstractPostgresEventStoreProject
 
         $this->expectException(StreamNotFound::class);
         $this->eventStore->load(new StreamName('test_projection'));
-    }
-
-    /**
-     * @test
-     */
-    public function it_doesnt_emits_events_when_disabled(): void
-    {
-        $this->expectException(\Error::class);
-        $this->expectExceptionMessage('Call to undefined method class@anonymous::emit()');
-
-        $this->prepareEventStream('user-123');
-
-        $projection = new PostgresEventStoreProjection(
-            $this->eventStore,
-            $this->connection,
-            'test_projection',
-            'event_streams',
-            'projections',
-            1000,
-            false,
-            100
-        );
-
-        $projection
-            ->fromStream('user-123')
-            ->whenAny(function (array $state, Message $event): void {
-                $this->emit($event);
-            })
-            ->run();
     }
 
     /**

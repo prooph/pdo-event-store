@@ -195,35 +195,6 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
     /**
      * @test
      */
-    public function it_doesnt_emits_events_when_disabled(): void
-    {
-        $this->expectException(\Error::class);
-        $this->expectExceptionMessage('Call to undefined method class@anonymous::emit()');
-
-        $this->prepareEventStream('user-123');
-
-        $projection = new MySQLEventStoreProjection(
-            $this->eventStore,
-            $this->connection,
-            'test_projection',
-            'event_streams',
-            'projections',
-            1000,
-            false,
-            100
-        );
-
-        $projection
-            ->fromStream('user-123')
-            ->whenAny(function (array $state, Message $event): void {
-                $this->emit($event);
-            })
-            ->run();
-    }
-
-    /**
-     * @test
-     */
     public function it_throws_exception_on_run_when_nothing_configured(): void
     {
         $this->expectException(RuntimeException::class);

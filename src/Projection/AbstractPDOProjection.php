@@ -45,10 +45,9 @@ abstract class AbstractPDOProjection extends AbstractProjection
         string $eventStreamsTable,
         string $projectionsTable,
         int $lockTimeoutMs,
-        bool $emitEnabled,
         int $cacheSize
     ) {
-        parent::__construct($eventStore, $name, $emitEnabled, $cacheSize);
+        parent::__construct($eventStore, $name, $cacheSize);
 
         $this->connection = $connection;
         $this->eventStreamsTable = $eventStreamsTable;

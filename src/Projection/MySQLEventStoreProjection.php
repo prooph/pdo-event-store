@@ -35,7 +35,6 @@ final class MySQLEventStoreProjection extends AbstractPDOProjection
         string $eventStreamsTable,
         string $projectionsTable,
         int $lockTimeoutMs,
-        bool $emitEnabled,
         int $cacheSize
     ) {
         parent::__construct(
@@ -45,7 +44,6 @@ final class MySQLEventStoreProjection extends AbstractPDOProjection
             $eventStreamsTable,
             $projectionsTable,
             $lockTimeoutMs,
-            $emitEnabled,
             $cacheSize
         );
     }

@@ -36,7 +36,6 @@ abstract class AbstractPDOEventStoreProjectionFactory extends AbstractProjection
             $config['event_streams_table'],
             $config['projections_table'],
             $config['lock_timeout_ms'],
-            $config['emit_enabled'],
             $config['cache_size']
         );
     }
@@ -63,7 +62,6 @@ abstract class AbstractPDOEventStoreProjectionFactory extends AbstractProjection
     {
         return [
             'event_store',
-            'emit_enabled',
         ];
     }
 }

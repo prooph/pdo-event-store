@@ -33,7 +33,6 @@ final class PostgresEventStoreProjection extends AbstractPDOProjection
         string $eventStreamsTable,
         string $projectionsTable,
         int $lockTimeoutMs,
-        bool $emitEnabled,
         int $cacheSize
     ) {
         parent::__construct(
@@ -43,7 +42,6 @@ final class PostgresEventStoreProjection extends AbstractPDOProjection
             $eventStreamsTable,
             $projectionsTable,
             $lockTimeoutMs,
-            $emitEnabled,
             $cacheSize
         );
     }
