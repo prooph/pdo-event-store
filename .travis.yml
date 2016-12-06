@@ -9,8 +9,6 @@ matrix:
       sudo: true
       env:
         - DEPENDENCIES=""
-        - EXECUTE_CS_CHECK=true
-        - TEST_COVERAGE=true
         - DRIVER="pdo_mysql"
         - DB=mysql_5.7
     - php: 7.1
@@ -37,6 +35,8 @@ matrix:
       dist: trusty
       env:
         - DEPENDENCIES=""
+        - EXECUTE_CS_CHECK=true
+        - TEST_COVERAGE=true
         - DRIVER="pdo_pgsql"
         - DB=postgres_9.5
       addons:
