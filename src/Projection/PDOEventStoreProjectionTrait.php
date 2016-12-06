@@ -56,23 +56,21 @@ EOT;
         $statement->execute([$this->name]);
     }
 
-    protected function persist(bool $force): void
+    protected function persist(): void
     {
-        if ($force || $this->eventCounter === $this->persistBlockSize) {
-            $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
-            $lockUntilString = $now->modify('+' . (string) $this->lockTimeoutMs . ' ms')->format('Y-m-d\TH:i:s.u');
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+        $lockUntilString = $now->modify('+' . (string) $this->lockTimeoutMs . ' ms')->format('Y-m-d\TH:i:s.u');
 
-            $sql = <<<EOT
+        $sql = <<<EOT
 UPDATE $this->projectionsTable SET position = ?, state = ?, locked_until = ? 
 WHERE name = ? 
 EOT;
-            $statement = $this->connection->prepare($sql);
-            $statement->execute([
-                json_encode($this->position->streamPositions()),
-                json_encode($this->state),
-                $lockUntilString,
-                $this->name,
-            ]);
-        }
+        $statement = $this->connection->prepare($sql);
+        $statement->execute([
+            json_encode($this->position->streamPositions()),
+            json_encode($this->state),
+            $lockUntilString,
+            $this->name,
+        ]);
     }
 }
