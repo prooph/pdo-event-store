@@ -51,10 +51,10 @@ class PostgresEventStoreReadModelProjectionTest extends AbstractPostgresEventSto
             ->fromAll()
             ->when([
                 UserCreated::class => function ($state, Message $event): void {
-                    $this->readModel()->insert('name', $event->payload()['name']);
+                    $this->readModel()->stack('insert', 'name', $event->payload()['name']);
                 },
                 UsernameChanged::class => function ($state, Message $event): void {
-                    $this->readModel()->update('name', $event->payload()['name']);
+                    $this->readModel()->stack('update', 'name', $event->payload()['name']);
 
                     if ($event->metadata()['_aggregate_version'] === 50) {
                         $this->stop();
@@ -93,10 +93,10 @@ class PostgresEventStoreReadModelProjectionTest extends AbstractPostgresEventSto
             ->fromAll()
             ->when([
                 UserCreated::class => function ($state, Message $event): void {
-                    $this->readModel()->insert('name', $event->payload()['name']);
+                    $this->readModel()->stack('insert', 'name', $event->payload()['name']);
                 },
                 UsernameChanged::class => function ($state, Message $event): void {
-                    $this->readModel()->update('name', $event->payload()['name']);
+                    $this->readModel()->stack('update', 'name', $event->payload()['name']);
 
                     if ($event->metadata()['_aggregate_version'] === 100) {
                         $this->stop();
@@ -131,11 +131,11 @@ class PostgresEventStoreReadModelProjectionTest extends AbstractPostgresEventSto
 
         $projection
             ->init(function (): void {
-                $this->readModel()->insert('name', null);
+                $this->readModel()->stack('insert', 'name', null);
             })
             ->fromStream('user-123')
             ->whenAny(function ($state, Message $event): void {
-                $this->readModel()->update('name', $event->payload()['name']);
+                $this->readModel()->stack('update', 'name', $event->payload()['name']);
 
                 if ($event->metadata()['_aggregate_version'] === 50) {
                     $this->stop();
@@ -171,7 +171,7 @@ class PostgresEventStoreReadModelProjectionTest extends AbstractPostgresEventSto
             ->fromStream('user-123')
             ->when([
                 UserCreated::class => function (array $state, UserCreated $event): array {
-                    $this->readModel()->insert('name', $event->payload()['name']);
+                    $this->readModel()->stack('insert', 'name', $event->payload()['name']);
                     $this->stop();
 
                     return $state;

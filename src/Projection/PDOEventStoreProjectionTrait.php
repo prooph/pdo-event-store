@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Prooph\EventStore\PDO\Projection;
 
 use Prooph\EventStore\PDO\Exception\RuntimeException;
+use Prooph\EventStore\Projection\ReadModelProjection;
 
 trait PDOEventStoreProjectionTrait
 {
@@ -58,6 +59,10 @@ EOT;
 
     protected function persist(): void
     {
+        if ($this instanceof ReadModelProjection) {
+            $this->readModel()->persist();
+        }
+
         $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
         $lockUntilString = $now->modify('+' . (string) $this->lockTimeoutMs . ' ms')->format('Y-m-d\TH:i:s.u');
 
