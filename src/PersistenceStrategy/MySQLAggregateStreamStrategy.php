@@ -33,9 +33,9 @@ CREATE TABLE `$tableName` (
     `payload` JSON NOT NULL,
     `metadata` JSON NOT NULL,
     `created_at` CHAR(26) COLLATE utf8_bin NOT NULL,
+    `version` INT(11) GENERATED ALWAYS AS (JSON_EXTRACT(metadata, '$._aggregate_version')) STORED NOT NULL UNIQUE KEY,
     PRIMARY KEY (`no`),
-    UNIQUE KEY `ix_event_id` (`event_id`),
-    UNIQUE KEY `ix_unique_event` (`version`)
+    UNIQUE KEY `ix_event_id` (`event_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 EOT;
 
