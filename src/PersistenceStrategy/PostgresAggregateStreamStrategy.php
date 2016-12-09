@@ -38,7 +38,10 @@ CREATE TABLE $tableName (
 );
 EOT;
 
-        return [$statement];
+        return [
+            $statement,
+            "CREATE UNIQUE INDEX  on $tableName ((metadata->>'_aggregate_version'));",
+        ];
     }
 
     public function columnNames(): array
