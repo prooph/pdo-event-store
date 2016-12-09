@@ -268,7 +268,7 @@ final class MySQLEventStore extends AbstractActionEventEmitterEventStore
             }
 
             $tableName = $this->persistenceStrategy->generateTableName($streamName);
-            
+
             $sql = [
                 'from' => "SELECT * FROM $tableName",
                 'orderBy' => 'ORDER BY no DESC',

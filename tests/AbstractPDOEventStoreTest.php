@@ -245,6 +245,7 @@ abstract class AbstractPDOEventStoreTest extends TestCase
         $metadataMatcher = $metadataMatcher->withMetadataMatch('snapshot', Operator::EQUALS(), true);
 
         $stream = $this->eventStore->load($stream->streamName(), 1, null, $metadataMatcher);
+
         $streamEvents = $stream->streamEvents();
 
         $this->assertCount(1, $streamEvents);

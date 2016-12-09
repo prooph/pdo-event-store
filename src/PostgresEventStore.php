@@ -160,11 +160,13 @@ final class PostgresEventStore extends AbstractTransactionalActionEventEmitterEv
 
                 if (is_bool($value)) {
                     $value = var_export($value, true);
+                    $sql['where'][] = "metadata ->> '$field' $operator '$value'";
                 } elseif (is_string($value)) {
                     $value = $this->connection->quote($value);
+                    $sql['where'][] = "metadata ->> '$field' $operator $value";
+                } else {
+                    $sql['where'][] = "metadata ->> '$field' $operator '$value'";
                 }
-
-                $sql['where'][] = "metadata ->> '$field' $operator $value";
             }
 
             $limit = $count < $this->loadBatchSize
@@ -180,7 +182,7 @@ final class PostgresEventStore extends AbstractTransactionalActionEventEmitterEv
 
             $query .= ' ' . $sql['orderBy'];
             $query .= " LIMIT $limit;";
-
+var_dump($query); die;
             $statement = $this->connection->prepare($query);
             $statement->setFetchMode(PDO::FETCH_OBJ);
             $statement->execute();
@@ -234,8 +236,12 @@ final class PostgresEventStore extends AbstractTransactionalActionEventEmitterEv
 
                 if (is_bool($value)) {
                     $value = var_export($value, true);
+                    $sql['where'][] = "metadata ->> '$field' $operator '$value'";
                 } elseif (is_string($value)) {
                     $value = $this->connection->quote($value);
+                    $sql['where'][] = "metadata ->> '$field' $operator $value";
+                } else {
+                    $sql['where'][] = "metadata ->> '$field' $operator '$value'";
                 }
 
                 $sql['where'][] = "metadata ->> '$field' $operator $value";
