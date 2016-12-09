@@ -97,10 +97,10 @@ final class PDOStreamIterator implements Iterator
     /**
      * @return null|Message
      */
-    public function current()
+    public function current(): ?Message
     {
         if (false === $this->currentItem) {
-            return;
+            return null;
         }
 
         $createdAt = \DateTimeImmutable::createFromFormat(
@@ -117,10 +117,7 @@ final class PDOStreamIterator implements Iterator
         ]);
     }
 
-    /**
-     * Next
-     */
-    public function next()
+    public function next(): void
     {
         if (($this->count - 1) === $this->currentKey) {
             $this->currentKey = -1;
@@ -169,15 +166,12 @@ final class PDOStreamIterator implements Iterator
     /**
      * @return bool
      */
-    public function valid()
+    public function valid(): bool
     {
         return false !== $this->currentItem;
     }
 
-    /**
-     * Rewind
-     */
-    public function rewind()
+    public function rewind(): void
     {
         //Only perform rewind if current item is not the first element
         if ($this->currentKey !== 0) {
