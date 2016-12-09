@@ -182,7 +182,7 @@ final class PostgresEventStore extends AbstractTransactionalActionEventEmitterEv
 
             $query .= ' ' . $sql['orderBy'];
             $query .= " LIMIT $limit;";
-var_dump($query); die;
+
             $statement = $this->connection->prepare($query);
             $statement->setFetchMode(PDO::FETCH_OBJ);
             $statement->execute();
