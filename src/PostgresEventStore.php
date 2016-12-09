@@ -156,10 +156,14 @@ final class PostgresEventStore extends AbstractTransactionalActionEventEmitterEv
                 $field = $match['field'];
                 $operator = $match['operator']->getValue();
                 $value = $match['value'];
+
                 if (is_bool($value)) {
                     $value = var_export($value, true);
+                } else {
+                    $value = $this->connection->quote($value);
                 }
-                $sql['where'][] = "metadata ->> '$field' $operator '$value'";
+
+                $sql['where'][] = "metadata ->> '$field' $operator $value";
             }
 
             $limit = $count < $this->loadBatchSize
@@ -227,9 +231,11 @@ final class PostgresEventStore extends AbstractTransactionalActionEventEmitterEv
 
                 if (is_bool($value)) {
                     $value = var_export($value, true);
+                } else {
+                    $value = $this->connection->quote($value);
                 }
 
-                $sql['where'][] = "metadata ->> '$field' $operator '$value''";
+                $sql['where'][] = "metadata ->> '$field' $operator $value";
             }
 
             $limit = $count < $this->loadBatchSize

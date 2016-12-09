@@ -203,14 +203,14 @@ final class MySQLEventStore extends AbstractActionEventEmitterEventStore
                 $field = $match['field'];
                 $operator = $match['operator']->getValue();
                 $value = $match['value'];
+
                 if (is_bool($value)) {
                     $value = var_export($value, true);
-                    $sql['where'][] = "metadata->\"$.$field\" $operator $value";
                 } elseif (is_string($value)) {
-                    $sql['where'][] = "metadata->\"$.$field\" $operator '$value'";
-                } else {
-                    $sql['where'][] = "metadata->\"$.$field\" $operator $value";
+                    $value = $this->connection->quote($value);
                 }
+
+                $sql['where'][] = "metadata->\"$.$field\" $operator $value";
             }
 
             $limit = $count < $this->loadBatchSize
@@ -278,12 +278,11 @@ final class MySQLEventStore extends AbstractActionEventEmitterEventStore
 
                 if (is_bool($value)) {
                     $value = var_export($value, true);
-                    $sql['where'][] = "metadata->\"$.$field\" $operator $value";
                 } elseif (is_string($value)) {
-                    $sql['where'][] = "metadata->\"$.$field\" $operator '$value'";
-                } else {
-                    $sql['where'][] = "metadata->\"$.$field\" $operator $value";
+                    $value = $this->connection->quote($value);
                 }
+
+                $sql['where'][] = "metadata->\"$.$field\" $operator $value";
             }
 
             $limit = $count < $this->loadBatchSize
