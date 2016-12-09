@@ -194,6 +194,7 @@ final class MySQLEventStore extends AbstractActionEventEmitterEventStore
             }
 
             $tableName = $this->persistenceStrategy->generateTableName($streamName);
+
             $sql = [
                 'from' => "SELECT * FROM $tableName",
                 'orderBy' => 'ORDER BY no ASC',
@@ -223,6 +224,7 @@ final class MySQLEventStore extends AbstractActionEventEmitterEventStore
                 $query .= ' AND ';
                 $query .= implode(' AND ', $sql['where']);
             }
+
             $query .= ' ' . $sql['orderBy'];
             $query .= " LIMIT $limit;";
 
@@ -266,6 +268,7 @@ final class MySQLEventStore extends AbstractActionEventEmitterEventStore
             }
 
             $tableName = $this->persistenceStrategy->generateTableName($streamName);
+            
             $sql = [
                 'from' => "SELECT * FROM $tableName",
                 'orderBy' => 'ORDER BY no DESC',

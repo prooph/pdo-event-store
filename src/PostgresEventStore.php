@@ -147,6 +147,7 @@ final class PostgresEventStore extends AbstractTransactionalActionEventEmitterEv
             }
 
             $tableName = $this->persistenceStrategy->generateTableName($streamName);
+
             $sql = [
                 'from' => "SELECT * FROM $tableName",
                 'orderBy' => 'ORDER BY no ASC',
@@ -159,7 +160,7 @@ final class PostgresEventStore extends AbstractTransactionalActionEventEmitterEv
 
                 if (is_bool($value)) {
                     $value = var_export($value, true);
-                } else {
+                } elseif (is_string($value)) {
                     $value = $this->connection->quote($value);
                 }
 
@@ -176,6 +177,7 @@ final class PostgresEventStore extends AbstractTransactionalActionEventEmitterEv
                 $query .= ' AND ';
                 $query .= implode(' AND ', $sql['where']);
             }
+
             $query .= ' ' . $sql['orderBy'];
             $query .= " LIMIT $limit;";
 
@@ -219,6 +221,7 @@ final class PostgresEventStore extends AbstractTransactionalActionEventEmitterEv
             }
 
             $tableName = $this->persistenceStrategy->generateTableName($streamName);
+
             $sql = [
                 'from' => "SELECT * FROM $tableName",
                 'orderBy' => 'ORDER BY no DESC',
@@ -231,7 +234,7 @@ final class PostgresEventStore extends AbstractTransactionalActionEventEmitterEv
 
                 if (is_bool($value)) {
                     $value = var_export($value, true);
-                } else {
+                } elseif (is_string($value)) {
                     $value = $this->connection->quote($value);
                 }
 
