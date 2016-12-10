@@ -58,6 +58,7 @@ abstract class AbstractMySQLEventStoreProjectionTest extends TestCase
                 ActionEventEmitterEventStore::EVENT_DELETE,
                 ActionEventEmitterEventStore::EVENT_HAS_STREAM,
                 ActionEventEmitterEventStore::EVENT_FETCH_STREAM_METADATA,
+                ActionEventEmitterEventStore::EVENT_UPDATE_STREAM_METADATA,
             ]),
             new FQCNMessageFactory(),
             new NoOpMessageConverter(),
