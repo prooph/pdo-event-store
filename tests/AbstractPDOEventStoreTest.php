@@ -23,8 +23,11 @@ use Prooph\EventStore\Exception\StreamExistsAlready;
 use Prooph\EventStore\Exception\StreamNotFound;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;
+use Prooph\EventStore\PDO\Exception\InvalidArgumentException;
+use Prooph\EventStore\Projection\ProjectionOptions;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
+use ProophTest\EventStore\Mock\ReadModelMock;
 use ProophTest\EventStore\Mock\TestDomainEvent;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
@@ -700,6 +703,26 @@ abstract class AbstractPDOEventStoreTest extends TestCase
             ],
             $this->eventStore->fetchStreamMetadata($stream->streamName())
         );
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_base_projection_options_given_to_projection(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->eventStore->createProjection('foo', new ProjectionOptions());
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_base_projection_options_given_to_read_model_projection(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->eventStore->createReadModelProjection('foo', new ReadModelMock(), new ProjectionOptions());
     }
 
     protected function getTestStream(): Stream

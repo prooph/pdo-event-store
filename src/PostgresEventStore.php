@@ -21,7 +21,17 @@ use Prooph\EventStore\AbstractTransactionalActionEventEmitterEventStore;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\PDO\Exception\ExtensionNotLoaded;
+use Prooph\EventStore\PDO\Exception\InvalidArgumentException;
 use Prooph\EventStore\PDO\Exception\RuntimeException;
+use Prooph\EventStore\PDO\Projection\PostgresEventStoreProjection;
+use Prooph\EventStore\PDO\Projection\PostgresEventStoreQuery;
+use Prooph\EventStore\PDO\Projection\PostgresEventStoreReadModelProjection;
+use Prooph\EventStore\PDO\Projection\ProjectionOptions;
+use Prooph\EventStore\Projection\Projection;
+use Prooph\EventStore\Projection\ProjectionOptions as BaseProjectionOptions;
+use Prooph\EventStore\Projection\Query;
+use Prooph\EventStore\Projection\ReadModel;
+use Prooph\EventStore\Projection\ReadModelProjection;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 
@@ -386,6 +396,59 @@ EOT;
 
             $event->setParam('result', 1 === $statement->rowCount());
         });
+    }
+
+    public function createQuery(): Query
+    {
+        return new PostgresEventStoreQuery($this, $this->connection, $this->eventStreamsTable);
+    }
+
+    public function createProjection(string $name, BaseProjectionOptions $options = null): Projection
+    {
+        if (null === $options) {
+            $options = new ProjectionOptions();
+        }
+
+        if (! $options instanceof ProjectionOptions) {
+            throw new InvalidArgumentException('options must be an instance of ' . ProjectionOptions::class);
+        }
+
+        return new PostgresEventStoreProjection(
+            $this,
+            $this->connection,
+            $name,
+            $this->eventStreamsTable,
+            $options->projectionsTable(),
+            $options->lockTimeoutMs(),
+            $options->cacheSize(),
+            $options->persistBlockSize()
+        );
+    }
+
+    public function createReadModelProjection(
+        string $name,
+        ReadModel $readModel,
+        BaseProjectionOptions $options = null
+    ): ReadModelProjection {
+        if (null === $options) {
+            $options = new ProjectionOptions();
+        }
+
+        if (! $options instanceof ProjectionOptions) {
+            throw new InvalidArgumentException('options must be an instance of ' . ProjectionOptions::class);
+        }
+
+        return new PostgresEventStoreReadModelProjection(
+            $this,
+            $this->connection,
+            $name,
+            $readModel,
+            $this->eventStreamsTable,
+            $options->projectionsTable(),
+            $options->lockTimeoutMs(),
+            $options->cacheSize(),
+            $options->persistBlockSize()
+        );
     }
 
     private function addStreamToStreamsTable(Stream $stream): void

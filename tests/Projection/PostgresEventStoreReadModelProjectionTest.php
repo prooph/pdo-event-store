@@ -15,7 +15,6 @@ namespace ProophTest\EventStore\PDO\Projection;
 use ArrayIterator;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\Exception\RuntimeException;
-use Prooph\EventStore\PDO\Projection\PostgresEventStoreReadModelProjection;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\ReadModelMock;
 use ProophTest\EventStore\Mock\UserCreated;
@@ -35,17 +34,7 @@ class PostgresEventStoreReadModelProjectionTest extends AbstractPostgresEventSto
 
         $readModel = new ReadModelMock();
 
-        $projection = new PostgresEventStoreReadModelProjection(
-            $this->eventStore,
-            $this->connection,
-            'test_projection',
-            $readModel,
-            'event_streams',
-            'projections',
-            1000,
-            100,
-            100
-        );
+        $projection = $this->eventStore->createReadModelProjection('test_projection', $readModel);
 
         $projection
             ->fromAll()
@@ -77,17 +66,7 @@ class PostgresEventStoreReadModelProjectionTest extends AbstractPostgresEventSto
 
         $this->eventStore->appendTo(new StreamName('user-123'), new ArrayIterator($events));
 
-        $projection = new PostgresEventStoreReadModelProjection(
-            $this->eventStore,
-            $this->connection,
-            'test_projection',
-            $readModel,
-            'event_streams',
-            'projections',
-            1000,
-            100,
-            100
-        );
+        $projection = $this->eventStore->createReadModelProjection('test_projection', $readModel);
 
         $projection
             ->fromAll()
@@ -106,6 +85,10 @@ class PostgresEventStoreReadModelProjectionTest extends AbstractPostgresEventSto
             ->run();
 
         $this->assertEquals('Oliver', $readModel->read('name'));
+
+        $projection->reset();
+
+        $this->assertFalse($readModel->hasKey('name'));
     }
 
     /**
@@ -117,17 +100,7 @@ class PostgresEventStoreReadModelProjectionTest extends AbstractPostgresEventSto
 
         $readModel = new ReadModelMock();
 
-        $projection = new PostgresEventStoreReadModelProjection(
-            $this->eventStore,
-            $this->connection,
-            'test_projection',
-            $readModel,
-            'event_streams',
-            'projections',
-            1000,
-            100,
-            100
-        );
+        $projection = $this->eventStore->createReadModelProjection('test_projection', $readModel);
 
         $projection
             ->init(function (): void {
@@ -155,17 +128,7 @@ class PostgresEventStoreReadModelProjectionTest extends AbstractPostgresEventSto
 
         $readModel = new ReadModelMock();
 
-        $projection = new PostgresEventStoreReadModelProjection(
-            $this->eventStore,
-            $this->connection,
-            'test_projection',
-            $readModel,
-            'event_streams',
-            'projections',
-            1000,
-            100,
-            100
-        );
+        $projection = $this->eventStore->createReadModelProjection('test_projection', $readModel);
 
         $projection
             ->fromStream('user-123')
@@ -183,7 +146,7 @@ class PostgresEventStoreReadModelProjectionTest extends AbstractPostgresEventSto
 
         $projection->delete(true);
 
-        $this->assertFalse($readModel->hasKey('name'));
+        $this->assertFalse($readModel->isInitialized());
     }
 
     /**
@@ -195,17 +158,7 @@ class PostgresEventStoreReadModelProjectionTest extends AbstractPostgresEventSto
 
         $readModel = new ReadModelMock();
 
-        $projection = new PostgresEventStoreReadModelProjection(
-            $this->eventStore,
-            $this->connection,
-            'test_projection',
-            $readModel,
-            'event_streams',
-            'projections',
-            1000,
-            100,
-            100
-        );
+        $projection = $this->eventStore->createReadModelProjection('test_projection', $readModel);
         $projection->run();
     }
 }
