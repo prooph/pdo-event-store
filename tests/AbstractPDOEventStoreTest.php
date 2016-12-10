@@ -673,6 +673,35 @@ abstract class AbstractPDOEventStoreTest extends TestCase
         $this->eventStore->load($streamName->reveal());
     }
 
+    /**
+     * @test
+     */
+    public function it_throws_stream_not_found_exception_when_trying_to_update_metadata_on_unknown_stream(): void
+    {
+        $this->expectException(StreamNotFound::class);
+
+        $this->eventStore->updateStreamMetadata(new StreamName('unknown'), []);
+    }
+
+    /**
+     * @test
+     */
+    public function it_updates_stream_metadata(): void
+    {
+        $stream = $this->getTestStream();
+
+        $this->eventStore->create($stream);
+
+        $this->eventStore->updateStreamMetadata($stream->streamName(), ['new' => 'values']);
+
+        $this->assertEquals(
+            [
+                'new' => 'values',
+            ],
+            $this->eventStore->fetchStreamMetadata($stream->streamName())
+        );
+    }
+
     protected function getTestStream(): Stream
     {
         $streamEvent = UserCreated::with(

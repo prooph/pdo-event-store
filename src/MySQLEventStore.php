@@ -400,6 +400,27 @@ EOT;
                 $event->setParam('metadata', json_decode($stream->metadata, true));
             }
         });
+
+        $this->actionEventEmitter->attachListener(self::EVENT_UPDATE_STREAM_METADATA, function (ActionEvent $event): void {
+            $streamName = $event->getParam('streamName');
+            $metadata = $event->getParam('metadata');
+
+            $eventStreamsTable = $this->eventStreamsTable;
+
+            $sql = <<<EOT
+UPDATE $eventStreamsTable
+SET metadata = :metadata
+WHERE real_stream_name = :streamName; 
+EOT;
+
+            $statement = $this->connection->prepare($sql);
+            $statement->execute([
+                'streamName' => $streamName->toString(),
+                'metadata' => json_encode($metadata),
+            ]);
+
+            $event->setParam('result', 1 === $statement->rowCount());
+        });
     }
 
     private function addStreamToStreamsTable(Stream $stream): void
