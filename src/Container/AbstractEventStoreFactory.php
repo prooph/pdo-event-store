@@ -117,12 +117,12 @@ abstract class AbstractEventStoreFactory implements
 
     abstract protected function eventStoreClassName(): string;
 
-    public function dimensions(): array
+    public function dimensions(): iterable
     {
         return ['prooph', 'event_store'];
     }
 
-    public function mandatoryOptions(): array
+    public function mandatoryOptions(): iterable
     {
         return [
             'persistence_strategy',
