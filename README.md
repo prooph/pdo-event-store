@@ -18,11 +18,11 @@ For Postgres you need server version >= 9.4.
 Setup
 -----
 
-For MySQL run the script in `scripts/mysql_event_streams_table.sql` on your server.
+For MySQL run the script in `scripts/mysql/01_event_streams_table.sql` on your server.
 
-For Postgres run the script in `scripts/postgres_event_streams_table` on your server.
+For Postgres run the script in `scripts/postgres/01_event_streams_table.sql` on your server.
 
 This will setup the required event streams table.
 
-If you want to use the projections, run additionally the scripts `scripts/mysql_projections_table.sql` (for MySQL)
-or `scripts/postgres_projections_table.sql` (for Postgres) on your server.
+If you want to use the projections, run additionally the scripts `scripts/mysql/02_projections_table.sql` (for MySQL)
+or `scripts/postgres/02_projections_table.sql` (for Postgres) on your server.

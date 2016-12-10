@@ -46,8 +46,8 @@ abstract class AbstractMySQLEventStoreProjectionTest extends TestCase
         }
 
         $this->connection = TestUtil::getConnection();
-        $this->connection->exec(file_get_contents(__DIR__ . '/../../scripts/mysql_event_streams_table.sql'));
-        $this->connection->exec(file_get_contents(__DIR__ . '/../../scripts/mysql_projections_table.sql'));
+        $this->connection->exec(file_get_contents(__DIR__.'/../../scripts/mysql/01_event_streams_table.sql'));
+        $this->connection->exec(file_get_contents(__DIR__.'/../../scripts/mysql/02_projections_table.sql'));
 
         $this->eventStore = new MySQLEventStore(
             new ProophActionEventEmitter([
