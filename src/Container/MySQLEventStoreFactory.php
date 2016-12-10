@@ -39,7 +39,7 @@ final class MySQLEventStoreFactory extends AbstractEventStoreFactory
         return MySQLEventStore::class;
     }
 
-    public function defaultOptions(): array
+    public function defaultOptions(): iterable
     {
         return [
             'connection_options' => [

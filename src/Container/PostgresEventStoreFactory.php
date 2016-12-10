@@ -42,7 +42,7 @@ final class PostgresEventStoreFactory extends AbstractEventStoreFactory
         return PostgresEventStore::class;
     }
 
-    public function defaultOptions(): array
+    public function defaultOptions(): iterable
     {
         return [
             'connection_options' => [
