@@ -419,11 +419,7 @@ EOT;
                 'metadata' => json_encode($metadata),
             ]);
 
-            if (1 === $statement->rowCount()) {
-                $event->setParam('result', true);
-            } else {
-                $event->setParam('result', false);
-            }
+            $event->setParam('result', 1 === $statement->rowCount());
         });
     }
 
