@@ -14,7 +14,6 @@ namespace ProophTest\EventStore\Projection;
 
 use ArrayIterator;
 use Prooph\Common\Messaging\Message;
-use Prooph\EventStore\PDO\Projection\MySQLEventStoreQuery;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
@@ -32,11 +31,7 @@ class MySQLEventStoreQueryTest extends AbstractMySQLEventStoreProjectionTest
     {
         $this->prepareEventStream('user-123');
 
-        $query = new MySQLEventStoreQuery(
-            $this->eventStore,
-            $this->connection,
-            'event_streams'
-        );
+        $query = $this->eventStore->createQuery();
 
         $query
             ->init(function (): array {
@@ -69,11 +64,7 @@ class MySQLEventStoreQueryTest extends AbstractMySQLEventStoreProjectionTest
         $this->prepareEventStream('user-123');
         $this->prepareEventStream('user-234');
 
-        $query = new MySQLEventStoreQuery(
-            $this->eventStore,
-            $this->connection,
-            'event_streams'
-        );
+        $query = $this->eventStore->createQuery();
 
         $query
             ->init(function (): array {
@@ -101,11 +92,7 @@ class MySQLEventStoreQueryTest extends AbstractMySQLEventStoreProjectionTest
         $this->prepareEventStream('user-234');
         $this->prepareEventStream('$iternal-345');
 
-        $query = new MySQLEventStoreQuery(
-            $this->eventStore,
-            $this->connection,
-            'event_streams'
-        );
+        $query = $this->eventStore->createQuery();
 
         $query
             ->init(function (): array {
@@ -132,11 +119,7 @@ class MySQLEventStoreQueryTest extends AbstractMySQLEventStoreProjectionTest
         $this->prepareEventStream('user-123');
         $this->prepareEventStream('user-234');
 
-        $query = new MySQLEventStoreQuery(
-            $this->eventStore,
-            $this->connection,
-            'event_streams'
-        );
+        $query = $this->eventStore->createQuery();
 
         $query
             ->init(function (): array {
@@ -165,11 +148,7 @@ class MySQLEventStoreQueryTest extends AbstractMySQLEventStoreProjectionTest
         $this->prepareEventStream('guest-345');
         $this->prepareEventStream('guest-456');
 
-        $query = new MySQLEventStoreQuery(
-            $this->eventStore,
-            $this->connection,
-            'event_streams'
-        );
+        $query = $this->eventStore->createQuery();
 
         $query
             ->init(function (): array {
@@ -192,11 +171,7 @@ class MySQLEventStoreQueryTest extends AbstractMySQLEventStoreProjectionTest
     {
         $this->prepareEventStream('user-123');
 
-        $query = new MySQLEventStoreQuery(
-            $this->eventStore,
-            $this->connection,
-            'event_streams'
-        );
+        $query = $this->eventStore->createQuery();
 
         $query
             ->init(function (): array {
@@ -233,11 +208,7 @@ class MySQLEventStoreQueryTest extends AbstractMySQLEventStoreProjectionTest
      */
     public function it_resets_to_empty_array(): void
     {
-        $query = new MySQLEventStoreQuery(
-            $this->eventStore,
-            $this->connection,
-            'event_streams'
-        );
+        $query = $this->eventStore->createQuery();
 
         $state = $query->getState();
 
@@ -257,11 +228,7 @@ class MySQLEventStoreQueryTest extends AbstractMySQLEventStoreProjectionTest
     {
         $this->prepareEventStream('user-123');
 
-        $query = new MySQLEventStoreQuery(
-            $this->eventStore,
-            $this->connection,
-            'event_streams'
-        );
+        $query = $this->eventStore->createQuery();
 
         $query
             ->init(function (): array {

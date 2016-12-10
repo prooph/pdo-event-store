@@ -21,7 +21,17 @@ use Prooph\EventStore\AbstractActionEventEmitterEventStore;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\PDO\Exception\ExtensionNotLoaded;
+use Prooph\EventStore\PDO\Exception\InvalidArgumentException;
 use Prooph\EventStore\PDO\Exception\RuntimeException;
+use Prooph\EventStore\PDO\Projection\MySQLEventStoreProjection;
+use Prooph\EventStore\PDO\Projection\MySQLEventStoreQuery;
+use Prooph\EventStore\PDO\Projection\MySQLEventStoreReadModelProjection;
+use Prooph\EventStore\PDO\Projection\ProjectionOptions;
+use Prooph\EventStore\Projection\Projection;
+use Prooph\EventStore\Projection\ProjectionOptions as BaseProjectionOptions;
+use Prooph\EventStore\Projection\Query;
+use Prooph\EventStore\Projection\ReadModel;
+use Prooph\EventStore\Projection\ReadModelProjection;
 use Prooph\EventStore\Stream;
 
 final class MySQLEventStore extends AbstractActionEventEmitterEventStore
@@ -421,6 +431,59 @@ EOT;
 
             $event->setParam('result', 1 === $statement->rowCount());
         });
+    }
+
+    public function createQuery(): Query
+    {
+        return new MySQLEventStoreQuery($this, $this->connection, $this->eventStreamsTable);
+    }
+
+    public function createProjection(string $name, BaseProjectionOptions $options = null): Projection
+    {
+        if (null === $options) {
+            $options = new ProjectionOptions();
+        }
+
+        if (! $options instanceof ProjectionOptions) {
+            throw new InvalidArgumentException('options must be an instance of ' . ProjectionOptions::class);
+        }
+
+        return new MySQLEventStoreProjection(
+            $this,
+            $this->connection,
+            $name,
+            $this->eventStreamsTable,
+            $options->projectionsTable(),
+            $options->lockTimeoutMs(),
+            $options->cacheSize(),
+            $options->persistBlockSize()
+        );
+    }
+
+    public function createReadModelProjection(
+        string $name,
+        ReadModel $readModel,
+        BaseProjectionOptions $options = null
+    ): ReadModelProjection {
+        if (null === $options) {
+            $options = new ProjectionOptions();
+        }
+
+        if (! $options instanceof ProjectionOptions) {
+            throw new InvalidArgumentException('options must be an instance of ' . ProjectionOptions::class);
+        }
+
+        return new MySQLEventStoreReadModelProjection(
+            $this,
+            $this->connection,
+            $name,
+            $readModel,
+            $this->eventStreamsTable,
+            $options->projectionsTable(),
+            $options->lockTimeoutMs(),
+            $options->cacheSize(),
+            $options->persistBlockSize()
+        );
     }
 
     private function addStreamToStreamsTable(Stream $stream): void

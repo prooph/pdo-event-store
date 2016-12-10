@@ -16,7 +16,6 @@ use ArrayIterator;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\Exception\RuntimeException;
 use Prooph\EventStore\Exception\StreamNotFound;
-use Prooph\EventStore\PDO\Projection\MySQLEventStoreProjection;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
@@ -34,16 +33,7 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
     {
         $this->prepareEventStream('user-123');
 
-        $projection = new MySQLEventStoreProjection(
-            $this->eventStore,
-            $this->connection,
-            'test_projection',
-            'event_streams',
-            'projections',
-            1000,
-            100,
-            100
-        );
+        $projection = $this->eventStore->createProjection('test_projection');
 
         $projection
             ->fromStream('user-123')
@@ -77,16 +67,7 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
 
         $this->eventStore->appendTo(new StreamName('user-123'), new ArrayIterator($events));
 
-        $projection = new MySQLEventStoreProjection(
-            $this->eventStore,
-            $this->connection,
-            'test_projection',
-            'event_streams',
-            'projections',
-            1000,
-            100,
-            100
-        );
+        $projection = $this->eventStore->createProjection('test_projection');
 
         $projection
             ->fromStream('user-123')
@@ -116,16 +97,7 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
     {
         $this->prepareEventStream('user-123');
 
-        $projection = new MySQLEventStoreProjection(
-            $this->eventStore,
-            $this->connection,
-            'test_projection',
-            'event_streams',
-            'projections',
-            1000,
-            100,
-            100
-        );
+        $projection = $this->eventStore->createProjection('test_projection');
 
         $projection
             ->fromStream('user-123')
@@ -157,16 +129,7 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
     {
         $this->prepareEventStream('user-123');
 
-        $projection = new MySQLEventStoreProjection(
-            $this->eventStore,
-            $this->connection,
-            'test_projection',
-            'event_streams',
-            'projections',
-            1000,
-            100,
-            100
-        );
+        $projection = $this->eventStore->createProjection('test_projection');
 
         $projection
             ->fromStream('user-123')
@@ -199,16 +162,7 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
     {
         $this->expectException(RuntimeException::class);
 
-        $projection = new MySQLEventStoreProjection(
-            $this->eventStore,
-            $this->connection,
-            'test_projection',
-            'event_streams',
-            'projections',
-            1000,
-            100,
-            100
-        );
+        $projection = $this->eventStore->createProjection('test_projection');
 
         $projection->run();
     }
@@ -223,34 +177,15 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
 
         $this->prepareEventStream('user-123');
 
-        $projection = new MySQLEventStoreProjection(
-            $this->eventStore,
-            $this->connection,
-            'test_projection',
-            'event_streams',
-            'projections',
-            1000,
-            100,
-            100
-        );
+        $projection = $this->eventStore->createProjection('test_projection');
 
         $eventStore = $this->eventStore;
-        $connection = $this->connection;
 
         $projection
             ->fromStream('user-123')
             ->whenAny(
-                function (array $state, Message $event) use ($eventStore, $connection): array {
-                    $projection = new MySQLEventStoreProjection(
-                        $eventStore,
-                        $connection,
-                        'test_projection',
-                        'event_streams',
-                        'projections',
-                        1000,
-                        100,
-                        100
-                    );
+                function (array $state, Message $event) use ($eventStore): array {
+                    $projection = $eventStore->createProjection('test_projection');
 
                     $projection
                         ->fromStream('user-123')

@@ -15,7 +15,6 @@ namespace ProophTest\EventStore\PDO\Projection;
 use ArrayIterator;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\Exception\RuntimeException;
-use Prooph\EventStore\PDO\Projection\MySQLEventStoreReadModelProjection;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\ReadModelMock;
 use ProophTest\EventStore\Mock\UserCreated;
@@ -35,17 +34,7 @@ class MySQLEventStoreReadModelProjectionTest extends AbstractMySQLEventStoreProj
 
         $readModel = new ReadModelMock();
 
-        $projection = new MySQLEventStoreReadModelProjection(
-            $this->eventStore,
-            $this->connection,
-            'test_projection',
-            $readModel,
-            'event_streams',
-            'projections',
-            1000,
-            100,
-            100
-        );
+        $projection = $this->eventStore->createReadModelProjection('test_projection', $readModel);
 
         $projection
             ->fromAll()
@@ -77,17 +66,7 @@ class MySQLEventStoreReadModelProjectionTest extends AbstractMySQLEventStoreProj
 
         $this->eventStore->appendTo(new StreamName('user-123'), new ArrayIterator($events));
 
-        $projection = new MySQLEventStoreReadModelProjection(
-            $this->eventStore,
-            $this->connection,
-            'test_projection',
-            $readModel,
-            'event_streams',
-            'projections',
-            1000,
-            100,
-            100
-        );
+        $projection = $this->eventStore->createReadModelProjection('test_projection', $readModel);
 
         $projection
             ->fromAll()
@@ -117,17 +96,7 @@ class MySQLEventStoreReadModelProjectionTest extends AbstractMySQLEventStoreProj
 
         $readModel = new ReadModelMock();
 
-        $projection = new MySQLEventStoreReadModelProjection(
-            $this->eventStore,
-            $this->connection,
-            'test_projection',
-            $readModel,
-            'event_streams',
-            'projections',
-            1000,
-            100,
-            100
-        );
+        $projection = $this->eventStore->createReadModelProjection('test_projection', $readModel);
 
         $projection
             ->init(function (): void {
@@ -144,6 +113,10 @@ class MySQLEventStoreReadModelProjectionTest extends AbstractMySQLEventStoreProj
             ->run();
 
         $this->assertEquals('Sascha', $readModel->read('name'));
+
+        $projection->reset();
+
+        $this->assertFalse($readModel->hasKey('name'));
     }
 
     /**
@@ -155,17 +128,7 @@ class MySQLEventStoreReadModelProjectionTest extends AbstractMySQLEventStoreProj
 
         $readModel = new ReadModelMock();
 
-        $projection = new MySQLEventStoreReadModelProjection(
-            $this->eventStore,
-            $this->connection,
-            'test_projection',
-            $readModel,
-            'event_streams',
-            'projections',
-            1000,
-            100,
-            100
-        );
+        $projection = $this->eventStore->createReadModelProjection('test_projection', $readModel);
 
         $projection
             ->fromStream('user-123')
@@ -183,7 +146,7 @@ class MySQLEventStoreReadModelProjectionTest extends AbstractMySQLEventStoreProj
 
         $projection->delete(true);
 
-        $this->assertFalse($readModel->hasKey('name'));
+        $this->assertFalse($readModel->isInitialized());
     }
 
     /**
@@ -195,17 +158,7 @@ class MySQLEventStoreReadModelProjectionTest extends AbstractMySQLEventStoreProj
 
         $readModel = new ReadModelMock();
 
-        $projection = new MySQLEventStoreReadModelProjection(
-            $this->eventStore,
-            $this->connection,
-            'test_projection',
-            $readModel,
-            'event_streams',
-            'projections',
-            1000,
-            100,
-            100
-        );
+        $projection = $this->eventStore->createReadModelProjection('test_projection', $readModel);
         $projection->run();
     }
 }
