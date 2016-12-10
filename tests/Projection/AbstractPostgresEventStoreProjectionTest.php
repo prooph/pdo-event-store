@@ -46,8 +46,8 @@ abstract class AbstractPostgresEventStoreProjectionTest extends TestCase
         }
 
         $this->connection = TestUtil::getConnection();
-        $this->connection->exec(file_get_contents(__DIR__ . '/../../scripts/postgres_event_streams_table.sql'));
-        $this->connection->exec(file_get_contents(__DIR__ . '/../../scripts/postgres_projections_table.sql'));
+        $this->connection->exec(file_get_contents(__DIR__.'/../../scripts/postgres/01_event_streams_table.sql'));
+        $this->connection->exec(file_get_contents(__DIR__.'/../../scripts/postgres/02_projections_table.sql'));
 
         $this->eventStore = new PostgresEventStore(
             new ProophActionEventEmitter([
