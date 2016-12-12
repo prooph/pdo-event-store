@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace Prooph\EventStore\PDO;
 
+use DateTimeImmutable;
+use DateTimeZone;
 use Iterator;
 use PDO;
 use PDOStatement;
@@ -103,10 +105,10 @@ final class PDOStreamIterator implements Iterator
             return null;
         }
 
-        $createdAt = \DateTimeImmutable::createFromFormat(
-            'Y-m-d\TH:i:s.u',
+        $createdAt = DateTimeImmutable::createFromFormat(
+            'Y-m-d H:i:s.u',
             $this->currentItem->created_at,
-            new \DateTimeZone('UTC')
+            new DateTimeZone('UTC')
         );
 
         return $this->messageFactory->createMessageFromArray($this->currentItem->event_name, [
