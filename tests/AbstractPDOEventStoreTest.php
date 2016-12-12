@@ -113,7 +113,6 @@ abstract class AbstractPDOEventStoreTest extends TestCase
         $this->assertCount(2, $stream->streamEvents());
     }
 
-
     /**
      * @test
      */

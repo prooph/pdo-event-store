@@ -105,7 +105,6 @@ final class PDOStreamIterator implements Iterator
             return null;
         }
 
-
         $createdAt = $this->currentItem->created_at;
 
         if (strlen($createdAt) === 19) {
