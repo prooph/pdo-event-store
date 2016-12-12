@@ -17,6 +17,15 @@
     <filter>
         <whitelist>
             <directory>./src/</directory>
+            <exclude>
+                <file>./src/PersistenceStrategy/MySQLAggregateStreamStrategy.php</file>
+                <file>./src/PersistenceStrategy/MySQLSimpleStreamStrategy.php</file>
+                <file>./src/PersistenceStrategy/MySQLSingleStreamStrategy.php</file>
+                <file>./src/Projection/MySQLEventStoreProjection.php</file>
+                <file>./src/Projection/MySQLEventStoreQuery.php</file>
+                <file>./src/Projection/MySQLEventStoreReadModelProjection.php</file>
+                <file>./src/MySQLEventStore.php</file>
+            </exclude>
         </whitelist>
     </filter>
 
