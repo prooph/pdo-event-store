@@ -225,11 +225,11 @@ final class PostgresEventStoreTest extends AbstractPDOEventStoreTest
      */
     public function it_can_rollback_empty_transaction(): void
     {
-        $this->assertFalse($this->eventStore->isInTransaction());
+        $this->assertFalse($this->eventStore->inTransaction());
         $this->eventStore->beginTransaction();
-        $this->assertTrue($this->eventStore->isInTransaction());
+        $this->assertTrue($this->eventStore->inTransaction());
         $this->eventStore->rollback();
-        $this->assertFalse($this->eventStore->isInTransaction());
+        $this->assertFalse($this->eventStore->inTransaction());
     }
 
     /**

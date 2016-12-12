@@ -71,11 +71,6 @@ final class PostgresEventStore implements TransactionalEventStore
     private $eventStreamsTable;
 
     /**
-     * @var bool
-     */
-    private $isInTransaction = false;
-
-    /**
      * @throws ExtensionNotLoaded
      */
     public function __construct(
@@ -371,8 +366,6 @@ EOT;
         } catch (\PDOException $exception) {
             throw new TransactionAlreadyStarted();
         }
-
-        $this->isInTransaction = true;
     }
 
     public function commit(): void
@@ -382,8 +375,6 @@ EOT;
         } catch (\PDOException $exception) {
             throw new TransactionNotStarted();
         }
-
-        $this->isInTransaction = false;
     }
 
     public function rollback(): void
@@ -393,13 +384,11 @@ EOT;
         } catch (\PDOException $exception) {
             throw new TransactionNotStarted();
         }
-
-        $this->isInTransaction = false;
     }
 
-    public function isInTransaction(): bool
+    public function inTransaction(): bool
     {
-        return $this->isInTransaction;
+        return $this->connection->inTransaction();
     }
 
     public function transactional(callable $callable)

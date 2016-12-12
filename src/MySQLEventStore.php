@@ -71,11 +71,6 @@ final class MySQLEventStore implements EventStore
     /**
      * @var bool
      */
-    private $isInTransaction = false;
-
-    /**
-     * @var bool
-     */
     private $duringCreate = false;
 
     /**
@@ -173,20 +168,17 @@ EOT;
         }
 
         $this->connection->beginTransaction();
-        $this->isInTransaction = true;
         $this->duringCreate = true;
 
         try {
             $this->appendTo($streamName, $stream->streamEvents());
         } catch (\Throwable $e) {
             $this->connection->rollBack();
-            $this->isInTransaction = false;
             $this->duringCreate = false;
             throw $e;
         }
 
         $this->connection->commit();
-        $this->isInTransaction = false;
         $this->duringCreate = false;
     }
 
@@ -208,33 +200,30 @@ EOT;
 
         $sql = 'INSERT INTO ' . $tableName . ' (' . implode(', ', $columnNames) . ') VALUES ' . $allPlaces;
 
-        if (! $this->isInTransaction) {
+        if (! $this->connection->inTransaction()) {
             $this->connection->beginTransaction();
-            $this->isInTransaction = true;
         }
 
         $statement = $this->connection->prepare($sql);
         $statement->execute($data);
 
         if ($statement->errorInfo()[0] === '42S02') {
-            if ($this->isInTransaction && ! $this->duringCreate) {
+            if ($this->connection->inTransaction() && ! $this->duringCreate) {
                 $this->connection->rollBack();
-                $this->isInTransaction = false;
             }
 
             throw StreamNotFound::with($streamName);
         }
 
         if (in_array($statement->errorCode(), $this->persistenceStrategy->uniqueViolationErrorCodes(), true)) {
-            if ($this->isInTransaction && ! $this->duringCreate) {
+            if ($this->connection->inTransaction() && ! $this->duringCreate) {
                 $this->connection->rollBack();
-                $this->isInTransaction = false;
             }
 
             throw new ConcurrencyException();
         }
 
-        if ($this->isInTransaction && ! $this->duringCreate) {
+        if ($this->connection->inTransaction() && ! $this->duringCreate) {
             $this->connection->commit();
         }
     }
@@ -386,17 +375,15 @@ EOT;
 
     public function delete(StreamName $streamName): void
     {
-        if (! $this->isInTransaction) {
+        if (! $this->connection->inTransaction()) {
             $this->connection->beginTransaction();
-            $this->isInTransaction = true;
         }
 
         try {
             $this->removeStreamFromStreamsTable($streamName);
         } catch (StreamNotFound $exception) {
-            if ($this->isInTransaction) {
+            if ($this->connection->inTransaction()) {
                 $this->connection->rollBack();
-                $this->isInTransaction = false;
             }
 
             throw $exception;
@@ -411,9 +398,8 @@ EOT;
         $statement = $this->connection->prepare($deleteEventStreamSql);
         $statement->execute();
 
-        if ($this->isInTransaction) {
+        if ($this->connection->inTransaction()) {
             $this->connection->commit();
-            $this->isInTransaction = false;
         }
     }
 
