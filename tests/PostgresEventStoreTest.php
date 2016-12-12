@@ -13,12 +13,13 @@ declare(strict_types=1);
 namespace ProophTest\EventStore\PDO;
 
 use PDO;
-use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
+use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Exception\StreamNotFound;
 use Prooph\EventStore\Exception\TransactionAlreadyStarted;
+use Prooph\EventStore\Exception\TransactionNotStarted;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;
 use Prooph\EventStore\PDO\Exception\RuntimeException;
@@ -27,7 +28,6 @@ use Prooph\EventStore\PDO\PersistenceStrategy\PostgresSingleStreamStrategy;
 use Prooph\EventStore\PDO\PostgresEventStore;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
-use Prooph\EventStore\TransactionalActionEventEmitterEventStore;
 use ProophTest\EventStore\Mock\TestDomainEvent;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
@@ -64,24 +64,35 @@ final class PostgresEventStoreTest extends AbstractPDOEventStoreTest
     protected function createEventStore(PDO $connection): PostgresEventStore
     {
         return new PostgresEventStore(
-            new ProophActionEventEmitter([
-                TransactionalActionEventEmitterEventStore::EVENT_APPEND_TO,
-                TransactionalActionEventEmitterEventStore::EVENT_CREATE,
-                TransactionalActionEventEmitterEventStore::EVENT_LOAD,
-                TransactionalActionEventEmitterEventStore::EVENT_LOAD_REVERSE,
-                TransactionalActionEventEmitterEventStore::EVENT_DELETE,
-                TransactionalActionEventEmitterEventStore::EVENT_HAS_STREAM,
-                TransactionalActionEventEmitterEventStore::EVENT_FETCH_STREAM_METADATA,
-                TransactionalActionEventEmitterEventStore::EVENT_UPDATE_STREAM_METADATA,
-                TransactionalActionEventEmitterEventStore::EVENT_BEGIN_TRANSACTION,
-                TransactionalActionEventEmitterEventStore::EVENT_COMMIT,
-                TransactionalActionEventEmitterEventStore::EVENT_ROLLBACK,
-            ]),
             new FQCNMessageFactory(),
             new NoOpMessageConverter(),
             $connection,
             new PostgresAggregateStreamStrategy()
         );
+    }
+
+    /**
+     * @test
+     */
+    public function it_cannot_create_new_stream_if_table_name_is_already_used(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Error during createSchemaFor');
+
+        $streamName = new StreamName('foo');
+        $strategy = new PostgresAggregateStreamStrategy();
+        $schema = $strategy->createSchema($strategy->generateTableName($streamName));
+
+        foreach ($schema as $command) {
+            $statement = $this->connection->prepare($command);
+            $result = $statement->execute();
+
+            if (! $result) {
+                throw new RuntimeException('Error during createSchemaFor: ' . implode('; ', $statement->errorInfo()));
+            }
+        }
+
+        $this->eventStore->create(new Stream($streamName, new \ArrayIterator()));
     }
 
     /**
@@ -126,19 +137,6 @@ final class PostgresEventStoreTest extends AbstractPDOEventStoreTest
         $this->expectException(ConcurrencyException::class);
 
         $this->eventStore = new PostgresEventStore(
-            new ProophActionEventEmitter([
-                TransactionalActionEventEmitterEventStore::EVENT_APPEND_TO,
-                TransactionalActionEventEmitterEventStore::EVENT_CREATE,
-                TransactionalActionEventEmitterEventStore::EVENT_LOAD,
-                TransactionalActionEventEmitterEventStore::EVENT_LOAD_REVERSE,
-                TransactionalActionEventEmitterEventStore::EVENT_DELETE,
-                TransactionalActionEventEmitterEventStore::EVENT_HAS_STREAM,
-                TransactionalActionEventEmitterEventStore::EVENT_FETCH_STREAM_METADATA,
-                TransactionalActionEventEmitterEventStore::EVENT_UPDATE_STREAM_METADATA,
-                TransactionalActionEventEmitterEventStore::EVENT_BEGIN_TRANSACTION,
-                TransactionalActionEventEmitterEventStore::EVENT_COMMIT,
-                TransactionalActionEventEmitterEventStore::EVENT_ROLLBACK,
-            ]),
             new FQCNMessageFactory(),
             new NoOpMessageConverter(),
             $this->connection,
@@ -217,9 +215,36 @@ final class PostgresEventStoreTest extends AbstractPDOEventStoreTest
     /**
      * @test
      */
+    public function it_cannot_commit_twice(): void
+    {
+        $this->expectException(TransactionNotStarted::class);
+
+        $this->eventStore->beginTransaction();
+        $this->eventStore->commit();
+        $this->eventStore->commit();
+    }
+
+    /**
+     * @test
+     */
     public function it_can_rollback_empty_transaction(): void
     {
+        $this->assertFalse($this->eventStore->isInTransaction());
         $this->eventStore->beginTransaction();
+        $this->assertTrue($this->eventStore->isInTransaction());
+        $this->eventStore->rollback();
+        $this->assertFalse($this->eventStore->isInTransaction());
+    }
+
+    /**
+     * @test
+     */
+    public function it_cannot_rollback_twice(): void
+    {
+        $this->expectException(TransactionNotStarted::class);
+
+        $this->eventStore->beginTransaction();
+        $this->eventStore->rollback();
         $this->eventStore->rollback();
     }
 
@@ -241,5 +266,91 @@ final class PostgresEventStoreTest extends AbstractPDOEventStoreTest
         $stream = new Stream(new StreamName('Prooph\Model\User'), new \ArrayIterator([$event]));
 
         $this->eventStore->create($stream);
+    }
+
+    /**
+     * @test
+     */
+    public function it_works_transactional(): void
+    {
+        $streamName = $this->prophesize(StreamName::class);
+        $streamName->toString()->willReturn('Prooph\Model\User')->shouldBeCalled();
+        $streamName = $streamName->reveal();
+
+        $stream = $this->prophesize(Stream::class);
+        $stream->streamName()->willReturn($streamName);
+        $stream->metadata()->willReturn(['foo' => 'bar'])->shouldBeCalled();
+        $stream->streamEvents()->willReturn(new \ArrayIterator());
+
+        $this->eventStore->beginTransaction();
+
+        $this->assertFalse($this->eventStore->hasStream($streamName));
+
+        $this->eventStore->create($stream->reveal());
+
+        $this->eventStore->commit();
+
+        $this->assertTrue($this->eventStore->hasStream($streamName));
+    }
+
+    /**
+     * @test
+     */
+    public function it_should_rollback_and_throw_exception_in_case_of_transaction_fail()
+    {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Transaction failed');
+
+        $eventStore = $this->eventStore;
+
+        $this->eventStore->transactional(function (EventStore $es) use ($eventStore) {
+            $this->assertSame($es, $eventStore);
+            throw new \Exception('Transaction failed');
+        });
+    }
+
+    /**
+     * @test
+     */
+    public function it_should_return_true_by_default_if_transaction_is_used()
+    {
+        $transactionResult = $this->eventStore->transactional(function (EventStore $eventStore) {
+            $this->eventStore->create($this->getTestStream());
+            $this->assertSame($this->eventStore, $eventStore);
+        });
+        $this->assertTrue($transactionResult);
+    }
+
+    /**
+     * @test
+     */
+    public function it_wraps_up_code_in_transaction_properly()
+    {
+        $transactionResult = $this->eventStore->transactional(function (EventStore $eventStore) {
+            $this->eventStore->create($this->getTestStream());
+            $this->assertSame($this->eventStore, $eventStore);
+
+            return 'Result';
+        });
+
+        $this->assertSame('Result', $transactionResult);
+
+        $secondStreamEvent = UsernameChanged::with(
+            ['new_name' => 'John Doe'],
+            2
+        );
+
+        $transactionResult = $this->eventStore->transactional(function (EventStore $eventStore) use ($secondStreamEvent) {
+            $this->eventStore->appendTo(new StreamName('Prooph\Model\User'), new \ArrayIterator([$secondStreamEvent]));
+            $this->assertSame($this->eventStore, $eventStore);
+
+            return 'Second Result';
+        });
+
+        $this->assertSame('Second Result', $transactionResult);
+
+        $stream = $this->eventStore->load(new StreamName('Prooph\Model\User'), 1);
+
+        $this->assertCount(2, $stream->streamEvents());
     }
 }

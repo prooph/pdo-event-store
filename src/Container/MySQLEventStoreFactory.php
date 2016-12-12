@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace Prooph\EventStore\PDO\Container;
 
-use Prooph\Common\Event\ActionEventEmitter;
 use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;

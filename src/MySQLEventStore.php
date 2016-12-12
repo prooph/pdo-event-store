@@ -103,10 +103,8 @@ final class MySQLEventStore implements EventStore
 
     public function fetchStreamMetadata(StreamName $streamName): array
     {
-        $eventStreamsTable = $this->eventStreamsTable;
-
         $sql = <<<EOT
-SELECT metadata FROM $eventStreamsTable
+SELECT metadata FROM $this->eventStreamsTable
 WHERE real_stream_name = :streamName; 
 EOT;
 
@@ -145,10 +143,8 @@ EOT;
 
     public function hasStream(StreamName $streamName): bool
     {
-        $eventStreamsTable = $this->eventStreamsTable;
-
         $sql = <<<EOT
-SELECT stream_name FROM $eventStreamsTable
+SELECT stream_name FROM $this->eventStreamsTable
 WHERE real_stream_name = :streamName;
 EOT;
         $statement = $this->connection->prepare($sql);
@@ -157,7 +153,7 @@ EOT;
 
         $stream = $statement->fetch(PDO::FETCH_OBJ);
 
-        return (false !== $stream);
+        return false !== $stream;
     }
 
     public function create(Stream $stream): void
@@ -248,8 +244,7 @@ EOT;
         int $fromNumber = 1,
         int $count = null,
         MetadataMatcher $metadataMatcher = null
-    ): Stream
-    {
+    ): Stream {
         if (null === $count) {
             $count = PHP_INT_MAX;
         }
@@ -321,8 +316,7 @@ EOT;
         int $fromNumber = PHP_INT_MAX,
         int $count = null,
         MetadataMatcher $metadataMatcher = null
-    ): Stream
-    {
+    ): Stream {
         if (null === $count) {
             $count = PHP_INT_MAX;
         }
@@ -422,7 +416,6 @@ EOT;
             $this->isInTransaction = false;
         }
     }
-
 
     public function createQuery(): Query
     {

@@ -19,7 +19,6 @@ use Interop\Config\RequiresConfigId;
 use Interop\Config\RequiresMandatoryOptions;
 use Interop\Container\ContainerInterface;
 use PDO;
-use Prooph\Common\Event\ActionEventEmitter;
 use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\PDO\Exception\InvalidArgumentException;
