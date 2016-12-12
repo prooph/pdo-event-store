@@ -67,14 +67,6 @@ EOT;
         $statement = $this->connection->prepare($deleteProjectionSql);
         $statement->execute([$this->name]);
 
-        if ($deleteEmittedEvents) {
-            try {
-                $this->eventStore->delete(new StreamName($this->name));
-            } catch (StreamNotFound $e) {
-                // ignore
-            }
-        }
-
         $this->eventStore->commit();
 
         parent::delete($deleteEmittedEvents);
