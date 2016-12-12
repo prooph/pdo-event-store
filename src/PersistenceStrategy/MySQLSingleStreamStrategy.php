@@ -31,7 +31,7 @@ CREATE TABLE `$tableName` (
     `event_name` VARCHAR(100) COLLATE utf8_bin NOT NULL,
     `payload` JSON NOT NULL,
     `metadata` JSON NOT NULL,
-    `created_at` CHAR(26) COLLATE utf8_bin NOT NULL,
+    `created_at` DATETIME(6) NOT NULL,
     `version` INT(11) GENERATED ALWAYS AS (JSON_EXTRACT(metadata, '$._aggregate_version')) STORED NOT NULL,
     `aggregate_id` char(38) CHARACTER SET utf8 COLLATE utf8_bin GENERATED ALWAYS AS (JSON_EXTRACT(metadata, '$._aggregate_id')) STORED NOT NULL,
     `aggregate_type` varchar(150) GENERATED ALWAYS AS (JSON_EXTRACT(metadata, '$._aggregate_type')) STORED NOT NULL,

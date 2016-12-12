@@ -16,6 +16,7 @@ use Interop\Container\ContainerInterface;
 use PHPUnit\Framework\TestCase;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
+use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\PDO\Container\MySQLEventStoreFactory;
 use Prooph\EventStore\PDO\Exception\InvalidArgumentException;
 use Prooph\EventStore\PDO\MySQLEventStore;
@@ -32,6 +33,7 @@ final class MySQLEventStoreFactoryTest extends TestCase
         $config['prooph']['event_store']['default'] = [
             'connection_service' => 'my_connection',
             'persistence_strategy' => PersistenceStrategy\MySQLAggregateStreamStrategy::class,
+            'wrap_action_event_emitter' => false,
         ];
 
         $connection = TestUtil::getConnection();
@@ -58,6 +60,7 @@ final class MySQLEventStoreFactoryTest extends TestCase
         $config['prooph']['event_store']['custom'] = [
             'connection_options' => TestUtil::getConnectionParams(),
             'persistence_strategy' => PersistenceStrategy\MySQLAggregateStreamStrategy::class,
+            'wrap_action_event_emitter' => false,
         ];
 
         $container = $this->prophesize(ContainerInterface::class);
@@ -71,6 +74,29 @@ final class MySQLEventStoreFactoryTest extends TestCase
         $eventStore = MySQLEventStoreFactory::$eventStoreName($container->reveal());
 
         $this->assertInstanceOf(MySQLEventStore::class, $eventStore);
+    }
+
+    /**
+     * @test
+     */
+    public function it_wraps_action_event_emitter(): void
+    {
+        $config['prooph']['event_store']['custom'] = [
+            'connection_options' => TestUtil::getConnectionParams(),
+            'persistence_strategy' => PersistenceStrategy\MySQLAggregateStreamStrategy::class,
+        ];
+
+        $container = $this->prophesize(ContainerInterface::class);
+
+        $container->get('config')->willReturn($config)->shouldBeCalled();
+        $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
+        $container->get(NoOpMessageConverter::class)->willReturn(new NoOpMessageConverter())->shouldBeCalled();
+        $container->get(PersistenceStrategy\MySQLAggregateStreamStrategy::class)->willReturn(new PersistenceStrategy\MySQLAggregateStreamStrategy())->shouldBeCalled();
+
+        $eventStoreName = 'custom';
+        $eventStore = MySQLEventStoreFactory::$eventStoreName($container->reveal());
+
+        $this->assertInstanceOf(ActionEventEmitterEventStore::class, $eventStore);
     }
 
     /**

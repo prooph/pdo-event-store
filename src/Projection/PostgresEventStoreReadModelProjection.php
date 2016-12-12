@@ -15,7 +15,6 @@ namespace Prooph\EventStore\PDO\Projection;
 use PDO;
 use Prooph\EventStore\PDO\PostgresEventStore;
 use Prooph\EventStore\Projection\ReadModel;
-use Prooph\EventStore\StreamName;
 
 final class PostgresEventStoreReadModelProjection extends AbstractPDOReadModelProjection
 {
@@ -65,10 +64,6 @@ DELETE FROM $this->projectionsTable WHERE name = ?;
 EOT;
         $statement = $this->connection->prepare($deleteProjectionSql);
         $statement->execute([$this->name]);
-
-        if ($deleteEmittedEvents) {
-            $this->eventStore->delete(new StreamName($this->name));
-        }
 
         $this->eventStore->commit();
 

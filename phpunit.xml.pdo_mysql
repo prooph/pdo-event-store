@@ -17,6 +17,15 @@
     <filter>
         <whitelist>
             <directory>./src/</directory>
+            <exclude>
+                <file>./src/PersistenceStrategy/PostgresAggregateStreamStrategy.php</file>
+                <file>./src/PersistenceStrategy/PostgresSimpleStreamStrategy.php</file>
+                <file>./src/PersistenceStrategy/PostgresSingleStreamStrategy.php</file>
+                <file>./src/Projection/PostgresEventStoreProjection.php</file>
+                <file>./src/Projection/PostgresEventStoreQuery.php</file>
+                <file>./src/Projection/PostgresEventStoreReadModelProjection.php</file>
+                <file>./src/PostgresEventStore.php</file>
+            </exclude>
         </whitelist>
     </filter>
 

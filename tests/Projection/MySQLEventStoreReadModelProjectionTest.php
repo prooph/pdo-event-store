@@ -105,12 +105,8 @@ class MySQLEventStoreReadModelProjectionTest extends AbstractMySQLEventStoreProj
             ->fromStream('user-123')
             ->whenAny(function ($state, Message $event): void {
                 $this->readModel()->stack('update', 'name', $event->payload()['name']);
-
-                if ($event->metadata()['_aggregate_version'] === 50) {
-                    $this->stop();
-                }
             })
-            ->run();
+            ->run(false);
 
         $this->assertEquals('Sascha', $readModel->read('name'));
 
@@ -140,7 +136,7 @@ class MySQLEventStoreReadModelProjectionTest extends AbstractMySQLEventStoreProj
                     return $state;
                 },
             ])
-            ->run();
+            ->run(false);
 
         $this->assertEquals('Alex', $readModel->read('name'));
 

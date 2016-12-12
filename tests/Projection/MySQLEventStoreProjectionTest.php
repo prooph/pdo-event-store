@@ -158,6 +158,29 @@ class MySQLEventStoreProjectionTest extends AbstractMySQLEventStoreProjectionTes
     /**
      * @test
      */
+    public function it_ignores_error_on_delete_of_not_created_stream_projections(): void
+    {
+        $this->prepareEventStream('user-123');
+
+        $projection = $this->eventStore->createProjection('test_projection');
+
+        $projection
+            ->fromStream('user-123')
+            ->when([
+                UserCreated::class => function (array $state, UserCreated $event): array {
+                    $this->stop();
+
+                    return $state;
+                },
+            ])
+            ->run();
+
+        $projection->delete(true);
+    }
+
+    /**
+     * @test
+     */
     public function it_throws_exception_on_run_when_nothing_configured(): void
     {
         $this->expectException(RuntimeException::class);

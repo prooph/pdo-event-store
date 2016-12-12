@@ -15,10 +15,8 @@ namespace ProophTest\EventStore\PDO\Projection;
 use ArrayIterator;
 use PDO;
 use PHPUnit\Framework\TestCase;
-use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
-use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\PDO\MySQLEventStore;
 use Prooph\EventStore\PDO\PersistenceStrategy\MySQLSimpleStreamStrategy;
 use Prooph\EventStore\Stream;
@@ -50,16 +48,6 @@ abstract class AbstractMySQLEventStoreProjectionTest extends TestCase
         $this->connection->exec(file_get_contents(__DIR__.'/../../scripts/mysql/02_projections_table.sql'));
 
         $this->eventStore = new MySQLEventStore(
-            new ProophActionEventEmitter([
-                ActionEventEmitterEventStore::EVENT_APPEND_TO,
-                ActionEventEmitterEventStore::EVENT_CREATE,
-                ActionEventEmitterEventStore::EVENT_LOAD,
-                ActionEventEmitterEventStore::EVENT_LOAD_REVERSE,
-                ActionEventEmitterEventStore::EVENT_DELETE,
-                ActionEventEmitterEventStore::EVENT_HAS_STREAM,
-                ActionEventEmitterEventStore::EVENT_FETCH_STREAM_METADATA,
-                ActionEventEmitterEventStore::EVENT_UPDATE_STREAM_METADATA,
-            ]),
             new FQCNMessageFactory(),
             new NoOpMessageConverter(),
             TestUtil::getConnection(),
