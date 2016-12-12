@@ -88,6 +88,35 @@ abstract class AbstractPDOEventStoreTest extends TestCase
     /**
      * @test
      */
+    public function it_converts_zero_micros_from_date_time(): void
+    {
+        $this->eventStore->create($this->getTestStream());
+
+        $streamEvent = UsernameChanged::with(
+            ['name' => 'John Doe'],
+            2
+        );
+
+        $d = $streamEvent->toArray();
+        $d['created_at'] = (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))->setTimestamp(time());
+
+        $streamEvent = UsernameChanged::fromArray($d);
+
+        $streamEvent = $streamEvent->withAddedMetadata('tag', 'person');
+
+        $this->eventStore->appendTo(new StreamName('Prooph\Model\User'), new ArrayIterator([$streamEvent]));
+
+        $stream = $this->eventStore->load(new StreamName('Prooph\Model\User'));
+
+        $this->assertEquals('Prooph\Model\User', $stream->streamName()->toString());
+
+        $this->assertCount(2, $stream->streamEvents());
+    }
+
+
+    /**
+     * @test
+     */
     public function it_loads_events_from_position(): void
     {
         $this->eventStore->create($this->getTestStream());

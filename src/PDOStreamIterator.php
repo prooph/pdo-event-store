@@ -105,9 +105,16 @@ final class PDOStreamIterator implements Iterator
             return null;
         }
 
+
+        $createdAt = $this->currentItem->created_at;
+
+        if (strlen($createdAt) === 19) {
+            $createdAt = $createdAt . '.000';
+        }
+
         $createdAt = DateTimeImmutable::createFromFormat(
             'Y-m-d H:i:s.u',
-            $this->currentItem->created_at,
+            $createdAt,
             new DateTimeZone('UTC')
         );
 
