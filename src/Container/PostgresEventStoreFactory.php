@@ -16,26 +16,31 @@ use Prooph\Common\Event\ActionEventEmitter;
 use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
+use Prooph\EventStore\ActionEventEmitterEventStore;
+use Prooph\EventStore\EventStore;
 use Prooph\EventStore\PDO\PostgresEventStore;
 use Prooph\EventStore\TransactionalActionEventEmitterEventStore;
 
 final class PostgresEventStoreFactory extends AbstractEventStoreFactory
 {
-    protected function createActionEventEmitter(): ActionEventEmitter
+    protected function createActionEventEmitterEventStore(EventStore $eventStore): ActionEventEmitterEventStore
     {
-        return new ProophActionEventEmitter([
-            TransactionalActionEventEmitterEventStore::EVENT_APPEND_TO,
-            TransactionalActionEventEmitterEventStore::EVENT_CREATE,
-            TransactionalActionEventEmitterEventStore::EVENT_LOAD,
-            TransactionalActionEventEmitterEventStore::EVENT_LOAD_REVERSE,
-            TransactionalActionEventEmitterEventStore::EVENT_DELETE,
-            TransactionalActionEventEmitterEventStore::EVENT_HAS_STREAM,
-            TransactionalActionEventEmitterEventStore::EVENT_FETCH_STREAM_METADATA,
-            TransactionalActionEventEmitterEventStore::EVENT_UPDATE_STREAM_METADATA,
-            TransactionalActionEventEmitterEventStore::EVENT_BEGIN_TRANSACTION,
-            TransactionalActionEventEmitterEventStore::EVENT_COMMIT,
-            TransactionalActionEventEmitterEventStore::EVENT_ROLLBACK,
-        ]);
+        return new TransactionalActionEventEmitterEventStore(
+            $eventStore,
+            new ProophActionEventEmitter([
+                TransactionalActionEventEmitterEventStore::EVENT_APPEND_TO,
+                TransactionalActionEventEmitterEventStore::EVENT_CREATE,
+                TransactionalActionEventEmitterEventStore::EVENT_LOAD,
+                TransactionalActionEventEmitterEventStore::EVENT_LOAD_REVERSE,
+                TransactionalActionEventEmitterEventStore::EVENT_DELETE,
+                TransactionalActionEventEmitterEventStore::EVENT_HAS_STREAM,
+                TransactionalActionEventEmitterEventStore::EVENT_FETCH_STREAM_METADATA,
+                TransactionalActionEventEmitterEventStore::EVENT_UPDATE_STREAM_METADATA,
+                TransactionalActionEventEmitterEventStore::EVENT_BEGIN_TRANSACTION,
+                TransactionalActionEventEmitterEventStore::EVENT_COMMIT,
+                TransactionalActionEventEmitterEventStore::EVENT_ROLLBACK,
+            ])
+        );
     }
 
     protected function eventStoreClassName(): string
@@ -58,6 +63,7 @@ final class PostgresEventStoreFactory extends AbstractEventStoreFactory
             'event_streams_table' => 'event_streams',
             'message_converter' => NoOpMessageConverter::class,
             'message_factory' => FQCNMessageFactory::class,
+            'wrap_action_event_emitter' => true,
         ];
     }
 }

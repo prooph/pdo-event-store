@@ -13,10 +13,8 @@ declare(strict_types=1);
 namespace ProophTest\EventStore\PDO;
 
 use PDO;
-use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
-use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\PDO\Exception\RuntimeException;
 use Prooph\EventStore\PDO\MySQLEventStore;
@@ -54,21 +52,35 @@ final class MySQLEventStoreTest extends AbstractPDOEventStoreTest
     protected function createEventStore(PDO $connection): MySQLEventStore
     {
         return new MySQLEventStore(
-            new ProophActionEventEmitter([
-                ActionEventEmitterEventStore::EVENT_APPEND_TO,
-                ActionEventEmitterEventStore::EVENT_CREATE,
-                ActionEventEmitterEventStore::EVENT_LOAD,
-                ActionEventEmitterEventStore::EVENT_LOAD_REVERSE,
-                ActionEventEmitterEventStore::EVENT_DELETE,
-                ActionEventEmitterEventStore::EVENT_HAS_STREAM,
-                ActionEventEmitterEventStore::EVENT_UPDATE_STREAM_METADATA,
-                ActionEventEmitterEventStore::EVENT_FETCH_STREAM_METADATA,
-            ]),
             new FQCNMessageFactory(),
             new NoOpMessageConverter(),
             $connection,
             new MySQLAggregateStreamStrategy()
         );
+    }
+
+    /**
+     * @test
+     */
+    public function it_cannot_create_new_stream_if_table_name_is_already_used(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Error during createSchemaFor');
+
+        $streamName = new StreamName('foo');
+        $strategy = new MySQLAggregateStreamStrategy();
+        $schema = $strategy->createSchema($strategy->generateTableName($streamName));
+
+        foreach ($schema as $command) {
+            $statement = $this->connection->prepare($command);
+            $result = $statement->execute();
+
+            if (! $result) {
+                throw new RuntimeException('Error during createSchemaFor: ' . implode('; ', $statement->errorInfo()));
+            }
+        }
+
+        $this->eventStore->create(new Stream($streamName, new \ArrayIterator()));
     }
 
     /**
@@ -113,16 +125,6 @@ final class MySQLEventStoreTest extends AbstractPDOEventStoreTest
         $this->expectException(ConcurrencyException::class);
 
         $this->eventStore = new MySQLEventStore(
-            new ProophActionEventEmitter([
-                ActionEventEmitterEventStore::EVENT_APPEND_TO,
-                ActionEventEmitterEventStore::EVENT_CREATE,
-                ActionEventEmitterEventStore::EVENT_LOAD,
-                ActionEventEmitterEventStore::EVENT_LOAD_REVERSE,
-                ActionEventEmitterEventStore::EVENT_DELETE,
-                ActionEventEmitterEventStore::EVENT_HAS_STREAM,
-                ActionEventEmitterEventStore::EVENT_FETCH_STREAM_METADATA,
-                ActionEventEmitterEventStore::EVENT_UPDATE_STREAM_METADATA,
-            ]),
             new FQCNMessageFactory(),
             new NoOpMessageConverter(),
             $this->connection,

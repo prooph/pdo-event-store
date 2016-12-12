@@ -17,22 +17,26 @@ use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\ActionEventEmitterEventStore;
+use Prooph\EventStore\EventStore;
 use Prooph\EventStore\PDO\MySQLEventStore;
 
 final class MySQLEventStoreFactory extends AbstractEventStoreFactory
 {
-    protected function createActionEventEmitter(): ActionEventEmitter
+    protected function createActionEventEmitterEventStore(EventStore $eventStore): ActionEventEmitterEventStore
     {
-        return new ProophActionEventEmitter([
-            ActionEventEmitterEventStore::EVENT_APPEND_TO,
-            ActionEventEmitterEventStore::EVENT_CREATE,
-            ActionEventEmitterEventStore::EVENT_LOAD,
-            ActionEventEmitterEventStore::EVENT_LOAD_REVERSE,
-            ActionEventEmitterEventStore::EVENT_DELETE,
-            ActionEventEmitterEventStore::EVENT_HAS_STREAM,
-            ActionEventEmitterEventStore::EVENT_FETCH_STREAM_METADATA,
-            ActionEventEmitterEventStore::EVENT_UPDATE_STREAM_METADATA,
-        ]);
+        return new ActionEventEmitterEventStore(
+            $eventStore,
+            new ProophActionEventEmitter([
+                ActionEventEmitterEventStore::EVENT_APPEND_TO,
+                ActionEventEmitterEventStore::EVENT_CREATE,
+                ActionEventEmitterEventStore::EVENT_LOAD,
+                ActionEventEmitterEventStore::EVENT_LOAD_REVERSE,
+                ActionEventEmitterEventStore::EVENT_DELETE,
+                ActionEventEmitterEventStore::EVENT_HAS_STREAM,
+                ActionEventEmitterEventStore::EVENT_FETCH_STREAM_METADATA,
+                ActionEventEmitterEventStore::EVENT_UPDATE_STREAM_METADATA,
+            ])
+        );
     }
 
     protected function eventStoreClassName(): string
@@ -55,6 +59,7 @@ final class MySQLEventStoreFactory extends AbstractEventStoreFactory
             'event_streams_table' => 'event_streams',
             'message_converter' => NoOpMessageConverter::class,
             'message_factory' => FQCNMessageFactory::class,
+            'wrap_action_event_emitter' => true,
         ];
     }
 }

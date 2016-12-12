@@ -20,6 +20,7 @@ use Interop\Config\RequiresMandatoryOptions;
 use Interop\Container\ContainerInterface;
 use PDO;
 use Prooph\Common\Event\ActionEventEmitter;
+use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\PDO\Exception\InvalidArgumentException;
 
@@ -102,8 +103,7 @@ abstract class AbstractEventStoreFactory implements
 
         $eventStoreClassName = $this->eventStoreClassName();
 
-        return new $eventStoreClassName(
-            $this->createActionEventEmitter(),
+        $eventStore = new $eventStoreClassName(
             $container->get($config['message_factory']),
             $messageConverter = $container->get($config['message_converter']),
             $connection,
@@ -111,9 +111,15 @@ abstract class AbstractEventStoreFactory implements
             $config['load_batch_size'],
             $config['event_streams_table']
         );
+
+        if (! $config['wrap_action_event_emitter']) {
+            return $eventStore;
+        }
+
+        return $this->createActionEventEmitterEventStore($eventStore);
     }
 
-    abstract protected function createActionEventEmitter(): ActionEventEmitter;
+    abstract protected function createActionEventEmitterEventStore(EventStore $eventStore): ActionEventEmitterEventStore;
 
     abstract protected function eventStoreClassName(): string;
 
