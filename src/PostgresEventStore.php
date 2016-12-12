@@ -163,8 +163,6 @@ EOT;
             $tableName = $this->persistenceStrategy->generateTableName($streamName);
             $this->createSchemaFor($tableName);
         } catch (RuntimeException $exception) {
-            var_dump($exception->getMessage());
-            die;
             $this->connection->exec("DROP TABLE $tableName;");
             $this->removeStreamFromStreamsTable($streamName);
 

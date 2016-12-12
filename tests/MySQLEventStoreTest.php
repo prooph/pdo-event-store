@@ -73,11 +73,7 @@ final class MySQLEventStoreTest extends AbstractPDOEventStoreTest
 
         foreach ($schema as $command) {
             $statement = $this->connection->prepare($command);
-            $result = $statement->execute();
-
-            if (! $result) {
-                throw new RuntimeException('Error during createSchemaFor: ' . implode('; ', $statement->errorInfo()));
-            }
+            $statement->execute();
         }
 
         $this->eventStore->create(new Stream($streamName, new \ArrayIterator()));
