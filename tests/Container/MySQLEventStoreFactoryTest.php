@@ -21,7 +21,6 @@ use Prooph\EventStore\PDO\Container\MySQLEventStoreFactory;
 use Prooph\EventStore\PDO\Exception\InvalidArgumentException;
 use Prooph\EventStore\PDO\MySQLEventStore;
 use Prooph\EventStore\PDO\PersistenceStrategy;
-use Prooph\EventStore\TransactionalActionEventEmitterEventStore;
 use ProophTest\EventStore\PDO\TestUtil;
 
 final class MySQLEventStoreFactoryTest extends TestCase

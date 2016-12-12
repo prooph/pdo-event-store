@@ -13,11 +13,7 @@ declare(strict_types=1);
 namespace Prooph\EventStore\PDO\Projection;
 
 use PDO;
-use Prooph\Common\Event\ActionEvent;
-use Prooph\EventStore\ActionEventEmitterEventStore;
-use Prooph\EventStore\Exception\StreamNotFound;
 use Prooph\EventStore\PDO\MySQLEventStore;
-use Prooph\EventStore\StreamName;
 
 final class MySQLEventStoreProjection extends AbstractPDOProjection
 {

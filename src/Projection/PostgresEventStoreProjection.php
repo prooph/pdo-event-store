@@ -13,9 +13,7 @@ declare(strict_types=1);
 namespace Prooph\EventStore\PDO\Projection;
 
 use PDO;
-use Prooph\EventStore\Exception\StreamNotFound;
 use Prooph\EventStore\PDO\PostgresEventStore;
-use Prooph\EventStore\StreamName;
 
 final class PostgresEventStoreProjection extends AbstractPDOProjection
 {
