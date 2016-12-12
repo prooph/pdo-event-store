@@ -53,6 +53,7 @@ EOT;
         $sql = <<<EOT
 UPDATE $this->projectionsTable SET locked_until = NULL WHERE name = ?;
 EOT;
+
         $statement = $this->connection->prepare($sql);
         $statement->execute([$this->name]);
     }

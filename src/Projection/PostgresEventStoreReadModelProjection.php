@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Prooph\EventStore\PDO\Projection;
 
 use PDO;
+use Prooph\EventStore\Exception\StreamNotFound;
 use Prooph\EventStore\PDO\PostgresEventStore;
 use Prooph\EventStore\Projection\ReadModel;
 use Prooph\EventStore\StreamName;
@@ -67,7 +68,11 @@ EOT;
         $statement->execute([$this->name]);
 
         if ($deleteEmittedEvents) {
-            $this->eventStore->delete(new StreamName($this->name));
+            try {
+                $this->eventStore->delete(new StreamName($this->name));
+            } catch (StreamNotFound $e) {
+                // ignore
+            }
         }
 
         $this->eventStore->commit();

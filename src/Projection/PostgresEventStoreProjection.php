@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Prooph\EventStore\PDO\Projection;
 
 use PDO;
+use Prooph\EventStore\Exception\StreamNotFound;
 use Prooph\EventStore\PDO\PostgresEventStore;
 use Prooph\EventStore\StreamName;
 
@@ -58,10 +59,10 @@ EOT;
         $statement = $this->connection->prepare($deleteProjectionSql);
         $statement->execute([$this->name]);
 
-        if ($deleteEmittedEvents) {
-            $this->eventStore->delete(new StreamName($this->name));
-        }
-
         $this->eventStore->commit();
+
+        if ($deleteEmittedEvents) {
+            $this->resetProjection();
+        }
     }
 }

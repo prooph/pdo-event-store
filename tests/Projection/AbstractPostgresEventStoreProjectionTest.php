@@ -50,19 +50,6 @@ abstract class AbstractPostgresEventStoreProjectionTest extends TestCase
         $this->connection->exec(file_get_contents(__DIR__.'/../../scripts/postgres/02_projections_table.sql'));
 
         $this->eventStore = new PostgresEventStore(
-            new ProophActionEventEmitter([
-                TransactionalActionEventEmitterEventStore::EVENT_APPEND_TO,
-                TransactionalActionEventEmitterEventStore::EVENT_CREATE,
-                TransactionalActionEventEmitterEventStore::EVENT_LOAD,
-                TransactionalActionEventEmitterEventStore::EVENT_LOAD_REVERSE,
-                TransactionalActionEventEmitterEventStore::EVENT_DELETE,
-                TransactionalActionEventEmitterEventStore::EVENT_HAS_STREAM,
-                TransactionalActionEventEmitterEventStore::EVENT_FETCH_STREAM_METADATA,
-                TransactionalActionEventEmitterEventStore::EVENT_UPDATE_STREAM_METADATA,
-                TransactionalActionEventEmitterEventStore::EVENT_BEGIN_TRANSACTION,
-                TransactionalActionEventEmitterEventStore::EVENT_COMMIT,
-                TransactionalActionEventEmitterEventStore::EVENT_ROLLBACK,
-            ]),
             new FQCNMessageFactory(),
             new NoOpMessageConverter(),
             TestUtil::getConnection(),
