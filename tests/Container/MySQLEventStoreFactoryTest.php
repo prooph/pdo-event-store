@@ -17,10 +17,13 @@ use PHPUnit\Framework\TestCase;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\ActionEventEmitterEventStore;
+use Prooph\EventStore\Exception\ConfigurationException;
+use Prooph\EventStore\Metadata\MetadataEnricher;
 use Prooph\EventStore\PDO\Container\MySQLEventStoreFactory;
 use Prooph\EventStore\PDO\Exception\InvalidArgumentException;
 use Prooph\EventStore\PDO\MySQLEventStore;
 use Prooph\EventStore\PDO\PersistenceStrategy;
+use Prooph\EventStore\Plugin\Plugin;
 use ProophTest\EventStore\PDO\TestUtil;
 
 final class MySQLEventStoreFactoryTest extends TestCase
@@ -97,6 +100,117 @@ final class MySQLEventStoreFactoryTest extends TestCase
         $eventStore = MySQLEventStoreFactory::$eventStoreName($container->reveal());
 
         $this->assertInstanceOf(ActionEventEmitterEventStore::class, $eventStore);
+    }
+
+    /**
+     * @test
+     */
+    public function it_injects_plugins(): void
+    {
+        $config['prooph']['event_store']['custom'] = [
+            'connection_options' => TestUtil::getConnectionParams(),
+            'persistence_strategy' => PersistenceStrategy\MySQLAggregateStreamStrategy::class,
+            'plugins' => ['plugin'],
+        ];
+
+        $container = $this->prophesize(ContainerInterface::class);
+
+        $container->get('config')->willReturn($config)->shouldBeCalled();
+        $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
+        $container->get(NoOpMessageConverter::class)->willReturn(new NoOpMessageConverter())->shouldBeCalled();
+        $container->get(PersistenceStrategy\MySQLAggregateStreamStrategy::class)->willReturn(new PersistenceStrategy\MySQLAggregateStreamStrategy())->shouldBeCalled();
+
+        $featureMock = $this->getMockForAbstractClass(Plugin::class);
+        $featureMock->expects($this->once())->method('setUp');
+
+        $container->get('plugin')->willReturn($featureMock);
+
+        $eventStoreName = 'custom';
+        $eventStore = MySQLEventStoreFactory::$eventStoreName($container->reveal());
+
+        $this->assertInstanceOf(ActionEventEmitterEventStore::class, $eventStore);
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_invalid_plugin_configured(): void
+    {
+        $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage('Plugin plugin does not implement the Plugin interface');
+
+        $config['prooph']['event_store']['custom'] = [
+            'connection_options' => TestUtil::getConnectionParams(),
+            'persistence_strategy' => PersistenceStrategy\MySQLAggregateStreamStrategy::class,
+            'plugins' => ['plugin'],
+        ];
+
+        $container = $this->prophesize(ContainerInterface::class);
+
+        $container->get('config')->willReturn($config)->shouldBeCalled();
+        $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
+        $container->get(NoOpMessageConverter::class)->willReturn(new NoOpMessageConverter())->shouldBeCalled();
+        $container->get(PersistenceStrategy\MySQLAggregateStreamStrategy::class)->willReturn(new PersistenceStrategy\MySQLAggregateStreamStrategy())->shouldBeCalled();
+
+        $container->get('plugin')->willReturn('notAValidPlugin');
+
+        $eventStoreName = 'custom';
+        MySQLEventStoreFactory::$eventStoreName($container->reveal());
+    }
+
+    /**
+     * @test
+     */
+    public function it_injects_metadata_enrichers(): void
+    {
+        $config['prooph']['event_store']['custom'] = [
+            'connection_options' => TestUtil::getConnectionParams(),
+            'persistence_strategy' => PersistenceStrategy\MySQLAggregateStreamStrategy::class,
+            'metadata_enrichers' => ['metadata_enricher1', 'metadata_enricher2'],
+        ];
+
+        $metadataEnricher1 = $this->prophesize(MetadataEnricher::class);
+        $metadataEnricher2 = $this->prophesize(MetadataEnricher::class);
+
+        $container = $this->prophesize(ContainerInterface::class);
+        $container->get('config')->willReturn($config);
+        $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
+        $container->get(NoOpMessageConverter::class)->willReturn(new NoOpMessageConverter())->shouldBeCalled();
+        $container->get(PersistenceStrategy\MySQLAggregateStreamStrategy::class)->willReturn(new PersistenceStrategy\MySQLAggregateStreamStrategy())->shouldBeCalled();
+
+        $container->get('metadata_enricher1')->willReturn($metadataEnricher1->reveal());
+        $container->get('metadata_enricher2')->willReturn($metadataEnricher2->reveal());
+
+        $eventStoreName = 'custom';
+        $eventStore = MySQLEventStoreFactory::$eventStoreName($container->reveal());
+
+        $this->assertInstanceOf(ActionEventEmitterEventStore::class, $eventStore);
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_invalid_metadata_enricher_configured(): void
+    {
+        $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage('Metadata enricher foobar does not implement the MetadataEnricher interface');
+
+        $config['prooph']['event_store']['custom'] = [
+            'connection_options' => TestUtil::getConnectionParams(),
+            'persistence_strategy' => PersistenceStrategy\MySQLAggregateStreamStrategy::class,
+            'metadata_enrichers' => ['foobar'],
+        ];
+
+        $container = $this->prophesize(ContainerInterface::class);
+        $container->get('config')->willReturn($config);
+        $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
+        $container->get(NoOpMessageConverter::class)->willReturn(new NoOpMessageConverter())->shouldBeCalled();
+        $container->get(PersistenceStrategy\MySQLAggregateStreamStrategy::class)->willReturn(new PersistenceStrategy\MySQLAggregateStreamStrategy())->shouldBeCalled();
+
+        $container->get('foobar')->willReturn('foobar');
+
+        $eventStoreName = 'custom';
+        MySQLEventStoreFactory::$eventStoreName($container->reveal());
     }
 
     /**

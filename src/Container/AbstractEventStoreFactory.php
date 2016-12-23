@@ -21,7 +21,12 @@ use Interop\Container\ContainerInterface;
 use PDO;
 use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\EventStore;
+use Prooph\EventStore\Exception\ConfigurationException;
+use Prooph\EventStore\Metadata\MetadataEnricher;
+use Prooph\EventStore\Metadata\MetadataEnricherAggregate;
+use Prooph\EventStore\Metadata\MetadataEnricherPlugin;
 use Prooph\EventStore\PDO\Exception\InvalidArgumentException;
+use Prooph\EventStore\Plugin\Plugin;
 
 abstract class AbstractEventStoreFactory implements
     ProvidesDefaultOptions,
@@ -115,7 +120,45 @@ abstract class AbstractEventStoreFactory implements
             return $eventStore;
         }
 
-        return $this->createActionEventEmitterEventStore($eventStore);
+        $wrapper = $this->createActionEventEmitterEventStore($eventStore);
+
+        foreach ($config['plugins'] as $pluginAlias) {
+            $plugin = $container->get($pluginAlias);
+
+            if (! $plugin instanceof Plugin) {
+                throw ConfigurationException::configurationError(sprintf(
+                    'Plugin %s does not implement the Plugin interface',
+                    $pluginAlias
+                ));
+            }
+
+            $plugin->setUp($wrapper);
+        }
+
+        $metadataEnrichers = [];
+
+        foreach ($config['metadata_enrichers'] as $metadataEnricherAlias) {
+            $metadataEnricher = $container->get($metadataEnricherAlias);
+
+            if (! $metadataEnricher instanceof MetadataEnricher) {
+                throw ConfigurationException::configurationError(sprintf(
+                    'Metadata enricher %s does not implement the MetadataEnricher interface',
+                    $metadataEnricherAlias
+                ));
+            }
+
+            $metadataEnrichers[] = $metadataEnricher;
+        }
+
+        if (count($metadataEnrichers) > 0) {
+            $plugin = new MetadataEnricherPlugin(
+                new MetadataEnricherAggregate($metadataEnrichers)
+            );
+
+            $plugin->setUp($wrapper);
+        }
+
+        return $wrapper;
     }
 
     abstract protected function createActionEventEmitterEventStore(EventStore $eventStore): ActionEventEmitterEventStore;
