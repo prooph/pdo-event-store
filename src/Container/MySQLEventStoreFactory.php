@@ -59,6 +59,8 @@ final class MySQLEventStoreFactory extends AbstractEventStoreFactory
             'message_converter' => NoOpMessageConverter::class,
             'message_factory' => FQCNMessageFactory::class,
             'wrap_action_event_emitter' => true,
+            'metadata_enrichers' => [],
+            'plugins' => [],
         ];
     }
 }
