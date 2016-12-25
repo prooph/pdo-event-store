@@ -44,7 +44,7 @@ final class MySQLEventStoreTest extends AbstractPDOEventStoreTest
         }
 
         $this->connection = TestUtil::getConnection();
-        $this->connection->exec(file_get_contents(__DIR__.'/../scripts/mysql/01_event_streams_table.sql'));
+        TestUtil::initDefaultDatabaseTables($this->connection);
 
         $this->eventStore = $this->createEventStore($this->connection);
     }

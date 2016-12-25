@@ -15,20 +15,16 @@ namespace ProophTest\EventStore\PDO\Projection;
 use ArrayIterator;
 use PDO;
 use PHPUnit\Framework\TestCase;
-use Prooph\Common\Messaging\FQCNMessageFactory;
-use Prooph\Common\Messaging\NoOpMessageConverter;
-use Prooph\EventStore\PDO\PersistenceStrategy\PostgresSimpleStreamStrategy;
-use Prooph\EventStore\PDO\PostgresEventStore;
+use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
-use ProophTest\EventStore\PDO\TestUtil;
 
-abstract class AbstractPostgresEventStoreProjectionTest extends TestCase
+abstract class ProjectionTestCase extends TestCase
 {
     /**
-     * @var PostgresEventStore
+     * @var EventStore
      */
     protected $eventStore;
 
@@ -36,24 +32,6 @@ abstract class AbstractPostgresEventStoreProjectionTest extends TestCase
      * @var PDO
      */
     protected $connection;
-
-    protected function setUp(): void
-    {
-        if (TestUtil::getDatabaseVendor() !== 'pdo_pgsql') {
-            throw new \RuntimeException('Invalid database vendor');
-        }
-
-        $this->connection = TestUtil::getConnection();
-        $this->connection->exec(file_get_contents(__DIR__.'/../../scripts/postgres/01_event_streams_table.sql'));
-        $this->connection->exec(file_get_contents(__DIR__.'/../../scripts/postgres/02_projections_table.sql'));
-
-        $this->eventStore = new PostgresEventStore(
-            new FQCNMessageFactory(),
-            new NoOpMessageConverter(),
-            TestUtil::getConnection(),
-            new PostgresSimpleStreamStrategy()
-        );
-    }
 
     protected function tearDown(): void
     {

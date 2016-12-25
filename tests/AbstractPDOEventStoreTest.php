@@ -22,6 +22,7 @@ use Prooph\EventStore\Exception\StreamNotFound;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;
 use Prooph\EventStore\PDO\Exception\InvalidArgumentException;
+use Prooph\EventStore\PDO\Exception\RuntimeException;
 use Prooph\EventStore\Projection\ProjectionOptions;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
@@ -731,6 +732,19 @@ abstract class AbstractPDOEventStoreTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         $this->eventStore->createReadModelProjection('foo', new ReadModelMock(), new ProjectionOptions());
+    }
+
+    /**
+     * @test
+     */
+    public function it_handles_not_existing_event_streams_table(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Maybe the event streams table is not setup?');
+
+        $this->connection->exec('DROP TABLE event_streams;');
+
+        $this->eventStore->create($this->getTestStream());
     }
 
     protected function getTestStream(): Stream
