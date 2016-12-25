@@ -70,6 +70,22 @@ abstract class TestUtil
         return self::getSpecifiedConnectionParams();
     }
 
+    public static function initDefaultDatabaseTables(PDO $connection): void
+    {
+        $vendor = self::getDatabaseVendor();
+
+        if ($vendor === 'pdo_mysql') {
+            $vendor = 'mysql';
+        } elseif ($vendor === 'pdo_pgsql') {
+            $vendor = 'postgres';
+        } else {
+            throw new \RuntimeException('Invalid database vendor');
+        }
+
+        $connection->exec(file_get_contents(__DIR__.'/../scripts/' . $vendor . '/01_event_streams_table.sql'));
+        $connection->exec(file_get_contents(__DIR__.'/../scripts/' . $vendor . '/02_projections_table.sql'));
+    }
+
     private static function hasRequiredConnectionParams(): bool
     {
         return isset(

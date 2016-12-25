@@ -31,8 +31,7 @@ class PostgresEventStoreQueryTest extends PDOEventStoreQueryTestCase
         }
 
         $this->connection = TestUtil::getConnection();
-        $this->connection->exec(file_get_contents(__DIR__.'/../../scripts/postgres/01_event_streams_table.sql'));
-        $this->connection->exec(file_get_contents(__DIR__.'/../../scripts/postgres/02_projections_table.sql'));
+        TestUtil::initDefaultDatabaseTables($this->connection);
 
         $this->eventStore = new PostgresEventStore(
             new FQCNMessageFactory(),

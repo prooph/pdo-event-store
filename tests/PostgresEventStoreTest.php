@@ -50,7 +50,7 @@ final class PostgresEventStoreTest extends AbstractPDOEventStoreTest
         }
 
         $this->connection = TestUtil::getConnection();
-        $this->connection->exec(file_get_contents(__DIR__.'/../scripts/postgres/01_event_streams_table.sql'));
+        TestUtil::initDefaultDatabaseTables($this->connection);
 
         $this->eventStore = $this->createEventStore($this->connection);
     }

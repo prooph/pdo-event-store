@@ -30,8 +30,7 @@ class MySQLEventStoreReadModelProjectionTest extends PDOEventStoreReadModelProje
         }
 
         $this->connection = TestUtil::getConnection();
-        $this->connection->exec(file_get_contents(__DIR__.'/../../scripts/mysql/01_event_streams_table.sql'));
-        $this->connection->exec(file_get_contents(__DIR__.'/../../scripts/mysql/02_projections_table.sql'));
+        TestUtil::initDefaultDatabaseTables($this->connection);
 
         $this->eventStore = new MySQLEventStore(
             new FQCNMessageFactory(),
