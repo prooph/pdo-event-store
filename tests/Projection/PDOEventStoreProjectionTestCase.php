@@ -229,7 +229,7 @@ abstract class PDOEventStoreProjectionTestCase extends ProjectionTestCase
     public function it_handles_missing_projection_table(): void
     {
         $this->expectException(\Prooph\EventStore\PDO\Exception\RuntimeException::class);
-        $this->expectExceptionMessage('Unknown error. Maybe the projection table is not setup?');
+        $this->expectExceptionMessage('Maybe the projection table is not setup?');
 
         $this->prepareEventStream('user-123');
 
