@@ -478,7 +478,13 @@ EOT;
             if (in_array($statement->errorCode(), $this->persistenceStrategy->uniqueViolationErrorCodes())) {
                 throw StreamExistsAlready::with($stream->streamName());
             }
-            throw new RuntimeException('Unknown error. Maybe the event streams table is not setup?');
+
+            $errorCode = $statement->errorCode();
+            $errorInfo = $statement->errorInfo()[2];
+
+            throw new RuntimeException(
+                "Error $errorCode. Maybe the event streams table is not setup?\nError-Info: $errorInfo"
+            );
         }
     }
 

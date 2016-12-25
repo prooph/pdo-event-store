@@ -740,7 +740,7 @@ abstract class AbstractPDOEventStoreTest extends TestCase
     public function it_handles_not_existing_event_streams_table(): void
     {
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Unknown error. Maybe the event streams table is not setup?');
+        $this->expectExceptionMessage('Maybe the event streams table is not setup?');
 
         $this->connection->exec('DROP TABLE event_streams;');
 
