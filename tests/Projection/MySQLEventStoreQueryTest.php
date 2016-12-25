@@ -12,240 +12,33 @@ declare(strict_types=1);
 
 namespace ProophTest\EventStore\Projection;
 
-use ArrayIterator;
-use Prooph\Common\Messaging\Message;
-use Prooph\EventStore\StreamName;
-use ProophTest\EventStore\Mock\UserCreated;
-use ProophTest\EventStore\Mock\UsernameChanged;
-use ProophTest\EventStore\PDO\Projection\AbstractMySQLEventStoreProjectionTest;
+use Prooph\Common\Messaging\FQCNMessageFactory;
+use Prooph\Common\Messaging\NoOpMessageConverter;
+use Prooph\EventStore\PDO\MySQLEventStore;
+use Prooph\EventStore\PDO\PersistenceStrategy\MySQLSimpleStreamStrategy;
+use ProophTest\EventStore\PDO\Projection\PDOEventStoreQueryTestCase;
+use ProophTest\EventStore\PDO\TestUtil;
 
 /**
  * @group pdo_mysql
  */
-class MySQLEventStoreQueryTest extends AbstractMySQLEventStoreProjectionTest
+class MySQLEventStoreQueryTest extends PDOEventStoreQueryTestCase
 {
-    /**
-     * @test
-     */
-    public function it_can_query_from_stream_and_reset()
+    protected function setUp(): void
     {
-        $this->prepareEventStream('user-123');
-
-        $query = $this->eventStore->createQuery();
-
-        $query
-            ->init(function (): array {
-                return ['count' => 0];
-            })
-            ->fromStream('user-123')
-            ->when([
-                UsernameChanged::class => function (array $state, UsernameChanged $event): array {
-                    $state['count']++;
-
-                    return $state;
-                },
-            ])
-            ->run();
-
-        $this->assertEquals(49, $query->getState()['count']);
-
-        $query->reset();
-
-        $query->run();
-
-        $this->assertEquals(49, $query->getState()['count']);
-    }
-
-    /**
-     * @test
-     */
-    public function it_can_query_from_streams(): void
-    {
-        $this->prepareEventStream('user-123');
-        $this->prepareEventStream('user-234');
-
-        $query = $this->eventStore->createQuery();
-
-        $query
-            ->init(function (): array {
-                return ['count' => 0];
-            })
-            ->fromStreams('user-123', 'user-234')
-            ->whenAny(
-                function (array $state, Message $event): array {
-                    $state['count']++;
-
-                    return $state;
-                }
-            )
-            ->run();
-
-        $this->assertEquals(100, $query->getState()['count']);
-    }
-
-    /**
-     * @test
-     */
-    public function it_can_query_from_all_ignoring_internal_streams(): void
-    {
-        $this->prepareEventStream('user-123');
-        $this->prepareEventStream('user-234');
-        $this->prepareEventStream('$iternal-345');
-
-        $query = $this->eventStore->createQuery();
-
-        $query
-            ->init(function (): array {
-                return ['count' => 0];
-            })
-            ->fromAll()
-            ->whenAny(
-                function (array $state, Message $event): array {
-                    $state['count']++;
-
-                    return $state;
-                }
-            )
-            ->run();
-
-        $this->assertEquals(100, $query->getState()['count']);
-    }
-
-    /**
-     * @test
-     */
-    public function it_can_query_from_category_with_when_all()
-    {
-        $this->prepareEventStream('user-123');
-        $this->prepareEventStream('user-234');
-
-        $query = $this->eventStore->createQuery();
-
-        $query
-            ->init(function (): array {
-                return ['count' => 0];
-            })
-            ->fromCategory('user')
-            ->whenAny(
-                function (array $state, Message $event): array {
-                    $state['count']++;
-
-                    return $state;
-                }
-            )
-            ->run();
-
-        $this->assertEquals(100, $query->getState()['count']);
-    }
-
-    /**
-     * @test
-     */
-    public function it_can_query_from_categories_with_when()
-    {
-        $this->prepareEventStream('user-123');
-        $this->prepareEventStream('user-234');
-        $this->prepareEventStream('guest-345');
-        $this->prepareEventStream('guest-456');
-
-        $query = $this->eventStore->createQuery();
-
-        $query
-            ->init(function (): array {
-                return ['count' => 0];
-            })
-            ->fromCategories('user', 'guest')
-            ->when([
-                UserCreated::class => function (array $state, Message $event): array {
-                    $state['count']++;
-
-                    return $state;
-                },
-            ])
-            ->run();
-
-        $this->assertEquals(4, $query->getState()['count']);
-    }
-
-    public function it_resumes_query_from_position(): void
-    {
-        $this->prepareEventStream('user-123');
-
-        $query = $this->eventStore->createQuery();
-
-        $query
-            ->init(function (): array {
-                return ['count' => 0];
-            })
-            ->fromCategories('user', 'guest')
-            ->when([
-                UsernameChanged::class => function (array $state, Message $event): array {
-                    $state['count']++;
-
-                    return $state;
-                },
-            ])
-            ->run();
-
-        $this->assertEquals(49, $query->getState()['count']);
-
-        $events = [];
-        for ($i = 51; $i <= 100; $i++) {
-            $events[] = UsernameChanged::with([
-                'name' => uniqid('name_'),
-            ], $i);
+        if (TestUtil::getDatabaseVendor() !== 'pdo_mysql') {
+            throw new \RuntimeException('Invalid database vendor');
         }
 
-        $this->eventStore->appendTo(new StreamName('user-123'), new ArrayIterator($events));
+        $this->connection = TestUtil::getConnection();
+        $this->connection->exec(file_get_contents(__DIR__.'/../../scripts/mysql/01_event_streams_table.sql'));
+        $this->connection->exec(file_get_contents(__DIR__.'/../../scripts/mysql/02_projections_table.sql'));
 
-        $query->run();
-
-        $this->assertEquals(99, $query->getState()['count']);
-    }
-
-    /**
-     * @test
-     */
-    public function it_resets_to_empty_array(): void
-    {
-        $query = $this->eventStore->createQuery();
-
-        $state = $query->getState();
-
-        $this->assertInternalType('array', $state);
-
-        $query->reset();
-
-        $state2 = $query->getState();
-
-        $this->assertInternalType('array', $state2);
-    }
-
-    /**
-     * @test
-     */
-    public function it_can_be_stopped_while_processing()
-    {
-        $this->prepareEventStream('user-123');
-
-        $query = $this->eventStore->createQuery();
-
-        $query
-            ->init(function (): array {
-                return ['count' => 0];
-            })
-            ->fromStream('user-123')
-            ->whenAny(function (array $state, Message $event): array {
-                $state['count']++;
-
-                if ($state['count'] === 10) {
-                    $this->stop();
-                }
-
-                return $state;
-            })
-            ->run();
-
-        $this->assertEquals(10, $query->getState()['count']);
+        $this->eventStore = new MySQLEventStore(
+            new FQCNMessageFactory(),
+            new NoOpMessageConverter(),
+            TestUtil::getConnection(),
+            new MySQLSimpleStreamStrategy()
+        );
     }
 }
