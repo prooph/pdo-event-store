@@ -44,6 +44,9 @@ EOT;
         $statement->execute([$lockUntilString, $this->name, $nowString]);
 
         if ($statement->rowCount() !== 1) {
+            if ($statement->errorCode() !== '00000') {
+                throw new RuntimeException('Unknown error. Maybe the projection table is not setup?');
+            }
             throw new RuntimeException('Another projection process is already running');
         }
     }
