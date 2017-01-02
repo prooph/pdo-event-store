@@ -29,7 +29,7 @@ CREATE TABLE $tableName (
     no SERIAL,
     event_id CHAR(36) NOT NULL,
     event_name VARCHAR(100) NOT NULL,
-    payload JSONB NOT NULL,
+    payload JSON NOT NULL,
     metadata JSONB NOT NULL,
     created_at TIMESTAMP(6) NOT NULL,
     PRIMARY KEY (no),
