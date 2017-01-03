@@ -121,7 +121,7 @@ final class MySQLEventStoreFactoryTest extends TestCase
         $container->get(PersistenceStrategy\MySQLAggregateStreamStrategy::class)->willReturn(new PersistenceStrategy\MySQLAggregateStreamStrategy())->shouldBeCalled();
 
         $featureMock = $this->getMockForAbstractClass(Plugin::class);
-        $featureMock->expects($this->once())->method('setUp');
+        $featureMock->expects($this->once())->method('attachToEventStore');
 
         $container->get('plugin')->willReturn($featureMock);
 

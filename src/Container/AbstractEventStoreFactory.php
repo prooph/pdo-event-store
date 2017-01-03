@@ -132,7 +132,7 @@ abstract class AbstractEventStoreFactory implements
                 ));
             }
 
-            $plugin->setUp($wrapper);
+            $plugin->attachToEventStore($wrapper);
         }
 
         $metadataEnrichers = [];
@@ -155,7 +155,7 @@ abstract class AbstractEventStoreFactory implements
                 new MetadataEnricherAggregate($metadataEnrichers)
             );
 
-            $plugin->setUp($wrapper);
+            $plugin->attachToEventStore($wrapper);
         }
 
         return $wrapper;

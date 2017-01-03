@@ -122,7 +122,7 @@ final class PostgresEventStoreFactoryTest extends TestCase
         $container->get(PersistenceStrategy\PostgresAggregateStreamStrategy::class)->willReturn(new PersistenceStrategy\PostgresAggregateStreamStrategy())->shouldBeCalled();
 
         $featureMock = $this->getMockForAbstractClass(Plugin::class);
-        $featureMock->expects($this->once())->method('setUp');
+        $featureMock->expects($this->once())->method('attachToEventStore');
 
         $container->get('plugin')->willReturn($featureMock);
 
