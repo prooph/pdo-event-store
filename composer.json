@@ -53,6 +53,11 @@
             "dev-master": "1.0-dev"
         }
     },
+    "config": {
+        "preferred-install": {
+            "prooph/*": "source"
+        }
+    },
     "scripts": {
         "cs": "php-cs-fixer fix -v --diff --dry-run",
         "cs-fix": "php-cs-fixer fix -v --diff"
