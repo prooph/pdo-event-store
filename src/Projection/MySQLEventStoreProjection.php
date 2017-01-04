@@ -22,7 +22,6 @@ use PDO;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception;
-use Prooph\EventStore\PDO\MySQLEventStore;
 use Prooph\EventStore\Projection\Projection;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
@@ -55,7 +54,6 @@ final class MySQLEventStoreProjection implements Projection
      * @var string
      */
     private $projectionsTable;
-
 
     /**
      * @var array
@@ -558,7 +556,7 @@ EOT;
 
     private function persist(): void
     {
-        $now = new DateTimeImmutable('now', new DateTimeZone('UTC'));
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
         $lockUntilString = $now->modify('+' . (string) $this->lockTimeoutMs . ' ms')->format('Y-m-d\TH:i:s.u');
 
         $sql = <<<EOT

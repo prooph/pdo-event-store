@@ -12,36 +12,53 @@ declare(strict_types=1);
 
 namespace Prooph\EventStore\PDO\Projection;
 
+use ArrayIterator;
+use CachingIterator;
+use Closure;
+use DateTimeImmutable;
+use DateTimeZone;
+use Iterator;
 use PDO;
-use Prooph\EventStore\PDO\MySQLEventStore;
+use Prooph\Common\Messaging\Message;
+use Prooph\EventStore\EventStore;
+use Prooph\EventStore\Exception;
 use Prooph\EventStore\Projection\ReadModel;
+use Prooph\EventStore\Projection\ReadModelProjection;
+use Prooph\EventStore\Stream;
+use Prooph\EventStore\StreamName;
 use Prooph\EventStore\Util\ArrayCache;
 
 final class MySQLEventStoreReadModelProjection extends AbstractPDOReadModelProjection
 {
     /**
-     * @var PDO
-     */
-    protected $connection;
-
-    /**
-     * @var string
-     */
-    protected $eventStreamsTable;
-    /**
-     * @var MySQLEventStore
-     */
-    protected $eventStore;
-
-    /**
-     * @var string
-     */
-    protected $projectionsTable;
-
-    /**
      * @var EventStore
      */
-    protected $eventStore;
+    private $eventStore;
+
+    /**
+     * @var PDO
+     */
+    private $connection;
+
+    /**
+     * @var string
+     */
+    private $name;
+
+    /**
+     * @var ReadModel
+     */
+    private $readModel;
+
+    /**
+     * @var string
+     */
+    private $eventStreamsTable;
+
+    /**
+     * @var string
+     */
+    private $projectionsTable;
 
     /**
      * @var array
@@ -49,37 +66,57 @@ final class MySQLEventStoreReadModelProjection extends AbstractPDOReadModelProje
     private $streamPositions;
 
     /**
+     * @var ArrayCache
+     */
+    private $cachedStreamNames;
+
+    /**
+     * @var int
+     */
+    private $persistBlockSize;
+
+    /**
      * @var array
      */
-    protected $state = [];
+    private $state = [];
 
     /**
      * @var callable|null
      */
-    protected $initCallback;
+    private $initCallback;
 
     /**
      * @var Closure|null
      */
-    protected $handler;
+    private $handler;
 
     /**
      * @var array
      */
-    protected $handlers = [];
+    private $handlers = [];
 
     /**
      * @var boolean
      */
-    protected $isStopped = false;
+    private $isStopped = false;
 
     /**
      * @var ?string
      */
-    protected $currentStreamName = null;
+    private $currentStreamName = null;
+
+    /**
+     * @var int lock timeout in milliseconds
+     */
+    private $lockTimeoutMs;
+
+    /**
+     * @var int
+     */
+    private $eventCounter = 0;
 
     public function __construct(
-        MySQLEventStore $eventStore,
+        EventStore $eventStore,
         PDO $connection,
         string $name,
         ReadModel $readModel,
@@ -91,8 +128,9 @@ final class MySQLEventStoreReadModelProjection extends AbstractPDOReadModelProje
     ) {
         $this->eventStore = $eventStore;
         $this->connection = $connection;
-        $this->eventStreamsTable = $eventStreamsTable;
         $this->name = $name;
+        $this->readModel = $readModel;
+        $this->eventStreamsTable = $eventStreamsTable;
         $this->cachedStreamNames = new ArrayCache($cacheSize);
         $this->persistBlockSize = $persistBlockSize;
         $this->connection = $connection;
@@ -101,10 +139,10 @@ final class MySQLEventStoreReadModelProjection extends AbstractPDOReadModelProje
         $this->lockTimeoutMs = $lockTimeoutMs;
     }
 
-    public function init(Closure $callback): Query
+    public function init(Closure $callback): ReadModelProjection
     {
         if (null !== $this->initCallback) {
-            throw new RuntimeException('Projection already initialized');
+            throw new Exception\RuntimeException('Projection already initialized');
         }
 
         $callback = Closure::bind($callback, $this->createHandlerContext($this->currentStreamName));
@@ -120,47 +158,112 @@ final class MySQLEventStoreReadModelProjection extends AbstractPDOReadModelProje
         return $this;
     }
 
-    public function fromStream(string $streamName): Query
+    public function fromStream(string $streamName): ReadModelProjection
     {
-        if (null !== $this->position) {
-            throw new RuntimeException('From was already called');
+        if (null !== $this->streamPositions) {
+            throw new Exception\RuntimeException('From was already called');
         }
 
-        $this->position = new Position([$streamName => 0]);
+        $this->streamPositions = [$streamName => 0];
 
         return $this;
     }
 
-    public function fromStreams(string ...$streamNames): Query
+    public function fromStreams(string ...$streamNames): ReadModelProjection
     {
-        if (null !== $this->position) {
-            throw new RuntimeException('From was already called');
+        if (null !== $this->streamPositions) {
+            throw new Exception\RuntimeException('From was already called');
         }
-
-        $streamPositions = [];
 
         foreach ($streamNames as $streamName) {
-            $streamPositions[$streamName] = 0;
+            $this->streamPositions[$streamName] = 0;
         }
-
-        $this->position = new Position($streamPositions);
 
         return $this;
     }
 
-    public function when(array $handlers): Query
+    public function fromCategory(string $name): ReadModelProjection
+    {
+        if (null !== $this->streamPositions) {
+            throw new Exception\RuntimeException('From was already called');
+        }
+
+        $sql = <<<EOT
+SELECT real_stream_name FROM $this->eventStreamsTable WHERE real_stream_name LIKE '$name-%';
+EOT;
+        $statement = $this->connection->prepare($sql);
+        $statement->execute();
+
+        $this->streamPositions = [];
+
+        while ($row = $statement->fetch(PDO::FETCH_OBJ)) {
+            $this->streamPositions[$row->real_stream_name] = 0;
+        }
+
+        return $this;
+    }
+
+    public function fromCategories(string ...$names): ReadModelProjection
+    {
+        $it = new CachingIterator(new ArrayIterator($names), CachingIterator::FULL_CACHE);
+
+        $where = 'WHERE ';
+        foreach ($it as $name) {
+            $where .= "real_stream_name LIKE '$name-%'";
+            if ($it->hasNext()) {
+                $where .= ' OR ';
+            }
+        }
+
+        $sql = <<<EOT
+SELECT real_stream_name FROM $this->eventStreamsTable $where;
+EOT;
+        $statement = $this->connection->prepare($sql);
+        $statement->execute();
+
+        if (null !== $this->streamPositions) {
+            throw new Exception\RuntimeException('From was already called');
+        }
+
+        $this->streamPositions = [];
+
+        while ($row = $statement->fetch(PDO::FETCH_OBJ)) {
+            $this->streamPositions[$row->real_stream_name] = 0;
+        }
+
+        return $this;
+    }
+
+    public function fromAll(): ReadModelProjection
+    {
+        $sql = <<<EOT
+SELECT real_stream_name FROM $this->eventStreamsTable WHERE real_stream_name NOT LIKE '$%';
+EOT;
+        $statement = $this->connection->prepare($sql);
+        $statement->execute();
+
+        $this->streamPositions = [];
+
+        while ($row = $statement->fetch(PDO::FETCH_OBJ)) {
+            $this->streamPositions[$row->real_stream_name] = 0;
+        }
+
+        return $this;
+    }
+
+    public function when(array $handlers): ReadModelProjection
     {
         if (null !== $this->handler || ! empty($this->handlers)) {
-            throw new RuntimeException('When was already called');
+            throw new Exception\RuntimeException('When was already called');
         }
 
         foreach ($handlers as $eventName => $handler) {
             if (! is_string($eventName)) {
-                throw new InvalidArgumentException('Invalid event name given, string expected');
+                throw new Exception\InvalidArgumentException('Invalid event name given, string expected');
             }
 
             if (! $handler instanceof Closure) {
-                throw new InvalidArgumentException('Invalid handler given, Closure expected');
+                throw new Exception\InvalidArgumentException('Invalid handler given, Closure expected');
             }
 
             $this->handlers[$eventName] = Closure::bind($handler, $this->createHandlerContext($this->currentStreamName));
@@ -169,10 +272,10 @@ final class MySQLEventStoreReadModelProjection extends AbstractPDOReadModelProje
         return $this;
     }
 
-    public function whenAny(Closure $handler): Query
+    public function whenAny(Closure $handler): ReadModelProjection
     {
         if (null !== $this->handler || ! empty($this->handlers)) {
-            throw new RuntimeException('When was already called');
+            throw new Exception\RuntimeException('When was already called');
         }
 
         $this->handler = Closure::bind($handler, $this->createHandlerContext($this->currentStreamName));
@@ -182,8 +285,13 @@ final class MySQLEventStoreReadModelProjection extends AbstractPDOReadModelProje
 
     public function reset(): void
     {
-        if (null !== $this->position) {
-            $this->position->reset();
+        if (null !== $this->streamPositions) {
+            $this->streamPositions = array_map(
+                function (): int {
+                    return 0;
+                },
+                $this->streamPositions
+            );
         }
 
         $callback = $this->initCallback;
@@ -199,31 +307,8 @@ final class MySQLEventStoreReadModelProjection extends AbstractPDOReadModelProje
         }
 
         $this->state = [];
-    }
 
-    public function run(): void
-    {
-        if (null === $this->position
-            || (null === $this->handler && empty($this->handlers))
-        ) {
-            throw new RuntimeException('No handlers configured');
-        }
-
-        $singleHandler = null !== $this->handler;
-
-        foreach ($this->position->streamPositions() as $streamName => $position) {
-            $stream = $this->eventStore->load(new StreamName($streamName), $position + 1);
-
-            if ($singleHandler) {
-                $this->handleStreamWithSingleHandler($streamName, $stream->streamEvents());
-            } else {
-                $this->handleStreamWithHandlers($streamName, $stream->streamEvents());
-            }
-
-            if ($this->isStopped) {
-                break;
-            }
-        }
+        $this->resetProjection();
     }
 
     public function stop(): void
@@ -236,6 +321,69 @@ final class MySQLEventStoreReadModelProjection extends AbstractPDOReadModelProje
         return $this->state;
     }
 
+    public function delete(bool $deleteProjection): void
+    {
+        $deleteProjectionSql = <<<EOT
+DELETE FROM $this->projectionsTable WHERE name = ?;
+EOT;
+        $statement = $this->connection->prepare($deleteProjectionSql);
+        $statement->execute([$this->name]);
+
+        if ($deleteProjection) {
+            $this->readModel->delete();
+        }
+    }
+
+    public function run(bool $keepRunning = true): void
+    {
+        if (null === $this->streamPositions
+            || (null === $this->handler && empty($this->handlers))
+        ) {
+            throw new Exception\RuntimeException('No handlers configured');
+        }
+
+        $this->createProjection();
+        $this->acquireLock();
+
+        try {
+            do {
+                $this->load();
+
+                if (! $this->eventStore->hasStream(new StreamName($this->name))) {
+                    $this->eventStore->create(new Stream(new StreamName($this->name), new ArrayIterator()));
+                }
+
+                $singleHandler = null !== $this->handler;
+
+                foreach ($this->streamPositions as $streamName => $position) {
+                    try {
+                        $stream = $this->eventStore->load(new StreamName($streamName), $position + 1);
+                    } catch (Exception\StreamNotFound $e) {
+                        // no newer events found
+                        continue;
+                    }
+
+                    if ($singleHandler) {
+                        $this->handleStreamWithSingleHandler($streamName, $stream->streamEvents());
+                    } else {
+                        $this->handleStreamWithHandlers($streamName, $stream->streamEvents());
+                    }
+
+                    if ($this->isStopped) {
+                        break;
+                    }
+                }
+
+                if ($this->eventCounter > 0) {
+                    $this->persist();
+                    $this->eventCounter = 0;
+                }
+            } while ($keepRunning && ! $this->isStopped);
+        } finally {
+            $this->releaseLock();
+        }
+    }
+
     private function handleStreamWithSingleHandler(string $streamName, Iterator $events): void
     {
         $this->currentStreamName = $streamName;
@@ -243,12 +391,17 @@ final class MySQLEventStoreReadModelProjection extends AbstractPDOReadModelProje
 
         foreach ($events as $event) {
             /* @var Message $event */
-            $this->position->inc($streamName);
+            $this->streamPositions[$streamName]++;
 
             $result = $handler($this->state, $event);
 
             if (is_array($result)) {
                 $this->state = $result;
+            }
+
+            if ($this->eventCounter === $this->persistBlockSize) {
+                $this->persist();
+                $this->eventCounter = 0;
             }
 
             if ($this->isStopped) {
@@ -262,7 +415,7 @@ final class MySQLEventStoreReadModelProjection extends AbstractPDOReadModelProje
         $this->currentStreamName = $streamName;
         foreach ($events as $event) {
             /* @var Message $event */
-            $this->position->inc($streamName);
+            $this->streamPositions[$streamName]++;
 
             if (! isset($this->handlers[$event->messageName()])) {
                 continue;
@@ -275,34 +428,39 @@ final class MySQLEventStoreReadModelProjection extends AbstractPDOReadModelProje
                 $this->state = $result;
             }
 
+            if ($this->eventCounter === $this->persistBlockSize) {
+                $this->persist();
+                $this->eventCounter = 0;
+            }
+
             if ($this->isStopped) {
                 break;
             }
         }
     }
 
-    protected function createHandlerContext(?string &$streamName)
+    private function createHandlerContext(?string &$streamName)
     {
         return new class($this, $streamName) {
             /**
-             * @var Query
+             * @var ReadModelProjection
              */
-            private $query;
+            private $projection;
 
             /**
              * @var ?string
              */
             private $streamName;
 
-            public function __construct(Query $query, ?string &$streamName)
+            public function __construct(ReadModelProjection $projection, ?string &$streamName)
             {
-                $this->query = $query;
+                $this->projection = $projection;
                 $this->streamName = &$streamName;
             }
 
             public function stop(): void
             {
-                $this->query->stop();
+                $this->projection->stop();
             }
 
             public function streamName(): ?string
@@ -312,43 +470,7 @@ final class MySQLEventStoreReadModelProjection extends AbstractPDOReadModelProje
         };
     }
 
-    public function delete(bool $deleteEmittedEvents): void
-    {
-        $this->connection->beginTransaction();
-
-        $deleteProjectionSql = <<<EOT
-DELETE FROM $this->projectionsTable WHERE name = ?;
-EOT;
-        $statement = $this->connection->prepare($deleteProjectionSql);
-        $statement->execute([$this->name]);
-
-        $this->connection->commit();
-
-        parent::delete($deleteEmittedEvents);
-    }
-
-    abstract protected function createProjection(): void;
-
-    /**
-     * @throws RuntimeException
-     */
-    abstract protected function acquireLock(): void;
-
-    abstract protected function releaseLock(): void;
-
-    public function run(bool $keepRunning = true): void
-    {
-        $this->createProjection();
-        $this->acquireLock();
-
-        try {
-            parent::run($keepRunning);
-        } finally {
-            $this->releaseLock();
-        }
-    }
-
-    protected function load(): void
+    private function load(): void
     {
         $sql = <<<EOT
 SELECT position, state FROM $this->projectionsTable WHERE name = '$this->name' ORDER BY no DESC LIMIT 1;
@@ -358,7 +480,7 @@ EOT;
 
         $result = $statement->fetch(PDO::FETCH_OBJ);
 
-        $this->position->merge(json_decode($result->position, true));
+        $this->streamPositions = array_merge($this->streamPositions, json_decode($result->position, true));
         $state = json_decode($result->state, true);
 
         if (! empty($state)) {
@@ -366,7 +488,18 @@ EOT;
         }
     }
 
-    protected function createProjection(): void
+    private function resetProjection(): void
+    {
+        $deleteProjectionSql = <<<EOT
+DELETE FROM $this->projectionsTable WHERE name = ?;
+EOT;
+        $statement = $this->connection->prepare($deleteProjectionSql);
+        $statement->execute([$this->name]);
+
+        $this->readModel->reset();
+    }
+
+    private function createProjection(): void
     {
         $sql = <<<EOT
 INSERT INTO $this->projectionsTable (name, position, state, locked_until)
@@ -378,11 +511,11 @@ EOT;
     }
 
     /**
-     * @throws RuntimeException
+     * @throws Exception\RuntimeException
      */
-    protected function acquireLock(): void
+    private function acquireLock(): void
     {
-        $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+        $now = new DateTimeImmutable('now', new DateTimeZone('UTC'));
         $nowString = $now->format('Y-m-d\TH:i:s.u');
         $lockUntilString = $now->modify('+' . (string) $this->lockTimeoutMs . ' ms')->format('Y-m-d\TH:i:s.u');
 
@@ -397,16 +530,16 @@ EOT;
                 $errorCode = $statement->errorCode();
                 $errorInfo = $statement->errorInfo()[2];
 
-                throw new RuntimeException(
+                throw new Exception\RuntimeException(
                     "Error $errorCode. Maybe the projection table is not setup?\nError-Info: $errorInfo"
                 );
             }
 
-            throw new RuntimeException('Another projection process is already running');
+            throw new Exception\RuntimeException('Another projection process is already running');
         }
     }
 
-    protected function releaseLock(): void
+    private function releaseLock(): void
     {
         $sql = <<<EOT
 UPDATE $this->projectionsTable SET locked_until = NULL WHERE name = ?;
@@ -416,7 +549,7 @@ EOT;
         $statement->execute([$this->name]);
     }
 
-    protected function persist(): void
+    private function persist(): void
     {
         if ($this instanceof ReadModelProjection) {
             $this->readModel()->persist();
@@ -431,7 +564,7 @@ WHERE name = ?
 EOT;
         $statement = $this->connection->prepare($sql);
         $statement->execute([
-            json_encode($this->position->streamPositions()),
+            json_encode($this->streamPositions),
             json_encode($this->state),
             $lockUntilString,
             $this->name,

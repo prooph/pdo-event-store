@@ -22,7 +22,6 @@ use PDO;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception;
-use Prooph\EventStore\PDO\MySQLEventStore;
 use Prooph\EventStore\Projection\Projection;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
@@ -55,7 +54,6 @@ final class PostgresEventStoreProjection implements Projection
      * @var string
      */
     private $projectionsTable;
-
 
     /**
      * @var array
