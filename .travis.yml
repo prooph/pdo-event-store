@@ -63,7 +63,7 @@ before_script:
   - if [[ $DRIVER == 'pdo_mysql' ]]; then mysql -e 'create database event_store_tests;'; fi
   - if [[ $DRIVER == 'pdo_pgsql' ]]; then psql -c 'create database event_store_tests;' -U postgres; fi
   - composer self-update
-  - composer update --prefer-source $DEPENDENCIES
+  - composer update $DEPENDENCIES
 
 script:
   - cp phpunit.xml.$DRIVER phpunit.xml
@@ -73,7 +73,7 @@ script:
 
 after_success:
   - if [[ $TEST_COVERAGE == 'true' ]]; then php vendor/bin/coveralls -v; fi
-  
+
 notifications:
   webhooks:
     urls:
