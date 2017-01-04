@@ -21,7 +21,7 @@ use ProophTest\EventStore\PDO\TestUtil;
 /**
  * @group pdo_mysql
  */
-class MySQLEventStoreReadModelProjectionTest extends PDOEventStoreReadModelProjectionTestCase
+class MySQLEventStoreReadModelProjectionTest extends PDOEventStoreProjectionTestCase
 {
     protected function setUp(): void
     {

@@ -31,9 +31,10 @@ class ProjectionOptions extends BaseProjectionOptions
         string $projectionsTable = 'projections',
         int $cacheSize = 1000,
         int $persistBlockSize = 1000,
+        int $sleep = 250000,
         int $lockTimeoutMs = 1000
     ) {
-        parent::__construct($cacheSize, $persistBlockSize);
+        parent::__construct($cacheSize, $persistBlockSize, $sleep);
 
         $this->projectionsTable = $projectionsTable;
         $this->lockTimeoutMs = $lockTimeoutMs;
@@ -47,6 +48,7 @@ class ProjectionOptions extends BaseProjectionOptions
             $data['projections_table'],
             $data['cache_size'],
             $data['persist_block_size'],
+            $data['sleep'],
             $data['lock_timeout_ms']
         );
     }

@@ -22,7 +22,7 @@ use ProophTest\EventStore\Mock\ReadModelMock;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
 
-abstract class PDOEventStoreReadModelProjectionTestCase extends ProjectionTestCase
+abstract class PDOEventStoreReadModelPDOEventStoreQueryTestCase extends PDOEventStoreQueryTestCase
 {
     /**
      * @test
