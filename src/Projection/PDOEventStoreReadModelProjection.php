@@ -21,7 +21,10 @@ use Iterator;
 use PDO;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
+use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Exception;
+use Prooph\EventStore\PDO\MySQLEventStore;
+use Prooph\EventStore\PDO\PostgresEventStore;
 use Prooph\EventStore\Projection\Projection;
 use Prooph\EventStore\Projection\ReadModel;
 use Prooph\EventStore\Projection\ReadModelProjection;
@@ -135,6 +138,16 @@ final class PDOEventStoreReadModelProjection implements ReadModelProjection
         $this->lockTimeoutMs = $lockTimeoutMs;
         $this->persistBlockSize = $persistBlockSize;
         $this->sleep = $sleep;
+
+        while ($eventStore instanceof EventStoreDecorator) {
+            $eventStore = $eventStore->getInnerEventStore();
+        }
+
+        if (! $eventStore instanceof MySQLEventStore
+            && ! $eventStore instanceof PostgresEventStore
+        ) {
+            throw new Exception\InvalidArgumentException('Unknown event store instance given');
+        }
     }
 
     public function init(Closure $callback): ReadModelProjection
