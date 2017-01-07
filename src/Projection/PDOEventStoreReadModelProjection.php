@@ -23,12 +23,13 @@ use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception;
 use Prooph\EventStore\Projection\Projection;
+use Prooph\EventStore\Projection\ReadModel;
+use Prooph\EventStore\Projection\ReadModelProjection;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
-use Prooph\EventStore\TransactionalEventStore;
 use Prooph\EventStore\Util\ArrayCache;
 
-final class PostgresEventStoreProjection implements Projection
+final class PDOEventStoreReadModelProjection implements ReadModelProjection
 {
     /**
      * @var EventStore
@@ -46,6 +47,11 @@ final class PostgresEventStoreProjection implements Projection
     private $name;
 
     /**
+     * @var ReadModel
+     */
+    private $readModel;
+
+    /**
      * @var string
      */
     private $eventStreamsTable;
@@ -59,11 +65,6 @@ final class PostgresEventStoreProjection implements Projection
      * @var array
      */
     private $streamPositions;
-
-    /**
-     * @var ArrayCache
-     */
-    private $cachedStreamNames;
 
     /**
      * @var int
@@ -110,29 +111,34 @@ final class PostgresEventStoreProjection implements Projection
      */
     private $eventCounter = 0;
 
+    /**
+     * @var int
+     */
+    private $sleep;
+
     public function __construct(
         EventStore $eventStore,
         PDO $connection,
         string $name,
+        ReadModel $readModel,
         string $eventStreamsTable,
         string $projectionsTable,
         int $lockTimeoutMs,
-        int $cacheSize,
-        int $persistBlockSize
+        int $persistBlockSize,
+        int $sleep
     ) {
         $this->eventStore = $eventStore;
         $this->connection = $connection;
-        $this->eventStreamsTable = $eventStreamsTable;
         $this->name = $name;
-        $this->cachedStreamNames = new ArrayCache($cacheSize);
-        $this->persistBlockSize = $persistBlockSize;
-        $this->connection = $connection;
+        $this->readModel = $readModel;
         $this->eventStreamsTable = $eventStreamsTable;
         $this->projectionsTable = $projectionsTable;
         $this->lockTimeoutMs = $lockTimeoutMs;
+        $this->persistBlockSize = $persistBlockSize;
+        $this->sleep = $sleep;
     }
 
-    public function init(Closure $callback): Projection
+    public function init(Closure $callback): ReadModelProjection
     {
         if (null !== $this->initCallback) {
             throw new Exception\RuntimeException('Projection already initialized');
@@ -151,7 +157,7 @@ final class PostgresEventStoreProjection implements Projection
         return $this;
     }
 
-    public function fromStream(string $streamName): Projection
+    public function fromStream(string $streamName): ReadModelProjection
     {
         if (null !== $this->streamPositions) {
             throw new Exception\RuntimeException('From was already called');
@@ -162,13 +168,11 @@ final class PostgresEventStoreProjection implements Projection
         return $this;
     }
 
-    public function fromStreams(string ...$streamNames): Projection
+    public function fromStreams(string ...$streamNames): ReadModelProjection
     {
         if (null !== $this->streamPositions) {
             throw new Exception\RuntimeException('From was already called');
         }
-
-        $streamPositions = [];
 
         foreach ($streamNames as $streamName) {
             $this->streamPositions[$streamName] = 0;
@@ -177,7 +181,7 @@ final class PostgresEventStoreProjection implements Projection
         return $this;
     }
 
-    public function fromCategory(string $name): Projection
+    public function fromCategory(string $name): ReadModelProjection
     {
         if (null !== $this->streamPositions) {
             throw new Exception\RuntimeException('From was already called');
@@ -198,8 +202,12 @@ EOT;
         return $this;
     }
 
-    public function fromCategories(string ...$names): Projection
+    public function fromCategories(string ...$names): ReadModelProjection
     {
+        if (null !== $this->streamPositions) {
+            throw new Exception\RuntimeException('From was already called');
+        }
+
         $it = new CachingIterator(new ArrayIterator($names), CachingIterator::FULL_CACHE);
 
         $where = 'WHERE ';
@@ -216,10 +224,6 @@ EOT;
         $statement = $this->connection->prepare($sql);
         $statement->execute();
 
-        if (null !== $this->streamPositions) {
-            throw new Exception\RuntimeException('From was already called');
-        }
-
         $this->streamPositions = [];
 
         while ($row = $statement->fetch(PDO::FETCH_OBJ)) {
@@ -229,8 +233,12 @@ EOT;
         return $this;
     }
 
-    public function fromAll(): Projection
+    public function fromAll(): ReadModelProjection
     {
+        if (null !== $this->streamPositions) {
+            throw new Exception\RuntimeException('From was already called');
+        }
+
         $sql = <<<EOT
 SELECT real_stream_name FROM $this->eventStreamsTable WHERE real_stream_name NOT LIKE '$%';
 EOT;
@@ -246,7 +254,7 @@ EOT;
         return $this;
     }
 
-    public function when(array $handlers): Projection
+    public function when(array $handlers): ReadModelProjection
     {
         if (null !== $this->handler || ! empty($this->handlers)) {
             throw new Exception\RuntimeException('When was already called');
@@ -267,7 +275,7 @@ EOT;
         return $this;
     }
 
-    public function whenAny(Closure $handler): Projection
+    public function whenAny(Closure $handler): ReadModelProjection
     {
         if (null !== $this->handler || ! empty($this->handlers)) {
             throw new Exception\RuntimeException('When was already called');
@@ -303,11 +311,7 @@ EOT;
 
         $this->state = [];
 
-        try {
-            $this->eventStore->delete(new StreamName($this->name));
-        } catch (Exception\StreamNotFound $exception) {
-            // ignore
-        }
+        $this->resetProjection();
     }
 
     public function stop(): void
@@ -320,7 +324,17 @@ EOT;
         return $this->state;
     }
 
-    public function delete(bool $deleteEmittedEvents): void
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function readModel(): ReadModel
+    {
+        return $this->readModel;
+    }
+
+    public function delete(bool $deleteProjection): void
     {
         $deleteProjectionSql = <<<EOT
 DELETE FROM $this->projectionsTable WHERE name = ?;
@@ -328,13 +342,19 @@ EOT;
         $statement = $this->connection->prepare($deleteProjectionSql);
         $statement->execute([$this->name]);
 
-        if ($deleteEmittedEvents) {
-            $this->resetProjection();
+        if ($deleteProjection) {
+            $this->readModel->delete();
         }
     }
 
     public function run(bool $keepRunning = true): void
     {
+        if (null === $this->streamPositions
+            || (null === $this->handler && empty($this->handlers))
+        ) {
+            throw new Exception\RuntimeException('No handlers configured');
+        }
+
         $this->createProjection();
         $this->acquireLock();
 
@@ -367,10 +387,13 @@ EOT;
                     }
                 }
 
-                if ($this->eventCounter > 0) {
+                if (0 === $this->eventCounter) {
+                    usleep($this->sleep);
+                } else {
                     $this->persist();
-                    $this->eventCounter = 0;
                 }
+
+                $this->eventCounter = 0;
             } while ($keepRunning && ! $this->isStopped);
         } finally {
             $this->releaseLock();
@@ -436,7 +459,7 @@ EOT;
     {
         return new class($this, $streamName) {
             /**
-             * @var Projection
+             * @var ReadModelProjection
              */
             private $projection;
 
@@ -445,7 +468,7 @@ EOT;
              */
             private $streamName;
 
-            public function __construct(Projection $projection, ?string &$streamName)
+            public function __construct(ReadModelProjection $projection, ?string &$streamName)
             {
                 $this->projection = $projection;
                 $this->streamName = &$streamName;
@@ -454,6 +477,11 @@ EOT;
             public function stop(): void
             {
                 $this->projection->stop();
+            }
+
+            public function readModel(): ReadModel
+            {
+                return $this->projection->readModel();
             }
 
             public function streamName(): ?string
@@ -483,21 +511,13 @@ EOT;
 
     private function resetProjection(): void
     {
-        if ($this->eventStore instanceof TransactionalEventStore) {
-            $this->eventStore->beginTransaction();
-        }
-
         $deleteProjectionSql = <<<EOT
 DELETE FROM $this->projectionsTable WHERE name = ?;
 EOT;
         $statement = $this->connection->prepare($deleteProjectionSql);
         $statement->execute([$this->name]);
 
-        $this->eventStore->delete(new StreamName($this->name));
-
-        if ($this->eventStore instanceof TransactionalEventStore) {
-            $this->eventStore->commit();
-        }
+        $this->readModel->reset();
     }
 
     private function createProjection(): void
@@ -552,6 +572,8 @@ EOT;
 
     private function persist(): void
     {
+        $this->readModel->persist();
+
         $now = new DateTimeImmutable('now', new DateTimeZone('UTC'));
         $lockUntilString = $now->modify('+' . (string) $this->lockTimeoutMs . ' ms')->format('Y-m-d\TH:i:s.u');
 

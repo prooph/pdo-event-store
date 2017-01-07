@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Prooph\EventStore\PDO\Projection;
 
+use PDO;
 use Prooph\EventStore\Exception\InvalidArgumentException;
 use Prooph\EventStore\Projection\ProjectionOptions as BaseProjectionOptions;
 
@@ -26,6 +27,16 @@ class ProjectionOptions extends BaseProjectionOptions
      * @var int
      */
     protected $lockTimeoutMs;
+
+    /**
+     * @var PDO
+     */
+    protected $connection;
+
+    /**
+     * @var string
+     */
+    protected $eventStreamsTable;
 
     public function __construct(
         string $projectionsTable = 'projections',
@@ -61,6 +72,38 @@ class ProjectionOptions extends BaseProjectionOptions
     public function projectionsTable(): string
     {
         return $this->projectionsTable;
+    }
+
+    /**
+     * @return PDO
+     */
+    public function connection(): PDO
+    {
+        return $this->connection;
+    }
+
+    /**
+     * @param PDO $connection
+     */
+    public function setConnection(PDO $connection)
+    {
+        $this->connection = $connection;
+    }
+
+    /**
+     * @return string
+     */
+    public function eventStreamsTable(): string
+    {
+        return $this->eventStreamsTable;
+    }
+
+    /**
+     * @param string $eventStreamsTable
+     */
+    public function setEventStreamsTable(string $eventStreamsTable)
+    {
+        $this->eventStreamsTable = $eventStreamsTable;
     }
 
     /**
