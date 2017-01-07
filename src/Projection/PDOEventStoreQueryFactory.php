@@ -10,12 +10,14 @@
 
 declare(strict_types=1);
 
-namespace Prooph\EventStore\Projection;
+namespace Prooph\EventStore\PDO\Projection;
 
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception;
 use Prooph\EventStore\PDO\Projection\ProjectionOptions as PDOProjectionOptions;
-use Prooph\EventStore\PDO\Projection\PDOEventStoreQuery;
+use Prooph\EventStore\Projection\ProjectionOptions;
+use Prooph\EventStore\Projection\Query;
+use Prooph\EventStore\Projection\QueryFactory;
 
 final class PDOEventStoreQueryFactory implements QueryFactory
 {

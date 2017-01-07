@@ -72,7 +72,6 @@ abstract class PDOEventStoreQueryTestCase extends TestCase
      */
     public function it_can_query_from_stream_and_reset()
     {
-        die('dd');
         $this->prepareEventStream('user-123');
 
         $query = $this->eventStore->createQuery();

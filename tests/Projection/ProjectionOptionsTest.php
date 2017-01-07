@@ -21,7 +21,7 @@ class ProjectionOptionsTest extends TestCase
     /**
      * @test
      */
-    public function it_throws_exception_when_cache_size_option_is_missing(): void
+    public function it_throws_exception_when_projections_table_option_is_missing(): void
     {
         $this->expectException(InvalidArgumentException::class);
 
@@ -31,21 +31,35 @@ class ProjectionOptionsTest extends TestCase
     /**
      * @test
      */
-    public function it_throws_exception_when_persist_blocksize_option_is_missing(): void
+    public function it_throws_exception_when_cache_sizesize_option_is_missing(): void
     {
         $this->expectException(InvalidArgumentException::class);
 
-        ProjectionOptions::fromArray(['cache_size' => 1]);
+        ProjectionOptions::fromArray(['projections_table' => 'foo']);
     }
 
     /**
      * @test
      */
-    public function it_throws_exception_when_projections_table_option_is_missing(): void
+    public function it_throws_exception_when_persist_blocksize_option_is_missing(): void
     {
         $this->expectException(InvalidArgumentException::class);
 
         ProjectionOptions::fromArray([
+            'projections_table' => 'foo',
+            'cache_size' => 1,
+        ]);
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_sleep_option_is_missing(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        ProjectionOptions::fromArray([
+            'projections_table' => 'foo',
             'cache_size' => 1,
             'persist_block_size' => 2,
         ]);
@@ -59,9 +73,10 @@ class ProjectionOptionsTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         ProjectionOptions::fromArray([
+            'projections_table' => 'foo',
             'cache_size' => 1,
             'persist_block_size' => 2,
-            'projections_table' => 'foo',
+            'sleep' => 10000
         ]);
     }
 
@@ -71,15 +86,21 @@ class ProjectionOptionsTest extends TestCase
     public function it_creates_instance(): void
     {
         $options = ProjectionOptions::fromArray([
+            'projections_table' => 'foo',
             'cache_size' => 5,
             'persist_block_size' => 15,
-            'projections_table' => 'foo',
             'lock_timeout_ms' => 100,
         ]);
+
+        $connection = $this->prophesize(\PDO::class)->reveal();
+        $options->setConnection($connection);
+        $options->setEventStreamsTable('bar');
 
         $this->assertEquals(5, $options->cacheSize());
         $this->assertEquals(15, $options->persistBlockSize());
         $this->assertEquals('foo', $options->projectionsTable());
         $this->assertEquals(100, $options->lockTimeoutMs());
+        $this->assertSame($connection, $options->connection());
+        $this->assertEquals('bar', $options->eventStreamsTable());
     }
 }

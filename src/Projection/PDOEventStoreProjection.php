@@ -500,6 +500,16 @@ EOT;
                 $this->projection->stop();
             }
 
+            public function linkTo(string $streamName, Message $event): void
+            {
+                $this->projection->linkTo($streamName, $event);
+            }
+
+            public function emit(Message $event): void
+            {
+                $this->projection->emit($event);
+            }
+
             public function streamName(): ?string
             {
                 return $this->streamName;
