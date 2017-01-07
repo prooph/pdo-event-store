@@ -15,11 +15,14 @@ namespace ProophTest\EventStore\PDO\Projection;
 use ArrayIterator;
 use PDO;
 use PHPUnit\Framework\TestCase;
+use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\Message;
+use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception\InvalidArgumentException;
 use Prooph\EventStore\Exception\RuntimeException;
 use Prooph\EventStore\PDO\Projection\PDOEventStoreQuery;
+use Prooph\EventStore\PDO\Projection\ProjectionOptions;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\UserCreated;
@@ -50,8 +53,6 @@ abstract class PDOEventStoreQueryTestCase extends TestCase
         $this->connection->exec('DROP TABLE IF EXISTS _' . sha1('guest-456'));
         $this->connection->exec('DROP TABLE IF EXISTS _' . sha1('foo'));
         $this->connection->exec('DROP TABLE IF EXISTS _' . sha1('test_projection'));
-
-        $this->connection = null;
     }
 
     protected function prepareEventStream(string $name): void
@@ -70,6 +71,16 @@ abstract class PDOEventStoreQueryTestCase extends TestCase
         ], 50);
 
         $this->eventStore->create(new Stream(new StreamName($name), new ArrayIterator($events)));
+    }
+
+    /**
+     * @test
+     */
+    public function it_unwraps_event_store_decorator(): void
+    {
+        $eventStoreDecorator = new ActionEventEmitterEventStore($this->eventStore, new ProophActionEventEmitter());
+
+        $eventStoreDecorator->createQuery();
     }
 
     /**

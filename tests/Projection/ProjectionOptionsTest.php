@@ -93,16 +93,10 @@ class ProjectionOptionsTest extends TestCase
             'lock_timeout_ms' => 100,
         ]);
 
-        $connection = $this->prophesize(\PDO::class)->reveal();
-        $options->setConnection($connection);
-        $options->setEventStreamsTable('bar');
-
         $this->assertEquals(5, $options->cacheSize());
         $this->assertEquals(15, $options->persistBlockSize());
         $this->assertEquals('foo', $options->projectionsTable());
         $this->assertEquals(100000, $options->sleep());
         $this->assertEquals(100, $options->lockTimeoutMs());
-        $this->assertSame($connection, $options->connection());
-        $this->assertEquals('bar', $options->eventStreamsTable());
     }
 }

@@ -15,12 +15,16 @@ namespace ProophTest\EventStore\PDO\Projection;
 use ArrayIterator;
 use PDO;
 use PHPUnit\Framework\TestCase;
+use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\Message;
+use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\EventStore;
+use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Exception\InvalidArgumentException;
 use Prooph\EventStore\Exception\RuntimeException;
 use Prooph\EventStore\Exception\StreamNotFound;
 use Prooph\EventStore\PDO\Projection\PDOEventStoreProjection;
+use Prooph\EventStore\PDO\Projection\ProjectionOptions;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\UserCreated;
@@ -51,8 +55,6 @@ abstract class PDOEventStoreProjectionTestCase extends TestCase
         $this->connection->exec('DROP TABLE IF EXISTS _' . sha1('guest-456'));
         $this->connection->exec('DROP TABLE IF EXISTS _' . sha1('foo'));
         $this->connection->exec('DROP TABLE IF EXISTS _' . sha1('test_projection'));
-
-        $this->connection = null;
     }
 
     protected function prepareEventStream(string $name): void
@@ -71,6 +73,16 @@ abstract class PDOEventStoreProjectionTestCase extends TestCase
         ], 50);
 
         $this->eventStore->create(new Stream(new StreamName($name), new ArrayIterator($events)));
+    }
+
+    /**
+     * @test
+     */
+    public function it_unwraps_event_store_decorator(): void
+    {
+        $eventStoreDecorator = new ActionEventEmitterEventStore($this->eventStore, new ProophActionEventEmitter());
+
+        $eventStoreDecorator->createProjection('test_projection', new ProjectionOptions());
     }
 
     /**
@@ -530,12 +542,12 @@ abstract class PDOEventStoreProjectionTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $query = $this->eventStore->createQuery();
+        $projection = $this->eventStore->createProjection('test_projection');
 
-        $query->init(function (): array {
+        $projection->init(function (): array {
             return [];
         });
-        $query->init(function (): array {
+        $projection->init(function (): array {
             return [];
         });
     }
@@ -547,10 +559,10 @@ abstract class PDOEventStoreProjectionTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $query = $this->eventStore->createQuery();
+        $projection = $this->eventStore->createProjection('test_projection');
 
-        $query->fromStream('foo');
-        $query->fromStream('bar');
+        $projection->fromStream('foo');
+        $projection->fromStream('bar');
     }
 
     /**
@@ -560,10 +572,10 @@ abstract class PDOEventStoreProjectionTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $query = $this->eventStore->createQuery();
+        $projection = $this->eventStore->createProjection('test_projection');
 
-        $query->fromStreams('foo');
-        $query->fromCategory('bar');
+        $projection->fromStreams('foo');
+        $projection->fromCategory('bar');
     }
 
     /**
@@ -573,10 +585,10 @@ abstract class PDOEventStoreProjectionTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $query = $this->eventStore->createQuery();
+        $projection = $this->eventStore->createProjection('test_projection');
 
-        $query->fromCategory('foo');
-        $query->fromStreams('bar');
+        $projection->fromCategory('foo');
+        $projection->fromStreams('bar');
     }
 
     /**
@@ -586,10 +598,10 @@ abstract class PDOEventStoreProjectionTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $query = $this->eventStore->createQuery();
+        $projection = $this->eventStore->createProjection('test_projection');
 
-        $query->fromCategories('foo');
-        $query->fromCategories('bar');
+        $projection->fromCategories('foo');
+        $projection->fromCategories('bar');
     }
 
     /**
@@ -599,10 +611,10 @@ abstract class PDOEventStoreProjectionTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $query = $this->eventStore->createQuery();
+        $projection = $this->eventStore->createProjection('test_projection');
 
-        $query->fromCategories('foo');
-        $query->fromAll('bar');
+        $projection->fromCategories('foo');
+        $projection->fromAll('bar');
     }
 
     /**
@@ -612,11 +624,11 @@ abstract class PDOEventStoreProjectionTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $query = $this->eventStore->createQuery();
+        $projection = $this->eventStore->createProjection('test_projection');
 
-        $query->when(['foo' => function (): void {
+        $projection->when(['foo' => function (): void {
         }]);
-        $query->when(['foo' => function (): void {
+        $projection->when(['foo' => function (): void {
         }]);
     }
 
@@ -627,9 +639,9 @@ abstract class PDOEventStoreProjectionTestCase extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        $query = $this->eventStore->createQuery();
+        $projection = $this->eventStore->createProjection('test_projection');
 
-        $query->when(['1' => function (): void {
+        $projection->when(['1' => function (): void {
         }]);
     }
 
@@ -640,9 +652,9 @@ abstract class PDOEventStoreProjectionTestCase extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        $query = $this->eventStore->createQuery();
+        $projection = $this->eventStore->createProjection('test_projection');
 
-        $query->when(['foo' => 'invalid']);
+        $projection->when(['foo' => 'invalid']);
     }
 
     /**
@@ -652,11 +664,11 @@ abstract class PDOEventStoreProjectionTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $query = $this->eventStore->createQuery();
+        $projection = $this->eventStore->createProjection('test_projection');
 
-        $query->whenAny(function (): void {
+        $projection->whenAny(function (): void {
         });
-        $query->whenAny(function (): void {
+        $projection->whenAny(function (): void {
         });
     }
 

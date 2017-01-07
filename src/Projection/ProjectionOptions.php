@@ -28,16 +28,6 @@ class ProjectionOptions extends BaseProjectionOptions
      */
     protected $lockTimeoutMs;
 
-    /**
-     * @var PDO
-     */
-    protected $connection;
-
-    /**
-     * @var string
-     */
-    protected $eventStreamsTable;
-
     public function __construct(
         string $projectionsTable = 'projections',
         int $cacheSize = 1000,
@@ -72,38 +62,6 @@ class ProjectionOptions extends BaseProjectionOptions
     public function projectionsTable(): string
     {
         return $this->projectionsTable;
-    }
-
-    /**
-     * @return PDO
-     */
-    public function connection(): PDO
-    {
-        return $this->connection;
-    }
-
-    /**
-     * @param PDO $connection
-     */
-    public function setConnection(PDO $connection)
-    {
-        $this->connection = $connection;
-    }
-
-    /**
-     * @return string
-     */
-    public function eventStreamsTable(): string
-    {
-        return $this->eventStreamsTable;
-    }
-
-    /**
-     * @param string $eventStreamsTable
-     */
-    public function setEventStreamsTable(string $eventStreamsTable)
-    {
-        $this->eventStreamsTable = $eventStreamsTable;
     }
 
     /**

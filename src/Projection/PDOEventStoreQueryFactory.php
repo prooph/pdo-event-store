@@ -12,23 +12,31 @@ declare(strict_types=1);
 
 namespace Prooph\EventStore\PDO\Projection;
 
+use PDO;
 use Prooph\EventStore\EventStore;
-use Prooph\EventStore\Exception;
-use Prooph\EventStore\PDO\Projection\ProjectionOptions as PDOProjectionOptions;
-use Prooph\EventStore\Projection\ProjectionOptions;
 use Prooph\EventStore\Projection\Query;
 use Prooph\EventStore\Projection\QueryFactory;
 
 final class PDOEventStoreQueryFactory implements QueryFactory
 {
-    public function __invoke(EventStore $eventStore, ProjectionOptions $options = null): Query
-    {
-        if (! $options instanceof PDOProjectionOptions) {
-            throw new Exception\InvalidArgumentException(
-                self::class . ' expects an instance of' . PDOProjectionOptions::class
-            );
-        }
+    /**
+     * @var PDO
+     */
+    private $connection;
 
-        return new PDOEventStoreQuery($eventStore, $options->connection(), $options->eventStreamsTable());
+    /**
+     * @var string
+     */
+    private $eventStreamsTable;
+
+    public function __construct(PDO $connection, string $eventStreamsTable)
+    {
+        $this->connection = $connection;
+        $this->eventStreamsTable = $eventStreamsTable;
+    }
+
+    public function __invoke(EventStore $eventStore): Query
+    {
+        return new PDOEventStoreQuery($eventStore, $this->connection, $this->eventStreamsTable);
     }
 }

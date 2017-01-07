@@ -15,11 +15,14 @@ namespace ProophTest\EventStore\PDO\Projection;
 use ArrayIterator;
 use PDO;
 use PHPUnit\Framework\TestCase;
+use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\Message;
+use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception\InvalidArgumentException;
 use Prooph\EventStore\Exception\RuntimeException;
 use Prooph\EventStore\PDO\Projection\PDOEventStoreReadModelProjection;
+use Prooph\EventStore\PDO\Projection\ProjectionOptions;
 use Prooph\EventStore\Projection\ReadModel;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
@@ -52,8 +55,6 @@ abstract class PDOEventStoreReadModelProjectionTestCase extends TestCase
         $this->connection->exec('DROP TABLE IF EXISTS _' . sha1('guest-456'));
         $this->connection->exec('DROP TABLE IF EXISTS _' . sha1('foo'));
         $this->connection->exec('DROP TABLE IF EXISTS _' . sha1('test_projection'));
-
-        $this->connection = null;
     }
 
     protected function prepareEventStream(string $name): void
@@ -72,6 +73,16 @@ abstract class PDOEventStoreReadModelProjectionTestCase extends TestCase
         ], 50);
 
         $this->eventStore->create(new Stream(new StreamName($name), new ArrayIterator($events)));
+    }
+
+    /**
+     * @test
+     */
+    public function it_unwraps_event_store_decorator(): void
+    {
+        $eventStoreDecorator = new ActionEventEmitterEventStore($this->eventStore, new ProophActionEventEmitter());
+
+        $eventStoreDecorator->createReadModelProjection('test_projection', new ReadModelMock(), new ProjectionOptions());
     }
 
     /**
@@ -439,12 +450,12 @@ abstract class PDOEventStoreReadModelProjectionTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $query = $this->eventStore->createQuery();
+        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
 
-        $query->init(function (): array {
+        $projection->init(function (): array {
             return [];
         });
-        $query->init(function (): array {
+        $projection->init(function (): array {
             return [];
         });
     }
@@ -456,10 +467,10 @@ abstract class PDOEventStoreReadModelProjectionTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $query = $this->eventStore->createQuery();
+        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
 
-        $query->fromStream('foo');
-        $query->fromStream('bar');
+        $projection->fromStream('foo');
+        $projection->fromStream('bar');
     }
 
     /**
@@ -469,10 +480,10 @@ abstract class PDOEventStoreReadModelProjectionTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $query = $this->eventStore->createQuery();
+        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
 
-        $query->fromStreams('foo');
-        $query->fromCategory('bar');
+        $projection->fromStreams('foo');
+        $projection->fromCategory('bar');
     }
 
     /**
@@ -482,10 +493,10 @@ abstract class PDOEventStoreReadModelProjectionTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $query = $this->eventStore->createQuery();
+        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
 
-        $query->fromCategory('foo');
-        $query->fromStreams('bar');
+        $projection->fromCategory('foo');
+        $projection->fromStreams('bar');
     }
 
     /**
@@ -495,10 +506,10 @@ abstract class PDOEventStoreReadModelProjectionTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $query = $this->eventStore->createQuery();
+        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
 
-        $query->fromCategories('foo');
-        $query->fromCategories('bar');
+        $projection->fromCategories('foo');
+        $projection->fromCategories('bar');
     }
 
     /**
@@ -508,10 +519,10 @@ abstract class PDOEventStoreReadModelProjectionTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $query = $this->eventStore->createQuery();
+        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
 
-        $query->fromCategories('foo');
-        $query->fromAll('bar');
+        $projection->fromCategories('foo');
+        $projection->fromAll('bar');
     }
 
     /**
@@ -521,11 +532,11 @@ abstract class PDOEventStoreReadModelProjectionTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $query = $this->eventStore->createQuery();
+        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
 
-        $query->when(['foo' => function (): void {
+        $projection->when(['foo' => function (): void {
         }]);
-        $query->when(['foo' => function (): void {
+        $projection->when(['foo' => function (): void {
         }]);
     }
 
@@ -536,9 +547,9 @@ abstract class PDOEventStoreReadModelProjectionTestCase extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        $query = $this->eventStore->createQuery();
+        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
 
-        $query->when(['1' => function (): void {
+        $projection->when(['1' => function (): void {
         }]);
     }
 
@@ -549,9 +560,9 @@ abstract class PDOEventStoreReadModelProjectionTestCase extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        $query = $this->eventStore->createQuery();
+        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
 
-        $query->when(['foo' => 'invalid']);
+        $projection->when(['foo' => 'invalid']);
     }
 
     /**
@@ -561,11 +572,11 @@ abstract class PDOEventStoreReadModelProjectionTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $query = $this->eventStore->createQuery();
+        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
 
-        $query->whenAny(function (): void {
+        $projection->whenAny(function (): void {
         });
-        $query->whenAny(function (): void {
+        $projection->whenAny(function (): void {
         });
     }
 

@@ -436,11 +436,7 @@ EOT;
             $factory = $this->getDefaultQueryFactory();
         }
 
-        $options = new ProjectionOptions();
-        $options->setConnection($this->connection);
-        $options->setEventStreamsTable($this->eventStreamsTable);
-
-        return $factory($this, $options);
+        return $factory($this);
     }
 
     public function createProjection(
@@ -451,17 +447,6 @@ EOT;
         if (null === $factory) {
             $factory = $this->getDefaultProjectionFactory();
         }
-
-        if (null === $options) {
-            $options = new ProjectionOptions();
-        }
-
-        if (! $options instanceof ProjectionOptions) {
-            throw new InvalidArgumentException('options must be an instance of ' . ProjectionOptions::class);
-        }
-
-        $options->setConnection($this->connection);
-        $options->setEventStreamsTable($this->eventStreamsTable);
 
         return $factory($this, $name, $options);
     }
@@ -476,24 +461,13 @@ EOT;
             $factory = $this->getDefaultReadModelProjectionFactory();
         }
 
-        if (null === $options) {
-            $options = new ProjectionOptions();
-        }
-
-        if (! $options instanceof ProjectionOptions) {
-            throw new InvalidArgumentException('options must be an instance of ' . ProjectionOptions::class);
-        }
-
-        $options->setConnection($this->connection);
-        $options->setEventStreamsTable($this->eventStreamsTable);
-
         return $factory($this, $name, $readModel, $options);
     }
 
     public function getDefaultQueryFactory(): QueryFactory
     {
         if (null === $this->defaultQueryFactory) {
-            $this->defaultQueryFactory = new PDOEventStoreQueryFactory();
+            $this->defaultQueryFactory = new PDOEventStoreQueryFactory($this->connection, $this->eventStreamsTable);
         }
 
         return $this->defaultQueryFactory;
@@ -502,7 +476,10 @@ EOT;
     public function getDefaultProjectionFactory(): ProjectionFactory
     {
         if (null === $this->defaultProjectionFactory) {
-            $this->defaultProjectionFactory = new PDOEventStoreProjectionFactory();
+            $this->defaultProjectionFactory = new PDOEventStoreProjectionFactory(
+                $this->connection,
+                $this->eventStreamsTable
+            );
         }
 
         return $this->defaultProjectionFactory;
@@ -511,7 +488,10 @@ EOT;
     public function getDefaultReadModelProjectionFactory(): ReadModelProjectionFactory
     {
         if (null === $this->defaultReadModelProjectionFactory) {
-            $this->defaultReadModelProjectionFactory = new PDOEventStoreReadModelProjectionFactory();
+            $this->defaultReadModelProjectionFactory = new PDOEventStoreReadModelProjectionFactory(
+                $this->connection,
+                $this->eventStreamsTable
+            );
         }
 
         return $this->defaultReadModelProjectionFactory;

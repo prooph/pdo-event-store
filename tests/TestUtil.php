@@ -29,18 +29,25 @@ abstract class TestUtil
         'pdo_pgsql' => ' ',
     ];
 
+    /**
+     * @var PDO
+     */
+    private static $connection;
+
     public static function getConnection(): PDO
     {
-        $connectionParams = self::getConnectionParams();
-        $separator = self::$driverSchemeSeparators[$connectionParams['driver']];
-        $dsn = self::$driverSchemeAliases[$connectionParams['driver']] . ':';
-        $dsn .= 'host=' . $connectionParams['host'] . $separator;
-        $dsn .= 'port=' . $connectionParams['port'] . $separator;
-        $dsn .= 'dbname=' . $connectionParams['dbname'] . $separator;
-        $dsn = rtrim($dsn);
-        $connection = new PDO($dsn, $connectionParams['user'], $connectionParams['password']);
+        if (! isset (self::$connection)) {
+            $connectionParams = self::getConnectionParams();
+            $separator = self::$driverSchemeSeparators[$connectionParams['driver']];
+            $dsn = self::$driverSchemeAliases[$connectionParams['driver']] . ':';
+            $dsn .= 'host=' . $connectionParams['host'] . $separator;
+            $dsn .= 'port=' . $connectionParams['port'] . $separator;
+            $dsn .= 'dbname=' . $connectionParams['dbname'] . $separator;
+            $dsn = rtrim($dsn);
+            self::$connection = new PDO($dsn, $connectionParams['user'], $connectionParams['password']);
+        }
 
-        return $connection;
+        return self::$connection;
     }
 
     public static function getDatabaseName(): string

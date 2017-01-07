@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace Prooph\EventStore\PDO\Projection;
 
+use PDO;
 use Prooph\EventStore\EventStore;
-use Prooph\EventStore\Exception;
+use Prooph\EventStore\PDO\Exception;
 use Prooph\EventStore\PDO\Projection\ProjectionOptions as PDOProjectionOptions;
 use Prooph\EventStore\Projection\ProjectionOptions;
 use Prooph\EventStore\Projection\ReadModel;
@@ -22,12 +23,32 @@ use Prooph\EventStore\Projection\ReadModelProjectionFactory;
 
 final class PDOEventStoreReadModelProjectionFactory implements ReadModelProjectionFactory
 {
+    /**
+     * @var PDO
+     */
+    private $connection;
+
+    /**
+     * @var string
+     */
+    private $eventStreamsTable;
+
+    public function __construct(PDO $connection, string $eventStreamsTable)
+    {
+        $this->connection = $connection;
+        $this->eventStreamsTable = $eventStreamsTable;
+    }
+
     public function __invoke(
         EventStore $eventStore,
         string $name,
         ReadModel $readModel,
         ProjectionOptions $options = null
     ): ReadModelProjection {
+        if (null === $options) {
+            $options = new PDOProjectionOptions();
+        }
+
         if (! $options instanceof PDOProjectionOptions) {
             throw new Exception\InvalidArgumentException(
                 self::class . ' expects an instance of' . PDOProjectionOptions::class
@@ -36,10 +57,10 @@ final class PDOEventStoreReadModelProjectionFactory implements ReadModelProjecti
 
         return new PDOEventStoreReadModelProjection(
             $eventStore,
-            $options->connection(),
+            $this->connection,
             $name,
             $readModel,
-            $options->eventStreamsTable(),
+            $this->eventStreamsTable,
             $options->projectionsTable(),
             $options->lockTimeoutMs(),
             $options->persistBlockSize(),

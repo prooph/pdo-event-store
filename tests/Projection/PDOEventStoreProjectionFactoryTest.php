@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace ProophTest\EventStore\PDO\Projection;
 
+use PDO;
 use PHPUnit\Framework\TestCase;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception\InvalidArgumentException;
@@ -27,7 +28,7 @@ class PDOEventStoreProjectionFactoryTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        $factory = new PDOEventStoreProjectionFactory();
+        $factory = new PDOEventStoreProjectionFactory($this->prophesize(PDO::class)->reveal(), 'test_projection');
 
         $factory(
             $this->prophesize(EventStore::class)->reveal(),
