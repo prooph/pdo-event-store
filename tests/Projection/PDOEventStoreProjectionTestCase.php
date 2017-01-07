@@ -174,12 +174,56 @@ abstract class PDOEventStoreProjectionTestCase extends TestCase
     /**
      * @test
      */
-    public function it_can_query_from_category_with_when_all()
+    public function it_updates_state_using_when_and_persists_with_block_size(): void
+    {
+        $this->prepareEventStream('user-123');
+
+        $testCase = $this;
+
+        $projection = $this->eventStore->createProjection('test_projection', new ProjectionOptions(
+            'projections',
+            1000,
+            10
+        ));
+
+        $projection
+            ->fromAll()
+            ->when([
+                UserCreated::class => function ($state, Message $event) use ($testCase): array {
+                    $testCase->assertEquals('user-123', $this->streamName());
+                    $state['name'] = $event->payload()['name'];
+
+                    return $state;
+                },
+                UsernameChanged::class => function ($state, Message $event) use ($testCase): array {
+                    $testCase->assertEquals('user-123', $this->streamName());
+                    $state['name'] = $event->payload()['name'];
+
+                    if ($event->payload()['name'] === 'Sascha') {
+                        $this->stop();
+                    }
+
+                    return $state;
+                },
+            ])
+            ->run();
+
+        $this->assertEquals('Sascha', $projection->getState()['name']);
+    }
+
+    /**
+     * @test
+     */
+    public function it_can_query_from_category_with_when_any()
     {
         $this->prepareEventStream('user-123');
         $this->prepareEventStream('user-234');
 
-        $projection = $this->eventStore->createProjection('test_projection');
+        $projection = $this->eventStore->createProjection('test_projection', new ProjectionOptions(
+            'projections',
+            1000,
+            10
+        ));
 
         $projection
             ->init(function (): array {

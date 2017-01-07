@@ -111,6 +111,7 @@ abstract class PDOEventStoreReadModelProjectionTestCase extends TestCase
         $this->assertEquals(49, $projection->getState()['count']);
 
         $projection->reset();
+        $this->assertEquals('test_projection', $projection->getName());
 
         $projection->run(false);
 
@@ -313,6 +314,48 @@ abstract class PDOEventStoreReadModelProjectionTestCase extends TestCase
     /**
      * @test
      */
+    public function it_updates_read_model_using_when(): void
+    {
+        $this->prepareEventStream('user-123');
+
+        $testCase = $this;
+
+        $readModel = new ReadModelMock();
+
+        $projection = $this->eventStore->createReadModelProjection('test_projection', $readModel, new ProjectionOptions(
+            'projections',
+            1000,
+            10
+        ));
+
+        $projection
+            ->fromAll()
+            ->when([
+                UserCreated::class => function ($state, Message $event) use ($testCase): void {
+                    $testCase->assertEquals('user-123', $this->streamName());
+                    $this->readModel()->stack('insert', 'name', $event->payload()['name']);
+                },
+                UsernameChanged::class => function ($state, Message $event) use ($testCase): void {
+                    $testCase->assertEquals('user-123', $this->streamName());
+                    $this->readModel()->stack('update', 'name', $event->payload()['name']);
+
+                    if ($event->payload()['name'] === 'Sascha') {
+                        $this->stop();
+                    }
+                },
+            ])
+            ->run();
+
+        $this->assertEquals('Sascha', $readModel->read('name'));
+
+        $projection->reset();
+
+        $this->assertFalse($readModel->hasKey('name'));
+    }
+
+    /**
+     * @test
+     */
     public function it_updates_read_model_using_when_and_loads_and_continues_again(): void
     {
         $this->prepareEventStream('user-123');
@@ -385,7 +428,11 @@ abstract class PDOEventStoreReadModelProjectionTestCase extends TestCase
 
         $readModel = new ReadModelMock();
 
-        $projection = $this->eventStore->createReadModelProjection('test_projection', $readModel);
+        $projection = $this->eventStore->createReadModelProjection('test_projection', $readModel, new ProjectionOptions(
+            'projections',
+            1000,
+            10
+        ));
 
         $projection
             ->init(function (): void {
@@ -603,5 +650,63 @@ abstract class PDOEventStoreReadModelProjectionTestCase extends TestCase
             10,
             10000
         );
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_trying_to_run_two_projections_at_the_same_time(): void
+    {
+        $this->expectException(\Prooph\EventStore\Exception\RuntimeException::class);
+        $this->expectExceptionMessage('Another projection process is already running');
+
+        $this->prepareEventStream('user-123');
+
+        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+
+        $eventStore = $this->eventStore;
+
+        $projection
+            ->fromStream('user-123')
+            ->whenAny(
+                function (array $state, Message $event) use ($eventStore): array {
+                    $projection = $eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+
+                    $projection
+                        ->fromStream('user-123')
+                        ->whenAny(
+                            function (array $state, Message $event): void {
+                            }
+                        )
+                        ->run();
+                }
+            )
+            ->run();
+    }
+
+    /**
+     * @test
+     */
+    public function it_handles_missing_projection_table(): void
+    {
+        $this->expectException(\Prooph\EventStore\Exception\RuntimeException::class);
+        $this->expectExceptionMessage('Maybe the projection table is not setup?');
+
+        $this->prepareEventStream('user-123');
+
+        $this->connection->exec('DROP TABLE projections;');
+
+        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+
+        $projection
+            ->fromStream('user-123')
+            ->when([
+                UserCreated::class => function (array $state, UserCreated $event): array {
+                    $this->stop();
+
+                    return $state;
+                },
+            ])
+            ->run();
     }
 }
