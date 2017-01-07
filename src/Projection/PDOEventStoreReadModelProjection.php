@@ -27,7 +27,6 @@ use Prooph\EventStore\Projection\ReadModel;
 use Prooph\EventStore\Projection\ReadModelProjection;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
-use Prooph\EventStore\Util\ArrayCache;
 
 final class PDOEventStoreReadModelProjection implements ReadModelProjection
 {

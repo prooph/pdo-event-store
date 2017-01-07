@@ -20,10 +20,8 @@ use PDO;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception;
-use Prooph\EventStore\PDO\MySQLEventStore;
 use Prooph\EventStore\Projection\Query;
 use Prooph\EventStore\StreamName;
-use Prooph\EventStore\Util\ArrayCache;
 
 final class PDOEventStoreQuery implements Query
 {

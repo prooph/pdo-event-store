@@ -76,7 +76,7 @@ class ProjectionOptionsTest extends TestCase
             'projections_table' => 'foo',
             'cache_size' => 1,
             'persist_block_size' => 2,
-            'sleep' => 10000
+            'sleep' => 10000,
         ]);
     }
 
