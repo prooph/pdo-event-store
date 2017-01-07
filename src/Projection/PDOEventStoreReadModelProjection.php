@@ -408,6 +408,7 @@ EOT;
         foreach ($events as $event) {
             /* @var Message $event */
             $this->streamPositions[$streamName]++;
+            $this->eventCounter++;
 
             $result = $handler($this->state, $event);
 
@@ -432,6 +433,7 @@ EOT;
         foreach ($events as $event) {
             /* @var Message $event */
             $this->streamPositions[$streamName]++;
+            $this->eventCounter++;
 
             if (! isset($this->handlers[$event->messageName()])) {
                 continue;
