@@ -22,7 +22,6 @@ use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception\InvalidArgumentException;
 use Prooph\EventStore\Exception\RuntimeException;
 use Prooph\EventStore\PDO\Projection\PDOEventStoreQuery;
-use Prooph\EventStore\PDO\Projection\ProjectionOptions;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\UserCreated;
@@ -79,7 +78,7 @@ abstract class PDOEventStoreQueryTestCase extends TestCase
     public function it_unwraps_event_store_decorator(): void
     {
         $eventStoreDecorator = new ActionEventEmitterEventStore($this->eventStore, new ProophActionEventEmitter());
-
+git a
         $eventStoreDecorator->createQuery();
     }
 

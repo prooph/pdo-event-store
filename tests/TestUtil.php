@@ -36,7 +36,7 @@ abstract class TestUtil
 
     public static function getConnection(): PDO
     {
-        if (! isset (self::$connection)) {
+        if (! isset(self::$connection)) {
             $connectionParams = self::getConnectionParams();
             $separator = self::$driverSchemeSeparators[$connectionParams['driver']];
             $dsn = self::$driverSchemeAliases[$connectionParams['driver']] . ':';
