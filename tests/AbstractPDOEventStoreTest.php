@@ -47,6 +47,8 @@ abstract class AbstractPDOEventStoreTest extends TestCase
     {
         $this->connection->exec('DROP TABLE event_streams;');
         $this->connection->exec('DROP TABLE _' . sha1('Prooph\Model\User'));
+
+        $this->connection = null;
     }
 
     /**

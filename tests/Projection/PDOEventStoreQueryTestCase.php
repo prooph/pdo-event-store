@@ -47,6 +47,8 @@ abstract class PDOEventStoreQueryTestCase extends TestCase
         $this->connection->exec('DROP TABLE IF EXISTS _' . sha1('guest-456'));
         $this->connection->exec('DROP TABLE IF EXISTS _' . sha1('foo'));
         $this->connection->exec('DROP TABLE IF EXISTS _' . sha1('test_projection'));
+
+        $this->connection = null;
     }
 
     protected function prepareEventStream(string $name): void
