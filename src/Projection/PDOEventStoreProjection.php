@@ -25,7 +25,6 @@ use Prooph\EventStore\Exception;
 use Prooph\EventStore\Projection\Projection;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
-use Prooph\EventStore\TransactionalEventStore;
 use Prooph\EventStore\Util\ArrayCache;
 
 final class PDOEventStoreProjection implements Projection

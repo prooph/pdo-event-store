@@ -193,7 +193,7 @@ abstract class PDOEventStoreProjectionTestCase extends PDOEventStoreQueryTestCas
      */
     public function it_throws_exception_when_trying_to_run_two_projections_at_the_same_time(): void
     {
-        $this->expectException(\Prooph\EventStore\PDO\Exception\RuntimeException::class);
+        $this->expectException(\Prooph\EventStore\Exception\RuntimeException::class);
         $this->expectExceptionMessage('Another projection process is already running');
 
         $this->prepareEventStream('user-123');
@@ -228,7 +228,7 @@ abstract class PDOEventStoreProjectionTestCase extends PDOEventStoreQueryTestCas
      */
     public function it_handles_missing_projection_table(): void
     {
-        $this->expectException(\Prooph\EventStore\PDO\Exception\RuntimeException::class);
+        $this->expectException(\Prooph\EventStore\Exception\RuntimeException::class);
         $this->expectExceptionMessage('Maybe the projection table is not setup?');
 
         $this->prepareEventStream('user-123');

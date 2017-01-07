@@ -89,6 +89,7 @@ class ProjectionOptionsTest extends TestCase
             'projections_table' => 'foo',
             'cache_size' => 5,
             'persist_block_size' => 15,
+            'sleep' => 100000,
             'lock_timeout_ms' => 100,
         ]);
 
@@ -99,6 +100,7 @@ class ProjectionOptionsTest extends TestCase
         $this->assertEquals(5, $options->cacheSize());
         $this->assertEquals(15, $options->persistBlockSize());
         $this->assertEquals('foo', $options->projectionsTable());
+        $this->assertEquals(100000, $options->sleep());
         $this->assertEquals(100, $options->lockTimeoutMs());
         $this->assertSame($connection, $options->connection());
         $this->assertEquals('bar', $options->eventStreamsTable());
