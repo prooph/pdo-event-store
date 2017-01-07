@@ -47,6 +47,12 @@ abstract class TestUtil
             self::$connection = new PDO($dsn, $connectionParams['user'], $connectionParams['password']);
         }
 
+        try {
+            self::$connection->rollBack();
+        } catch (\PDOException $e) {
+            // ignore
+        }
+
         return self::$connection;
     }
 
