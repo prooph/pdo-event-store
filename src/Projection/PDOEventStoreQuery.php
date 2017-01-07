@@ -171,6 +171,10 @@ EOT;
 
     public function fromCategories(string ...$names): Query
     {
+        if (null !== $this->streamPositions) {
+            throw new Exception\RuntimeException('From was already called');
+        }
+
         $it = new CachingIterator(new ArrayIterator($names), CachingIterator::FULL_CACHE);
 
         $where = 'WHERE ';
@@ -187,10 +191,6 @@ EOT;
         $statement = $this->connection->prepare($sql);
         $statement->execute();
 
-        if (null !== $this->streamPositions) {
-            throw new Exception\RuntimeException('From was already called');
-        }
-
         $this->streamPositions = [];
 
         while ($row = $statement->fetch(PDO::FETCH_OBJ)) {
@@ -202,6 +202,10 @@ EOT;
 
     public function fromAll(): Query
     {
+        if (null !== $this->streamPositions) {
+            throw new Exception\RuntimeException('From was already called');
+        }
+
         $sql = <<<EOT
 SELECT real_stream_name FROM $this->eventStreamsTable WHERE real_stream_name NOT LIKE '$%';
 EOT;

@@ -23,10 +23,6 @@ final class PDOEventStoreQueryFactory implements QueryFactory
 {
     public function __invoke(EventStore $eventStore, ProjectionOptions $options = null): Query
     {
-        if (null === $options) {
-            $options = new PDOProjectionOptions();
-        }
-
         if (! $options instanceof PDOProjectionOptions) {
             throw new Exception\InvalidArgumentException(
                 self::class . ' expects an instance of' . PDOProjectionOptions::class

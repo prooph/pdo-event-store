@@ -17,6 +17,9 @@ use PDO;
 use PHPUnit\Framework\TestCase;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
+use Prooph\EventStore\Exception\InvalidArgumentException;
+use Prooph\EventStore\Exception\RuntimeException;
+use Prooph\EventStore\PDO\Projection\PDOEventStoreQuery;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\UserCreated;
@@ -292,5 +295,166 @@ abstract class PDOEventStoreQueryTestCase extends TestCase
             ->run();
 
         $this->assertEquals(10, $query->getState()['count']);
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_init_callback_provided_twice(): void
+    {
+        $this->expectException(RuntimeException::class);
+
+        $query = $this->eventStore->createQuery();
+
+        $query->init(function (): array {
+            return [];
+        });
+        $query->init(function (): array {
+            return [];
+        });
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_from_called_twice(): void
+    {
+        $this->expectException(RuntimeException::class);
+
+        $query = $this->eventStore->createQuery();
+
+        $query->fromStream('foo');
+        $query->fromStream('bar');
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_from_called_twice_2(): void
+    {
+        $this->expectException(RuntimeException::class);
+
+        $query = $this->eventStore->createQuery();
+
+        $query->fromStreams('foo');
+        $query->fromCategory('bar');
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_from_called_twice_3(): void
+    {
+        $this->expectException(RuntimeException::class);
+
+        $query = $this->eventStore->createQuery();
+
+        $query->fromCategory('foo');
+        $query->fromStreams('bar');
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_from_called_twice_4(): void
+    {
+        $this->expectException(RuntimeException::class);
+
+        $query = $this->eventStore->createQuery();
+
+        $query->fromCategories('foo');
+        $query->fromCategories('bar');
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_from_called_twice_5(): void
+    {
+        $this->expectException(RuntimeException::class);
+
+        $query = $this->eventStore->createQuery();
+
+        $query->fromCategories('foo');
+        $query->fromAll('bar');
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_when_called_twice_(): void
+    {
+        $this->expectException(RuntimeException::class);
+
+        $query = $this->eventStore->createQuery();
+
+        $query->when(['foo' => function (): void {
+        }]);
+        $query->when(['foo' => function (): void {
+        }]);
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_invalid_handlers_configured(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $query = $this->eventStore->createQuery();
+
+        $query->when(['1' => function (): void {
+        }]);
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_invalid_handlers_configured_2(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $query = $this->eventStore->createQuery();
+
+        $query->when(['foo' => 'invalid']);
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_whenAny_called_twice(): void
+    {
+        $this->expectException(RuntimeException::class);
+
+        $query = $this->eventStore->createQuery();
+
+        $query->whenAny(function (): void {
+        });
+        $query->whenAny(function (): void {
+        });
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_on_run_when_nothing_configured(): void
+    {
+        $this->expectException(RuntimeException::class);
+
+        $query = $this->eventStore->createQuery();
+        $query->run();
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_unknown_event_store_instance_passed(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $eventStore = $this->prophesize(EventStore::class);
+        $connection = $this->prophesize(\PDO::class);
+
+        new PDOEventStoreQuery($eventStore->reveal(), $connection->reveal(), 'event_streams');
     }
 }

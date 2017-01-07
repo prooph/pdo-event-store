@@ -26,10 +26,6 @@ final class PDOEventStoreProjectionFactory implements ProjectionFactory
         string $name,
         ProjectionOptions $options = null
     ): Projection {
-        if (null === $options) {
-            $options = new PDOProjectionOptions();
-        }
-
         if (! $options instanceof PDOProjectionOptions) {
             throw new Exception\InvalidArgumentException(
                 self::class . ' expects an instance of' . PDOProjectionOptions::class

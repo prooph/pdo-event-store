@@ -21,7 +21,7 @@ use ProophTest\EventStore\PDO\TestUtil;
 /**
  * @group pdo_pgsql
  */
-class PostgresEventStoreReadModelProjectionTest extends PDOEventStoreProjectionTestCase
+class PostgresEventStoreReadModelProjectionTest extends PDOEventStoreReadModelProjectionTestCase
 {
     protected function setUp(): void
     {

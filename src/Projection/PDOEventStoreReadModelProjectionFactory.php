@@ -28,10 +28,6 @@ final class PDOEventStoreReadModelProjectionFactory implements ReadModelProjecti
         ReadModel $readModel,
         ProjectionOptions $options = null
     ): ReadModelProjection {
-        if (null === $options) {
-            $options = new PDOProjectionOptions();
-        }
-
         if (! $options instanceof PDOProjectionOptions) {
             throw new Exception\InvalidArgumentException(
                 self::class . ' expects an instance of' . PDOProjectionOptions::class
