@@ -78,16 +78,6 @@ final class PDOEventStoreQuery implements Query
      */
     private $currentStreamName = null;
 
-    /**
-     * @var int lock timeout in milliseconds
-     */
-    private $lockTimeoutMs;
-
-    /**
-     * @var int
-     */
-    private $eventCounter = 0;
-
     public function __construct(EventStore $eventStore, PDO $connection, string $eventStreamsTable)
     {
         $this->eventStore = $eventStore;
