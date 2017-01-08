@@ -20,7 +20,7 @@ use PDOStatement;
 use Prooph\Common\Messaging\Message;
 use Prooph\Common\Messaging\MessageFactory;
 
-final class PDOStreamIterator implements Iterator
+final class PdoStreamIterator implements Iterator
 {
     /**
      * @var PDO

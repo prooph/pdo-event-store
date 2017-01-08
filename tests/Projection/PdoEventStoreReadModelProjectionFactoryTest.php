@@ -16,11 +16,11 @@ use PDO;
 use PHPUnit\Framework\TestCase;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception\InvalidArgumentException;
-use Prooph\EventStore\PDO\Projection\PDOEventStoreReadModelProjectionFactory;
+use Prooph\EventStore\PDO\Projection\PdoEventStoreReadModelProjectionFactory;
 use Prooph\EventStore\Projection\ProjectionOptions;
 use Prooph\EventStore\Projection\ReadModel;
 
-class PDOEventStoreReadModelProjectionFactoryTest extends TestCase
+class PdoEventStoreReadModelProjectionFactoryTest extends TestCase
 {
     /**
      * @test
@@ -29,7 +29,7 @@ class PDOEventStoreReadModelProjectionFactoryTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        $factory = new PDOEventStoreReadModelProjectionFactory(
+        $factory = new PdoEventStoreReadModelProjectionFactory(
             $this->prophesize(PDO::class)->reveal(),
             'test_projection'
         );

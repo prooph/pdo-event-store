@@ -23,9 +23,9 @@ use Prooph\EventStore\Exception\StreamNotFound;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\PDO\Exception\ExtensionNotLoaded;
 use Prooph\EventStore\PDO\Exception\RuntimeException;
-use Prooph\EventStore\PDO\Projection\PDOEventStoreProjectionFactory;
-use Prooph\EventStore\PDO\Projection\PDOEventStoreQueryFactory;
-use Prooph\EventStore\PDO\Projection\PDOEventStoreReadModelProjectionFactory;
+use Prooph\EventStore\PDO\Projection\PdoEventStoreProjectionFactory;
+use Prooph\EventStore\PDO\Projection\PdoEventStoreQueryFactory;
+use Prooph\EventStore\PDO\Projection\PdoEventStoreReadModelProjectionFactory;
 use Prooph\EventStore\Projection\Projection;
 use Prooph\EventStore\Projection\ProjectionFactory;
 use Prooph\EventStore\Projection\ProjectionOptions as BaseProjectionOptions;
@@ -37,7 +37,7 @@ use Prooph\EventStore\Projection\ReadModelProjectionFactory;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 
-final class MySQLEventStore implements EventStore
+final class MySqlEventStore implements EventStore
 {
     /**
      * @var MessageFactory
@@ -309,7 +309,7 @@ EOT;
 
         return new Stream(
             $streamName,
-            new PDOStreamIterator(
+            new PdoStreamIterator(
                 $this->connection,
                 $statement,
                 $this->messageFactory,
@@ -382,7 +382,7 @@ EOT;
 
         return new Stream(
             $streamName,
-            new PDOStreamIterator(
+            new PdoStreamIterator(
                 $this->connection,
                 $statement,
                 $this->messageFactory,
@@ -462,7 +462,7 @@ EOT;
     public function getDefaultQueryFactory(): QueryFactory
     {
         if (null === $this->defaultQueryFactory) {
-            $this->defaultQueryFactory = new PDOEventStoreQueryFactory(
+            $this->defaultQueryFactory = new PdoEventStoreQueryFactory(
                 $this->connection,
                 $this->eventStreamsTable
             );
@@ -474,7 +474,7 @@ EOT;
     public function getDefaultProjectionFactory(): ProjectionFactory
     {
         if (null === $this->defaultProjectionFactory) {
-            $this->defaultProjectionFactory = new PDOEventStoreProjectionFactory(
+            $this->defaultProjectionFactory = new PdoEventStoreProjectionFactory(
                 $this->connection,
                 $this->eventStreamsTable
             );
@@ -486,7 +486,7 @@ EOT;
     public function getDefaultReadModelProjectionFactory(): ReadModelProjectionFactory
     {
         if (null === $this->defaultReadModelProjectionFactory) {
-            $this->defaultReadModelProjectionFactory = new PDOEventStoreReadModelProjectionFactory(
+            $this->defaultReadModelProjectionFactory = new PdoEventStoreReadModelProjectionFactory(
                 $this->connection,
                 $this->eventStreamsTable
             );

@@ -21,12 +21,12 @@ use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Exception;
-use Prooph\EventStore\PDO\MySQLEventStore;
+use Prooph\EventStore\PDO\MySqlEventStore;
 use Prooph\EventStore\PDO\PostgresEventStore;
 use Prooph\EventStore\Projection\Query;
 use Prooph\EventStore\StreamName;
 
-final class PDOEventStoreQuery implements Query
+final class PdoEventStoreQuery implements Query
 {
     /**
      * @var EventStore
@@ -88,7 +88,7 @@ final class PDOEventStoreQuery implements Query
             $eventStore = $eventStore->getInnerEventStore();
         }
 
-        if (! $eventStore instanceof MySQLEventStore
+        if (! $eventStore instanceof MySqlEventStore
             && ! $eventStore instanceof PostgresEventStore
         ) {
             throw new Exception\InvalidArgumentException('Unknown event store instance given');

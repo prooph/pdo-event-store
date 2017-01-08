@@ -16,7 +16,7 @@ use Iterator;
 use Prooph\EventStore\PDO\PersistenceStrategy;
 use Prooph\EventStore\StreamName;
 
-final class MySQLSingleStreamStrategy implements PersistenceStrategy
+final class MySqlSingleStreamStrategy implements PersistenceStrategy
 {
     /**
      * @param string $tableName

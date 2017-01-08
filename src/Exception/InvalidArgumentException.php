@@ -14,6 +14,6 @@ namespace Prooph\EventStore\PDO\Exception;
 
 use Prooph\EventStore\Exception\InvalidArgumentException as EventStoreInvalidArgumentException;
 
-class InvalidArgumentException extends EventStoreInvalidArgumentException implements PDOEventStoreException
+class InvalidArgumentException extends EventStoreInvalidArgumentException implements PdoEventStoreException
 {
 }

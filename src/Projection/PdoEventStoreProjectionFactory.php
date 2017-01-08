@@ -20,7 +20,7 @@ use Prooph\EventStore\Projection\Projection;
 use Prooph\EventStore\Projection\ProjectionFactory;
 use Prooph\EventStore\Projection\ProjectionOptions;
 
-final class PDOEventStoreProjectionFactory implements ProjectionFactory
+final class PdoEventStoreProjectionFactory implements ProjectionFactory
 {
     /**
      * @var PDO
@@ -53,7 +53,7 @@ final class PDOEventStoreProjectionFactory implements ProjectionFactory
             );
         }
 
-        return new PDOEventStoreProjection(
+        return new PdoEventStoreProjection(
             $eventStore,
             $this->connection,
             $name,

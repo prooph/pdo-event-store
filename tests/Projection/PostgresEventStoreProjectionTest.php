@@ -16,13 +16,13 @@ use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\PDO\PersistenceStrategy\PostgresSimpleStreamStrategy;
 use Prooph\EventStore\PDO\PostgresEventStore;
-use ProophTest\EventStore\PDO\Projection\PDOEventStoreProjectionTestCase;
+use ProophTest\EventStore\PDO\Projection\PdoEventStoreProjectionTestCase;
 use ProophTest\EventStore\PDO\TestUtil;
 
 /**
  * @group pdo_pgsql
  */
-class PostgresEventStoreProjectionTest extends PDOEventStoreProjectionTestCase
+class PostgresEventStoreProjectionTest extends PdoEventStoreProjectionTestCase
 {
     protected function setUp(): void
     {

@@ -21,7 +21,7 @@ use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception\InvalidArgumentException;
 use Prooph\EventStore\Exception\RuntimeException;
-use Prooph\EventStore\PDO\Projection\PDOEventStoreReadModelProjection;
+use Prooph\EventStore\PDO\Projection\PdoEventStoreReadModelProjection;
 use Prooph\EventStore\PDO\Projection\ProjectionOptions;
 use Prooph\EventStore\Projection\ReadModel;
 use Prooph\EventStore\Stream;
@@ -30,7 +30,7 @@ use ProophTest\EventStore\Mock\ReadModelMock;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
 
-abstract class PDOEventStoreReadModelProjectionTestCase extends TestCase
+abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
 {
     /**
      * @var EventStore
@@ -638,7 +638,7 @@ abstract class PDOEventStoreReadModelProjectionTestCase extends TestCase
         $connection = $this->prophesize(\PDO::class);
         $readModel = $this->prophesize(ReadModel::class);
 
-        new PDOEventStoreReadModelProjection(
+        new PdoEventStoreReadModelProjection(
             $eventStore->reveal(),
             $connection->reveal(),
             'test_projection',

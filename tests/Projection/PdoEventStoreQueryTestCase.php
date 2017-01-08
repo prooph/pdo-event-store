@@ -21,13 +21,13 @@ use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception\InvalidArgumentException;
 use Prooph\EventStore\Exception\RuntimeException;
-use Prooph\EventStore\PDO\Projection\PDOEventStoreQuery;
+use Prooph\EventStore\PDO\Projection\PdoEventStoreQuery;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
 
-abstract class PDOEventStoreQueryTestCase extends TestCase
+abstract class PdoEventStoreQueryTestCase extends TestCase
 {
     /**
      * @var EventStore
@@ -501,6 +501,6 @@ abstract class PDOEventStoreQueryTestCase extends TestCase
         $eventStore = $this->prophesize(EventStore::class);
         $connection = $this->prophesize(\PDO::class);
 
-        new PDOEventStoreQuery($eventStore->reveal(), $connection->reveal(), 'event_streams');
+        new PdoEventStoreQuery($eventStore->reveal(), $connection->reveal(), 'event_streams');
     }
 }

@@ -63,7 +63,7 @@ abstract class AbstractEventStoreFactory implements
      * <code>
      * <?php
      * return [
-     *     MySQLEventStore::class => [MySQLEventStoreFactory::class, 'service_name'],
+     *     MySqlEventStore::class => [MySqlEventStoreFactory::class, 'service_name'],
      *     PostgresEventStore::class => [PostgresEventStoreFactory::class, 'service_name'],
      * ];
      * </code>

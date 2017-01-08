@@ -31,7 +31,7 @@ use ProophTest\EventStore\Mock\TestDomainEvent;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
 
-abstract class AbstractPDOEventStoreTest extends TestCase
+abstract class AbstractPdoEventStoreTest extends TestCase
 {
     /**
      * @var EventStore

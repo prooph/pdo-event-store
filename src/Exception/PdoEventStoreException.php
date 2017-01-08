@@ -14,6 +14,6 @@ namespace Prooph\EventStore\PDO\Exception;
 
 use Prooph\EventStore\Exception\EventStoreException;
 
-interface PDOEventStoreException extends EventStoreException
+interface PdoEventStoreException extends EventStoreException
 {
 }

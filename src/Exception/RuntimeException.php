@@ -14,6 +14,6 @@ namespace Prooph\EventStore\PDO\Exception;
 
 use Prooph\EventStore\Exception\RuntimeException as EventStoreRuntimeException;
 
-class RuntimeException extends EventStoreRuntimeException implements PDOEventStoreException
+class RuntimeException extends EventStoreRuntimeException implements PdoEventStoreException
 {
 }

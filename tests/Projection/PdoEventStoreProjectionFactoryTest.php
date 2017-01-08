@@ -16,10 +16,10 @@ use PDO;
 use PHPUnit\Framework\TestCase;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception\InvalidArgumentException;
-use Prooph\EventStore\PDO\Projection\PDOEventStoreProjectionFactory;
+use Prooph\EventStore\PDO\Projection\PdoEventStoreProjectionFactory;
 use Prooph\EventStore\Projection\ProjectionOptions;
 
-class PDOEventStoreProjectionFactoryTest extends TestCase
+class PdoEventStoreProjectionFactoryTest extends TestCase
 {
     /**
      * @test
@@ -28,7 +28,7 @@ class PDOEventStoreProjectionFactoryTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        $factory = new PDOEventStoreProjectionFactory($this->prophesize(PDO::class)->reveal(), 'test_projection');
+        $factory = new PdoEventStoreProjectionFactory($this->prophesize(PDO::class)->reveal(), 'test_projection');
 
         $factory(
             $this->prophesize(EventStore::class)->reveal(),

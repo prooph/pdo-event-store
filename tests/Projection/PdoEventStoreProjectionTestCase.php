@@ -22,14 +22,14 @@ use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception\InvalidArgumentException;
 use Prooph\EventStore\Exception\RuntimeException;
 use Prooph\EventStore\Exception\StreamNotFound;
-use Prooph\EventStore\PDO\Projection\PDOEventStoreProjection;
+use Prooph\EventStore\PDO\Projection\PdoEventStoreProjection;
 use Prooph\EventStore\PDO\Projection\ProjectionOptions;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
 
-abstract class PDOEventStoreProjectionTestCase extends TestCase
+abstract class PdoEventStoreProjectionTestCase extends TestCase
 {
     /**
      * @var EventStore
@@ -725,7 +725,7 @@ abstract class PDOEventStoreProjectionTestCase extends TestCase
         $eventStore = $this->prophesize(EventStore::class);
         $connection = $this->prophesize(\PDO::class);
 
-        new PDOEventStoreProjection(
+        new PdoEventStoreProjection(
             $eventStore->reveal(),
             $connection->reveal(),
             'test_projection',

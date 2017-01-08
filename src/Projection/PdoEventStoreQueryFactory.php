@@ -17,7 +17,7 @@ use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Projection\Query;
 use Prooph\EventStore\Projection\QueryFactory;
 
-final class PDOEventStoreQueryFactory implements QueryFactory
+final class PdoEventStoreQueryFactory implements QueryFactory
 {
     /**
      * @var PDO
@@ -37,6 +37,6 @@ final class PDOEventStoreQueryFactory implements QueryFactory
 
     public function __invoke(EventStore $eventStore): Query
     {
-        return new PDOEventStoreQuery($eventStore, $this->connection, $this->eventStreamsTable);
+        return new PdoEventStoreQuery($eventStore, $this->connection, $this->eventStreamsTable);
     }
 }

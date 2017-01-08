@@ -10,19 +10,18 @@
 
 declare(strict_types=1);
 
-namespace ProophTest\EventStore\Projection;
+namespace ProophTest\EventStore\PDO\Projection;
 
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
-use Prooph\EventStore\PDO\MySQLEventStore;
-use Prooph\EventStore\PDO\PersistenceStrategy\MySQLSimpleStreamStrategy;
-use ProophTest\EventStore\PDO\Projection\PDOEventStoreQueryTestCase;
+use Prooph\EventStore\PDO\MySqlEventStore;
+use Prooph\EventStore\PDO\PersistenceStrategy\MySqlSimpleStreamStrategy;
 use ProophTest\EventStore\PDO\TestUtil;
 
 /**
  * @group pdo_mysql
  */
-class MySQLEventStoreQueryTest extends PDOEventStoreQueryTestCase
+class MySqlEventStoreReadModelProjectionTest extends PdoEventStoreReadModelProjectionTestCase
 {
     protected function setUp(): void
     {
@@ -33,11 +32,11 @@ class MySQLEventStoreQueryTest extends PDOEventStoreQueryTestCase
         $this->connection = TestUtil::getConnection();
         TestUtil::initDefaultDatabaseTables($this->connection);
 
-        $this->eventStore = new MySQLEventStore(
+        $this->eventStore = new MySqlEventStore(
             new FQCNMessageFactory(),
             new NoOpMessageConverter(),
             TestUtil::getConnection(),
-            new MySQLSimpleStreamStrategy()
+            new MySqlSimpleStreamStrategy()
         );
     }
 }

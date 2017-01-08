@@ -17,9 +17,9 @@ use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\EventStore;
-use Prooph\EventStore\PDO\MySQLEventStore;
+use Prooph\EventStore\PDO\MySqlEventStore;
 
-final class MySQLEventStoreFactory extends AbstractEventStoreFactory
+final class MySqlEventStoreFactory extends AbstractEventStoreFactory
 {
     protected function createActionEventEmitterEventStore(EventStore $eventStore): ActionEventEmitterEventStore
     {
@@ -40,7 +40,7 @@ final class MySQLEventStoreFactory extends AbstractEventStoreFactory
 
     protected function eventStoreClassName(): string
     {
-        return MySQLEventStore::class;
+        return MySqlEventStore::class;
     }
 
     public function defaultOptions(): iterable

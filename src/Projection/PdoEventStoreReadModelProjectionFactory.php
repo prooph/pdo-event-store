@@ -21,7 +21,7 @@ use Prooph\EventStore\Projection\ReadModel;
 use Prooph\EventStore\Projection\ReadModelProjection;
 use Prooph\EventStore\Projection\ReadModelProjectionFactory;
 
-final class PDOEventStoreReadModelProjectionFactory implements ReadModelProjectionFactory
+final class PdoEventStoreReadModelProjectionFactory implements ReadModelProjectionFactory
 {
     /**
      * @var PDO
@@ -55,7 +55,7 @@ final class PDOEventStoreReadModelProjectionFactory implements ReadModelProjecti
             );
         }
 
-        return new PDOEventStoreReadModelProjection(
+        return new PdoEventStoreReadModelProjection(
             $eventStore,
             $this->connection,
             $name,

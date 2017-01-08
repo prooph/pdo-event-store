@@ -36,7 +36,7 @@ use Ramsey\Uuid\Uuid;
 /**
  * @group pdo_pgsql
  */
-final class PostgresEventStoreTest extends AbstractPDOEventStoreTest
+final class PostgresEventStoreTest extends AbstractPdoEventStoreTest
 {
     /**
      * @var PostgresEventStore
