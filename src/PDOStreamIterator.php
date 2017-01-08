@@ -43,7 +43,7 @@ final class PDOStreamIterator implements Iterator
     private $messageFactory;
 
     /**
-     * @var array|false
+     * @var \stdClass|false
      */
     private $currentItem = null;
 
