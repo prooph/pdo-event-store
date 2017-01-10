@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace ProophTest\EventStore\Projection;
+namespace ProophTest\EventStore\Pdo\Projection;
 
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
