@@ -18,6 +18,7 @@
         <whitelist>
             <directory>./src/</directory>
             <exclude>
+                <file>./src/Container/MySqlEventStoreFactory.php</file>
                 <file>./src/PersistenceStrategy/MySqlAggregateStreamStrategy.php</file>
                 <file>./src/PersistenceStrategy/MySqlSimpleStreamStrategy.php</file>
                 <file>./src/PersistenceStrategy/MySqlSingleStreamStrategy.php</file>
