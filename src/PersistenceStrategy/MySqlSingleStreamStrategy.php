@@ -33,8 +33,8 @@ CREATE TABLE `$tableName` (
     `metadata` JSON NOT NULL,
     `created_at` DATETIME(6) NOT NULL,
     `version` INT(11) GENERATED ALWAYS AS (JSON_EXTRACT(metadata, '$._aggregate_version')) STORED NOT NULL,
-    `aggregate_id` char(38) CHARACTER SET utf8 COLLATE utf8_bin GENERATED ALWAYS AS (JSON_EXTRACT(metadata, '$._aggregate_id')) STORED NOT NULL,
-    `aggregate_type` varchar(150) GENERATED ALWAYS AS (JSON_EXTRACT(metadata, '$._aggregate_type')) STORED NOT NULL,
+    `aggregate_id` char(36) CHARACTER SET utf8 COLLATE utf8_bin GENERATED ALWAYS AS (JSON_UNQUOTE(JSON_EXTRACT(metadata, '$._aggregate_id'))) STORED NOT NULL,
+    `aggregate_type` varchar(150) GENERATED ALWAYS AS (JSON_UNQUOTE(JSON_EXTRACT(metadata, '$._aggregate_type'))) STORED NOT NULL,
     PRIMARY KEY (`no`),
     UNIQUE KEY `ix_event_id` (`event_id`),
     UNIQUE KEY `ix_unique_event` (`version`, `aggregate_id`, `aggregate_type`)
