@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace Prooph\EventStore\PDO\Container;
+namespace Prooph\EventStore\Pdo\Container;
 
 use Interop\Config\ConfigurationTrait;
 use Interop\Config\ProvidesDefaultOptions;
@@ -25,7 +25,7 @@ use Prooph\EventStore\Exception\ConfigurationException;
 use Prooph\EventStore\Metadata\MetadataEnricher;
 use Prooph\EventStore\Metadata\MetadataEnricherAggregate;
 use Prooph\EventStore\Metadata\MetadataEnricherPlugin;
-use Prooph\EventStore\PDO\Exception\InvalidArgumentException;
+use Prooph\EventStore\Pdo\Exception\InvalidArgumentException;
 use Prooph\EventStore\Plugin\Plugin;
 
 abstract class AbstractEventStoreFactory implements

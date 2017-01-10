@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace Prooph\EventStore\PDO;
+namespace Prooph\EventStore\Pdo;
 
 use DateTimeImmutable;
 use DateTimeZone;

@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace ProophTest\EventStore\PDO;
+namespace ProophTest\EventStore\Pdo;
 
 use PDO;
 

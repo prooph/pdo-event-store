@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace ProophTest\EventStore\PDO\Projection;
+namespace ProophTest\EventStore\Pdo\Projection;
 
 use ArrayIterator;
 use PDO;
@@ -22,8 +22,8 @@ use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception\InvalidArgumentException;
 use Prooph\EventStore\Exception\RuntimeException;
 use Prooph\EventStore\Exception\StreamNotFound;
-use Prooph\EventStore\PDO\Projection\PdoEventStoreProjection;
-use Prooph\EventStore\PDO\Projection\ProjectionOptions;
+use Prooph\EventStore\Pdo\Projection\PdoEventStoreProjection;
+use Prooph\EventStore\Pdo\Projection\ProjectionOptions;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\UserCreated;

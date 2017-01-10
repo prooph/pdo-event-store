@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace ProophTest\EventStore\PDO\Container;
+namespace ProophTest\EventStore\Pdo\Container;
 
 use Interop\Container\ContainerInterface;
 use PHPUnit\Framework\TestCase;
@@ -19,13 +19,13 @@ use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\Exception\ConfigurationException;
 use Prooph\EventStore\Metadata\MetadataEnricher;
-use Prooph\EventStore\PDO\Container\PostgresEventStoreFactory;
-use Prooph\EventStore\PDO\Exception\InvalidArgumentException;
-use Prooph\EventStore\PDO\PersistenceStrategy;
-use Prooph\EventStore\PDO\PostgresEventStore;
+use Prooph\EventStore\Pdo\Container\PostgresEventStoreFactory;
+use Prooph\EventStore\Pdo\Exception\InvalidArgumentException;
+use Prooph\EventStore\Pdo\PersistenceStrategy;
+use Prooph\EventStore\Pdo\PostgresEventStore;
 use Prooph\EventStore\Plugin\Plugin;
 use Prooph\EventStore\TransactionalActionEventEmitterEventStore;
-use ProophTest\EventStore\PDO\TestUtil;
+use ProophTest\EventStore\Pdo\TestUtil;
 
 final class PostgresEventStoreFactoryTest extends TestCase
 {

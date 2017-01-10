@@ -10,13 +10,13 @@
 
 declare(strict_types=1);
 
-namespace ProophTest\EventStore\PDO\Projection;
+namespace ProophTest\EventStore\Pdo\Projection;
 
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
-use Prooph\EventStore\PDO\MySqlEventStore;
-use Prooph\EventStore\PDO\PersistenceStrategy\MySqlSimpleStreamStrategy;
-use ProophTest\EventStore\PDO\TestUtil;
+use Prooph\EventStore\Pdo\MySqlEventStore;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSimpleStreamStrategy;
+use ProophTest\EventStore\Pdo\TestUtil;
 
 /**
  * @group pdo_mysql

@@ -10,14 +10,14 @@
 
 declare(strict_types=1);
 
-namespace Prooph\EventStore\PDO\Container;
+namespace Prooph\EventStore\Pdo\Container;
 
 use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\EventStore;
-use Prooph\EventStore\PDO\MySqlEventStore;
+use Prooph\EventStore\Pdo\MySqlEventStore;
 
 final class MySqlEventStoreFactory extends AbstractEventStoreFactory
 {

@@ -10,10 +10,10 @@
 
 declare(strict_types=1);
 
-namespace Prooph\EventStore\PDO\PersistenceStrategy;
+namespace Prooph\EventStore\Pdo\PersistenceStrategy;
 
 use Iterator;
-use Prooph\EventStore\PDO\PersistenceStrategy;
+use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\StreamName;
 
 final class MySqlSingleStreamStrategy implements PersistenceStrategy

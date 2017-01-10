@@ -10,11 +10,11 @@
 
 declare(strict_types=1);
 
-namespace Prooph\EventStore\PDO\PersistenceStrategy;
+namespace Prooph\EventStore\Pdo\PersistenceStrategy;
 
 use Iterator;
-use Prooph\EventStore\PDO\Exception;
-use Prooph\EventStore\PDO\PersistenceStrategy;
+use Prooph\EventStore\Pdo\Exception;
+use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\StreamName;
 
 final class MySqlAggregateStreamStrategy implements PersistenceStrategy

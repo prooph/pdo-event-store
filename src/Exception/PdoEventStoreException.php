@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace Prooph\EventStore\PDO\Exception;
+namespace Prooph\EventStore\Pdo\Exception;
 
 use Prooph\EventStore\Exception\EventStoreException;
 

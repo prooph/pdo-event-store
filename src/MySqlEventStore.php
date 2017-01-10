@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace Prooph\EventStore\PDO;
+namespace Prooph\EventStore\Pdo;
 
 use Iterator;
 use PDO;
@@ -21,11 +21,11 @@ use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Exception\StreamExistsAlready;
 use Prooph\EventStore\Exception\StreamNotFound;
 use Prooph\EventStore\Metadata\MetadataMatcher;
-use Prooph\EventStore\PDO\Exception\ExtensionNotLoaded;
-use Prooph\EventStore\PDO\Exception\RuntimeException;
-use Prooph\EventStore\PDO\Projection\PdoEventStoreProjectionFactory;
-use Prooph\EventStore\PDO\Projection\PdoEventStoreQueryFactory;
-use Prooph\EventStore\PDO\Projection\PdoEventStoreReadModelProjectionFactory;
+use Prooph\EventStore\Pdo\Exception\ExtensionNotLoaded;
+use Prooph\EventStore\Pdo\Exception\RuntimeException;
+use Prooph\EventStore\Pdo\Projection\PdoEventStoreProjectionFactory;
+use Prooph\EventStore\Pdo\Projection\PdoEventStoreQueryFactory;
+use Prooph\EventStore\Pdo\Projection\PdoEventStoreReadModelProjectionFactory;
 use Prooph\EventStore\Projection\Projection;
 use Prooph\EventStore\Projection\ProjectionFactory;
 use Prooph\EventStore\Projection\ProjectionOptions as BaseProjectionOptions;

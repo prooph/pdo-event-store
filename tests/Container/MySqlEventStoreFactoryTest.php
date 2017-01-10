@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace ProophTest\EventStore\PDO\Container;
+namespace ProophTest\EventStore\Pdo\Container;
 
 use Interop\Container\ContainerInterface;
 use PHPUnit\Framework\TestCase;
@@ -19,12 +19,12 @@ use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\Exception\ConfigurationException;
 use Prooph\EventStore\Metadata\MetadataEnricher;
-use Prooph\EventStore\PDO\Container\MySqlEventStoreFactory;
-use Prooph\EventStore\PDO\Exception\InvalidArgumentException;
-use Prooph\EventStore\PDO\MySqlEventStore;
-use Prooph\EventStore\PDO\PersistenceStrategy;
+use Prooph\EventStore\Pdo\Container\MySqlEventStoreFactory;
+use Prooph\EventStore\Pdo\Exception\InvalidArgumentException;
+use Prooph\EventStore\Pdo\MySqlEventStore;
+use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\Plugin\Plugin;
-use ProophTest\EventStore\PDO\TestUtil;
+use ProophTest\EventStore\Pdo\TestUtil;
 
 final class MySqlEventStoreFactoryTest extends TestCase
 {

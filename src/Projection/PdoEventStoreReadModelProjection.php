@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace Prooph\EventStore\PDO\Projection;
+namespace Prooph\EventStore\Pdo\Projection;
 
 use ArrayIterator;
 use CachingIterator;
@@ -23,8 +23,8 @@ use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Exception;
-use Prooph\EventStore\PDO\MySqlEventStore;
-use Prooph\EventStore\PDO\PostgresEventStore;
+use Prooph\EventStore\Pdo\MySqlEventStore;
+use Prooph\EventStore\Pdo\PostgresEventStore;
 use Prooph\EventStore\Projection\Projection;
 use Prooph\EventStore\Projection\ReadModel;
 use Prooph\EventStore\Projection\ReadModelProjection;

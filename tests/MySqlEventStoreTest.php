@@ -10,16 +10,16 @@
 
 declare(strict_types=1);
 
-namespace ProophTest\EventStore\PDO;
+namespace ProophTest\EventStore\Pdo;
 
 use PDO;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\Exception\ConcurrencyException;
-use Prooph\EventStore\PDO\Exception\RuntimeException;
-use Prooph\EventStore\PDO\MySqlEventStore;
-use Prooph\EventStore\PDO\PersistenceStrategy\MySqlAggregateStreamStrategy;
-use Prooph\EventStore\PDO\PersistenceStrategy\MySqlSingleStreamStrategy;
+use Prooph\EventStore\Pdo\Exception\RuntimeException;
+use Prooph\EventStore\Pdo\MySqlEventStore;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlAggregateStreamStrategy;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSingleStreamStrategy;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\TestDomainEvent;

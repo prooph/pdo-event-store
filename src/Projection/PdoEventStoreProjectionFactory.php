@@ -10,12 +10,12 @@
 
 declare(strict_types=1);
 
-namespace Prooph\EventStore\PDO\Projection;
+namespace Prooph\EventStore\Pdo\Projection;
 
 use PDO;
 use Prooph\EventStore\EventStore;
-use Prooph\EventStore\PDO\Exception;
-use Prooph\EventStore\PDO\Projection\ProjectionOptions as PDOProjectionOptions;
+use Prooph\EventStore\Pdo\Exception;
+use Prooph\EventStore\Pdo\Projection\ProjectionOptions as PDOProjectionOptions;
 use Prooph\EventStore\Projection\Projection;
 use Prooph\EventStore\Projection\ProjectionFactory;
 use Prooph\EventStore\Projection\ProjectionOptions;

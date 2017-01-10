@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace Prooph\EventStore\PDO\Projection;
+namespace Prooph\EventStore\Pdo\Projection;
 
 use PDO;
 use Prooph\EventStore\Exception\InvalidArgumentException;

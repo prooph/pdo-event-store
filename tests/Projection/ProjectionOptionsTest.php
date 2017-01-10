@@ -10,11 +10,11 @@
 
 declare(strict_types=1);
 
-namespace ProophTest\EventStore\PDO\Projection;
+namespace ProophTest\EventStore\Pdo\Projection;
 
 use PHPUnit\Framework\TestCase;
 use Prooph\EventStore\Exception\InvalidArgumentException;
-use Prooph\EventStore\PDO\Projection\ProjectionOptions;
+use Prooph\EventStore\Pdo\Projection\ProjectionOptions;
 
 class ProjectionOptionsTest extends TestCase
 {
