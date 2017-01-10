@@ -17,7 +17,6 @@ use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresSimpleStreamStrategy;
 use Prooph\EventStore\Pdo\PostgresEventStore;
-use ProophTest\EventStore\Pdo\Projection\PdoEventStoreQueryTestCase;
 use ProophTest\EventStore\Pdo\TestUtil;
 
 /**

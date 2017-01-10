@@ -16,7 +16,6 @@ use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\Pdo\MySqlEventStore;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSimpleStreamStrategy;
-use ProophTest\EventStore\Pdo\Projection\PdoEventStoreQueryTestCase;
 use ProophTest\EventStore\Pdo\TestUtil;
 
 /**
