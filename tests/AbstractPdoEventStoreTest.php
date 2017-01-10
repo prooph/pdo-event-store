@@ -175,8 +175,9 @@ abstract class AbstractPdoEventStoreTest extends TestCase
 
     /**
      * @test
+     * @dataProvider getMatchingMetadata
      */
-    public function it_loads_events_by_matching_metadata(): void
+    public function it_loads_events_by_matching_metadata(array $metadata): void
     {
         $stream = $this->getTestStream();
 
@@ -187,12 +188,17 @@ abstract class AbstractPdoEventStoreTest extends TestCase
             2
         );
 
-        $streamEventWithMetadata = $streamEventWithMetadata->withAddedMetadata('snapshot', true);
+        foreach ($metadata as $field => $value) {
+            $streamEventWithMetadata = $streamEventWithMetadata->withAddedMetadata($field, $value);
+        }
 
         $this->eventStore->appendTo($stream->streamName(), new ArrayIterator([$streamEventWithMetadata]));
 
         $metadataMatcher = new MetadataMatcher();
-        $metadataMatcher = $metadataMatcher->withMetadataMatch('snapshot', Operator::EQUALS(), true);
+
+        foreach ($metadata as $field => $value) {
+            $metadataMatcher = $metadataMatcher->withMetadataMatch($field, Operator::EQUALS(), $value);
+        }
 
         $stream = $this->eventStore->load($stream->streamName(), 1, null, $metadataMatcher);
 
@@ -202,13 +208,18 @@ abstract class AbstractPdoEventStoreTest extends TestCase
 
         $streamEvents->rewind();
 
-        $this->assertTrue($streamEvents->current()->metadata()['snapshot']);
+        $currentMetadata = $streamEvents->current()->metadata();
+
+        foreach ($metadata as $field => $value) {
+            $this->assertEquals($value, $currentMetadata[$field]);
+        }
     }
 
     /**
      * @test
+     * @dataProvider getMatchingMetadata
      */
-    public function it_loads_events_reverse_by_matching_metadata(): void
+    public function it_loads_events_reverse_by_matching_metadata(array $metadata): void
     {
         $stream = $this->getTestStream();
 
@@ -219,12 +230,17 @@ abstract class AbstractPdoEventStoreTest extends TestCase
             2
         );
 
-        $streamEventWithMetadata = $streamEventWithMetadata->withAddedMetadata('snapshot', true);
+        foreach ($metadata as $field => $value) {
+            $streamEventWithMetadata = $streamEventWithMetadata->withAddedMetadata($field, $value);
+        }
 
         $this->eventStore->appendTo($stream->streamName(), new ArrayIterator([$streamEventWithMetadata]));
 
         $metadataMatcher = new MetadataMatcher();
-        $metadataMatcher = $metadataMatcher->withMetadataMatch('snapshot', Operator::EQUALS(), true);
+
+        foreach ($metadata as $field => $value) {
+            $metadataMatcher = $metadataMatcher->withMetadataMatch($field, Operator::EQUALS(), $value);
+        }
 
         $stream = $this->eventStore->loadReverse($stream->streamName(), 2, null, $metadataMatcher);
 
@@ -234,7 +250,11 @@ abstract class AbstractPdoEventStoreTest extends TestCase
 
         $streamEvents->rewind();
 
-        $this->assertTrue($streamEvents->current()->metadata()['snapshot']);
+        $currentMetadata = $streamEvents->current()->metadata();
+
+        foreach ($metadata as $field => $value) {
+            $this->assertEquals($value, $currentMetadata[$field]);
+        }
     }
 
     /**
@@ -745,6 +765,16 @@ abstract class AbstractPdoEventStoreTest extends TestCase
         $this->connection->exec('DROP TABLE event_streams;');
 
         $this->eventStore->create($this->getTestStream());
+    }
+
+    public function getMatchingMetadata(): array
+    {
+        return [
+            [['snapshot' => true]],
+            [['some_id' => 123]],
+            [['fuu' => 'bar']],
+            [['snapshot' => true, 'some_id' => 123, 'fuu' => 'bar']],
+        ];
     }
 
     protected function getTestStream(): Stream
