@@ -26,6 +26,9 @@ use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\Plugin\Plugin;
 use ProophTest\EventStore\Pdo\TestUtil;
 
+/**
+ * @group pdo_mysql
+ */
 final class MySqlEventStoreFactoryTest extends TestCase
 {
     /**
