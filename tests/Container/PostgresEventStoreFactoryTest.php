@@ -27,6 +27,9 @@ use Prooph\EventStore\Plugin\Plugin;
 use Prooph\EventStore\TransactionalActionEventEmitterEventStore;
 use ProophTest\EventStore\PDO\TestUtil;
 
+/**
+ * @group pdo_pgsql
+ */
 final class PostgresEventStoreFactoryTest extends TestCase
 {
     /**
