@@ -158,16 +158,15 @@ EOT;
     public function hasStream(StreamName $streamName): bool
     {
         $sql = <<<EOT
-SELECT stream_name FROM $this->eventStreamsTable
+SELECT COUNT(1) FROM $this->eventStreamsTable
 WHERE real_stream_name = :streamName;
 EOT;
+
         $statement = $this->connection->prepare($sql);
 
         $statement->execute(['streamName' => $streamName->toString()]);
 
-        $stream = $statement->fetch(PDO::FETCH_OBJ);
-
-        return false !== $stream;
+        return 1 === $statement->fetchColumn();
     }
 
     public function create(Stream $stream): void
