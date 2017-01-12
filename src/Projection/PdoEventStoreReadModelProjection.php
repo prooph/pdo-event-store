@@ -372,13 +372,13 @@ EOT;
         $this->createProjection();
         $this->acquireLock();
 
+        if (! $this->readModel->isInitialized()) {
+            $this->readModel->init();
+        }
+
         try {
             do {
                 $this->load();
-
-                if (! $this->eventStore->hasStream(new StreamName($this->name))) {
-                    $this->eventStore->create(new Stream(new StreamName($this->name), new ArrayIterator()));
-                }
 
                 $singleHandler = null !== $this->handler;
 
