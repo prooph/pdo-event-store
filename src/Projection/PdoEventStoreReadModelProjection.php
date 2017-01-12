@@ -28,7 +28,6 @@ use Prooph\EventStore\Pdo\PostgresEventStore;
 use Prooph\EventStore\Projection\Projection;
 use Prooph\EventStore\Projection\ReadModel;
 use Prooph\EventStore\Projection\ReadModelProjection;
-use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 
 final class PdoEventStoreReadModelProjection implements ReadModelProjection
