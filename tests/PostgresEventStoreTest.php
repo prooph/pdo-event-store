@@ -1,8 +1,8 @@
 <?php
 /**
  * This file is part of the prooph/pdo-event-store.
- * (c) 2016-2016 prooph software GmbH <contact@prooph.de>
- * (c) 2016-2016 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
+ * (c) 2016-2017 prooph software GmbH <contact@prooph.de>
+ * (c) 2016-2017 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace ProophTest\EventStore\PDO;
+namespace ProophTest\EventStore\Pdo;
 
 use PDO;
 use Prooph\Common\Messaging\FQCNMessageFactory;
@@ -22,10 +22,10 @@ use Prooph\EventStore\Exception\TransactionAlreadyStarted;
 use Prooph\EventStore\Exception\TransactionNotStarted;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;
-use Prooph\EventStore\PDO\Exception\RuntimeException;
-use Prooph\EventStore\PDO\PersistenceStrategy\PostgresAggregateStreamStrategy;
-use Prooph\EventStore\PDO\PersistenceStrategy\PostgresSingleStreamStrategy;
-use Prooph\EventStore\PDO\PostgresEventStore;
+use Prooph\EventStore\Pdo\Exception\RuntimeException;
+use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresAggregateStreamStrategy;
+use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresSingleStreamStrategy;
+use Prooph\EventStore\Pdo\PostgresEventStore;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\TestDomainEvent;
@@ -36,7 +36,7 @@ use Ramsey\Uuid\Uuid;
 /**
  * @group pdo_pgsql
  */
-final class PostgresEventStoreTest extends AbstractPDOEventStoreTest
+final class PostgresEventStoreTest extends AbstractPdoEventStoreTest
 {
     /**
      * @var PostgresEventStore

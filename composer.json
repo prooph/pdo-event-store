@@ -39,12 +39,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Prooph\\EventStore\\PDO\\": "src/"
+            "Prooph\\EventStore\\Pdo\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "ProophTest\\EventStore\\PDO\\": "tests/",
+            "ProophTest\\EventStore\\Pdo\\": "tests/",
             "ProophTest\\EventStore\\": "vendor/prooph/event-store/tests/"
         }
     },

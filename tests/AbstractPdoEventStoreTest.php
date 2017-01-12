@@ -1,8 +1,8 @@
 <?php
 /**
  * This file is part of the prooph/pdo-event-store.
- * (c) 2016-2016 prooph software GmbH <contact@prooph.de>
- * (c) 2016-2016 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
+ * (c) 2016-2017 prooph software GmbH <contact@prooph.de>
+ * (c) 2016-2017 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace ProophTest\EventStore\PDO;
+namespace ProophTest\EventStore\Pdo;
 
 use ArrayIterator;
 use PDO;
@@ -21,8 +21,8 @@ use Prooph\EventStore\Exception\StreamExistsAlready;
 use Prooph\EventStore\Exception\StreamNotFound;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;
-use Prooph\EventStore\PDO\Exception\InvalidArgumentException;
-use Prooph\EventStore\PDO\Exception\RuntimeException;
+use Prooph\EventStore\Pdo\Exception\InvalidArgumentException;
+use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Projection\ProjectionOptions;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
@@ -31,7 +31,7 @@ use ProophTest\EventStore\Mock\TestDomainEvent;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
 
-abstract class AbstractPDOEventStoreTest extends TestCase
+abstract class AbstractPdoEventStoreTest extends TestCase
 {
     /**
      * @var EventStore
@@ -175,8 +175,9 @@ abstract class AbstractPDOEventStoreTest extends TestCase
 
     /**
      * @test
+     * @dataProvider getMatchingMetadata
      */
-    public function it_loads_events_by_matching_metadata(): void
+    public function it_loads_events_by_matching_metadata(array $metadata): void
     {
         $stream = $this->getTestStream();
 
@@ -187,12 +188,17 @@ abstract class AbstractPDOEventStoreTest extends TestCase
             2
         );
 
-        $streamEventWithMetadata = $streamEventWithMetadata->withAddedMetadata('snapshot', true);
+        foreach ($metadata as $field => $value) {
+            $streamEventWithMetadata = $streamEventWithMetadata->withAddedMetadata($field, $value);
+        }
 
         $this->eventStore->appendTo($stream->streamName(), new ArrayIterator([$streamEventWithMetadata]));
 
         $metadataMatcher = new MetadataMatcher();
-        $metadataMatcher = $metadataMatcher->withMetadataMatch('snapshot', Operator::EQUALS(), true);
+
+        foreach ($metadata as $field => $value) {
+            $metadataMatcher = $metadataMatcher->withMetadataMatch($field, Operator::EQUALS(), $value);
+        }
 
         $stream = $this->eventStore->load($stream->streamName(), 1, null, $metadataMatcher);
 
@@ -202,13 +208,18 @@ abstract class AbstractPDOEventStoreTest extends TestCase
 
         $streamEvents->rewind();
 
-        $this->assertTrue($streamEvents->current()->metadata()['snapshot']);
+        $currentMetadata = $streamEvents->current()->metadata();
+
+        foreach ($metadata as $field => $value) {
+            $this->assertEquals($value, $currentMetadata[$field]);
+        }
     }
 
     /**
      * @test
+     * @dataProvider getMatchingMetadata
      */
-    public function it_loads_events_reverse_by_matching_metadata(): void
+    public function it_loads_events_reverse_by_matching_metadata(array $metadata): void
     {
         $stream = $this->getTestStream();
 
@@ -219,12 +230,17 @@ abstract class AbstractPDOEventStoreTest extends TestCase
             2
         );
 
-        $streamEventWithMetadata = $streamEventWithMetadata->withAddedMetadata('snapshot', true);
+        foreach ($metadata as $field => $value) {
+            $streamEventWithMetadata = $streamEventWithMetadata->withAddedMetadata($field, $value);
+        }
 
         $this->eventStore->appendTo($stream->streamName(), new ArrayIterator([$streamEventWithMetadata]));
 
         $metadataMatcher = new MetadataMatcher();
-        $metadataMatcher = $metadataMatcher->withMetadataMatch('snapshot', Operator::EQUALS(), true);
+
+        foreach ($metadata as $field => $value) {
+            $metadataMatcher = $metadataMatcher->withMetadataMatch($field, Operator::EQUALS(), $value);
+        }
 
         $stream = $this->eventStore->loadReverse($stream->streamName(), 2, null, $metadataMatcher);
 
@@ -234,7 +250,11 @@ abstract class AbstractPDOEventStoreTest extends TestCase
 
         $streamEvents->rewind();
 
-        $this->assertTrue($streamEvents->current()->metadata()['snapshot']);
+        $currentMetadata = $streamEvents->current()->metadata();
+
+        foreach ($metadata as $field => $value) {
+            $this->assertEquals($value, $currentMetadata[$field]);
+        }
     }
 
     /**
@@ -745,6 +765,16 @@ abstract class AbstractPDOEventStoreTest extends TestCase
         $this->connection->exec('DROP TABLE event_streams;');
 
         $this->eventStore->create($this->getTestStream());
+    }
+
+    public function getMatchingMetadata(): array
+    {
+        return [
+            [['snapshot' => true]],
+            [['some_id' => 123]],
+            [['fuu' => 'bar']],
+            [['snapshot' => true, 'some_id' => 123, 'fuu' => 'bar']],
+        ];
     }
 
     protected function getTestStream(): Stream

@@ -1,8 +1,8 @@
 <?php
 /**
  * This file is part of the prooph/pdo-event-store.
- * (c) 2016-2016 prooph software GmbH <contact@prooph.de>
- * (c) 2016-2016 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
+ * (c) 2016-2017 prooph software GmbH <contact@prooph.de>
+ * (c) 2016-2017 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace ProophTest\EventStore\PDO\Container;
+namespace ProophTest\EventStore\Pdo\Container;
 
 use Interop\Container\ContainerInterface;
 use PHPUnit\Framework\TestCase;
@@ -19,14 +19,17 @@ use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\Exception\ConfigurationException;
 use Prooph\EventStore\Metadata\MetadataEnricher;
-use Prooph\EventStore\PDO\Container\PostgresEventStoreFactory;
-use Prooph\EventStore\PDO\Exception\InvalidArgumentException;
-use Prooph\EventStore\PDO\PersistenceStrategy;
-use Prooph\EventStore\PDO\PostgresEventStore;
+use Prooph\EventStore\Pdo\Container\PostgresEventStoreFactory;
+use Prooph\EventStore\Pdo\Exception\InvalidArgumentException;
+use Prooph\EventStore\Pdo\PersistenceStrategy;
+use Prooph\EventStore\Pdo\PostgresEventStore;
 use Prooph\EventStore\Plugin\Plugin;
 use Prooph\EventStore\TransactionalActionEventEmitterEventStore;
-use ProophTest\EventStore\PDO\TestUtil;
+use ProophTest\EventStore\Pdo\TestUtil;
 
+/**
+ * @group pdo_pgsql
+ */
 final class PostgresEventStoreFactoryTest extends TestCase
 {
     /**
@@ -122,7 +125,7 @@ final class PostgresEventStoreFactoryTest extends TestCase
         $container->get(PersistenceStrategy\PostgresAggregateStreamStrategy::class)->willReturn(new PersistenceStrategy\PostgresAggregateStreamStrategy())->shouldBeCalled();
 
         $featureMock = $this->getMockForAbstractClass(Plugin::class);
-        $featureMock->expects($this->once())->method('setUp');
+        $featureMock->expects($this->once())->method('attachToEventStore');
 
         $container->get('plugin')->willReturn($featureMock);
 

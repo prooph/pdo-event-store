@@ -1,8 +1,8 @@
 <?php
 /**
  * This file is part of the prooph/pdo-event-store.
- * (c) 2016-2016 prooph software GmbH <contact@prooph.de>
- * (c) 2016-2016 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
+ * (c) 2016-2017 prooph software GmbH <contact@prooph.de>
+ * (c) 2016-2017 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -10,16 +10,16 @@
 
 declare(strict_types=1);
 
-namespace ProophTest\EventStore\PDO;
+namespace ProophTest\EventStore\Pdo;
 
 use PDO;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\Exception\ConcurrencyException;
-use Prooph\EventStore\PDO\Exception\RuntimeException;
-use Prooph\EventStore\PDO\MySQLEventStore;
-use Prooph\EventStore\PDO\PersistenceStrategy\MySQLAggregateStreamStrategy;
-use Prooph\EventStore\PDO\PersistenceStrategy\MySQLSingleStreamStrategy;
+use Prooph\EventStore\Pdo\Exception\RuntimeException;
+use Prooph\EventStore\Pdo\MySqlEventStore;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlAggregateStreamStrategy;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSingleStreamStrategy;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\TestDomainEvent;
@@ -30,10 +30,10 @@ use Ramsey\Uuid\Uuid;
 /**
  * @group pdo_mysql
  */
-final class MySQLEventStoreTest extends AbstractPDOEventStoreTest
+final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
 {
     /**
-     * @var MySQLEventStore
+     * @var MySqlEventStore
      */
     protected $eventStore;
 
@@ -49,13 +49,13 @@ final class MySQLEventStoreTest extends AbstractPDOEventStoreTest
         $this->eventStore = $this->createEventStore($this->connection);
     }
 
-    protected function createEventStore(PDO $connection): MySQLEventStore
+    protected function createEventStore(PDO $connection): MySqlEventStore
     {
-        return new MySQLEventStore(
+        return new MySqlEventStore(
             new FQCNMessageFactory(),
             new NoOpMessageConverter(),
             $connection,
-            new MySQLAggregateStreamStrategy()
+            new MySqlAggregateStreamStrategy()
         );
     }
 
@@ -68,7 +68,7 @@ final class MySQLEventStoreTest extends AbstractPDOEventStoreTest
         $this->expectExceptionMessage('Error during createSchemaFor');
 
         $streamName = new StreamName('foo');
-        $strategy = new MySQLAggregateStreamStrategy();
+        $strategy = new MySqlAggregateStreamStrategy();
         $schema = $strategy->createSchema($strategy->generateTableName($streamName));
 
         foreach ($schema as $command) {
@@ -120,11 +120,11 @@ final class MySQLEventStoreTest extends AbstractPDOEventStoreTest
     {
         $this->expectException(ConcurrencyException::class);
 
-        $this->eventStore = new MySQLEventStore(
+        $this->eventStore = new MySqlEventStore(
             new FQCNMessageFactory(),
             new NoOpMessageConverter(),
             $this->connection,
-            new MySQLSingleStreamStrategy()
+            new MySqlSingleStreamStrategy()
         );
 
         $streamEvent = UserCreated::with(

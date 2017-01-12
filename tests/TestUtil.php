@@ -1,8 +1,8 @@
 <?php
 /**
  * This file is part of the prooph/pdo-event-store.
- * (c) 2016-2016 prooph software GmbH <contact@prooph.de>
- * (c) 2016-2016 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
+ * (c) 2016-2017 prooph software GmbH <contact@prooph.de>
+ * (c) 2016-2017 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace ProophTest\EventStore\PDO;
+namespace ProophTest\EventStore\Pdo;
 
 use PDO;
 
@@ -29,18 +29,31 @@ abstract class TestUtil
         'pdo_pgsql' => ' ',
     ];
 
+    /**
+     * @var PDO
+     */
+    private static $connection;
+
     public static function getConnection(): PDO
     {
-        $connectionParams = self::getConnectionParams();
-        $separator = self::$driverSchemeSeparators[$connectionParams['driver']];
-        $dsn = self::$driverSchemeAliases[$connectionParams['driver']] . ':';
-        $dsn .= 'host=' . $connectionParams['host'] . $separator;
-        $dsn .= 'port=' . $connectionParams['port'] . $separator;
-        $dsn .= 'dbname=' . $connectionParams['dbname'] . $separator;
-        $dsn = rtrim($dsn);
-        $connection = new PDO($dsn, $connectionParams['user'], $connectionParams['password']);
+        if (! isset(self::$connection)) {
+            $connectionParams = self::getConnectionParams();
+            $separator = self::$driverSchemeSeparators[$connectionParams['driver']];
+            $dsn = self::$driverSchemeAliases[$connectionParams['driver']] . ':';
+            $dsn .= 'host=' . $connectionParams['host'] . $separator;
+            $dsn .= 'port=' . $connectionParams['port'] . $separator;
+            $dsn .= 'dbname=' . $connectionParams['dbname'] . $separator;
+            $dsn = rtrim($dsn);
+            self::$connection = new PDO($dsn, $connectionParams['user'], $connectionParams['password']);
+        }
 
-        return $connection;
+        try {
+            self::$connection->rollBack();
+        } catch (\PDOException $e) {
+            // ignore
+        }
+
+        return self::$connection;
     }
 
     public static function getDatabaseName(): string

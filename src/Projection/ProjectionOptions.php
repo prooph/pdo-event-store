@@ -1,8 +1,8 @@
 <?php
 /**
  * This file is part of the prooph/pdo-event-store.
- * (c) 2016-2016 prooph software GmbH <contact@prooph.de>
- * (c) 2016-2016 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
+ * (c) 2016-2017 prooph software GmbH <contact@prooph.de>
+ * (c) 2016-2017 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -10,8 +10,9 @@
 
 declare(strict_types=1);
 
-namespace Prooph\EventStore\PDO\Projection;
+namespace Prooph\EventStore\Pdo\Projection;
 
+use PDO;
 use Prooph\EventStore\Exception\InvalidArgumentException;
 use Prooph\EventStore\Projection\ProjectionOptions as BaseProjectionOptions;
 
@@ -31,9 +32,10 @@ class ProjectionOptions extends BaseProjectionOptions
         string $projectionsTable = 'projections',
         int $cacheSize = 1000,
         int $persistBlockSize = 1000,
+        int $sleep = 250000,
         int $lockTimeoutMs = 1000
     ) {
-        parent::__construct($cacheSize, $persistBlockSize);
+        parent::__construct($cacheSize, $persistBlockSize, $sleep);
 
         $this->projectionsTable = $projectionsTable;
         $this->lockTimeoutMs = $lockTimeoutMs;
@@ -47,6 +49,7 @@ class ProjectionOptions extends BaseProjectionOptions
             $data['projections_table'],
             $data['cache_size'],
             $data['persist_block_size'],
+            $data['sleep'],
             $data['lock_timeout_ms']
         );
     }

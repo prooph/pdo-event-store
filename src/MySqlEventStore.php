@@ -1,8 +1,8 @@
 <?php
 /**
  * This file is part of the prooph/pdo-event-store.
- * (c) 2016-2016 prooph software GmbH <contact@prooph.de>
- * (c) 2016-2016 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
+ * (c) 2016-2017 prooph software GmbH <contact@prooph.de>
+ * (c) 2016-2017 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace Prooph\EventStore\PDO;
+namespace Prooph\EventStore\Pdo;
 
 use Iterator;
 use PDO;
@@ -21,22 +21,23 @@ use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Exception\StreamExistsAlready;
 use Prooph\EventStore\Exception\StreamNotFound;
 use Prooph\EventStore\Metadata\MetadataMatcher;
-use Prooph\EventStore\PDO\Exception\ExtensionNotLoaded;
-use Prooph\EventStore\PDO\Exception\InvalidArgumentException;
-use Prooph\EventStore\PDO\Exception\RuntimeException;
-use Prooph\EventStore\PDO\Projection\MySQLEventStoreProjection;
-use Prooph\EventStore\PDO\Projection\MySQLEventStoreQuery;
-use Prooph\EventStore\PDO\Projection\MySQLEventStoreReadModelProjection;
-use Prooph\EventStore\PDO\Projection\ProjectionOptions;
+use Prooph\EventStore\Pdo\Exception\ExtensionNotLoaded;
+use Prooph\EventStore\Pdo\Exception\RuntimeException;
+use Prooph\EventStore\Pdo\Projection\PdoEventStoreProjectionFactory;
+use Prooph\EventStore\Pdo\Projection\PdoEventStoreQueryFactory;
+use Prooph\EventStore\Pdo\Projection\PdoEventStoreReadModelProjectionFactory;
 use Prooph\EventStore\Projection\Projection;
+use Prooph\EventStore\Projection\ProjectionFactory;
 use Prooph\EventStore\Projection\ProjectionOptions as BaseProjectionOptions;
 use Prooph\EventStore\Projection\Query;
+use Prooph\EventStore\Projection\QueryFactory;
 use Prooph\EventStore\Projection\ReadModel;
 use Prooph\EventStore\Projection\ReadModelProjection;
+use Prooph\EventStore\Projection\ReadModelProjectionFactory;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 
-final class MySQLEventStore implements EventStore
+final class MySqlEventStore implements EventStore
 {
     /**
      * @var MessageFactory
@@ -72,6 +73,27 @@ final class MySQLEventStore implements EventStore
      * @var bool
      */
     private $duringCreate = false;
+
+    /**
+     * Will be lazy initialized if needed
+     *
+     * @var QueryFactory
+     */
+    private $defaultQueryFactory;
+
+    /**
+     * Will be lazy initialized if needed
+     *
+     * @var ProjectionFactory
+     */
+    private $defaultProjectionFactory;
+
+    /**
+     * Will be lazy initialized if needed
+     *
+     * @var ReadModelProjectionFactory
+     */
+    private $defaultReadModelProjectionFactory;
 
     /**
      * @throws ExtensionNotLoaded
@@ -139,16 +161,15 @@ EOT;
     public function hasStream(StreamName $streamName): bool
     {
         $sql = <<<EOT
-SELECT stream_name FROM $this->eventStreamsTable
+SELECT COUNT(1) FROM $this->eventStreamsTable
 WHERE real_stream_name = :streamName;
 EOT;
+
         $statement = $this->connection->prepare($sql);
 
         $statement->execute(['streamName' => $streamName->toString()]);
 
-        $stream = $statement->fetch(PDO::FETCH_OBJ);
-
-        return false !== $stream;
+        return '1' === $statement->fetchColumn();
     }
 
     public function create(Stream $stream): void
@@ -287,7 +308,7 @@ EOT;
 
         return new Stream(
             $streamName,
-            new PDOStreamIterator(
+            new PdoStreamIterator(
                 $this->connection,
                 $statement,
                 $this->messageFactory,
@@ -360,7 +381,7 @@ EOT;
 
         return new Stream(
             $streamName,
-            new PDOStreamIterator(
+            new PdoStreamIterator(
                 $this->connection,
                 $statement,
                 $this->messageFactory,
@@ -403,57 +424,74 @@ EOT;
         }
     }
 
-    public function createQuery(): Query
+    public function createQuery(QueryFactory $factory = null): Query
     {
-        return new MySQLEventStoreQuery($this, $this->connection, $this->eventStreamsTable);
+        if (null === $factory) {
+            $factory = $this->getDefaultQueryFactory();
+        }
+
+        return $factory($this);
     }
 
-    public function createProjection(string $name, BaseProjectionOptions $options = null): Projection
-    {
-        if (null === $options) {
-            $options = new ProjectionOptions();
+    public function createProjection(
+        string $name,
+        BaseProjectionOptions $options = null,
+        ProjectionFactory $factory = null
+    ): Projection {
+        if (null === $factory) {
+            $factory = $this->getDefaultProjectionFactory();
         }
 
-        if (! $options instanceof ProjectionOptions) {
-            throw new InvalidArgumentException('options must be an instance of ' . ProjectionOptions::class);
-        }
-
-        return new MySQLEventStoreProjection(
-            $this,
-            $this->connection,
-            $name,
-            $this->eventStreamsTable,
-            $options->projectionsTable(),
-            $options->lockTimeoutMs(),
-            $options->cacheSize(),
-            $options->persistBlockSize()
-        );
+        return $factory($this, $name, $options);
     }
 
     public function createReadModelProjection(
         string $name,
         ReadModel $readModel,
-        BaseProjectionOptions $options = null
+        BaseProjectionOptions $options = null,
+        ReadModelProjectionFactory $factory = null
     ): ReadModelProjection {
-        if (null === $options) {
-            $options = new ProjectionOptions();
+        if (null === $factory) {
+            $factory = $this->getDefaultReadModelProjectionFactory();
         }
 
-        if (! $options instanceof ProjectionOptions) {
-            throw new InvalidArgumentException('options must be an instance of ' . ProjectionOptions::class);
+        return $factory($this, $name, $readModel, $options);
+    }
+
+    public function getDefaultQueryFactory(): QueryFactory
+    {
+        if (null === $this->defaultQueryFactory) {
+            $this->defaultQueryFactory = new PdoEventStoreQueryFactory(
+                $this->connection,
+                $this->eventStreamsTable
+            );
         }
 
-        return new MySQLEventStoreReadModelProjection(
-            $this,
-            $this->connection,
-            $name,
-            $readModel,
-            $this->eventStreamsTable,
-            $options->projectionsTable(),
-            $options->lockTimeoutMs(),
-            $options->cacheSize(),
-            $options->persistBlockSize()
-        );
+        return $this->defaultQueryFactory;
+    }
+
+    public function getDefaultProjectionFactory(): ProjectionFactory
+    {
+        if (null === $this->defaultProjectionFactory) {
+            $this->defaultProjectionFactory = new PdoEventStoreProjectionFactory(
+                $this->connection,
+                $this->eventStreamsTable
+            );
+        }
+
+        return $this->defaultProjectionFactory;
+    }
+
+    public function getDefaultReadModelProjectionFactory(): ReadModelProjectionFactory
+    {
+        if (null === $this->defaultReadModelProjectionFactory) {
+            $this->defaultReadModelProjectionFactory = new PdoEventStoreReadModelProjectionFactory(
+                $this->connection,
+                $this->eventStreamsTable
+            );
+        }
+
+        return $this->defaultReadModelProjectionFactory;
     }
 
     private function addStreamToStreamsTable(Stream $stream): void

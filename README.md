@@ -12,7 +12,7 @@ Requirements
 - PHP >= 7.1
 - PDO_MySQL Extension or PDO_PGSQL Extension
 
-For MySQL you need server version >= 5.7.8.
+For MySQL you need server version >= 5.7.9.
 For Postgres you need server version >= 9.4.
 
 Setup

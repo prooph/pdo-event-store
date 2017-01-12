@@ -1,8 +1,8 @@
 <?php
 /**
  * This file is part of the prooph/pdo-event-store.
- * (c) 2016-2016 prooph software GmbH <contact@prooph.de>
- * (c) 2016-2016 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
+ * (c) 2016-2017 prooph software GmbH <contact@prooph.de>
+ * (c) 2016-2017 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace Prooph\EventStore\PDO\Container;
+namespace Prooph\EventStore\Pdo\Container;
 
 use Interop\Config\ConfigurationTrait;
 use Interop\Config\ProvidesDefaultOptions;
@@ -25,7 +25,7 @@ use Prooph\EventStore\Exception\ConfigurationException;
 use Prooph\EventStore\Metadata\MetadataEnricher;
 use Prooph\EventStore\Metadata\MetadataEnricherAggregate;
 use Prooph\EventStore\Metadata\MetadataEnricherPlugin;
-use Prooph\EventStore\PDO\Exception\InvalidArgumentException;
+use Prooph\EventStore\Pdo\Exception\InvalidArgumentException;
 use Prooph\EventStore\Plugin\Plugin;
 
 abstract class AbstractEventStoreFactory implements
@@ -63,7 +63,7 @@ abstract class AbstractEventStoreFactory implements
      * <code>
      * <?php
      * return [
-     *     MySQLEventStore::class => [MySQLEventStoreFactory::class, 'service_name'],
+     *     MySqlEventStore::class => [MySqlEventStoreFactory::class, 'service_name'],
      *     PostgresEventStore::class => [PostgresEventStoreFactory::class, 'service_name'],
      * ];
      * </code>
@@ -132,7 +132,7 @@ abstract class AbstractEventStoreFactory implements
                 ));
             }
 
-            $plugin->setUp($wrapper);
+            $plugin->attachToEventStore($wrapper);
         }
 
         $metadataEnrichers = [];
@@ -155,7 +155,7 @@ abstract class AbstractEventStoreFactory implements
                 new MetadataEnricherAggregate($metadataEnrichers)
             );
 
-            $plugin->setUp($wrapper);
+            $plugin->attachToEventStore($wrapper);
         }
 
         return $wrapper;
