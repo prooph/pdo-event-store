@@ -170,7 +170,7 @@ EOT;
         $where = 'WHERE ';
         $params = [];
         foreach ($it as $name) {
-            $where .= "real_stream_name LIKE ?";
+            $where .= 'real_stream_name LIKE ?';
             if ($it->hasNext()) {
                 $where .= ' OR ';
             }
