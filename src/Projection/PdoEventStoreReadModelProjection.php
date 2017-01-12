@@ -200,10 +200,10 @@ final class PdoEventStoreReadModelProjection implements ReadModelProjection
         }
 
         $sql = <<<EOT
-SELECT real_stream_name FROM $this->eventStreamsTable WHERE real_stream_name LIKE '$name-%';
+SELECT real_stream_name FROM $this->eventStreamsTable WHERE real_stream_name LIKE ?;
 EOT;
         $statement = $this->connection->prepare($sql);
-        $statement->execute();
+        $statement->execute([$name . '-%']);
 
         $this->streamPositions = [];
 
@@ -223,18 +223,20 @@ EOT;
         $it = new CachingIterator(new ArrayIterator($names), CachingIterator::FULL_CACHE);
 
         $where = 'WHERE ';
+        $params = [];
         foreach ($it as $name) {
-            $where .= "real_stream_name LIKE '$name-%'";
+            $where .= "real_stream_name LIKE ?";
             if ($it->hasNext()) {
                 $where .= ' OR ';
             }
+            $params[] = $name . '-%';
         }
 
         $sql = <<<EOT
 SELECT real_stream_name FROM $this->eventStreamsTable $where;
 EOT;
         $statement = $this->connection->prepare($sql);
-        $statement->execute();
+        $statement->execute($params);
 
         $this->streamPositions = [];
 
