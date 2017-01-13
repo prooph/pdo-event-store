@@ -39,4 +39,21 @@ class MySqlEventStoreReadModelProjectionTest extends PdoEventStoreReadModelProje
             new MySqlSimpleStreamStrategy()
         );
     }
+
+    /**
+     * @test
+     */
+    public function it_calls_reset_projection_also_if_init_callback_returns_state()
+    {
+        $readModel = $this->prophesize(ReadModel::class);
+        $readModel->reset()->shouldBeCalled();
+
+        $readModelProjection = $this->eventStore->createReadModelProjection('test-projection', $readModel->reveal());
+
+        $readModelProjection->init(function () {
+            return ['state' => 'some value'];
+        });
+
+        $readModelProjection->reset();
+    }
 }
