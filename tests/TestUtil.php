@@ -62,7 +62,7 @@ abstract class TestUtil
             throw new \RuntimeException('No connection params given');
         }
 
-        return $GLOBALS['db_name'];
+        return getenv('DB_NAME');
     }
 
     public static function getDatabaseVendor(): string
@@ -71,7 +71,7 @@ abstract class TestUtil
             throw new \RuntimeException('No connection params given');
         }
 
-        return $GLOBALS['db_type'];
+        return getenv('DB_TYPE');
     }
 
     public static function getConnectionParams(): array
@@ -101,25 +101,27 @@ abstract class TestUtil
 
     private static function hasRequiredConnectionParams(): bool
     {
+        $env = getenv();
+
         return isset(
-            $GLOBALS['db_type'],
-            $GLOBALS['db_username'],
-            $GLOBALS['db_password'],
-            $GLOBALS['db_host'],
-            $GLOBALS['db_name'],
-            $GLOBALS['db_port']
+            $env['DB_TYPE'],
+            $env['DB_USERNAME'],
+            $env['DB_PASSWORD'],
+            $env['DB_HOST'],
+            $env['DB_NAME'],
+            $env['DB_PORT']
         );
     }
 
     private static function getSpecifiedConnectionParams(): array
     {
         return [
-            'driver' => $GLOBALS['db_type'],
-            'user' => $GLOBALS['db_username'],
-            'password' => $GLOBALS['db_password'],
-            'host' => $GLOBALS['db_host'],
-            'dbname' => $GLOBALS['db_name'],
-            'port' => $GLOBALS['db_port'],
+            'driver' => getenv('DB_TYPE'),
+            'user' => getenv('DB_USERNAME'),
+            'password' => getenv('DB_PASSWORD'),
+            'host' => getenv('DB_HOST'),
+            'dbname' => getenv('DB_NAME'),
+            'port' => getenv('DB_PORT'),
         ];
     }
 }
