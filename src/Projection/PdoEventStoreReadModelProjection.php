@@ -312,6 +312,8 @@ EOT;
 
         $callback = $this->initCallback;
 
+        $this->resetProjection();
+
         if (is_callable($callback)) {
             $result = $callback();
 
@@ -323,8 +325,6 @@ EOT;
         }
 
         $this->state = [];
-
-        $this->resetProjection();
     }
 
     public function stop(): void
