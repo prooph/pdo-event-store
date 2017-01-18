@@ -283,7 +283,7 @@ EOT;
             $values[$parameter] = $value;
         }
 
-        $where[] = "`no` >= :fromNumber";
+        $where[] = '`no` >= :fromNumber';
 
         $whereCondition = implode(' AND ', $where);
         $limit = min($count, $this->loadBatchSize);
@@ -358,7 +358,7 @@ EOT;
             $values[$parameter] = $value;
         }
 
-        $where[] = "`no` <= :fromNumber";
+        $where[] = '`no` <= :fromNumber';
 
         $whereCondition = implode(' AND ', $where);
         $limit = min($count, $this->loadBatchSize);
