@@ -1,5 +1,5 @@
 CREATE TABLE projections (
-  no SERIAL,
+  no BIGSERIAL,
   name VARCHAR(150) NOT NULL,
   position JSONB,
   state JSONB,

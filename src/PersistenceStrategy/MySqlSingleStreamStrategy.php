@@ -26,15 +26,15 @@ final class MySqlSingleStreamStrategy implements PersistenceStrategy
     {
         $statement = <<<EOT
 CREATE TABLE `$tableName` (
-    `no` INT(11) NOT NULL AUTO_INCREMENT,
+    `no` BIGINT(20) NOT NULL AUTO_INCREMENT,
     `event_id` CHAR(36) COLLATE utf8_bin NOT NULL,
     `event_name` VARCHAR(100) COLLATE utf8_bin NOT NULL,
     `payload` JSON NOT NULL,
     `metadata` JSON NOT NULL,
     `created_at` DATETIME(6) NOT NULL,
-    `version` INT(11) GENERATED ALWAYS AS (JSON_EXTRACT(metadata, '$._aggregate_version')) STORED NOT NULL,
-    `aggregate_id` char(36) CHARACTER SET utf8 COLLATE utf8_bin GENERATED ALWAYS AS (JSON_UNQUOTE(JSON_EXTRACT(metadata, '$._aggregate_id'))) STORED NOT NULL,
-    `aggregate_type` varchar(150) GENERATED ALWAYS AS (JSON_UNQUOTE(JSON_EXTRACT(metadata, '$._aggregate_type'))) STORED NOT NULL,
+    `version` INT(11) UNSIGNED GENERATED ALWAYS AS (JSON_EXTRACT(metadata, '$._aggregate_version')) STORED NOT NULL,
+    `aggregate_id` CHAR(36) CHARACTER SET utf8 COLLATE utf8_bin GENERATED ALWAYS AS (JSON_UNQUOTE(JSON_EXTRACT(metadata, '$._aggregate_id'))) STORED NOT NULL,
+    `aggregate_type` VARCHAR(150) GENERATED ALWAYS AS (JSON_UNQUOTE(JSON_EXTRACT(metadata, '$._aggregate_type'))) STORED NOT NULL,
     PRIMARY KEY (`no`),
     UNIQUE KEY `ix_event_id` (`event_id`),
     UNIQUE KEY `ix_unique_event` (`version`, `aggregate_id`, `aggregate_type`)

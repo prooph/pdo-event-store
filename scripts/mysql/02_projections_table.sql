@@ -1,5 +1,5 @@
 CREATE TABLE `projections` (
-  `no` INT(11) NOT NULL AUTO_INCREMENT,
+  `no` BIGINT(20) NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(150) NOT NULL,
   `position` JSON,
   `state` JSON,
