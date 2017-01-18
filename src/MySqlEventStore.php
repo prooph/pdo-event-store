@@ -265,40 +265,44 @@ EOT;
 
         $tableName = $this->persistenceStrategy->generateTableName($streamName);
 
-        $sql = [
-            'from' => "SELECT * FROM $tableName",
-            'orderBy' => 'ORDER BY no ASC',
-        ];
+        $where = [];
+        $values = [];
 
-        foreach ($metadataMatcher->data() as $match) {
+        foreach ($metadataMatcher->data() as $key => $match) {
             $field = $match['field'];
             $operator = $match['operator']->getValue();
             $value = $match['value'];
+            $parameter = ':metadata_'.$key;
 
             if (is_bool($value)) {
-                $value = var_export($value, true);
-            } elseif (is_string($value)) {
-                $value = $this->connection->quote($value);
+                $where[] = "metadata->\"$.$field\" $operator ".var_export($value, true);
+                continue;
             }
 
-            $sql['where'][] = "metadata->\"$.$field\" $operator $value";
+            $where[] = "metadata->\"$.$field\" $operator $parameter";
+            $values[$parameter] = $value;
         }
 
-        $limit = $count < $this->loadBatchSize
-            ? $count
-            : $this->loadBatchSize;
+        $where[] = '`no` >= :fromNumber';
 
-        $query = $sql['from'] . " WHERE no >= $fromNumber";
+        $whereCondition = implode(' AND ', $where);
+        $limit = min($count, $this->loadBatchSize);
 
-        if (isset($sql['where'])) {
-            $query .= ' AND ';
-            $query .= implode(' AND ', $sql['where']);
-        }
-
-        $query .= ' ' . $sql['orderBy'];
-        $query .= " LIMIT $limit;";
+        $query = <<<EOT
+SELECT * FROM $tableName
+WHERE $whereCondition
+ORDER BY `no` ASC
+LIMIT :limit;
+EOT;
 
         $statement = $this->connection->prepare($query);
+        $statement->bindValue(':fromNumber', $fromNumber, PDO::PARAM_INT);
+        $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
+
+        foreach ($values as $parameter => $value) {
+            $statement->bindValue($parameter, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+        }
+
         $statement->setFetchMode(PDO::FETCH_OBJ);
         $statement->execute();
 
@@ -312,7 +316,6 @@ EOT;
                 $this->connection,
                 $statement,
                 $this->messageFactory,
-                $sql,
                 $this->loadBatchSize,
                 $fromNumber,
                 $count,
@@ -337,40 +340,43 @@ EOT;
 
         $tableName = $this->persistenceStrategy->generateTableName($streamName);
 
-        $sql = [
-            'from' => "SELECT * FROM $tableName",
-            'orderBy' => 'ORDER BY no DESC',
-        ];
+        $where = [];
+        $values = [];
 
-        foreach ($metadataMatcher->data() as $match) {
+        foreach ($metadataMatcher->data() as $key => $match) {
             $field = $match['field'];
             $operator = $match['operator']->getValue();
             $value = $match['value'];
+            $parameter = ':metadata_'.$key;
 
             if (is_bool($value)) {
-                $value = var_export($value, true);
-            } elseif (is_string($value)) {
-                $value = $this->connection->quote($value);
+                $where[] = "metadata->\"$.$field\" $operator ".var_export($value, true);
+                continue;
             }
 
-            $sql['where'][] = "metadata->\"$.$field\" $operator $value";
+            $where[] = "metadata->\"$.$field\" $operator $parameter";
+            $values[$parameter] = $value;
         }
 
-        $limit = $count < $this->loadBatchSize
-            ? $count
-            : $this->loadBatchSize;
+        $where[] = '`no` <= :fromNumber';
 
-        $query = $sql['from'] . " WHERE no <= $fromNumber";
+        $whereCondition = implode(' AND ', $where);
+        $limit = min($count, $this->loadBatchSize);
 
-        if (isset($sql['where'])) {
-            $query .= ' AND ';
-            $query .= implode(' AND ', $sql['where']);
-        }
-
-        $query .= ' ' . $sql['orderBy'];
-        $query .= " LIMIT $limit;";
+        $query = <<<EOT
+SELECT * FROM $tableName
+WHERE $whereCondition
+ORDER BY `no` DESC
+LIMIT :limit;
+EOT;
 
         $statement = $this->connection->prepare($query);
+        $statement->bindValue(':fromNumber', $fromNumber, PDO::PARAM_INT);
+        $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
+
+        foreach ($values as $parameter => $value) {
+            $statement->bindValue($parameter, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+        }
 
         $statement->setFetchMode(PDO::FETCH_OBJ);
         $statement->execute();
@@ -385,7 +391,6 @@ EOT;
                 $this->connection,
                 $statement,
                 $this->messageFactory,
-                $sql,
                 $this->loadBatchSize,
                 $fromNumber,
                 $count,

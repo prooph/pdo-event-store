@@ -27,7 +27,7 @@ final class PostgresAggregateStreamStrategy implements PersistenceStrategy
     {
         $statement = <<<EOT
 CREATE TABLE $tableName (
-    no SERIAL,
+    no BIGSERIAL,
     event_id CHAR(36) NOT NULL,
     event_name VARCHAR(100) NOT NULL,
     payload JSON NOT NULL,

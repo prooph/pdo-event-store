@@ -33,11 +33,6 @@ final class PdoStreamIterator implements Iterator
     private $statement;
 
     /**
-     * @var array
-     */
-    private $sql;
-
-    /**
      * @var MessageFactory
      */
     private $messageFactory;
@@ -57,6 +52,9 @@ final class PdoStreamIterator implements Iterator
      */
     private $batchPosition = 0;
 
+    /**
+     * @var int|null
+     */
     private $batchSize;
 
     /**
@@ -78,7 +76,6 @@ final class PdoStreamIterator implements Iterator
         PDO $connection,
         PDOStatement $statement,
         MessageFactory $messageFactory,
-        array $sql,
         ?int $batchSize,
         int $fromNumber,
         int $count,
@@ -87,7 +84,6 @@ final class PdoStreamIterator implements Iterator
         $this->connection = $connection;
         $this->statement = $statement;
         $this->messageFactory = $messageFactory;
-        $this->sql = $sql;
         $this->batchSize = $batchSize;
         $this->fromNumber = $fromNumber;
         $this->count = $count;
@@ -145,9 +141,9 @@ final class PdoStreamIterator implements Iterator
             } else {
                 $limit = $this->fromNumber - $this->batchSize * $this->batchPosition;
             }
-            $this->statement = $this->buildStatement($this->sql, $limit);
+
+            $this->statement = $this->buildStatement($limit);
             $this->statement->execute();
-            $this->statement->setFetchMode(PDO::FETCH_OBJ);
 
             $this->currentItem = $this->statement->fetch();
 
@@ -184,10 +180,9 @@ final class PdoStreamIterator implements Iterator
         //Only perform rewind if current item is not the first element
         if ($this->currentKey !== 0) {
             $this->batchPosition = 0;
-            $this->statement = $this->buildStatement($this->sql, $this->fromNumber);
 
+            $this->statement = $this->buildStatement($this->fromNumber);
             $this->statement->execute();
-            $this->statement->setFetchMode(PDO::FETCH_OBJ);
 
             $this->currentItem = null;
             $this->currentKey = -1;
@@ -196,25 +191,15 @@ final class PdoStreamIterator implements Iterator
         }
     }
 
-    private function buildStatement(array $sql, int $fromNumber): PDOStatement
+    private function buildStatement(int $fromNumber): PDOStatement
     {
         $limit = $this->count < ($this->batchSize * ($this->batchPosition + 1))
             ? $this->count - ($this->batchSize * $this->batchPosition)
             : $this->batchSize;
 
-        if ($this->forward) {
-            $query = $sql['from'] . " WHERE no >= $fromNumber";
-        } else {
-            $query = $sql['from'] . " WHERE no <= $fromNumber";
-        }
+        $this->statement->bindValue(':fromNumber', $fromNumber, PDO::PARAM_INT);
+        $this->statement->bindValue(':limit', $limit, PDO::PARAM_INT);
 
-        if (isset($sql['where'])) {
-            $query .= ' AND ';
-            $query .= implode(' AND ', $sql['where']);
-        }
-        $query .= ' ' . $sql['orderBy'];
-        $query .= " LIMIT $limit;";
-
-        return $this->connection->prepare($query);
+        return $this->statement;
     }
 }

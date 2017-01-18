@@ -26,7 +26,7 @@ final class MySqlSimpleStreamStrategy implements PersistenceStrategy
     {
         $statement = <<<EOT
 CREATE TABLE `$tableName` (
-    `no` INT(11) NOT NULL AUTO_INCREMENT,
+    `no` BIGINT(20) NOT NULL AUTO_INCREMENT,
     `event_id` CHAR(36) COLLATE utf8_bin NOT NULL,
     `event_name` VARCHAR(100) COLLATE utf8_bin NOT NULL,
     `payload` JSON NOT NULL,
