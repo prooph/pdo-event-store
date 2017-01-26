@@ -140,14 +140,15 @@ final class PdoStreamIterator implements Iterator
 
         if (false !== $this->currentItem) {
             $this->currentKey++;
-            if ($this->forward) {
-                $this->currentFromNumber = $this->currentItem->no + 1;
-            } else {
-                $this->currentFromNumber = $this->currentItem->no - 1;
-            }
+            $this->currentFromNumber = $this->currentItem->no;
         } else {
             $this->batchPosition++;
-            $this->statement = $this->buildStatement($this->currentFromNumber);
+            if ($this->forward) {
+                $from = $this->currentFromNumber + 1;
+            } else {
+                $from = $this->currentFromNumber - 1;
+            }
+            $this->statement = $this->buildStatement($from);
             $this->statement->execute();
             $this->statement->setFetchMode(PDO::FETCH_OBJ);
 
@@ -157,11 +158,7 @@ final class PdoStreamIterator implements Iterator
                 $this->currentKey = -1;
             } else {
                 $this->currentKey++;
-                if ($this->forward) {
-                    $this->currentFromNumber = $this->currentItem->no + 1;
-                } else {
-                    $this->currentFromNumber = $this->currentItem->no - 1;
-                }
+                $this->currentFromNumber = $this->currentItem->no;
             }
         }
     }
