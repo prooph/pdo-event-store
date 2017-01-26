@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Prooph\EventStore\Pdo;
 
+use EmptyIterator;
 use Iterator;
 use PDO;
 use Prooph\Common\Messaging\MessageConverter;
@@ -275,8 +276,15 @@ EOT;
         $statement->setFetchMode(PDO::FETCH_OBJ);
         $statement->execute();
 
-        if (0 === $statement->rowCount()) {
+        if ($statement->errorCode() !== '00000') {
             throw StreamNotFound::with($streamName);
+        }
+
+        if (0 === $statement->rowCount()) {
+            return new Stream(
+                $streamName,
+                new EmptyIterator()
+            );
         }
 
         return new Stream(
@@ -350,8 +358,15 @@ EOT;
         $statement->setFetchMode(PDO::FETCH_OBJ);
         $statement->execute();
 
-        if (0 === $statement->rowCount()) {
+        if ($statement->errorCode() !== '00000') {
             throw StreamNotFound::with($streamName);
+        }
+
+        if (0 === $statement->rowCount()) {
+            return new Stream(
+                $streamName,
+                new EmptyIterator()
+            );
         }
 
         return new Stream(

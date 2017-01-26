@@ -638,6 +638,34 @@ abstract class AbstractPdoEventStoreTest extends TestCase
     /**
      * @test
      */
+    public function it_loads_empty_stream(): void
+    {
+        $streamName = new StreamName('Prooph\Model\User');
+
+        $this->eventStore->create(new Stream($streamName, new ArrayIterator()));
+
+        $it = $this->eventStore->load($streamName)->streamEvents();
+
+        $this->assertInstanceOf(\EmptyIterator::class, $it);
+    }
+
+    /**
+     * @test
+     */
+    public function it_loads_reverse_empty_stream(): void
+    {
+        $streamName = new StreamName('Prooph\Model\User');
+
+        $this->eventStore->create(new Stream($streamName, new ArrayIterator()));
+
+        $it = $this->eventStore->loadReverse($streamName)->streamEvents();
+
+        $this->assertInstanceOf(\EmptyIterator::class, $it);
+    }
+
+    /**
+     * @test
+     */
     public function it_throws_exception_when_trying_to_delete_unknown_stream(): void
     {
         $this->expectException(StreamNotFound::class);
