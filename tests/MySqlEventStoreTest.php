@@ -16,6 +16,8 @@ use PDO;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\Exception\ConcurrencyException;
+use Prooph\EventStore\Metadata\MetadataMatcher;
+use Prooph\EventStore\Metadata\Operator;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\MySqlEventStore;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlAggregateStreamStrategy;
@@ -77,6 +79,41 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
         }
 
         $this->eventStore->create(new Stream($streamName, new \ArrayIterator()));
+    }
+
+    /**
+     * @test
+     */
+    public function it_loads_correctly_using_single_stream_per_aggregate_type_strategy(): void
+    {
+        $this->eventStore = new MySqlEventStore(
+            new FQCNMessageFactory(),
+            new NoOpMessageConverter(),
+            $this->connection,
+            new MySqlSingleStreamStrategy(),
+            5
+        );
+
+        $streamName = new StreamName('Prooph\Model\User');
+
+        $stream = new Stream($streamName, new \ArrayIterator($this->getMultipleTestEvents()));
+
+        $this->eventStore->create($stream);
+
+        $metadataMatcher = new MetadataMatcher();
+        $metadataMatcher = $metadataMatcher->withMetadataMatch('_aggregate_id', Operator::EQUALS(), 'one');
+        $events = iterator_to_array($this->eventStore->load($streamName, 1, null, $metadataMatcher)->streamEvents());
+        $this->assertCount(100, $events);
+        $lastUser1Event = array_pop($events);
+
+        $metadataMatcher = new MetadataMatcher();
+        $metadataMatcher = $metadataMatcher->withMetadataMatch('_aggregate_id', Operator::EQUALS(), 'two');
+        $events = iterator_to_array($this->eventStore->load($streamName, 1, null, $metadataMatcher)->streamEvents());
+        $this->assertCount(100, $events);
+        $lastUser2Event = array_pop($events);
+
+        $this->assertEquals('Sandro', $lastUser1Event->payload()['name']);
+        $this->assertEquals('Bradley', $lastUser2Event->payload()['name']);
     }
 
     /**

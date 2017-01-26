@@ -15,6 +15,7 @@ namespace ProophTest\EventStore\Pdo;
 use ArrayIterator;
 use PDO;
 use PHPUnit\Framework\TestCase;
+use Prooph\Common\Messaging\Message;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception\StreamExistsAlready;
@@ -638,6 +639,34 @@ abstract class AbstractPdoEventStoreTest extends TestCase
     /**
      * @test
      */
+    public function it_loads_empty_stream(): void
+    {
+        $streamName = new StreamName('Prooph\Model\User');
+
+        $this->eventStore->create(new Stream($streamName, new ArrayIterator()));
+
+        $it = $this->eventStore->load($streamName)->streamEvents();
+
+        $this->assertInstanceOf(\EmptyIterator::class, $it);
+    }
+
+    /**
+     * @test
+     */
+    public function it_loads_reverse_empty_stream(): void
+    {
+        $streamName = new StreamName('Prooph\Model\User');
+
+        $this->eventStore->create(new Stream($streamName, new ArrayIterator()));
+
+        $it = $this->eventStore->loadReverse($streamName)->streamEvents();
+
+        $this->assertInstanceOf(\EmptyIterator::class, $it);
+    }
+
+    /**
+     * @test
+     */
     public function it_throws_exception_when_trying_to_delete_unknown_stream(): void
     {
         $this->expectException(StreamNotFound::class);
@@ -787,5 +816,35 @@ abstract class AbstractPdoEventStoreTest extends TestCase
         $streamEvent = $streamEvent->withAddedMetadata('tag', 'person');
 
         return new Stream(new StreamName('Prooph\Model\User'), new ArrayIterator([$streamEvent]));
+    }
+
+    /**
+     * @return Message[]
+     */
+    protected function getMultipleTestEvents(): array
+    {
+        $events = [];
+
+        $event = UserCreated::with(['name' => 'Alex'], 1);
+        $events[] = $event->withAddedMetadata('_aggregate_id', 'one')->withAddedMetadata('_aggregate_type', 'user');
+
+        $event = UserCreated::with(['name' => 'Sascha'], 1);
+        $events[] = $event->withAddedMetadata('_aggregate_id', 'two')->withAddedMetadata('_aggregate_type', 'user');
+
+        for ($i = 2; $i < 100; $i++) {
+            $event = UsernameChanged::with(['name' => uniqid('name_')], $i);
+            $events[] = $event->withAddedMetadata('_aggregate_id', 'two')->withAddedMetadata('_aggregate_type', 'user');
+
+            $event = UsernameChanged::with(['name' => uniqid('name_')], $i);
+            $events[] = $event->withAddedMetadata('_aggregate_id', 'one')->withAddedMetadata('_aggregate_type', 'user');
+        }
+
+        $event = UsernameChanged::with(['name' => 'Sandro'], 100);
+        $events[] = $event->withAddedMetadata('_aggregate_id', 'one')->withAddedMetadata('_aggregate_type', 'user');
+
+        $event = UsernameChanged::with(['name' => 'Bradley'], 100);
+        $events[] = $event->withAddedMetadata('_aggregate_id', 'two')->withAddedMetadata('_aggregate_type', 'user');
+
+        return $events;
     }
 }

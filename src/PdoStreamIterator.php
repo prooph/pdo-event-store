@@ -63,6 +63,11 @@ final class PdoStreamIterator implements Iterator
     private $fromNumber;
 
     /**
+     * @var int
+     */
+    private $currentFromNumber;
+
+    /**
      * @var int|null
      */
     private $count;
@@ -86,6 +91,7 @@ final class PdoStreamIterator implements Iterator
         $this->messageFactory = $messageFactory;
         $this->batchSize = $batchSize;
         $this->fromNumber = $fromNumber;
+        $this->currentFromNumber = $fromNumber;
         $this->count = $count;
         $this->forward = $forward;
 
@@ -134,16 +140,17 @@ final class PdoStreamIterator implements Iterator
 
         if (false !== $this->currentItem) {
             $this->currentKey++;
+            $this->currentFromNumber = $this->currentItem->no;
         } else {
             $this->batchPosition++;
             if ($this->forward) {
-                $limit = $this->batchSize * $this->batchPosition + $this->fromNumber;
+                $from = $this->currentFromNumber + 1;
             } else {
-                $limit = $this->fromNumber - $this->batchSize * $this->batchPosition;
+                $from = $this->currentFromNumber - 1;
             }
-
-            $this->statement = $this->buildStatement($limit);
+            $this->statement = $this->buildStatement($from);
             $this->statement->execute();
+            $this->statement->setFetchMode(PDO::FETCH_OBJ);
 
             $this->currentItem = $this->statement->fetch();
 
@@ -151,6 +158,7 @@ final class PdoStreamIterator implements Iterator
                 $this->currentKey = -1;
             } else {
                 $this->currentKey++;
+                $this->currentFromNumber = $this->currentItem->no;
             }
         }
     }
@@ -186,6 +194,7 @@ final class PdoStreamIterator implements Iterator
 
             $this->currentItem = null;
             $this->currentKey = -1;
+            $this->currentFromNumber = $this->fromNumber;
 
             $this->next();
         }

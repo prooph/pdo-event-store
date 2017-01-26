@@ -128,6 +128,41 @@ final class PostgresEventStoreTest extends AbstractPdoEventStoreTest
     /**
      * @test
      */
+    public function it_loads_correctly_using_single_stream_per_aggregate_type_strategy(): void
+    {
+        $this->eventStore = new PostgresEventStore(
+            new FQCNMessageFactory(),
+            new NoOpMessageConverter(),
+            $this->connection,
+            new PostgresSingleStreamStrategy(),
+            5
+        );
+
+        $streamName = new StreamName('Prooph\Model\User');
+
+        $stream = new Stream($streamName, new \ArrayIterator($this->getMultipleTestEvents()));
+
+        $this->eventStore->create($stream);
+
+        $metadataMatcher = new MetadataMatcher();
+        $metadataMatcher = $metadataMatcher->withMetadataMatch('_aggregate_id', Operator::EQUALS(), 'one');
+        $events = iterator_to_array($this->eventStore->load($streamName, 1, null, $metadataMatcher)->streamEvents());
+        $this->assertCount(100, $events);
+        $lastUser1Event = array_pop($events);
+
+        $metadataMatcher = new MetadataMatcher();
+        $metadataMatcher = $metadataMatcher->withMetadataMatch('_aggregate_id', Operator::EQUALS(), 'two');
+        $events = iterator_to_array($this->eventStore->load($streamName, 1, null, $metadataMatcher)->streamEvents());
+        $this->assertCount(100, $events);
+        $lastUser2Event = array_pop($events);
+
+        $this->assertEquals('Sandro', $lastUser1Event->payload()['name']);
+        $this->assertEquals('Bradley', $lastUser2Event->payload()['name']);
+    }
+
+    /**
+     * @test
+     */
     public function it_fails_to_write_with_duplicate_version_and_mulitple_streams_per_aggregate_strategy(): void
     {
         $this->expectException(ConcurrencyException::class);

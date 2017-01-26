@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Prooph\EventStore\Pdo;
 
+use EmptyIterator;
 use Iterator;
 use PDO;
 use Prooph\Common\Messaging\MessageConverter;
@@ -36,6 +37,7 @@ use Prooph\EventStore\Projection\ReadModelProjection;
 use Prooph\EventStore\Projection\ReadModelProjectionFactory;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
+use Prooph\EventStore\Util\Assertion;
 
 final class MySqlEventStore implements EventStore
 {
@@ -109,6 +111,8 @@ final class MySqlEventStore implements EventStore
         if (! extension_loaded('pdo_mysql')) {
             throw ExtensionNotLoaded::with('pdo_mysql');
         }
+
+        Assertion::min($loadBatchSize, 1);
 
         $this->messageFactory = $messageFactory;
         $this->messageConverter = $messageConverter;
@@ -306,8 +310,15 @@ EOT;
         $statement->setFetchMode(PDO::FETCH_OBJ);
         $statement->execute();
 
-        if (0 === $statement->rowCount()) {
+        if ($statement->errorCode() !== '00000') {
             throw StreamNotFound::with($streamName);
+        }
+
+        if (0 === $statement->rowCount()) {
+            return new Stream(
+                $streamName,
+                new EmptyIterator()
+            );
         }
 
         return new Stream(
@@ -381,8 +392,15 @@ EOT;
         $statement->setFetchMode(PDO::FETCH_OBJ);
         $statement->execute();
 
-        if (0 === $statement->rowCount()) {
+        if ($statement->errorCode() !== '00000') {
             throw StreamNotFound::with($streamName);
+        }
+
+        if (0 === $statement->rowCount()) {
+            return new Stream(
+                $streamName,
+                new EmptyIterator()
+            );
         }
 
         return new Stream(
