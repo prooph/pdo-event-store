@@ -68,11 +68,6 @@ final class PdoStreamIterator implements Iterator
     private $currentFromNumber;
 
     /**
-     * @var int
-     */
-    private $totalFetched;
-
-    /**
      * @var int|null
      */
     private $count;
