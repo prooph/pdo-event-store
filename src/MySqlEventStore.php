@@ -37,6 +37,7 @@ use Prooph\EventStore\Projection\ReadModelProjection;
 use Prooph\EventStore\Projection\ReadModelProjectionFactory;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
+use Prooph\EventStore\Util\Assertion;
 
 final class MySqlEventStore implements EventStore
 {
@@ -110,6 +111,8 @@ final class MySqlEventStore implements EventStore
         if (! extension_loaded('pdo_mysql')) {
             throw ExtensionNotLoaded::with('pdo_mysql');
         }
+
+        Assertion::min($loadBatchSize, 1);
 
         $this->messageFactory = $messageFactory;
         $this->messageConverter = $messageConverter;

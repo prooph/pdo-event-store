@@ -39,6 +39,7 @@ use Prooph\EventStore\Projection\ReadModelProjectionFactory;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use Prooph\EventStore\TransactionalEventStore;
+use Prooph\EventStore\Util\Assertion;
 
 final class PostgresEventStore implements TransactionalEventStore
 {
@@ -107,6 +108,8 @@ final class PostgresEventStore implements TransactionalEventStore
         if (! extension_loaded('pdo_pgsql')) {
             throw ExtensionNotLoaded::with('pdo_pgsql');
         }
+
+        Assertion::min($loadBatchSize, 1);
 
         $this->messageFactory = $messageFactory;
         $this->messageConverter = $messageConverter;
