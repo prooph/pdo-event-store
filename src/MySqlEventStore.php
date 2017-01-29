@@ -258,7 +258,7 @@ EOT;
         int $fromNumber = 1,
         int $count = null,
         MetadataMatcher $metadataMatcher = null
-    ): Stream {
+    ): Iterator {
         if (null === $count) {
             $count = PHP_INT_MAX;
         }
@@ -315,23 +315,17 @@ EOT;
         }
 
         if (0 === $statement->rowCount()) {
-            return new Stream(
-                $streamName,
-                new EmptyIterator()
-            );
+            return new EmptyIterator();
         }
 
-        return new Stream(
-            $streamName,
-            new PdoStreamIterator(
-                $this->connection,
-                $statement,
-                $this->messageFactory,
-                $this->loadBatchSize,
-                $fromNumber,
-                $count,
-                true
-            )
+        return new PdoStreamIterator(
+            $this->connection,
+            $statement,
+            $this->messageFactory,
+            $this->loadBatchSize,
+            $fromNumber,
+            $count,
+            true
         );
     }
 
@@ -340,7 +334,7 @@ EOT;
         int $fromNumber = PHP_INT_MAX,
         int $count = null,
         MetadataMatcher $metadataMatcher = null
-    ): Stream {
+    ): Iterator {
         if (null === $count) {
             $count = PHP_INT_MAX;
         }
@@ -397,23 +391,17 @@ EOT;
         }
 
         if (0 === $statement->rowCount()) {
-            return new Stream(
-                $streamName,
-                new EmptyIterator()
-            );
+            return new EmptyIterator();
         }
 
-        return new Stream(
-            $streamName,
-            new PdoStreamIterator(
-                $this->connection,
-                $statement,
-                $this->messageFactory,
-                $this->loadBatchSize,
-                $fromNumber,
-                $count,
-                false
-            )
+        return new PdoStreamIterator(
+            $this->connection,
+            $statement,
+            $this->messageFactory,
+            $this->loadBatchSize,
+            $fromNumber,
+            $count,
+            false
         );
     }
 

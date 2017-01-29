@@ -146,13 +146,13 @@ final class PostgresEventStoreTest extends AbstractPdoEventStoreTest
 
         $metadataMatcher = new MetadataMatcher();
         $metadataMatcher = $metadataMatcher->withMetadataMatch('_aggregate_id', Operator::EQUALS(), 'one');
-        $events = iterator_to_array($this->eventStore->load($streamName, 1, null, $metadataMatcher)->streamEvents());
+        $events = iterator_to_array($this->eventStore->load($streamName, 1, null, $metadataMatcher));
         $this->assertCount(100, $events);
         $lastUser1Event = array_pop($events);
 
         $metadataMatcher = new MetadataMatcher();
         $metadataMatcher = $metadataMatcher->withMetadataMatch('_aggregate_id', Operator::EQUALS(), 'two');
-        $events = iterator_to_array($this->eventStore->load($streamName, 1, null, $metadataMatcher)->streamEvents());
+        $events = iterator_to_array($this->eventStore->load($streamName, 1, null, $metadataMatcher));
         $this->assertCount(100, $events);
         $lastUser2Event = array_pop($events);
 
@@ -218,9 +218,9 @@ final class PostgresEventStoreTest extends AbstractPdoEventStoreTest
 
         $metadataMatcher = new MetadataMatcher();
         $metadataMatcher = $metadataMatcher->withMetadataMatch('tag', Operator::EQUALS(), 'person');
-        $stream = $this->eventStore->load(new StreamName('Prooph\Model\User'), 1, null, $metadataMatcher);
+        $streamEvents = $this->eventStore->load(new StreamName('Prooph\Model\User'), 1, null, $metadataMatcher);
 
-        $stream->streamEvents()->valid();
+        $streamEvents->valid();
     }
 
     /**
@@ -380,8 +380,8 @@ final class PostgresEventStoreTest extends AbstractPdoEventStoreTest
 
         $this->assertSame('Second Result', $transactionResult);
 
-        $stream = $this->eventStore->load(new StreamName('Prooph\Model\User'), 1);
+        $streamEvents = $this->eventStore->load(new StreamName('Prooph\Model\User'), 1);
 
-        $this->assertCount(2, $stream->streamEvents());
+        $this->assertCount(2, $streamEvents);
     }
 }

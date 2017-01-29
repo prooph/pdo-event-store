@@ -102,13 +102,13 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
 
         $metadataMatcher = new MetadataMatcher();
         $metadataMatcher = $metadataMatcher->withMetadataMatch('_aggregate_id', Operator::EQUALS(), 'one');
-        $events = iterator_to_array($this->eventStore->load($streamName, 1, null, $metadataMatcher)->streamEvents());
+        $events = iterator_to_array($this->eventStore->load($streamName, 1, null, $metadataMatcher));
         $this->assertCount(100, $events);
         $lastUser1Event = array_pop($events);
 
         $metadataMatcher = new MetadataMatcher();
         $metadataMatcher = $metadataMatcher->withMetadataMatch('_aggregate_id', Operator::EQUALS(), 'two');
-        $events = iterator_to_array($this->eventStore->load($streamName, 1, null, $metadataMatcher)->streamEvents());
+        $events = iterator_to_array($this->eventStore->load($streamName, 1, null, $metadataMatcher));
         $this->assertCount(100, $events);
         $lastUser2Event = array_pop($events);
 

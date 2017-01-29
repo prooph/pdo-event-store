@@ -66,13 +66,11 @@ abstract class AbstractPdoEventStoreTest extends TestCase
 
         $this->eventStore->appendTo(new StreamName('Prooph\Model\User'), new ArrayIterator([$streamEvent]));
 
-        $stream = $this->eventStore->load(new StreamName('Prooph\Model\User'));
-
-        $this->assertEquals('Prooph\Model\User', $stream->streamName()->toString());
+        $streamEvents = $this->eventStore->load(new StreamName('Prooph\Model\User'));
 
         $count = 0;
         $lastEvent = null;
-        foreach ($stream->streamEvents() as $event) {
+        foreach ($streamEvents as $event) {
             $count++;
             $lastEvent = $event;
         }
@@ -108,11 +106,9 @@ abstract class AbstractPdoEventStoreTest extends TestCase
 
         $this->eventStore->appendTo(new StreamName('Prooph\Model\User'), new ArrayIterator([$streamEvent]));
 
-        $stream = $this->eventStore->load(new StreamName('Prooph\Model\User'));
+        $streamEvents = $this->eventStore->load(new StreamName('Prooph\Model\User'));
 
-        $this->assertEquals('Prooph\Model\User', $stream->streamName()->toString());
-
-        $this->assertCount(2, $stream->streamEvents());
+        $this->assertCount(2, $streamEvents);
     }
 
     /**
@@ -138,23 +134,21 @@ abstract class AbstractPdoEventStoreTest extends TestCase
 
         $this->eventStore->appendTo(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent1, $streamEvent2]));
 
-        $stream = $this->eventStore->load(new StreamName('Prooph\Model\User'), 2);
+        $streamEvents = $this->eventStore->load(new StreamName('Prooph\Model\User'), 2);
 
-        $this->assertEquals('Prooph\Model\User', $stream->streamName()->toString());
-
-        $this->assertTrue($stream->streamEvents()->valid());
-        $event = $stream->streamEvents()->current();
-        $this->assertEquals(0, $stream->streamEvents()->key());
+        $this->assertTrue($streamEvents->valid());
+        $event = $streamEvents->current();
+        $this->assertEquals(0, $streamEvents->key());
         $this->assertEquals('John Doe', $event->payload()['name']);
 
-        $stream->streamEvents()->next();
-        $this->assertTrue($stream->streamEvents()->valid());
-        $event = $stream->streamEvents()->current();
-        $this->assertEquals(1, $stream->streamEvents()->key());
+        $streamEvents->next();
+        $this->assertTrue($streamEvents->valid());
+        $event = $streamEvents->current();
+        $this->assertEquals(1, $streamEvents->key());
         $this->assertEquals('Jane Doe', $event->payload()['name']);
 
-        $stream->streamEvents()->next();
-        $this->assertFalse($stream->streamEvents()->valid());
+        $streamEvents->next();
+        $this->assertFalse($streamEvents->valid());
     }
 
     /**
@@ -171,7 +165,7 @@ abstract class AbstractPdoEventStoreTest extends TestCase
 
         $this->eventStore->appendTo(new StreamName('Prooph\Model\User'), new ArrayIterator([$secondStreamEvent]));
 
-        $this->assertCount(2, $this->eventStore->load(new StreamName('Prooph\Model\User'))->streamEvents());
+        $this->assertCount(2, $this->eventStore->load(new StreamName('Prooph\Model\User')));
     }
 
     /**
@@ -201,9 +195,7 @@ abstract class AbstractPdoEventStoreTest extends TestCase
             $metadataMatcher = $metadataMatcher->withMetadataMatch($field, Operator::EQUALS(), $value);
         }
 
-        $stream = $this->eventStore->load($stream->streamName(), 1, null, $metadataMatcher);
-
-        $streamEvents = $stream->streamEvents();
+        $streamEvents = $this->eventStore->load($stream->streamName(), 1, null, $metadataMatcher);
 
         $this->assertCount(1, $streamEvents);
 
@@ -243,9 +235,7 @@ abstract class AbstractPdoEventStoreTest extends TestCase
             $metadataMatcher = $metadataMatcher->withMetadataMatch($field, Operator::EQUALS(), $value);
         }
 
-        $stream = $this->eventStore->loadReverse($stream->streamName(), 2, null, $metadataMatcher);
-
-        $streamEvents = $stream->streamEvents();
+        $streamEvents = $this->eventStore->loadReverse($stream->streamName(), 2, null, $metadataMatcher);
 
         $this->assertCount(1, $streamEvents);
 
@@ -283,8 +273,7 @@ abstract class AbstractPdoEventStoreTest extends TestCase
 
         $this->eventStore->appendTo($stream->streamName(), new ArrayIterator([$streamEventVersion2, $streamEventVersion3]));
 
-        $stream = $this->eventStore->load($stream->streamName(), 2);
-        $loadedEvents = $stream->streamEvents();
+        $loadedEvents = $this->eventStore->load($stream->streamName(), 2);
 
         $this->assertCount(2, $loadedEvents);
 
@@ -294,15 +283,15 @@ abstract class AbstractPdoEventStoreTest extends TestCase
         $loadedEvents->next();
         $this->assertFalse($loadedEvents->current()->metadata()['snapshot']);
 
-        $stream = $this->eventStore->load($stream->streamName(), 2);
+        $streamEvents = $this->eventStore->load($stream->streamName(), 2);
 
-        $this->assertCount(2, $stream->streamEvents());
+        $this->assertCount(2, $streamEvents);
 
-        $stream->streamEvents()->rewind();
+        $streamEvents->rewind();
 
-        $this->assertTrue($stream->streamEvents()->current()->metadata()['snapshot']);
-        $stream->streamEvents()->next();
-        $this->assertFalse($stream->streamEvents()->current()->metadata()['snapshot']);
+        $this->assertTrue($streamEvents->current()->metadata()['snapshot']);
+        $streamEvents->next();
+        $this->assertFalse($streamEvents->current()->metadata()['snapshot']);
     }
 
     /**
@@ -330,8 +319,7 @@ abstract class AbstractPdoEventStoreTest extends TestCase
 
         $this->eventStore->appendTo($stream->streamName(), new ArrayIterator([$streamEventVersion2, $streamEventVersion3]));
 
-        $stream = $this->eventStore->loadReverse($stream->streamName(), PHP_INT_MAX, 2);
-        $loadedEvents = $stream->streamEvents();
+        $loadedEvents = $this->eventStore->loadReverse($stream->streamName(), PHP_INT_MAX, 2);
 
         $this->assertCount(2, $loadedEvents);
 
@@ -341,15 +329,15 @@ abstract class AbstractPdoEventStoreTest extends TestCase
         $loadedEvents->next();
         $this->assertTrue($loadedEvents->current()->metadata()['snapshot']);
 
-        $stream = $this->eventStore->loadReverse($stream->streamName(), PHP_INT_MAX, 2);
+        $streamEvents = $this->eventStore->loadReverse($stream->streamName(), PHP_INT_MAX, 2);
 
-        $this->assertCount(2, $stream->streamEvents());
+        $this->assertCount(2, $streamEvents);
 
-        $stream->streamEvents()->rewind();
+        $streamEvents->rewind();
 
-        $this->assertFalse($stream->streamEvents()->current()->metadata()['snapshot']);
-        $stream->streamEvents()->next();
-        $this->assertTrue($stream->streamEvents()->current()->metadata()['snapshot']);
+        $this->assertFalse($streamEvents->current()->metadata()['snapshot']);
+        $streamEvents->next();
+        $this->assertTrue($streamEvents->current()->metadata()['snapshot']);
     }
 
     /**
@@ -388,8 +376,7 @@ abstract class AbstractPdoEventStoreTest extends TestCase
             $streamEventVersion4,
         ]));
 
-        $stream = $this->eventStore->load($stream->streamName(), 2, 2);
-        $loadedEvents = $stream->streamEvents();
+        $loadedEvents = $this->eventStore->load($stream->streamName(), 2, 2);
 
         $this->assertCount(2, $loadedEvents);
 
@@ -399,9 +386,7 @@ abstract class AbstractPdoEventStoreTest extends TestCase
         $loadedEvents->next();
         $this->assertFalse($loadedEvents->current()->metadata()['snapshot']);
 
-        $stream = $this->eventStore->load($stream->streamName(), 2, 2);
-
-        $loadedEvents = $stream->streamEvents();
+        $loadedEvents = $this->eventStore->load($stream->streamName(), 2, 2);
 
         $this->assertCount(2, $loadedEvents);
 
@@ -448,8 +433,7 @@ abstract class AbstractPdoEventStoreTest extends TestCase
             $streamEventVersion4,
         ]));
 
-        $stream = $this->eventStore->loadReverse($stream->streamName(), 3, 2);
-        $loadedEvents = $stream->streamEvents();
+        $loadedEvents = $this->eventStore->loadReverse($stream->streamName(), 3, 2);
 
         $this->assertCount(2, $loadedEvents);
 
@@ -459,9 +443,7 @@ abstract class AbstractPdoEventStoreTest extends TestCase
         $loadedEvents->next();
         $this->assertTrue($loadedEvents->current()->metadata()['snapshot']);
 
-        $stream = $this->eventStore->loadReverse($stream->streamName(), 3, 2);
-
-        $loadedEvents = $stream->streamEvents();
+        $loadedEvents = $this->eventStore->loadReverse($stream->streamName(), 3, 2);
 
         $this->assertCount(2, $loadedEvents);
 
@@ -508,8 +490,7 @@ abstract class AbstractPdoEventStoreTest extends TestCase
             $streamEventVersion4,
         ]));
 
-        $stream = $this->eventStore->loadReverse($stream->streamName(), 3, 2);
-        $loadedEvents = $stream->streamEvents();
+        $loadedEvents = $this->eventStore->loadReverse($stream->streamName(), 3, 2);
 
         $this->assertCount(2, $loadedEvents);
 
@@ -590,9 +571,9 @@ abstract class AbstractPdoEventStoreTest extends TestCase
         $metadataMatcher = $metadataMatcher->withMetadataMatch('int3', Operator::LOWER_THAN(), 7);
         $metadataMatcher = $metadataMatcher->withMetadataMatch('int4', Operator::LOWER_THAN_EQUALS(), 7);
 
-        $stream = $this->eventStore->load($stream->streamName(), 1, null, $metadataMatcher);
+        $streamEvents = $this->eventStore->load($stream->streamName(), 1, null, $metadataMatcher);
 
-        $this->assertCount(1, $stream->streamEvents());
+        $this->assertCount(1, $streamEvents);
     }
 
     /**
@@ -619,9 +600,9 @@ abstract class AbstractPdoEventStoreTest extends TestCase
         $metadataMatcher = $metadataMatcher->withMetadataMatch('int3', Operator::LOWER_THAN(), 7);
         $metadataMatcher = $metadataMatcher->withMetadataMatch('int4', Operator::LOWER_THAN_EQUALS(), 7);
 
-        $stream = $this->eventStore->loadReverse($stream->streamName(), 1, null, $metadataMatcher);
+        $streamEvents = $this->eventStore->loadReverse($stream->streamName(), 1, null, $metadataMatcher);
 
-        $this->assertCount(1, $stream->streamEvents());
+        $this->assertCount(1, $streamEvents);
     }
 
     /**
@@ -645,7 +626,7 @@ abstract class AbstractPdoEventStoreTest extends TestCase
 
         $this->eventStore->create(new Stream($streamName, new ArrayIterator()));
 
-        $it = $this->eventStore->load($streamName)->streamEvents();
+        $it = $this->eventStore->load($streamName);
 
         $this->assertInstanceOf(\EmptyIterator::class, $it);
     }
@@ -659,7 +640,7 @@ abstract class AbstractPdoEventStoreTest extends TestCase
 
         $this->eventStore->create(new Stream($streamName, new ArrayIterator()));
 
-        $it = $this->eventStore->loadReverse($streamName)->streamEvents();
+        $it = $this->eventStore->loadReverse($streamName);
 
         $this->assertInstanceOf(\EmptyIterator::class, $it);
     }

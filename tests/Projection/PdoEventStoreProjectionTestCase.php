@@ -377,8 +377,7 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
             )
             ->run();
 
-        $streams = $this->eventStore->load(new StreamName('foo'));
-        $events = $streams->streamEvents();
+        $events = $this->eventStore->load(new StreamName('foo'));
 
         $this->assertCount(50, $events);
 
@@ -411,8 +410,7 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
             )
             ->run();
 
-        $streams = $this->eventStore->load(new StreamName('foo'));
-        $events = $streams->streamEvents();
+        $events = $this->eventStore->load(new StreamName('foo'));
 
         $this->assertCount(100, $events);
     }
@@ -436,8 +434,7 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
             ])
             ->run();
 
-        $streams = $this->eventStore->load(new StreamName('test_projection'));
-        $events = $streams->streamEvents();
+        $events = $this->eventStore->load(new StreamName('test_projection'));
 
         $this->assertCount(1, $events);
         $this->assertEquals('Alex', $events->current()->payload()['name']);
@@ -470,8 +467,7 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
             ])
             ->run();
 
-        $streams = $this->eventStore->load(new StreamName('test_projection'));
-        $events = $streams->streamEvents();
+        $events = $this->eventStore->load(new StreamName('test_projection'));
 
         $this->assertCount(1, $events);
         $this->assertEquals('Alex', $events->current()->payload()['name']);
