@@ -509,10 +509,10 @@ EOT;
     private function load(): void
     {
         $sql = <<<EOT
-SELECT position, state FROM $this->projectionsTable WHERE name = '$this->name' ORDER BY no DESC LIMIT 1;
+SELECT position, state FROM $this->projectionsTable WHERE name = ? ORDER BY no DESC LIMIT 1;
 EOT;
         $statement = $this->connection->prepare($sql);
-        $statement->execute();
+        $statement->execute([$this->name]);
 
         $result = $statement->fetch(PDO::FETCH_OBJ);
 
