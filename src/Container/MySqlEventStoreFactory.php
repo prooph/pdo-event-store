@@ -14,7 +14,6 @@ namespace Prooph\EventStore\Pdo\Container;
 
 use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\FQCNMessageFactory;
-use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Pdo\MySqlEventStore;
@@ -56,7 +55,6 @@ final class MySqlEventStoreFactory extends AbstractEventStoreFactory
             ],
             'load_batch_size' => 1000,
             'event_streams_table' => 'event_streams',
-            'message_converter' => NoOpMessageConverter::class,
             'message_factory' => FQCNMessageFactory::class,
             'wrap_action_event_emitter' => true,
             'metadata_enrichers' => [],

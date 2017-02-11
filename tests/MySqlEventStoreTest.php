@@ -14,7 +14,6 @@ namespace ProophTest\EventStore\Pdo;
 
 use PDO;
 use Prooph\Common\Messaging\FQCNMessageFactory;
-use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;
@@ -55,7 +54,6 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
     {
         return new MySqlEventStore(
             new FQCNMessageFactory(),
-            new NoOpMessageConverter(),
             $connection,
             new MySqlAggregateStreamStrategy()
         );
@@ -88,7 +86,6 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
     {
         $this->eventStore = new MySqlEventStore(
             new FQCNMessageFactory(),
-            new NoOpMessageConverter(),
             $this->connection,
             new MySqlSingleStreamStrategy(),
             5
@@ -159,7 +156,6 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
 
         $this->eventStore = new MySqlEventStore(
             new FQCNMessageFactory(),
-            new NoOpMessageConverter(),
             $this->connection,
             new MySqlSingleStreamStrategy()
         );
