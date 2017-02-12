@@ -109,7 +109,6 @@ abstract class AbstractEventStoreFactory implements
 
         $eventStore = new $eventStoreClassName(
             $container->get($config['message_factory']),
-            $messageConverter = $container->get($config['message_converter']),
             $connection,
             $container->get($config['persistence_strategy']),
             $config['load_batch_size'],
