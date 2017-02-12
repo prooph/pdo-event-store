@@ -351,19 +351,16 @@ EOT;
             }
         }
 
-        $now = new DateTimeImmutable('now', new DateTimeZone('UTC'));
-        $lockUntilString = $now->modify('+' . (string) $this->lockTimeoutMs . ' ms')->format('Y-m-d\TH:i:s.u');
-
         $sql = <<<EOT
-UPDATE $this->projectionsTable SET position = ?, state = ?, status = ? locked_until = ? 
+UPDATE $this->projectionsTable SET position = ?, state = ?, status = ?
 WHERE name = ?
 EOT;
+
         $statement = $this->connection->prepare($sql);
         $statement->execute([
             json_encode($this->streamPositions),
             json_encode($this->state),
             $this->status->getValue(),
-            $lockUntilString,
             $this->name,
         ]);
 
@@ -410,6 +407,18 @@ EOT;
         }
 
         $this->isStopped = true;
+
+        $callback = $this->initCallback;
+
+        $this->state = [];
+
+        if (is_callable($callback)) {
+            $result = $callback();
+
+            if (is_array($result)) {
+                $this->state = $result;
+            }
+        }
     }
 
     public function run(bool $keepRunning = true): void
@@ -418,6 +427,21 @@ EOT;
             || (null === $this->handler && empty($this->handlers))
         ) {
             throw new Exception\RuntimeException('No handlers configured');
+        }
+
+        switch ($this->fetchRemoteStatus()) {
+            case ProjectionStatus::STOPPING():
+                $this->stop();
+                return;
+            case ProjectionStatus::DELETING():
+                $this->delete(false);
+                return;
+            case ProjectionStatus::DELETING_INCL_EMITTED_EVENTS():
+                $this->delete(true);
+                return;
+            case ProjectionStatus::RESETTING():
+                $this->reset();
+                break;
         }
 
         $this->createProjection();
@@ -489,6 +513,10 @@ EOT;
         $statement->execute([$this->name]);
 
         $result = $statement->fetch(PDO::FETCH_OBJ);
+
+        if (false === $result) {
+            return ProjectionStatus::RUNNING();
+        }
 
         return ProjectionStatus::byValue($result->status);
     }
@@ -632,6 +660,7 @@ EOT;
         $sql = <<<EOT
 UPDATE $this->projectionsTable SET locked_until = ?, status = ? WHERE name = ? AND (locked_until IS NULL OR locked_until < ?);
 EOT;
+
         $statement = $this->connection->prepare($sql);
         $statement->execute([$lockUntilString, ProjectionStatus::RUNNING()->getValue(), $this->name, $nowString]);
 

@@ -27,6 +27,7 @@ use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\Projection\PdoEventStoreProjectionFactory;
 use Prooph\EventStore\Pdo\Projection\PdoEventStoreQueryFactory;
 use Prooph\EventStore\Pdo\Projection\PdoEventStoreReadModelProjectionFactory;
+use Prooph\EventStore\Pdo\Projection\ProjectionStatus;
 use Prooph\EventStore\Projection\Projection;
 use Prooph\EventStore\Projection\ProjectionFactory;
 use Prooph\EventStore\Projection\ProjectionOptions as BaseProjectionOptions;
