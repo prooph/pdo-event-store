@@ -183,7 +183,6 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
         $testCase = $this;
 
         $projection = $this->eventStore->createProjection('test_projection', new ProjectionOptions(
-            'projections',
             1000,
             10
         ));
@@ -222,7 +221,6 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
         $this->prepareEventStream('user-234');
 
         $projection = $this->eventStore->createProjection('test_projection', new ProjectionOptions(
-            'projections',
             1000,
             10
         ));

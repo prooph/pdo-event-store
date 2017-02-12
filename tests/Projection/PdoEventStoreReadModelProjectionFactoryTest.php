@@ -31,7 +31,8 @@ class PdoEventStoreReadModelProjectionFactoryTest extends TestCase
 
         $factory = new PdoEventStoreReadModelProjectionFactory(
             $this->prophesize(PDO::class)->reveal(),
-            'test_projection'
+            'event_streams',
+            'projections'
         );
 
         $factory(

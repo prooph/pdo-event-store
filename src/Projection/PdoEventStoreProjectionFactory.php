@@ -32,10 +32,16 @@ final class PdoEventStoreProjectionFactory implements ProjectionFactory
      */
     private $eventStreamsTable;
 
-    public function __construct(PDO $connection, string $eventStreamsTable)
+    /**
+     * @var string
+     */
+    private $projectionsTable;
+
+    public function __construct(PDO $connection, string $eventStreamsTable, string $projectionsTable)
     {
         $this->connection = $connection;
         $this->eventStreamsTable = $eventStreamsTable;
+        $this->projectionsTable = $projectionsTable;
     }
 
     public function __invoke(
@@ -58,7 +64,7 @@ final class PdoEventStoreProjectionFactory implements ProjectionFactory
             $this->connection,
             $name,
             $this->eventStreamsTable,
-            $options->projectionsTable(),
+            $this->projectionsTable,
             $options->lockTimeoutMs(),
             $options->cacheSize(),
             $options->persistBlockSize(),

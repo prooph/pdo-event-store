@@ -325,7 +325,6 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
         $readModel = new ReadModelMock();
 
         $projection = $this->eventStore->createReadModelProjection('test_projection', $readModel, new ProjectionOptions(
-            'projections',
             1000,
             10
         ));
@@ -431,7 +430,6 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
         $readModel = new ReadModelMock();
 
         $projection = $this->eventStore->createReadModelProjection('test_projection', $readModel, new ProjectionOptions(
-            'projections',
             1000,
             10
         ));

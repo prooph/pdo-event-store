@@ -12,24 +12,17 @@ declare(strict_types=1);
 
 namespace Prooph\EventStore\Pdo\Projection;
 
-use PDO;
 use Prooph\EventStore\Exception\InvalidArgumentException;
 use Prooph\EventStore\Projection\ProjectionOptions as BaseProjectionOptions;
 
 class ProjectionOptions extends BaseProjectionOptions
 {
     /**
-     * @var string
-     */
-    protected $projectionsTable;
-
-    /**
      * @var int
      */
     protected $lockTimeoutMs;
 
     public function __construct(
-        string $projectionsTable = 'projections',
         int $cacheSize = 1000,
         int $persistBlockSize = 1000,
         int $sleep = 250000,
@@ -37,7 +30,6 @@ class ProjectionOptions extends BaseProjectionOptions
     ) {
         parent::__construct($cacheSize, $persistBlockSize, $sleep);
 
-        $this->projectionsTable = $projectionsTable;
         $this->lockTimeoutMs = $lockTimeoutMs;
     }
 
@@ -46,7 +38,6 @@ class ProjectionOptions extends BaseProjectionOptions
         self::validateData($data);
 
         return new self(
-            $data['projections_table'],
             $data['cache_size'],
             $data['persist_block_size'],
             $data['sleep'],
@@ -59,21 +50,12 @@ class ProjectionOptions extends BaseProjectionOptions
         return $this->lockTimeoutMs;
     }
 
-    public function projectionsTable(): string
-    {
-        return $this->projectionsTable;
-    }
-
     /**
      * @throws InvalidArgumentException
      */
     protected static function validateData(array $data): void
     {
         parent::validateData($data);
-
-        if (! isset($data['projections_table'])) {
-            throw new InvalidArgumentException('projections_table option missing');
-        }
 
         if (! isset($data['lock_timeout_ms'])) {
             throw new InvalidArgumentException('lock_timeout_ms option missing');

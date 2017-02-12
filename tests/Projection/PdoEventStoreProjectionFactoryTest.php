@@ -28,7 +28,11 @@ class PdoEventStoreProjectionFactoryTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        $factory = new PdoEventStoreProjectionFactory($this->prophesize(PDO::class)->reveal(), 'test_projection');
+        $factory = new PdoEventStoreProjectionFactory(
+            $this->prophesize(PDO::class)->reveal(),
+            'event_streams',
+            'projections'
+        );
 
         $factory(
             $this->prophesize(EventStore::class)->reveal(),
