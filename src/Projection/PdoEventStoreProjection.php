@@ -624,6 +624,7 @@ EOT;
         $sql = <<<EOT
 SELECT position, state FROM $this->projectionsTable WHERE name = ? LIMIT 1;
 EOT;
+
         $statement = $this->connection->prepare($sql);
         $statement->execute([$this->name]);
 
@@ -643,6 +644,7 @@ EOT;
 INSERT INTO $this->projectionsTable (name, position, state, status, locked_until)
 VALUES (?, '{}', '{}', ?, NULL);
 EOT;
+
         $statement = $this->connection->prepare($sql);
         // we ignore any occuring error here (duplicate projection)
         $statement->execute([$this->name, $this->status->getValue()]);
@@ -701,6 +703,7 @@ EOT;
 UPDATE $this->projectionsTable SET position = ?, state = ?, locked_until = ? 
 WHERE name = ?
 EOT;
+
         $statement = $this->connection->prepare($sql);
         $statement->execute([
             json_encode($this->streamPositions),
