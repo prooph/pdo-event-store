@@ -393,16 +393,16 @@ EOT;
         $this->createProjection();
         $this->acquireLock();
 
+        $this->load();
+
+        if (! $this->eventStore->hasStream(new StreamName($this->name))) {
+            $this->eventStore->create(new Stream(new StreamName($this->name), new ArrayIterator()));
+        }
+
+        $singleHandler = null !== $this->handler;
+
         try {
             do {
-                $this->load();
-
-                if (! $this->eventStore->hasStream(new StreamName($this->name))) {
-                    $this->eventStore->create(new Stream(new StreamName($this->name), new ArrayIterator()));
-                }
-
-                $singleHandler = null !== $this->handler;
-
                 foreach ($this->streamPositions as $streamName => $position) {
                     try {
                         $streamEvents = $this->eventStore->load(new StreamName($streamName), $position + 1);

@@ -375,12 +375,12 @@ EOT;
             $this->readModel->init();
         }
 
+        $this->load();
+
+        $singleHandler = null !== $this->handler;
+
         try {
             do {
-                $this->load();
-
-                $singleHandler = null !== $this->handler;
-
                 foreach ($this->streamPositions as $streamName => $position) {
                     try {
                         $streamEvents = $this->eventStore->load(new StreamName($streamName), $position + 1);
