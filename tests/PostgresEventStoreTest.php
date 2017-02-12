@@ -237,6 +237,8 @@ final class PostgresEventStoreTest extends AbstractPdoEventStoreTest
     {
         $this->eventStore->beginTransaction();
         $this->eventStore->commit();
+
+        $this->assertFalse($this->eventStore->inTransaction());
     }
 
     /**

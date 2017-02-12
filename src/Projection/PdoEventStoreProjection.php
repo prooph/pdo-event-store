@@ -512,6 +512,7 @@ EOT;
         $sql = <<<EOT
 SELECT status FROM $this->projectionsTable WHERE name = ? LIMIT 1;
 EOT;
+
         $statement = $this->connection->prepare($sql);
         $statement->execute([$this->name]);
 

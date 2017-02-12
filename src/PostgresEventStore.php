@@ -509,7 +509,7 @@ EOT;
     public function deleteProjection(string $name, bool $deleteEmittedEvents): void
     {
         $sql = <<<EOT
-UPDATE $this->projectionsTable SET status = ? WHERE name = ? LIMIT 1;
+UPDATE $this->projectionsTable SET status = ? WHERE name = ?;
 EOT;
 
         if ($deleteEmittedEvents) {
@@ -528,7 +528,7 @@ EOT;
     public function resetProjection(string $name): void
     {
         $sql = <<<EOT
-UPDATE $this->projectionsTable SET status = ? WHERE name = ? LIMIT 1;
+UPDATE $this->projectionsTable SET status = ? WHERE name = ?;
 EOT;
 
         $statement = $this->connection->prepare($sql);
@@ -541,7 +541,7 @@ EOT;
     public function stopProjection(string $name): void
     {
         $sql = <<<EOT
-UPDATE $this->projectionsTable SET status = ? WHERE name = ? LIMIT 1;
+UPDATE $this->projectionsTable SET status = ? WHERE name = ?;
 EOT;
 
         $statement = $this->connection->prepare($sql);
