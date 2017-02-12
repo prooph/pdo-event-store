@@ -519,11 +519,10 @@ EOT;
             $status = ProjectionStatus::DELETING()->getValue();
         }
 
-
         $statement = $this->connection->prepare($sql);
         $statement->execute([
             $status,
-            $name
+            $name,
         ]);
     }
 
@@ -536,7 +535,7 @@ EOT;
         $statement = $this->connection->prepare($sql);
         $statement->execute([
             ProjectionStatus::RESETTING()->getValue(),
-            $name
+            $name,
         ]);
     }
 
@@ -549,7 +548,7 @@ EOT;
         $statement = $this->connection->prepare($sql);
         $statement->execute([
             ProjectionStatus::STOPPING()->getValue(),
-            $name
+            $name,
         ]);
     }
 
