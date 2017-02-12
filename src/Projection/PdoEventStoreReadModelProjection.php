@@ -410,12 +410,15 @@ EOT;
         switch ($this->fetchRemoteStatus()) {
             case ProjectionStatus::STOPPING():
                 $this->stop();
+
                 return;
             case ProjectionStatus::DELETING():
                 $this->delete(false);
+
                 return;
             case ProjectionStatus::DELETING_INCL_EMITTED_EVENTS():
                 $this->delete(true);
+
                 return;
             case ProjectionStatus::RESETTING():
                 $this->reset();
