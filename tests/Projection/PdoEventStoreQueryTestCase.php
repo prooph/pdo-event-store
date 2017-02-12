@@ -79,7 +79,9 @@ abstract class PdoEventStoreQueryTestCase extends TestCase
     {
         $eventStoreDecorator = new ActionEventEmitterEventStore($this->eventStore, new ProophActionEventEmitter());
 
-        $eventStoreDecorator->createQuery();
+        $query = $eventStoreDecorator->createQuery();
+
+        $this->assertEquals([], $query->getState());
     }
 
     /**

@@ -81,7 +81,9 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
     {
         $eventStoreDecorator = new ActionEventEmitterEventStore($this->eventStore, new ProophActionEventEmitter());
 
-        $eventStoreDecorator->createProjection('test_projection', new ProjectionOptions());
+        $projection = $eventStoreDecorator->createProjection('test_projection', new ProjectionOptions());
+
+        $this->assertEquals([], $projection->getState());
     }
 
     /**
@@ -499,6 +501,8 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
             ->run();
 
         $projection->delete(true);
+
+        $this->assertFalse($this->connection->query('SELECT * FROM projections WHERE real_stream_name = \'user-123\''));
     }
 
     /**

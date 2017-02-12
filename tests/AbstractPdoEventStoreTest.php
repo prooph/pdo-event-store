@@ -615,6 +615,8 @@ abstract class AbstractPdoEventStoreTest extends TestCase
         $this->eventStore->create($stream);
 
         $this->eventStore->delete($stream->streamName());
+
+        $this->assertFalse($this->eventStore->hasStream($stream->streamName()));
     }
 
     /**
@@ -684,9 +686,11 @@ abstract class AbstractPdoEventStoreTest extends TestCase
     /**
      * @test
      */
-    public function it_appends_empty_stream(): void
+    public function it_appends_an_empty_stream(): void
     {
         $this->eventStore->appendTo(new StreamName('something'), new ArrayIterator());
+
+        $this->assertFalse($this->eventStore->hasStream(new StreamName('something')));
     }
 
     /**

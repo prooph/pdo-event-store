@@ -82,7 +82,9 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
     {
         $eventStoreDecorator = new ActionEventEmitterEventStore($this->eventStore, new ProophActionEventEmitter());
 
-        $eventStoreDecorator->createReadModelProjection('test_projection', new ReadModelMock(), new ProjectionOptions());
+        $projection = $eventStoreDecorator->createReadModelProjection('test_projection', new ReadModelMock(), new ProjectionOptions());
+
+        $this->assertEquals([], $projection->getState());
     }
 
     /**
