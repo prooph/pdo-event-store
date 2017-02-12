@@ -423,6 +423,8 @@ EOT;
             case ProjectionStatus::RESETTING():
                 $this->reset();
                 break;
+            default:
+                break;
         }
 
         $this->createProjection();
@@ -477,6 +479,8 @@ EOT;
                         break;
                     case ProjectionStatus::RESETTING():
                         $this->reset();
+                        break;
+                    default:
                         break;
                 }
             } while ($keepRunning && ! $this->isStopped);
