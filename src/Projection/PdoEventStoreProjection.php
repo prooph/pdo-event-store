@@ -406,7 +406,7 @@ EOT;
         $statement->execute([$this->name]);
 
         if ($deleteEmittedEvents) {
-            $this->resetProjection();
+            $this->eventStore->delete(new StreamName($this->name));
         }
 
         $this->isStopped = true;
@@ -607,17 +607,6 @@ EOT;
         if (! empty($state)) {
             $this->state = $state;
         }
-    }
-
-    private function resetProjection(): void
-    {
-        $deleteProjectionSql = <<<EOT
-DELETE FROM $this->projectionsTable WHERE name = ?;
-EOT;
-        $statement = $this->connection->prepare($deleteProjectionSql);
-        $statement->execute([$this->name]);
-
-        $this->eventStore->delete(new StreamName($this->name));
     }
 
     private function createProjection(): void
