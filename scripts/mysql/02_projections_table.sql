@@ -3,6 +3,7 @@ CREATE TABLE `projections` (
   `name` VARCHAR(150) NOT NULL,
   `position` JSON,
   `state` JSON,
+  `status` VARCHAR(28),
   `locked_until` CHAR(26),
   PRIMARY KEY (`no`),
   UNIQUE KEY `ix_name` (`name`)
