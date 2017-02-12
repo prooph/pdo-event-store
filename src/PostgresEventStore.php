@@ -15,7 +15,6 @@ namespace Prooph\EventStore\Pdo;
 use EmptyIterator;
 use Iterator;
 use PDO;
-use Prooph\Common\Messaging\MessageConverter;
 use Prooph\Common\Messaging\MessageFactory;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Exception\StreamExistsAlready;
@@ -47,11 +46,6 @@ final class PostgresEventStore implements TransactionalEventStore
      * @var MessageFactory
      */
     private $messageFactory;
-
-    /**
-     * @var MessageConverter
-     */
-    private $messageConverter;
 
     /**
      * @var PDO
@@ -99,7 +93,6 @@ final class PostgresEventStore implements TransactionalEventStore
      */
     public function __construct(
         MessageFactory $messageFactory,
-        MessageConverter $messageConverter,
         PDO $connection,
         PersistenceStrategy $persistenceStrategy,
         int $loadBatchSize = 10000,
@@ -112,7 +105,6 @@ final class PostgresEventStore implements TransactionalEventStore
         Assertion::min($loadBatchSize, 1);
 
         $this->messageFactory = $messageFactory;
-        $this->messageConverter = $messageConverter;
         $this->connection = $connection;
         $this->persistenceStrategy = $persistenceStrategy;
         $this->loadBatchSize = $loadBatchSize;

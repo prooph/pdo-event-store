@@ -14,7 +14,6 @@ namespace ProophTest\EventStore\Pdo;
 
 use PDO;
 use Prooph\Common\Messaging\FQCNMessageFactory;
-use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Exception\StreamNotFound;
@@ -65,7 +64,6 @@ final class PostgresEventStoreTest extends AbstractPdoEventStoreTest
     {
         return new PostgresEventStore(
             new FQCNMessageFactory(),
-            new NoOpMessageConverter(),
             $connection,
             new PostgresAggregateStreamStrategy()
         );
@@ -132,7 +130,6 @@ final class PostgresEventStoreTest extends AbstractPdoEventStoreTest
     {
         $this->eventStore = new PostgresEventStore(
             new FQCNMessageFactory(),
-            new NoOpMessageConverter(),
             $this->connection,
             new PostgresSingleStreamStrategy(),
             5
@@ -169,7 +166,6 @@ final class PostgresEventStoreTest extends AbstractPdoEventStoreTest
 
         $this->eventStore = new PostgresEventStore(
             new FQCNMessageFactory(),
-            new NoOpMessageConverter(),
             $this->connection,
             new PostgresSingleStreamStrategy()
         );

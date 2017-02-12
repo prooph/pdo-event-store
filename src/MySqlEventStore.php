@@ -15,7 +15,6 @@ namespace Prooph\EventStore\Pdo;
 use EmptyIterator;
 use Iterator;
 use PDO;
-use Prooph\Common\Messaging\MessageConverter;
 use Prooph\Common\Messaging\MessageFactory;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception\ConcurrencyException;
@@ -45,11 +44,6 @@ final class MySqlEventStore implements EventStore
      * @var MessageFactory
      */
     private $messageFactory;
-
-    /**
-     * @var MessageConverter
-     */
-    private $messageConverter;
 
     /**
      * @var PDO
@@ -102,7 +96,6 @@ final class MySqlEventStore implements EventStore
      */
     public function __construct(
         MessageFactory $messageFactory,
-        MessageConverter $messageConverter,
         PDO $connection,
         PersistenceStrategy $persistenceStrategy,
         int $loadBatchSize = 10000,
@@ -115,7 +108,6 @@ final class MySqlEventStore implements EventStore
         Assertion::min($loadBatchSize, 1);
 
         $this->messageFactory = $messageFactory;
-        $this->messageConverter = $messageConverter;
         $this->connection = $connection;
         $this->persistenceStrategy = $persistenceStrategy;
         $this->loadBatchSize = $loadBatchSize;
