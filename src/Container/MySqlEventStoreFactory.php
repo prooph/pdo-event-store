@@ -33,6 +33,9 @@ final class MySqlEventStoreFactory extends AbstractEventStoreFactory
                 ActionEventEmitterEventStore::EVENT_HAS_STREAM,
                 ActionEventEmitterEventStore::EVENT_FETCH_STREAM_METADATA,
                 ActionEventEmitterEventStore::EVENT_UPDATE_STREAM_METADATA,
+                ActionEventEmitterEventStore::EVENT_DELETE_PROJECTION,
+                ActionEventEmitterEventStore::EVENT_RESET_PROJECTION,
+                ActionEventEmitterEventStore::EVENT_STOP_PROJECTION,
             ])
         );
     }
@@ -55,6 +58,7 @@ final class MySqlEventStoreFactory extends AbstractEventStoreFactory
             ],
             'load_batch_size' => 1000,
             'event_streams_table' => 'event_streams',
+            'projections_table' => 'projections',
             'message_factory' => FQCNMessageFactory::class,
             'wrap_action_event_emitter' => true,
             'metadata_enrichers' => [],

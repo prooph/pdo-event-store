@@ -33,10 +33,16 @@ final class PdoEventStoreReadModelProjectionFactory implements ReadModelProjecti
      */
     private $eventStreamsTable;
 
-    public function __construct(PDO $connection, string $eventStreamsTable)
+    /**
+     * @var string
+     */
+    private $projectionsTable;
+
+    public function __construct(PDO $connection, string $eventStreamsTable, string $projectionsTable)
     {
         $this->connection = $connection;
         $this->eventStreamsTable = $eventStreamsTable;
+        $this->projectionsTable = $projectionsTable;
     }
 
     public function __invoke(
@@ -61,7 +67,7 @@ final class PdoEventStoreReadModelProjectionFactory implements ReadModelProjecti
             $name,
             $readModel,
             $this->eventStreamsTable,
-            $options->projectionsTable(),
+            $this->projectionsTable,
             $options->lockTimeoutMs(),
             $options->persistBlockSize(),
             $options->sleep()

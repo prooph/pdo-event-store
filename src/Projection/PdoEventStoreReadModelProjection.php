@@ -78,6 +78,11 @@ final class PdoEventStoreReadModelProjection implements ReadModelProjection
     private $state = [];
 
     /**
+     * @var ProjectionStatus
+     */
+    private $status;
+
+    /**
      * @var callable|null
      */
     private $initCallback;
@@ -137,6 +142,7 @@ final class PdoEventStoreReadModelProjection implements ReadModelProjection
         $this->lockTimeoutMs = $lockTimeoutMs;
         $this->persistBlockSize = $persistBlockSize;
         $this->sleep = $sleep;
+        $this->status = ProjectionStatus::IDLE();
 
         while ($eventStore instanceof EventStoreDecorator) {
             $eventStore = $eventStore->getInnerEventStore();
@@ -312,24 +318,43 @@ EOT;
 
         $callback = $this->initCallback;
 
-        $this->resetProjection();
+        $this->readModel->reset();
+
+        $this->state = [];
 
         if (is_callable($callback)) {
             $result = $callback();
 
             if (is_array($result)) {
                 $this->state = $result;
-
-                return;
             }
         }
 
-        $this->state = [];
+        $sql = <<<EOT
+UPDATE $this->projectionsTable SET position = ?, state = ?, status = ?
+WHERE name = ?
+EOT;
+
+        $statement = $this->connection->prepare($sql);
+        $statement->execute([
+            json_encode($this->streamPositions),
+            json_encode($this->state),
+            $this->status->getValue(),
+            $this->name,
+        ]);
     }
 
     public function stop(): void
     {
         $this->isStopped = true;
+
+        $stopProjectionSql = <<<EOT
+UPDATE $this->projectionsTable SET status = ? WHERE name = ?;
+EOT;
+        $statement = $this->connection->prepare($stopProjectionSql);
+        $statement->execute([ProjectionStatus::IDLE()->getValue(), $this->name]);
+
+        $this->status = ProjectionStatus::IDLE();
     }
 
     public function getState(): array
@@ -358,6 +383,20 @@ EOT;
         if ($deleteProjection) {
             $this->readModel->delete();
         }
+
+        $this->isStopped = true;
+
+        $callback = $this->initCallback;
+
+        $this->state = [];
+
+        if (is_callable($callback)) {
+            $result = $callback();
+
+            if (is_array($result)) {
+                $this->state = $result;
+            }
+        }
     }
 
     public function run(bool $keepRunning = true): void
@@ -368,6 +407,26 @@ EOT;
             throw new Exception\RuntimeException('No handlers configured');
         }
 
+        switch ($this->fetchRemoteStatus()) {
+            case ProjectionStatus::STOPPING():
+                $this->stop();
+
+                return;
+            case ProjectionStatus::DELETING():
+                $this->delete(false);
+
+                return;
+            case ProjectionStatus::DELETING_INCL_EMITTED_EVENTS():
+                $this->delete(true);
+
+                return;
+            case ProjectionStatus::RESETTING():
+                $this->reset();
+                break;
+            default:
+                break;
+        }
+
         $this->createProjection();
         $this->acquireLock();
 
@@ -375,12 +434,12 @@ EOT;
             $this->readModel->init();
         }
 
+        $this->load();
+
+        $singleHandler = null !== $this->handler;
+
         try {
             do {
-                $this->load();
-
-                $singleHandler = null !== $this->handler;
-
                 foreach ($this->streamPositions as $streamName => $position) {
                     try {
                         $streamEvents = $this->eventStore->load(new StreamName($streamName), $position + 1);
@@ -407,10 +466,44 @@ EOT;
                 }
 
                 $this->eventCounter = 0;
+
+                switch ($this->fetchRemoteStatus()) {
+                    case ProjectionStatus::STOPPING():
+                        $this->stop();
+                        break;
+                    case ProjectionStatus::DELETING():
+                        $this->delete(false);
+                        break;
+                    case ProjectionStatus::DELETING_INCL_EMITTED_EVENTS():
+                        $this->delete(true);
+                        break;
+                    case ProjectionStatus::RESETTING():
+                        $this->reset();
+                        break;
+                    default:
+                        break;
+                }
             } while ($keepRunning && ! $this->isStopped);
         } finally {
             $this->releaseLock();
         }
+    }
+
+    private function fetchRemoteStatus(): ProjectionStatus
+    {
+        $sql = <<<EOT
+SELECT status FROM $this->projectionsTable WHERE name = ? LIMIT 1;
+EOT;
+        $statement = $this->connection->prepare($sql);
+        $statement->execute([$this->name]);
+
+        $result = $statement->fetch(PDO::FETCH_OBJ);
+
+        if (false === $result) {
+            return ProjectionStatus::RUNNING();
+        }
+
+        return ProjectionStatus::byValue($result->status);
     }
 
     private function handleStreamWithSingleHandler(string $streamName, Iterator $events): void
@@ -511,6 +604,7 @@ EOT;
         $sql = <<<EOT
 SELECT position, state FROM $this->projectionsTable WHERE name = ? ORDER BY no DESC LIMIT 1;
 EOT;
+
         $statement = $this->connection->prepare($sql);
         $statement->execute([$this->name]);
 
@@ -524,26 +618,16 @@ EOT;
         }
     }
 
-    private function resetProjection(): void
-    {
-        $deleteProjectionSql = <<<EOT
-DELETE FROM $this->projectionsTable WHERE name = ?;
-EOT;
-        $statement = $this->connection->prepare($deleteProjectionSql);
-        $statement->execute([$this->name]);
-
-        $this->readModel->reset();
-    }
-
     private function createProjection(): void
     {
         $sql = <<<EOT
-INSERT INTO $this->projectionsTable (name, position, state, locked_until)
-VALUES (?, '{}', '{}', NULL);
+INSERT INTO $this->projectionsTable (name, position, state, status, locked_until)
+VALUES (?, '{}', '{}', ?, NULL);
 EOT;
+
         $statement = $this->connection->prepare($sql);
         // we ignore any occuring error here (duplicate projection)
-        $statement->execute([$this->name]);
+        $statement->execute([$this->name, $this->status->getValue()]);
     }
 
     /**
@@ -556,10 +640,11 @@ EOT;
         $lockUntilString = $now->modify('+' . (string) $this->lockTimeoutMs . ' ms')->format('Y-m-d\TH:i:s.u');
 
         $sql = <<<EOT
-UPDATE $this->projectionsTable SET locked_until = ? WHERE name = ? AND (locked_until IS NULL OR locked_until < ?);
+UPDATE $this->projectionsTable SET locked_until = ?, status = ? WHERE name = ? AND (locked_until IS NULL OR locked_until < ?);
 EOT;
+
         $statement = $this->connection->prepare($sql);
-        $statement->execute([$lockUntilString, $this->name, $nowString]);
+        $statement->execute([$lockUntilString, ProjectionStatus::RUNNING()->getValue(), $this->name, $nowString]);
 
         if ($statement->rowCount() !== 1) {
             if ($statement->errorCode() !== '00000') {
@@ -573,16 +658,20 @@ EOT;
 
             throw new Exception\RuntimeException('Another projection process is already running');
         }
+
+        $this->status = ProjectionStatus::RUNNING();
     }
 
     private function releaseLock(): void
     {
         $sql = <<<EOT
-UPDATE $this->projectionsTable SET locked_until = NULL WHERE name = ?;
+UPDATE $this->projectionsTable SET locked_until = NULL, status = ? WHERE name = ?;
 EOT;
 
         $statement = $this->connection->prepare($sql);
-        $statement->execute([$this->name]);
+        $statement->execute([ProjectionStatus::IDLE()->getValue(), $this->name]);
+
+        $this->status = ProjectionStatus::IDLE();
     }
 
     private function persist(): void
@@ -594,8 +683,9 @@ EOT;
 
         $sql = <<<EOT
 UPDATE $this->projectionsTable SET position = ?, state = ?, locked_until = ? 
-WHERE name = ? 
+WHERE name = ?
 EOT;
+
         $statement = $this->connection->prepare($sql);
         $statement->execute([
             json_encode($this->streamPositions),

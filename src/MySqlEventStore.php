@@ -26,6 +26,7 @@ use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\Projection\PdoEventStoreProjectionFactory;
 use Prooph\EventStore\Pdo\Projection\PdoEventStoreQueryFactory;
 use Prooph\EventStore\Pdo\Projection\PdoEventStoreReadModelProjectionFactory;
+use Prooph\EventStore\Pdo\Projection\ProjectionStatus;
 use Prooph\EventStore\Projection\Projection;
 use Prooph\EventStore\Projection\ProjectionFactory;
 use Prooph\EventStore\Projection\ProjectionOptions as BaseProjectionOptions;
@@ -66,6 +67,11 @@ final class MySqlEventStore implements EventStore
     private $eventStreamsTable;
 
     /**
+     * @var string
+     */
+    private $projectionsTable;
+
+    /**
      * @var bool
      */
     private $duringCreate = false;
@@ -99,7 +105,8 @@ final class MySqlEventStore implements EventStore
         PDO $connection,
         PersistenceStrategy $persistenceStrategy,
         int $loadBatchSize = 10000,
-        string $eventStreamsTable = 'event_streams'
+        string $eventStreamsTable = 'event_streams',
+        string $projectionsTable = 'projections'
     ) {
         if (! extension_loaded('pdo_mysql')) {
             throw ExtensionNotLoaded::with('pdo_mysql');
@@ -112,6 +119,7 @@ final class MySqlEventStore implements EventStore
         $this->persistenceStrategy = $persistenceStrategy;
         $this->loadBatchSize = $loadBatchSize;
         $this->eventStreamsTable = $eventStreamsTable;
+        $this->projectionsTable = $projectionsTable;
     }
 
     public function fetchStreamMetadata(StreamName $streamName): array
@@ -478,7 +486,8 @@ EOT;
         if (null === $this->defaultProjectionFactory) {
             $this->defaultProjectionFactory = new PdoEventStoreProjectionFactory(
                 $this->connection,
-                $this->eventStreamsTable
+                $this->eventStreamsTable,
+                $this->projectionsTable
             );
         }
 
@@ -490,11 +499,57 @@ EOT;
         if (null === $this->defaultReadModelProjectionFactory) {
             $this->defaultReadModelProjectionFactory = new PdoEventStoreReadModelProjectionFactory(
                 $this->connection,
-                $this->eventStreamsTable
+                $this->eventStreamsTable,
+                $this->projectionsTable
             );
         }
 
         return $this->defaultReadModelProjectionFactory;
+    }
+
+    public function deleteProjection(string $name, bool $deleteEmittedEvents): void
+    {
+        $sql = <<<EOT
+UPDATE $this->projectionsTable SET status = ? WHERE name = ? LIMIT 1;
+EOT;
+
+        if ($deleteEmittedEvents) {
+            $status = ProjectionStatus::DELETING_INCL_EMITTED_EVENTS()->getValue();
+        } else {
+            $status = ProjectionStatus::DELETING()->getValue();
+        }
+
+        $statement = $this->connection->prepare($sql);
+        $statement->execute([
+            $status,
+            $name,
+        ]);
+    }
+
+    public function resetProjection(string $name): void
+    {
+        $sql = <<<EOT
+UPDATE $this->projectionsTable SET status = ? WHERE name = ? LIMIT 1;
+EOT;
+
+        $statement = $this->connection->prepare($sql);
+        $statement->execute([
+            ProjectionStatus::RESETTING()->getValue(),
+            $name,
+        ]);
+    }
+
+    public function stopProjection(string $name): void
+    {
+        $sql = <<<EOT
+UPDATE $this->projectionsTable SET status = ? WHERE name = ? LIMIT 1;
+EOT;
+
+        $statement = $this->connection->prepare($sql);
+        $statement->execute([
+            ProjectionStatus::STOPPING()->getValue(),
+            $name,
+        ]);
     }
 
     private function addStreamToStreamsTable(Stream $stream): void

@@ -21,21 +21,11 @@ class ProjectionOptionsTest extends TestCase
     /**
      * @test
      */
-    public function it_throws_exception_when_projections_table_option_is_missing(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-
-        ProjectionOptions::fromArray([]);
-    }
-
-    /**
-     * @test
-     */
     public function it_throws_exception_when_cache_sizesize_option_is_missing(): void
     {
         $this->expectException(InvalidArgumentException::class);
 
-        ProjectionOptions::fromArray(['projections_table' => 'foo']);
+        ProjectionOptions::fromArray([]);
     }
 
     /**
@@ -46,7 +36,6 @@ class ProjectionOptionsTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         ProjectionOptions::fromArray([
-            'projections_table' => 'foo',
             'cache_size' => 1,
         ]);
     }
@@ -59,7 +48,6 @@ class ProjectionOptionsTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         ProjectionOptions::fromArray([
-            'projections_table' => 'foo',
             'cache_size' => 1,
             'persist_block_size' => 2,
         ]);
@@ -73,7 +61,6 @@ class ProjectionOptionsTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         ProjectionOptions::fromArray([
-            'projections_table' => 'foo',
             'cache_size' => 1,
             'persist_block_size' => 2,
             'sleep' => 10000,
@@ -86,7 +73,6 @@ class ProjectionOptionsTest extends TestCase
     public function it_creates_instance(): void
     {
         $options = ProjectionOptions::fromArray([
-            'projections_table' => 'foo',
             'cache_size' => 5,
             'persist_block_size' => 15,
             'sleep' => 100000,
@@ -95,7 +81,6 @@ class ProjectionOptionsTest extends TestCase
 
         $this->assertEquals(5, $options->cacheSize());
         $this->assertEquals(15, $options->persistBlockSize());
-        $this->assertEquals('foo', $options->projectionsTable());
         $this->assertEquals(100000, $options->sleep());
         $this->assertEquals(100, $options->lockTimeoutMs());
     }

@@ -325,7 +325,6 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
         $readModel = new ReadModelMock();
 
         $projection = $this->eventStore->createReadModelProjection('test_projection', $readModel, new ProjectionOptions(
-            'projections',
             1000,
             10
         ));
@@ -431,7 +430,6 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
         $readModel = new ReadModelMock();
 
         $projection = $this->eventStore->createReadModelProjection('test_projection', $readModel, new ProjectionOptions(
-            'projections',
             1000,
             10
         ));
@@ -710,5 +708,257 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
                 },
             ])
             ->run();
+    }
+
+    /**
+     * @test
+     */
+    public function it_deletes_when_projection_before_start_when_it_was_deleted_from_outside(): void
+    {
+        $this->prepareEventStream('user-123');
+
+        $calledTimes = 0;
+
+        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+
+        $projection
+            ->init(function (): array {
+                return ['count' => 0];
+            })
+            ->fromStream('user-123')
+            ->when([
+                UsernameChanged::class => function (array $state, UsernameChanged $event) use (&$calledTimes): array {
+                    $state['count']++;
+                    $calledTimes++;
+
+                    return $state;
+                },
+            ])
+            ->run(false);
+
+        $events = [];
+        for ($i = 51; $i <= 100; $i++) {
+            $events[] = UsernameChanged::with([
+                'name' => uniqid('name_'),
+            ], $i);
+        }
+
+        $this->eventStore->appendTo(new StreamName('user-123'), new ArrayIterator($events));
+
+        $this->eventStore->deleteProjection('test_projection', false);
+
+        $projection->run(false);
+
+        $this->assertEquals(0, $projection->getState()['count']);
+        $this->assertEquals(49, $calledTimes);
+    }
+
+    /**
+     * @test
+     */
+    public function it_deletes_projection_during_run_when_it_was_deleted_from_outside(): void
+    {
+        $this->prepareEventStream('user-123');
+
+        $calledTimes = 0;
+
+        $eventStore = $this->eventStore;
+
+        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+
+        $projection
+            ->init(function (): array {
+                return ['count' => 0];
+            })
+            ->fromStream('user-123')
+            ->when([
+                UsernameChanged::class => function (array $state, UsernameChanged $event) use (&$calledTimes, $eventStore): array {
+                    static $wasReset = false;
+
+                    if (! $wasReset) {
+                        $eventStore->deleteProjection('test_projection', false);
+                        $wasReset = true;
+                    }
+
+                    $state['count']++;
+                    $calledTimes++;
+
+                    return $state;
+                },
+            ])
+            ->run(false);
+
+        $projection->run(false);
+
+        $this->assertEquals(0, $projection->getState()['count']);
+        $this->assertEquals(49, $calledTimes);
+    }
+
+    /**
+     * @test
+     */
+    public function it_resets_projection_before_start_when_it_was_reset_from_outside(): void
+    {
+        $this->prepareEventStream('user-123');
+
+        $calledTimes = 0;
+
+        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+
+        $projection
+            ->init(function (): array {
+                return ['count' => 0];
+            })
+            ->fromStream('user-123')
+            ->when([
+                UsernameChanged::class => function (array $state, UsernameChanged $event) use (&$calledTimes): array {
+                    $state['count']++;
+                    $calledTimes++;
+
+                    return $state;
+                },
+            ])
+            ->run(false);
+
+        $events = [];
+        for ($i = 51; $i <= 100; $i++) {
+            $events[] = UsernameChanged::with([
+                'name' => uniqid('name_'),
+            ], $i);
+        }
+
+        $this->eventStore->appendTo(new StreamName('user-123'), new ArrayIterator($events));
+
+        $this->eventStore->resetProjection('test_projection');
+
+        $projection->run(false);
+
+        $this->assertEquals(99, $projection->getState()['count']);
+        $this->assertEquals(148, $calledTimes);
+    }
+
+    /**
+     * @test
+     */
+    public function it_resets_projection_during_run_when_it_was_reset_from_outside(): void
+    {
+        $this->prepareEventStream('user-123');
+
+        $calledTimes = 0;
+
+        $eventStore = $this->eventStore;
+
+        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+
+        $projection
+            ->init(function (): array {
+                return ['count' => 0];
+            })
+            ->fromStream('user-123')
+            ->when([
+                UsernameChanged::class => function (array $state, UsernameChanged $event) use (&$calledTimes, $eventStore): array {
+                    static $wasReset = false;
+
+                    if (! $wasReset) {
+                        $eventStore->resetProjection('test_projection');
+                        $wasReset = true;
+                    }
+
+                    $state['count']++;
+                    $calledTimes++;
+
+                    return $state;
+                },
+            ])
+            ->run(false);
+
+        $projection->run(false);
+
+        $this->assertEquals(49, $projection->getState()['count']);
+        $this->assertEquals(98, $calledTimes);
+    }
+
+    /**
+     * @test
+     */
+    public function it_stops_when_projection_before_start_when_it_was_stopped_from_outside(): void
+    {
+        $this->prepareEventStream('user-123');
+
+        $calledTimes = 0;
+
+        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+
+        $projection
+            ->init(function (): array {
+                return ['count' => 0];
+            })
+            ->fromStream('user-123')
+            ->when([
+                UsernameChanged::class => function (array $state, UsernameChanged $event) use (&$calledTimes): array {
+                    $state['count']++;
+                    $calledTimes++;
+
+                    return $state;
+                },
+            ])
+            ->run(false);
+
+        $events = [];
+        for ($i = 51; $i <= 100; $i++) {
+            $events[] = UsernameChanged::with([
+                'name' => uniqid('name_'),
+            ], $i);
+        }
+
+        $this->eventStore->appendTo(new StreamName('user-123'), new ArrayIterator($events));
+
+        $this->eventStore->stopProjection('test_projection');
+
+        $projection->run(false);
+
+        $this->assertEquals(49, $projection->getState()['count']);
+        $this->assertEquals(49, $calledTimes);
+    }
+
+    /**
+     * @test
+     */
+    public function it_stops_projection_during_run_when_it_was_stopped_from_outside(): void
+    {
+        $this->prepareEventStream('user-123');
+
+        $calledTimes = 0;
+
+        $eventStore = $this->eventStore;
+
+        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+
+        $projection
+            ->init(function (): array {
+                return ['count' => 0];
+            })
+            ->fromStream('user-123')
+            ->when([
+                UsernameChanged::class => function (array $state, UsernameChanged $event) use (&$calledTimes, $eventStore): array {
+                    static $wasReset = false;
+
+                    if (! $wasReset) {
+                        $eventStore->stopProjection('test_projection');
+                        $wasReset = true;
+                    }
+
+                    $state['count']++;
+                    $calledTimes++;
+
+                    return $state;
+                },
+            ])
+            ->run(false);
+
+        $projection->run(false);
+
+        $this->assertEquals(49, $projection->getState()['count']);
+        $this->assertEquals(49, $calledTimes);
     }
 }
