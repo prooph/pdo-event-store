@@ -551,6 +551,26 @@ EOT;
         ]);
     }
 
+    public function fetchStreamNames(
+        ?string $filter,
+        bool $regex,
+        ?MetadataMatcher $metadataMatcher,
+        int $limit,
+        int $offset
+    ): array {
+        // TODO: Implement fetchStreamNames() method.
+    }
+
+    public function fetchCategoryNames(?string $filter, bool $regex, int $limit, int $offset): array
+    {
+        // TODO: Implement fetchCategoryNames() method.
+    }
+
+    public function fetchProjectionNames(?string $filter, bool $regex, int $limit, int $offset): array
+    {
+        // TODO: Implement fetchProjectionNames() method.
+    }
+
     private function addStreamToStreamsTable(Stream $stream): void
     {
         $realStreamName = $stream->streamName()->toString();

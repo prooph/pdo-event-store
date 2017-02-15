@@ -832,4 +832,157 @@ abstract class AbstractPdoEventStoreTest extends TestCase
 
         return $events;
     }
+
+    /**
+     * @test
+     */
+    public function it_fetches_stream_names(): void
+    {
+        try {
+            for ($i = 0; $i < 50; $i++) {
+                $this->eventStore->create(new Stream(new StreamName('user-' . $i), new \EmptyIterator(), ['foo' => 'bar']));
+                $this->eventStore->create(new Stream(new StreamName('admin-' . $i), new \EmptyIterator(), ['foo' => 'bar']));
+            }
+
+            for ($i = 0; $i < 20; $i++) {
+                $this->eventStore->create(new Stream(new StreamName(uniqid('rand')), new \EmptyIterator()));
+            }
+
+            $this->assertCount(120, $this->eventStore->fetchStreamNames(null, false, null, 200, 0));
+            $this->assertCount(0, $this->eventStore->fetchStreamNames(null, false, null, 200, 200));
+            $this->assertCount(10, $this->eventStore->fetchStreamNames(null, false, null, 10, 0));
+            $this->assertCount(10, $this->eventStore->fetchStreamNames(null, false, null, 10, 10));
+            $this->assertCount(5, $this->eventStore->fetchStreamNames(null, false, null, 10, 115));
+
+            for ($i = 0; $i < 50; $i++) {
+                $this->assertEquals('user-' . $i, $this->eventStore->fetchStreamNames(null, false, null, 1, $i * 2)[0]->toString());
+                $this->assertEquals('admin-' . $i, $this->eventStore->fetchStreamNames(null, false, null, 1, $i * 2 + 1)[0]->toString());
+            }
+
+            for ($i = 100; $i < 120; $i++) {
+                $this->assertStringStartsWith('rand', $this->eventStore->fetchStreamNames(null, false, null, 1, $i)[0]->toString());
+            }
+
+            $this->assertCount(30, $this->eventStore->fetchStreamNames('s.*er-', true, null, 30, 0));
+            $this->assertCount(30, $this->eventStore->fetchStreamNames('n.*-', true, (new MetadataMatcher())->withMetadataMatch('foo', Operator::EQUALS(), 'bar'), 30, 0));
+            $this->assertCount(0, $this->eventStore->fetchStreamNames('n.*-', true, (new MetadataMatcher())->withMetadataMatch('foo', Operator::NOT_EQUALS(), 'bar'), 30, 0));
+            $this->assertCount(0, $this->eventStore->fetchStreamNames(null, false, (new MetadataMatcher())->withMetadataMatch('foo', Operator::NOT_EQUALS(), 'bar'), 30, 0));
+        } finally {
+            $databaseName = TestUtil::getDatabaseName();
+            $dropTables = <<<EOT
+SET FOREIGN_KEY_CHECKS = 0;
+SET GROUP_CONCAT_MAX_LEN=32768;
+SET @tables = NULL;
+SELECT GROUP_CONCAT('`', table_name, '`') INTO @tables
+  FROM information_schema.tables
+  WHERE table_schema = '$databaseName';
+SELECT IFNULL(@tables,'dummy') INTO @tables;
+
+SET @tables = CONCAT('DROP TABLE IF EXISTS ', @tables);
+PREPARE stmt FROM @tables;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+SET FOREIGN_KEY_CHECKS = 1;
+EOT;
+
+            $this->connection->query($dropTables);
+            TestUtil::initDefaultDatabaseTables($this->connection);
+        }
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_fetching_stream_names_using_regex_and_no_filter(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('No regex pattern given');
+
+        $this->eventStore->fetchStreamNames(null, true, null, 10, 0);
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_fetching_stream_names_using_invalid_regex(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid regex pattern given');
+
+        $this->eventStore->fetchStreamNames('invalid)', true, null, 10, 0);
+    }
+
+    /**
+     * @test
+     * @group by
+     */
+    public function it_fetches_stream_categories(): void
+    {
+        try {
+            for ($i = 0; $i < 5; $i++) {
+                $this->eventStore->create(new Stream(new StreamName('foo-' . $i), new \EmptyIterator()));
+                $this->eventStore->create(new Stream(new StreamName('bar-' . $i), new \EmptyIterator()));
+                $this->eventStore->create(new Stream(new StreamName('baz-' . $i), new \EmptyIterator()));
+                $this->eventStore->create(new Stream(new StreamName('bam-' . $i), new \EmptyIterator()));
+                $this->eventStore->create(new Stream(new StreamName('foobar-' . $i), new \EmptyIterator()));
+                $this->eventStore->create(new Stream(new StreamName('foobaz-' . $i), new \EmptyIterator()));
+                $this->eventStore->create(new Stream(new StreamName('foobam-' . $i), new \EmptyIterator()));
+            }
+
+            for ($i = 0; $i < 20; $i++) {
+                $this->eventStore->create(new Stream(new StreamName(uniqid('rand')), new \EmptyIterator()));
+            }
+
+            $this->assertCount(7, $this->eventStore->fetchCategoryNames(null, false, 20, 0));
+            $this->assertCount(0, $this->eventStore->fetchCategoryNames(null, false, 20, 20));
+            $this->assertCount(3, $this->eventStore->fetchCategoryNames(null, false, 3, 0));
+            $this->assertCount(3, $this->eventStore->fetchCategoryNames(null, false, 3, 3));
+            $this->assertCount(5, $this->eventStore->fetchCategoryNames(null, false, 10, 2));
+
+            $this->assertCount(1, $this->eventStore->fetchCategoryNames('foo', false, 20, 0));
+            $this->assertCount(4, $this->eventStore->fetchCategoryNames('foo', true, 20, 0));
+        } finally {
+            $databaseName = TestUtil::getDatabaseName();
+            $dropTables = <<<EOT
+SET FOREIGN_KEY_CHECKS = 0;
+SET GROUP_CONCAT_MAX_LEN=32768;
+SET @tables = NULL;
+SELECT GROUP_CONCAT('`', table_name, '`') INTO @tables
+  FROM information_schema.tables
+  WHERE table_schema = '$databaseName';
+SELECT IFNULL(@tables,'dummy') INTO @tables;
+
+SET @tables = CONCAT('DROP TABLE IF EXISTS ', @tables);
+PREPARE stmt FROM @tables;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+SET FOREIGN_KEY_CHECKS = 1;
+EOT;
+
+            $this->connection->query($dropTables);
+            TestUtil::initDefaultDatabaseTables($this->connection);
+        }
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_fetching_stream_categories_using_regex_and_no_filter(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('No regex pattern given');
+
+        $this->eventStore->fetchCategoryNames(null, true, 10, 0);
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_fetching_stream_categories_using_invalid_regex(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid regex pattern given');
+
+        $this->eventStore->fetchCategoryNames('invalid)', true, 10, 0);
+    }
 }
