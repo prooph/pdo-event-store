@@ -263,9 +263,11 @@ EOT;
             $count = PHP_INT_MAX;
         }
 
-        list($where, $values) = $this->createWhereClauseForMetadata($metadataMatcher);
+        $where = [];
+        $values = [];
 
         $where[] = '`no` >= :fromNumber';
+        list($where, $values) = $this->createWhereClauseForMetadata($metadataMatcher, $where, $values);
 
         $whereCondition = implode(' AND ', $where);
         $limit = min($count, $this->loadBatchSize);
@@ -280,6 +282,8 @@ LIMIT :limit;
 EOT;
 
         $statement = $this->connection->prepare($query);
+        $statement->setFetchMode(PDO::FETCH_OBJ);
+
         $statement->bindValue(':fromNumber', $fromNumber, PDO::PARAM_INT);
         $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
 
@@ -287,7 +291,6 @@ EOT;
             $statement->bindValue($parameter, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
         }
 
-        $statement->setFetchMode(PDO::FETCH_OBJ);
         $statement->execute();
 
         if ($statement->errorCode() !== '00000') {
@@ -319,9 +322,12 @@ EOT;
             $count = PHP_INT_MAX;
         }
 
-        list($where, $values) = $this->createWhereClauseForMetadata($metadataMatcher);
+        $where = [];
+        $values = [];
 
         $where[] = '`no` <= :fromNumber';
+
+        list($where, $values) = $this->createWhereClauseForMetadata($metadataMatcher, $where, $values);
 
         $whereCondition = implode(' AND ', $where);
         $limit = min($count, $this->loadBatchSize);
@@ -336,6 +342,8 @@ LIMIT :limit;
 EOT;
 
         $statement = $this->connection->prepare($query);
+        $statement->setFetchMode(PDO::FETCH_OBJ);
+
         $statement->bindValue(':fromNumber', $fromNumber, PDO::PARAM_INT);
         $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
 
@@ -343,7 +351,6 @@ EOT;
             $statement->bindValue($parameter, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
         }
 
-        $statement->setFetchMode(PDO::FETCH_OBJ);
         $statement->execute();
 
         if ($statement->errorCode() !== '00000') {
