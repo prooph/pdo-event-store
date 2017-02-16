@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace ProophTest\EventStore\Pdo\Container;
 
-use Interop\Container\ContainerInterface;
 use PHPUnit\Framework\TestCase;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\EventStore\ActionEventEmitterEventStore;
@@ -25,6 +24,7 @@ use Prooph\EventStore\Pdo\PostgresEventStore;
 use Prooph\EventStore\Plugin\Plugin;
 use Prooph\EventStore\TransactionalActionEventEmitterEventStore;
 use ProophTest\EventStore\Pdo\TestUtil;
+use Psr\Container\ContainerInterface;
 
 /**
  * @group pdo_pgsql
