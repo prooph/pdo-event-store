@@ -854,6 +854,7 @@ abstract class AbstractPdoEventStoreTest extends TestCase
                 $this->eventStore->create(new Stream(new StreamName($streamName), new \EmptyIterator()));
             }
 
+            $this->assertCount(1, $this->eventStore->fetchStreamNames('user-0', false, null, 200, 0));
             $this->assertCount(120, $this->eventStore->fetchStreamNames(null, false, null, 200, 0));
             $this->assertCount(0, $this->eventStore->fetchStreamNames(null, false, null, 200, 200));
             $this->assertCount(10, $this->eventStore->fetchStreamNames(null, false, null, 10, 0));
@@ -907,12 +908,20 @@ abstract class AbstractPdoEventStoreTest extends TestCase
 
     /**
      * @test
-     * @group by
      */
     public function it_fetches_stream_categories(): void
     {
+        $streamNames = [];
+
         try {
             for ($i = 0; $i < 5; $i++) {
+                $streamNames[] = 'foo-' . $i;
+                $streamNames[] = 'bar-' . $i;
+                $streamNames[] = 'baz-' . $i;
+                $streamNames[] = 'bam-' . $i;
+                $streamNames[] = 'foobar-' . $i;
+                $streamNames[] = 'foobaz-' . $i;
+                $streamNames[] = 'foobam-' . $i;
                 $this->eventStore->create(new Stream(new StreamName('foo-' . $i), new \EmptyIterator()));
                 $this->eventStore->create(new Stream(new StreamName('bar-' . $i), new \EmptyIterator()));
                 $this->eventStore->create(new Stream(new StreamName('baz-' . $i), new \EmptyIterator()));
@@ -923,7 +932,9 @@ abstract class AbstractPdoEventStoreTest extends TestCase
             }
 
             for ($i = 0; $i < 20; $i++) {
-                $this->eventStore->create(new Stream(new StreamName(uniqid('rand')), new \EmptyIterator()));
+                $streamName = uniqid('rand');
+                $streamNames[] = $streamName;
+                $this->eventStore->create(new Stream(new StreamName($streamName), new \EmptyIterator()));
             }
 
             $this->assertCount(7, $this->eventStore->fetchCategoryNames(null, false, 20, 0));
@@ -935,25 +946,9 @@ abstract class AbstractPdoEventStoreTest extends TestCase
             $this->assertCount(1, $this->eventStore->fetchCategoryNames('foo', false, 20, 0));
             $this->assertCount(4, $this->eventStore->fetchCategoryNames('foo', true, 20, 0));
         } finally {
-            $databaseName = TestUtil::getDatabaseName();
-            $dropTables = <<<EOT
-SET FOREIGN_KEY_CHECKS = 0;
-SET GROUP_CONCAT_MAX_LEN=32768;
-SET @tables = NULL;
-SELECT GROUP_CONCAT('`', table_name, '`') INTO @tables
-  FROM information_schema.tables
-  WHERE table_schema = '$databaseName';
-SELECT IFNULL(@tables,'dummy') INTO @tables;
-
-SET @tables = CONCAT('DROP TABLE IF EXISTS ', @tables);
-PREPARE stmt FROM @tables;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
-SET FOREIGN_KEY_CHECKS = 1;
-EOT;
-
-            $this->connection->query($dropTables);
-            TestUtil::initDefaultDatabaseTables($this->connection);
+            foreach ($streamNames as $streamName) {
+                $this->eventStore->delete(new StreamName($streamName));
+            }
         }
     }
 
