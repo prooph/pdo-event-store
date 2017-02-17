@@ -52,16 +52,35 @@ final class PostgresEventStoreFactory extends AbstractEventStoreFactory
         return PostgresEventStore::class;
     }
 
+    protected function buildConnectionDsn(array $params): string
+    {
+        $dsn = 'pgsql:';
+
+        if (isset($params['host']) && $params['host'] != '') {
+            $dsn .= 'host=' . $params['host'] . ';';
+        }
+
+        if (isset($params['port']) && $params['port'] != '') {
+            $dsn .= 'port=' . $params['port'] . ';';
+        }
+
+        if (isset($params['dbname'])) {
+            $dsn .= 'dbname=' . $params['dbname'] . ';';
+        }
+
+        return $dsn;
+    }
+
     public function defaultOptions(): iterable
     {
         return [
             'connection_options' => [
-                'driver' => 'pdo_pgsql',
                 'user' => 'postgres',
                 'password' => 'postgres',
                 'host' => '127.0.0.1',
                 'dbname' => 'event_store',
                 'port' => 5432,
+                'charset' => 'utf8',
             ],
             'load_batch_size' => 1000,
             'event_streams_table' => 'event_streams',

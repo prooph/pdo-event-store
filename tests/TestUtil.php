@@ -45,6 +45,7 @@ abstract class TestUtil
             $dsn .= 'dbname=' . $connectionParams['dbname'] . $separator;
             $dsn = rtrim($dsn);
             self::$connection = new PDO($dsn, $connectionParams['user'], $connectionParams['password']);
+            self::$connection->query("SET NAMES '".$connectionParams['charset']."'");
         }
 
         try {
@@ -109,7 +110,8 @@ abstract class TestUtil
             $env['DB_PASSWORD'],
             $env['DB_HOST'],
             $env['DB_NAME'],
-            $env['DB_PORT']
+            $env['DB_PORT'],
+            $env['DB_CHARSET']
         );
     }
 
@@ -122,6 +124,7 @@ abstract class TestUtil
             'host' => getenv('DB_HOST'),
             'dbname' => getenv('DB_NAME'),
             'port' => getenv('DB_PORT'),
+            'charset' => getenv('DB_CHARSET'),
         ];
     }
 }

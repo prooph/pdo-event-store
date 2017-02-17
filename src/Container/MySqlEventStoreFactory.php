@@ -48,11 +48,33 @@ final class MySqlEventStoreFactory extends AbstractEventStoreFactory
         return MySqlEventStore::class;
     }
 
+    protected function buildConnectionDsn(array $params): string
+    {
+        $dsn = 'mysql:';
+
+        if (isset($params['host']) && $params['host'] != '') {
+            $dsn .= 'host=' . $params['host'] . ';';
+        }
+
+        if (isset($params['port'])) {
+            $dsn .= 'port=' . $params['port'] . ';';
+        }
+
+        if (isset($params['dbname'])) {
+            $dsn .= 'dbname=' . $params['dbname'] . ';';
+        }
+
+        if (isset($params['charset'])) {
+            $dsn .= 'charset=' . $params['charset'] . ';';
+        }
+
+        return $dsn;
+    }
+
     public function defaultOptions(): iterable
     {
         return [
             'connection_options' => [
-                'driver' => 'pdo_mysql',
                 'user' => 'root',
                 'password' => '',
                 'host' => '127.0.0.1',
