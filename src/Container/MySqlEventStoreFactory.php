@@ -52,7 +52,7 @@ final class MySqlEventStoreFactory extends AbstractEventStoreFactory
     {
         $dsn = 'mysql:';
 
-        if (isset($params['host']) && $params['host'] != '') {
+        if (isset($params['host']) && $params['host'] !== '') {
             $dsn .= 'host=' . $params['host'] . ';';
         }
 
