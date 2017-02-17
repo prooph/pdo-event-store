@@ -268,7 +268,7 @@ EOT;
 
         $where[] = '`no` >= :fromNumber';
 
-        list($where, $values) = $this->createWhereClauseForMetadata($metadataMatcher, $where, $values);
+        [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher, $where, $values);
 
         $whereCondition = implode(' AND ', $where);
         if (! empty($whereCondition)) {
@@ -331,7 +331,7 @@ EOT;
 
         $where[] = '`no` <= :fromNumber';
 
-        list($where, $values) = $this->createWhereClauseForMetadata($metadataMatcher, $where, $values);
+        [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher, $where, $values);
 
         $whereCondition = implode(' AND ', $where);
         if (! empty($whereCondition)) {
@@ -552,7 +552,7 @@ EOT;
             $values[':filter'] = $filter;
         }
 
-        list($where, $values) = $this->createWhereClauseForMetadata($metadataMatcher, $where, $values);
+        [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher, $where, $values);
 
         $whereCondition = implode(' AND ', $where);
         if (! empty($whereCondition)) {
