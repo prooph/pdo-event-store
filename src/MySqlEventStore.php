@@ -330,7 +330,7 @@ EOT;
         [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher, $where, $values);
 
         $whereCondition = implode(' AND ', $where);
-        if (count($where)) {
+        if (! empty($whereCondition)) {
             $whereCondition = ' AND ' . $whereCondition;
         }
         $limit = min($count, $this->loadBatchSize);
