@@ -47,6 +47,7 @@ abstract class AbstractPdoEventStoreTest extends TestCase
     protected function tearDown(): void
     {
         $this->connection->exec('DROP TABLE event_streams;');
+        $this->connection->exec('DROP TABLE projections;');
         $this->connection->exec('DROP TABLE _' . sha1('Prooph\Model\User'));
     }
 
@@ -831,5 +832,243 @@ abstract class AbstractPdoEventStoreTest extends TestCase
         $events[] = $event->withAddedMetadata('_aggregate_id', 'two')->withAddedMetadata('_aggregate_type', 'user');
 
         return $events;
+    }
+
+    /**
+     * @test
+     */
+    public function it_fetches_stream_names(): void
+    {
+        $streamNames = [];
+
+        try {
+            for ($i = 0; $i < 50; $i++) {
+                $streamNames[] = 'user-' . $i;
+                $streamNames[] = 'admin-' . $i;
+                $this->eventStore->create(new Stream(new StreamName('user-' . $i), new \EmptyIterator(), ['foo' => 'bar']));
+                $this->eventStore->create(new Stream(new StreamName('admin-' . $i), new \EmptyIterator(), ['foo' => 'bar']));
+            }
+
+            for ($i = 0; $i < 20; $i++) {
+                $streamName = uniqid('rand');
+                $streamNames[] = $streamName;
+                $this->eventStore->create(new Stream(new StreamName($streamName), new \EmptyIterator()));
+            }
+
+            $this->assertCount(1, $this->eventStore->fetchStreamNames('user-0', false, null, 200, 0));
+            $this->assertCount(120, $this->eventStore->fetchStreamNames(null, false, null, 200, 0));
+            $this->assertCount(0, $this->eventStore->fetchStreamNames(null, false, null, 200, 200));
+            $this->assertCount(10, $this->eventStore->fetchStreamNames(null, false, null, 10, 0));
+            $this->assertCount(10, $this->eventStore->fetchStreamNames(null, false, null, 10, 10));
+            $this->assertCount(5, $this->eventStore->fetchStreamNames(null, false, null, 10, 115));
+
+            for ($i = 0; $i < 50; $i++) {
+                $this->assertStringStartsWith('admin-', $this->eventStore->fetchStreamNames(null, false, null, 1, $i)[0]->toString());
+            }
+
+            for ($i = 50; $i < 70; $i++) {
+                $this->assertStringStartsWith('rand', $this->eventStore->fetchStreamNames(null, false, null, 1, $i)[0]->toString());
+            }
+
+            for ($i = 0; $i < 50; $i++) {
+                $this->assertStringStartsWith('user-', $this->eventStore->fetchStreamNames(null, false, null, 1, $i + 70)[0]->toString());
+            }
+
+            $this->assertCount(30, $this->eventStore->fetchStreamNames('s.*er-', true, null, 30, 0));
+            $this->assertCount(30, $this->eventStore->fetchStreamNames('n.*-', true, (new MetadataMatcher())->withMetadataMatch('foo', Operator::EQUALS(), 'bar'), 30, 0));
+            $this->assertCount(0, $this->eventStore->fetchStreamNames('n.*-', true, (new MetadataMatcher())->withMetadataMatch('foo', Operator::NOT_EQUALS(), 'bar'), 30, 0));
+            $this->assertCount(0, $this->eventStore->fetchStreamNames(null, false, (new MetadataMatcher())->withMetadataMatch('foo', Operator::NOT_EQUALS(), 'bar'), 30, 0));
+        } finally {
+            foreach ($streamNames as $streamName) {
+                $this->eventStore->delete(new StreamName($streamName));
+            }
+        }
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_fetching_stream_names_with_missing_db_table(): void
+    {
+        $this->expectException(RuntimeException::class);
+
+        $this->connection->exec('DROP TABLE event_streams;');
+        $this->eventStore->fetchStreamNames(null, false, null, 200, 0);
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_fetching_stream_names_using_regex_and_no_filter(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('No regex pattern given');
+
+        $this->eventStore->fetchStreamNames(null, true, null, 10, 0);
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_fetching_stream_names_using_invalid_regex(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid regex pattern given');
+
+        $this->eventStore->fetchStreamNames('invalid)', true, null, 10, 0);
+    }
+
+    /**
+     * @test
+     */
+    public function it_fetches_stream_categories(): void
+    {
+        $streamNames = [];
+
+        try {
+            for ($i = 0; $i < 5; $i++) {
+                $streamNames[] = 'foo-' . $i;
+                $streamNames[] = 'bar-' . $i;
+                $streamNames[] = 'baz-' . $i;
+                $streamNames[] = 'bam-' . $i;
+                $streamNames[] = 'foobar-' . $i;
+                $streamNames[] = 'foobaz-' . $i;
+                $streamNames[] = 'foobam-' . $i;
+                $this->eventStore->create(new Stream(new StreamName('foo-' . $i), new \EmptyIterator()));
+                $this->eventStore->create(new Stream(new StreamName('bar-' . $i), new \EmptyIterator()));
+                $this->eventStore->create(new Stream(new StreamName('baz-' . $i), new \EmptyIterator()));
+                $this->eventStore->create(new Stream(new StreamName('bam-' . $i), new \EmptyIterator()));
+                $this->eventStore->create(new Stream(new StreamName('foobar-' . $i), new \EmptyIterator()));
+                $this->eventStore->create(new Stream(new StreamName('foobaz-' . $i), new \EmptyIterator()));
+                $this->eventStore->create(new Stream(new StreamName('foobam-' . $i), new \EmptyIterator()));
+            }
+
+            for ($i = 0; $i < 20; $i++) {
+                $streamName = uniqid('rand');
+                $streamNames[] = $streamName;
+                $this->eventStore->create(new Stream(new StreamName($streamName), new \EmptyIterator()));
+            }
+
+            $this->assertCount(7, $this->eventStore->fetchCategoryNames(null, false, 20, 0));
+            $this->assertCount(0, $this->eventStore->fetchCategoryNames(null, false, 20, 20));
+            $this->assertCount(3, $this->eventStore->fetchCategoryNames(null, false, 3, 0));
+            $this->assertCount(3, $this->eventStore->fetchCategoryNames(null, false, 3, 3));
+            $this->assertCount(5, $this->eventStore->fetchCategoryNames(null, false, 10, 2));
+
+            $this->assertCount(1, $this->eventStore->fetchCategoryNames('foo', false, 20, 0));
+            $this->assertCount(4, $this->eventStore->fetchCategoryNames('foo', true, 20, 0));
+        } finally {
+            foreach ($streamNames as $streamName) {
+                $this->eventStore->delete(new StreamName($streamName));
+            }
+        }
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_fetching_category_names_with_missing_db_table(): void
+    {
+        $this->expectException(RuntimeException::class);
+
+        $this->connection->exec('DROP TABLE event_streams;');
+        $this->eventStore->fetchCategoryNames(null, false, 200, 0);
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_fetching_stream_categories_using_regex_and_no_filter(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('No regex pattern given');
+
+        $this->eventStore->fetchCategoryNames(null, true, 10, 0);
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_fetching_stream_categories_using_invalid_regex(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid regex pattern given');
+
+        $this->eventStore->fetchCategoryNames('invalid)', true, 10, 0);
+    }
+
+    /**
+     * @test
+     */
+    public function it_fetches_projection_names(): void
+    {
+        $projections = [];
+
+        try {
+            for ($i = 0; $i < 50; $i++) {
+                $projection = $this->eventStore->createProjection('user-' . $i);
+                $projection->fromAll()->whenAny(function (): void {
+                })->run(false);
+                $projections[] = $projection;
+            }
+
+            for ($i = 0; $i < 20; $i++) {
+                $projection = $this->eventStore->createProjection(uniqid('rand'));
+                $projection->fromAll()->whenAny(function (): void {
+                })->run(false);
+                $projections[] = $projection;
+            }
+
+            $this->assertCount(1, $this->eventStore->fetchProjectionNames('user-0', false, 200, 0));
+            $this->assertCount(70, $this->eventStore->fetchProjectionNames(null, false, 200, 0));
+            $this->assertCount(0, $this->eventStore->fetchProjectionNames(null, false, 200, 100));
+            $this->assertCount(10, $this->eventStore->fetchProjectionNames(null, false, 10, 0));
+            $this->assertCount(10, $this->eventStore->fetchProjectionNames(null, false, 10, 10));
+            $this->assertCount(5, $this->eventStore->fetchProjectionNames(null, false, 10, 65));
+
+            for ($i = 0; $i < 20; $i++) {
+                $this->assertStringStartsWith('rand', $this->eventStore->fetchProjectionNames(null, false, 1, $i)[0]);
+            }
+
+            $this->assertCount(30, $this->eventStore->fetchProjectionNames('ser-', true, 30, 0));
+            $this->assertCount(0, $this->eventStore->fetchProjectionNames('n-', true, 30, 0));
+        } finally {
+            foreach ($projections as $projection) {
+                $projection->delete(false);
+            }
+        }
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_fetching_projecton_names_with_missing_db_table(): void
+    {
+        $this->expectException(RuntimeException::class);
+
+        $this->connection->exec('DROP TABLE projections;');
+        $this->eventStore->fetchProjectionNames(null, false, 200, 0);
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_fetching_projection_names_using_regex_and_no_filter(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('No regex pattern given');
+
+        $this->eventStore->fetchProjectionNames(null, true, 10, 0);
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_fetching_projection_names_using_invalid_regex(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid regex pattern given');
+
+        $this->eventStore->fetchProjectionNames('invalid)', true, 10, 0);
     }
 }

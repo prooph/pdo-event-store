@@ -231,52 +231,31 @@ EOT;
         if (null === $count) {
             $count = PHP_INT_MAX;
         }
+        [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher);
+        $where[] = 'no >= :fromNumber';
 
-        if (null === $metadataMatcher) {
-            $metadataMatcher = new MetadataMatcher();
-        }
+        $whereCondition = 'WHERE ' . implode(' AND ', $where);
+        $limit = min($count, $this->loadBatchSize);
 
         $tableName = $this->persistenceStrategy->generateTableName($streamName);
 
-        $where = [];
-        $values = [];
-
-        foreach ($metadataMatcher->data() as $key => $match) {
-            $field = $match['field'];
-            $operator = $match['operator']->getValue();
-            $value = $match['value'];
-            $parameter = ':metadata_'.$key;
-
-            if (is_bool($value)) {
-                $where[] = "metadata->'$field' $operator '".var_export($value, true)."'";
-                continue;
-            }
-
-            $where[] = "metadata->>'$field' $operator $parameter";
-            $values[$parameter] = $value;
-        }
-
-        $where[] = 'no >= :fromNumber';
-
-        $whereCondition = implode(' AND ', $where);
-        $limit = min($count, $this->loadBatchSize);
-
         $query = <<<EOT
 SELECT * FROM $tableName
-WHERE $whereCondition
+$whereCondition
 ORDER BY no ASC
 LIMIT :limit;
 EOT;
 
         $statement = $this->connection->prepare($query);
+        $statement->setFetchMode(PDO::FETCH_OBJ);
+
         $statement->bindValue(':fromNumber', $fromNumber, PDO::PARAM_INT);
         $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
 
         foreach ($values as $parameter => $value) {
-            $statement->bindValue($parameter, $value);
+            $statement->bindValue($parameter, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
         }
 
-        $statement->setFetchMode(PDO::FETCH_OBJ);
         $statement->execute();
 
         if ($statement->errorCode() !== '00000') {
@@ -307,52 +286,31 @@ EOT;
         if (null === $count) {
             $count = PHP_INT_MAX;
         }
+        [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher);
+        $where[] = 'no <= :fromNumber';
 
-        if (null === $metadataMatcher) {
-            $metadataMatcher = new MetadataMatcher();
-        }
+        $whereCondition = 'WHERE ' . implode(' AND ', $where);
+        $limit = min($count, $this->loadBatchSize);
 
         $tableName = $this->persistenceStrategy->generateTableName($streamName);
 
-        $where = [];
-        $values = [];
-
-        foreach ($metadataMatcher->data() as $key => $match) {
-            $field = $match['field'];
-            $operator = $match['operator']->getValue();
-            $value = $match['value'];
-            $parameter = ':metadata_'.$key;
-
-            if (is_bool($value)) {
-                $where[] = "metadata->'$field' $operator '".var_export($value, true)."'";
-                continue;
-            }
-
-            $where[] = "metadata->>'$field' $operator $parameter";
-            $values[$parameter] = $value;
-        }
-
-        $where[] = 'no <= :fromNumber';
-
-        $whereCondition = implode(' AND ', $where);
-        $limit = min($count, $this->loadBatchSize);
-
         $query = <<<EOT
 SELECT * FROM $tableName
-WHERE $whereCondition
+$whereCondition
 ORDER BY no DESC
 LIMIT :limit;
 EOT;
 
         $statement = $this->connection->prepare($query);
+        $statement->setFetchMode(PDO::FETCH_OBJ);
+
         $statement->bindValue(':fromNumber', $fromNumber, PDO::PARAM_INT);
         $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
 
         foreach ($values as $parameter => $value) {
-            $statement->bindValue($parameter, $value);
+            $statement->bindValue($parameter, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
         }
 
-        $statement->setFetchMode(PDO::FETCH_OBJ);
         $statement->execute();
 
         if ($statement->errorCode() !== '00000') {
@@ -551,15 +509,234 @@ EOT;
         ]);
     }
 
+    public function fetchStreamNames(
+        ?string $filter,
+        bool $regex,
+        ?MetadataMatcher $metadataMatcher,
+        int $limit,
+        int $offset
+    ): array {
+        if (null === $filter && $regex) {
+            throw new Exception\InvalidArgumentException('No regex pattern given');
+        }
+
+        if ($regex && false === @preg_match("/$filter/", '')) {
+            throw new Exception\InvalidArgumentException('Invalid regex pattern given');
+        }
+        [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher);
+
+        if (null !== $filter && $regex) {
+            $where[] = 'real_stream_name ~ :filter ';
+            $values[':filter'] = $filter;
+        } elseif (null !== $filter && ! $regex) {
+            $where[] = 'real_stream_name = :filter ';
+            $values[':filter'] = $filter;
+        }
+
+        $whereCondition = implode(' AND ', $where);
+        if (! empty($whereCondition)) {
+            $whereCondition = 'WHERE ' . $whereCondition;
+        }
+
+        $query = <<<SQL
+SELECT real_stream_name FROM $this->eventStreamsTable
+$whereCondition
+ORDER BY real_stream_name ASC
+LIMIT $limit OFFSET $offset
+SQL;
+
+        $statement = $this->connection->prepare($query);
+        $statement->setFetchMode(PDO::FETCH_OBJ);
+        $statement->execute($values);
+
+        if ($statement->errorCode() !== '00000') {
+            $errorCode = $statement->errorCode();
+            $errorInfo = $statement->errorInfo()[2];
+
+            throw new RuntimeException(
+                "Error $errorCode. Maybe the event streams table is not setup?\nError-Info: $errorInfo"
+            );
+        }
+
+        $result = $statement->fetchAll();
+
+        $streamNames = [];
+
+        foreach ($result as $streamName) {
+            $streamNames[] = new StreamName($streamName->real_stream_name);
+        }
+
+        return $streamNames;
+    }
+
+    public function fetchCategoryNames(?string $filter, bool $regex, int $limit, int $offset): array
+    {
+        if (null === $filter && $regex) {
+            throw new Exception\InvalidArgumentException('No regex pattern given');
+        }
+
+        if ($regex && false === @preg_match("/$filter/", '')) {
+            throw new Exception\InvalidArgumentException('Invalid regex pattern given');
+        }
+
+        $where = [];
+        $values = [];
+
+        if (null !== $filter && $regex) {
+            $where[] = 'category ~ :filter ';
+            $values[':filter'] = $filter;
+        } elseif (null !== $filter && ! $regex) {
+            $where[] = 'category = :filter ';
+            $values[':filter'] = $filter;
+        }
+
+        $whereCondition = implode(' AND ', $where);
+        if (! empty($whereCondition)) {
+            $whereCondition = 'WHERE ' . $whereCondition . ' AND category IS NOT NULL';
+        } else {
+            $whereCondition = 'WHERE category IS NOT NULL';
+        }
+
+        $query = <<<SQL
+SELECT category FROM $this->eventStreamsTable
+$whereCondition
+GROUP BY category
+ORDER BY category ASC
+LIMIT $limit OFFSET $offset
+SQL;
+
+        $statement = $this->connection->prepare($query);
+        $statement->setFetchMode(PDO::FETCH_OBJ);
+        $statement->execute($values);
+
+        if ($statement->errorCode() !== '00000') {
+            $errorCode = $statement->errorCode();
+            $errorInfo = $statement->errorInfo()[2];
+
+            throw new RuntimeException(
+                "Error $errorCode. Maybe the event streams table is not setup?\nError-Info: $errorInfo"
+            );
+        }
+
+        $result = $statement->fetchAll();
+
+        $categoryNames = [];
+
+        foreach ($result as $categoryName) {
+            $categoryNames[] = $categoryName->category;
+        }
+
+        return $categoryNames;
+    }
+
+    public function fetchProjectionNames(?string $filter, bool $regex, int $limit, int $offset): array
+    {
+        if (null === $filter && $regex) {
+            throw new Exception\InvalidArgumentException('No regex pattern given');
+        }
+
+        if ($regex && false === @preg_match("/$filter/", '')) {
+            throw new Exception\InvalidArgumentException('Invalid regex pattern given');
+        }
+
+        $where = [];
+        $values = [];
+
+        if (null !== $filter && $regex) {
+            $where[] = 'name ~ :filter ';
+            $values[':filter'] = $filter;
+        } elseif (null !== $filter && ! $regex) {
+            $where[] = 'name = :filter ';
+            $values[':filter'] = $filter;
+        }
+
+        $whereCondition = implode(' AND ', $where);
+        if (! empty($whereCondition)) {
+            $whereCondition = 'WHERE ' . $whereCondition;
+        }
+
+        $query = <<<SQL
+SELECT name FROM $this->projectionsTable
+$whereCondition
+ORDER BY name ASC
+LIMIT $limit OFFSET $offset
+SQL;
+
+        $statement = $this->connection->prepare($query);
+        $statement->setFetchMode(PDO::FETCH_OBJ);
+        $statement->execute($values);
+
+        if ($statement->errorCode() !== '00000') {
+            $errorCode = $statement->errorCode();
+            $errorInfo = $statement->errorInfo()[2];
+
+            throw new RuntimeException(
+                "Error $errorCode. Maybe the event streams table is not setup?\nError-Info: $errorInfo"
+            );
+        }
+
+        $result = $statement->fetchAll();
+
+        $projectionNames = [];
+
+        foreach ($result as $projectionName) {
+            $projectionNames[] = $projectionName->name;
+        }
+
+        return $projectionNames;
+    }
+
+    private function createWhereClauseForMetadata(?MetadataMatcher $metadataMatcher): array
+    {
+        $where = [];
+        $values = [];
+
+        if (! $metadataMatcher) {
+            return [
+                $where,
+                $values,
+            ];
+        }
+
+        foreach ($metadataMatcher->data() as $key => $match) {
+            $field = $match['field'];
+            $operator = $match['operator']->getValue();
+            $value = $match['value'];
+            $parameter = ':metadata_'.$key;
+
+            if (is_bool($value)) {
+                $where[] = "metadata->'$field' $operator '".var_export($value, true)."'";
+                continue;
+            }
+
+            $where[] = "metadata->>'$field' $operator $parameter";
+            $values[$parameter] = $value;
+        }
+
+        return [
+            $where,
+            $values,
+        ];
+    }
+
     private function addStreamToStreamsTable(Stream $stream): void
     {
         $realStreamName = $stream->streamName()->toString();
+
+        $pos = strpos($realStreamName, '-');
+
+        if (false !== $pos && $pos > 0) {
+            $category = substr($realStreamName, 0, $pos);
+        } else {
+            $category = null;
+        }
+
         $streamName = $this->persistenceStrategy->generateTableName($stream->streamName());
-        $metadata = json_encode($stream->metadata());
+        $metadata = json_encode($stream->metadata(), \JSON_FORCE_OBJECT);
 
         $sql = <<<EOT
-INSERT INTO $this->eventStreamsTable (real_stream_name, stream_name, metadata)
-VALUES (:realStreamName, :streamName, :metadata);
+INSERT INTO $this->eventStreamsTable (real_stream_name, stream_name, metadata, category)
+VALUES (:realStreamName, :streamName, :metadata, :category);
 EOT;
 
         $statement = $this->connection->prepare($sql);
@@ -567,6 +744,7 @@ EOT;
             ':realStreamName' => $realStreamName,
             ':streamName' => $streamName,
             ':metadata' => $metadata,
+            ':category' => $category,
         ]);
 
         if (! $result) {
