@@ -68,6 +68,10 @@ final class PostgresEventStoreFactory extends AbstractEventStoreFactory
             $dsn .= 'dbname=' . $params['dbname'] . ';';
         }
 
+        if (isset($params['charset'])) {
+            $dsn .= "options='--client_encoding=".$params['charset']."'";
+        }
+
         return $dsn;
     }
 

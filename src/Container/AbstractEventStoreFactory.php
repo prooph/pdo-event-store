@@ -86,10 +86,6 @@ abstract class AbstractEventStoreFactory implements
                 $config['connection_options']['user'],
                 $config['connection_options']['password']
             );
-
-            if (isset($config['connection_options']['charset'])) {
-                $connection->query("SET NAMES '".$config['connection_options']['charset']."'");
-            }
         }
 
         $eventStoreClassName = $this->eventStoreClassName();
