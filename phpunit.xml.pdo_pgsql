@@ -43,5 +43,6 @@
         <env name="DB_PASSWORD" value="" />
         <env name="DB_NAME" value="event_store_tests" />
         <env name="DB_PORT" value="5432"/>
+        <env name="DB_CHARSET" value="utf8"/>
     </php>
 </phpunit>

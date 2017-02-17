@@ -43,6 +43,7 @@ abstract class TestUtil
             $dsn .= 'host=' . $connectionParams['host'] . $separator;
             $dsn .= 'port=' . $connectionParams['port'] . $separator;
             $dsn .= 'dbname=' . $connectionParams['dbname'] . $separator;
+            $dsn .= self::getCharsetValue($connectionParams['charset'], $connectionParams['driver']) . $separator;
             $dsn = rtrim($dsn);
             self::$connection = new PDO($dsn, $connectionParams['user'], $connectionParams['password']);
         }
@@ -109,7 +110,8 @@ abstract class TestUtil
             $env['DB_PASSWORD'],
             $env['DB_HOST'],
             $env['DB_NAME'],
-            $env['DB_PORT']
+            $env['DB_PORT'],
+            $env['DB_CHARSET']
         );
     }
 
@@ -122,6 +124,16 @@ abstract class TestUtil
             'host' => getenv('DB_HOST'),
             'dbname' => getenv('DB_NAME'),
             'port' => getenv('DB_PORT'),
+            'charset' => getenv('DB_CHARSET'),
         ];
+    }
+
+    private static function getCharsetValue(string $charset, string $driver): string
+    {
+        if ('pdo_pgsql' === $driver) {
+            return "options='--client_encoding=$charset'";
+        }
+
+        return "charset=$charset";
     }
 }

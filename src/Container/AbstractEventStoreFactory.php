@@ -42,19 +42,6 @@ abstract class AbstractEventStoreFactory implements
     private $configId;
 
     /**
-     * @var array
-     */
-    private $driverSchemeAliases = [
-        'pdo_mysql' => 'mysql',
-        'pdo_pgsql' => 'pgsql',
-    ];
-
-    private $driverSchemeSeparators = [
-        'pdo_mysql' => ';',
-        'pdo_pgsql' => ' ',
-    ];
-
-    /**
      * Creates a new instance from a specified config, specifically meant to be used as static factory.
      *
      * In case you want to use another config key than provided by the factories, you can add the following factory to
@@ -94,15 +81,11 @@ abstract class AbstractEventStoreFactory implements
         if (isset($config['connection_service'])) {
             $connection = $container->get($config['connection_service']);
         } else {
-            $separator = $this->driverSchemeSeparators[$config['connection_options']['driver']];
-            $dsn = $this->driverSchemeAliases[$config['connection_options']['driver']] . ':';
-            $dsn .= 'host=' . $config['connection_options']['host'] . $separator;
-            $dsn .= 'port=' . $config['connection_options']['port'] . $separator;
-            $dsn .= 'dbname=' . $config['connection_options']['dbname'] . $separator;
-            $dsn = rtrim($dsn);
-            $user = $config['connection_options']['user'];
-            $password = $config['connection_options']['password'];
-            $connection = new PDO($dsn, $user, $password);
+            $connection = new PDO(
+                $this->buildConnectionDsn($config['connection_options']),
+                $config['connection_options']['user'],
+                $config['connection_options']['password']
+            );
         }
 
         $eventStoreClassName = $this->eventStoreClassName();
@@ -164,6 +147,8 @@ abstract class AbstractEventStoreFactory implements
     abstract protected function createActionEventEmitterEventStore(EventStore $eventStore): ActionEventEmitterEventStore;
 
     abstract protected function eventStoreClassName(): string;
+
+    abstract protected function buildConnectionDsn(array $params): string;
 
     public function dimensions(): iterable
     {
