@@ -5,6 +5,6 @@ CREATE TABLE event_streams (
   metadata JSONB,
   category VARCHAR(150),
   PRIMARY KEY (no),
-  UNIQUE (stream_name),
-  KEY (category)
+  UNIQUE (stream_name)
 );
+CREATE INDEX on event_streams (category);

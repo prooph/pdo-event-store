@@ -40,7 +40,7 @@ EOT;
 
         return [
             $statement,
-            "CREATE UNIQUE INDEX  on $tableName ((metadata->>'_aggregate_version'));",
+            "CREATE UNIQUE INDEX on $tableName ((metadata->>'_aggregate_version'));",
         ];
     }
 
