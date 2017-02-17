@@ -657,7 +657,7 @@ SQL;
         }
 
         $query = <<<SQL
-SELECT `name` FROM $this->$this->projectionsTable
+SELECT `name` FROM $this->projectionsTable
 $whereCondition
 ORDER BY `name` ASC
 LIMIT $offset, $limit
