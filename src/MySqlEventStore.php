@@ -262,7 +262,6 @@ EOT;
         if (null === $count) {
             $count = PHP_INT_MAX;
         }
-
         [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher);
         $where[] = '`no` >= :fromNumber';
 
@@ -318,7 +317,6 @@ EOT;
         if (null === $count) {
             $count = PHP_INT_MAX;
         }
-
         [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher);
         $where[] = '`no` <= :fromNumber';
 
@@ -526,7 +524,6 @@ EOT;
         if ($regex && false === @preg_match("/$filter/", '')) {
             throw new Exception\InvalidArgumentException('Invalid regex pattern given');
         }
-
         [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher);
 
         if (null !== $filter && $regex) {
