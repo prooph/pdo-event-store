@@ -59,6 +59,7 @@ final class PostgresEventStoreFactory extends AbstractEventStoreFactory
                 'host' => '127.0.0.1',
                 'dbname' => 'event_store',
                 'port' => 5432,
+                'charset' => 'utf8',
             ],
             'load_batch_size' => 1000,
             'event_streams_table' => 'event_streams',

@@ -99,6 +99,7 @@ abstract class AbstractEventStoreFactory implements
             $dsn .= 'host=' . $config['connection_options']['host'] . $separator;
             $dsn .= 'port=' . $config['connection_options']['port'] . $separator;
             $dsn .= 'dbname=' . $config['connection_options']['dbname'] . $separator;
+            $dsn .= 'charset=' . $config['connection_options']['charset'] . $separator;
             $dsn = rtrim($dsn);
             $user = $config['connection_options']['user'];
             $password = $config['connection_options']['password'];
