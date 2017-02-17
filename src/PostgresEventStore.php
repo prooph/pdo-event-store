@@ -574,12 +574,21 @@ EOT;
     private function addStreamToStreamsTable(Stream $stream): void
     {
         $realStreamName = $stream->streamName()->toString();
+
+        $pos = strpos($realStreamName, '-');
+
+        if (false !== $pos && $pos > 0) {
+            $category = substr($realStreamName, 0, $pos);
+        } else {
+            $category = null;
+        }
+
         $streamName = $this->persistenceStrategy->generateTableName($stream->streamName());
         $metadata = json_encode($stream->metadata());
 
         $sql = <<<EOT
-INSERT INTO $this->eventStreamsTable (real_stream_name, stream_name, metadata)
-VALUES (:realStreamName, :streamName, :metadata);
+INSERT INTO $this->eventStreamsTable (real_stream_name, stream_name, metadata, category)
+VALUES (:realStreamName, :streamName, :metadata, :category);
 EOT;
 
         $statement = $this->connection->prepare($sql);
@@ -587,6 +596,7 @@ EOT;
             ':realStreamName' => $realStreamName,
             ':streamName' => $streamName,
             ':metadata' => $metadata,
+            ':category' => $category,
         ]);
 
         if (! $result) {

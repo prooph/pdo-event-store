@@ -3,6 +3,8 @@ CREATE TABLE event_streams (
   real_stream_name VARCHAR(150) NOT NULL,
   stream_name CHAR(41) NOT NULL,
   metadata JSONB,
+  category VARCHAR(150),
   PRIMARY KEY (no),
-  UNIQUE (stream_name)
+  UNIQUE (stream_name),
+  KEY (category)
 );

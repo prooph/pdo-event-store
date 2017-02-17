@@ -267,16 +267,20 @@ EOT;
         $values = [];
 
         $where[] = '`no` >= :fromNumber';
+
         list($where, $values) = $this->createWhereClauseForMetadata($metadataMatcher, $where, $values);
 
         $whereCondition = implode(' AND ', $where);
+        if (! empty($whereCondition)) {
+            $whereCondition = 'WHERE ' . $whereCondition;
+        }
         $limit = min($count, $this->loadBatchSize);
 
         $tableName = $this->persistenceStrategy->generateTableName($streamName);
 
         $query = <<<EOT
 SELECT * FROM $tableName
-WHERE $whereCondition
+$whereCondition
 ORDER BY `no` ASC
 LIMIT :limit;
 EOT;
@@ -330,13 +334,16 @@ EOT;
         list($where, $values) = $this->createWhereClauseForMetadata($metadataMatcher, $where, $values);
 
         $whereCondition = implode(' AND ', $where);
+        if (! empty($whereCondition)) {
+            $whereCondition = 'WHERE ' . $whereCondition;
+        }
         $limit = min($count, $this->loadBatchSize);
 
         $tableName = $this->persistenceStrategy->generateTableName($streamName);
 
         $query = <<<EOT
 SELECT * FROM $tableName
-WHERE $whereCondition
+$whereCondition
 ORDER BY `no` DESC
 LIMIT :limit;
 EOT;
@@ -555,7 +562,7 @@ EOT;
         $query = <<<SQL
 SELECT `real_stream_name` FROM $this->eventStreamsTable
 $whereCondition
-ORDER BY `no`
+ORDER BY `real_stream_name` ASC
 LIMIT $offset, $limit
 SQL;
 
@@ -597,21 +604,25 @@ SQL;
         $values = [];
 
         if (null !== $filter && $regex) {
-            $where[] = '`real_stream_name` REGEXP :filter ';
-            $values[':filter'] = $filter . '.*-.+';
+            $where[] = '`category` REGEXP :filter ';
+            $values[':filter'] = $filter;
         } elseif (null !== $filter && ! $regex) {
-            $where[] = '`real_stream_name` LIKE :filter ';
-            $values[':filter'] = $filter . '-%';
+            $where[] = '`category` = :filter ';
+            $values[':filter'] = $filter;
         }
 
-        $where[] = 'substring(real_stream_name, 1, locate(\'-\', real_stream_name) - 1) != \'\'';
-
-        $whereCondition = 'WHERE ' . implode(' AND ', $where);
+        $whereCondition = implode(' AND ', $where);
+        if (! empty($whereCondition)) {
+            $whereCondition = 'WHERE ' . $whereCondition . ' AND `category` IS NOT NULL';
+        } else {
+            $whereCondition = 'WHERE `category` IS NOT NULL';
+        }
 
         $query = <<<SQL
-SELECT substring(real_stream_name, 1, locate('-', real_stream_name) - 1) as `category` FROM $this->eventStreamsTable
+SELECT `category` FROM $this->eventStreamsTable
 $whereCondition
 GROUP BY `category`
+ORDER BY `category` ASC
 LIMIT $offset, $limit
 SQL;
 
@@ -641,15 +652,67 @@ SQL;
 
     public function fetchProjectionNames(?string $filter, bool $regex, int $limit, int $offset): array
     {
-        // TODO: Implement fetchProjectionNames() method.
+        if (null === $filter && $regex) {
+            throw new Exception\InvalidArgumentException('No regex pattern given');
+        }
+
+        if ($regex && false === @preg_match("/$filter/", '')) {
+            throw new Exception\InvalidArgumentException('Invalid regex pattern given');
+        }
+
+        $where = [];
+        $values = [];
+
+        if (null !== $filter && $regex) {
+            $where[] = '`name` REGEXP :filter ';
+            $values[':filter'] = $filter;
+        } elseif (null !== $filter && ! $regex) {
+            $where[] = '`name` = :filter ';
+            $values[':filter'] = $filter;
+        }
+
+        $whereCondition = implode(' AND ', $where);
+        if (! empty($whereCondition)) {
+            $whereCondition = 'WHERE ' . $whereCondition;
+        }
+
+        $query = <<<SQL
+SELECT `name` FROM $this->$this->projectionsTable
+$whereCondition
+ORDER BY `name` ASC
+LIMIT $offset, $limit
+SQL;
+
+        $statement = $this->connection->prepare($query);
+        $statement->setFetchMode(PDO::FETCH_OBJ);
+        $statement->execute($values);
+
+        if ($statement->errorCode() !== '00000') {
+            $errorCode = $statement->errorCode();
+            $errorInfo = $statement->errorInfo()[2];
+
+            throw new RuntimeException(
+                "Error $errorCode. Maybe the event streams table is not setup?\nError-Info: $errorInfo"
+            );
+        }
+
+        $result = $statement->fetchAll();
+
+        $projectionNames = [];
+
+        foreach ($result as $projectionName) {
+            $projectionNames[] = $projectionName->name;
+        }
+
+        return $projectionNames;
     }
 
     private function createWhereClauseForMetadata(?MetadataMatcher $metadataMatcher, array $where, array $values): array
     {
         if (! $metadataMatcher) {
             return [
-                [],
-                [],
+                $where,
+                $values,
             ];
         }
 
@@ -677,12 +740,21 @@ SQL;
     private function addStreamToStreamsTable(Stream $stream): void
     {
         $realStreamName = $stream->streamName()->toString();
+
+        $pos = strpos($realStreamName, '-');
+
+        if (false !== $pos && $pos > 0) {
+            $category = substr($realStreamName, 0, $pos);
+        } else {
+            $category = null;
+        }
+
         $streamName = $this->persistenceStrategy->generateTableName($stream->streamName());
         $metadata = json_encode($stream->metadata(), \JSON_FORCE_OBJECT);
 
         $sql = <<<EOT
-INSERT INTO $this->eventStreamsTable (real_stream_name, stream_name, metadata)
-VALUES (:realStreamName, :streamName, :metadata);
+INSERT INTO $this->eventStreamsTable (real_stream_name, stream_name, metadata, category)
+VALUES (:realStreamName, :streamName, :metadata, :category);
 EOT;
 
         $statement = $this->connection->prepare($sql);
@@ -690,6 +762,7 @@ EOT;
             ':realStreamName' => $realStreamName,
             ':streamName' => $streamName,
             ':metadata' => $metadata,
+            ':category' => $category,
         ]);
 
         if (! $result) {
