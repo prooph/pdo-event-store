@@ -263,10 +263,7 @@ EOT;
             $count = PHP_INT_MAX;
         }
 
-        $where = [];
-        $values = [];
-
-        [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher, $where, $values);
+        [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher);
 
         $whereCondition = implode(' AND ', $where);
         if (! empty($whereCondition)) {
@@ -324,10 +321,7 @@ EOT;
             $count = PHP_INT_MAX;
         }
 
-        $where = [];
-        $values = [];
-
-        [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher, $where, $values);
+        [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher);
 
         $whereCondition = implode(' AND ', $where);
         if (! empty($whereCondition)) {
@@ -537,8 +531,7 @@ EOT;
             throw new Exception\InvalidArgumentException('Invalid regex pattern given');
         }
 
-        $where = [];
-        $values = [];
+        [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher);
 
         if (null !== $filter && $regex) {
             $where[] = '`real_stream_name` REGEXP :filter ';
@@ -547,8 +540,6 @@ EOT;
             $where[] = '`real_stream_name` = :filter ';
             $values[':filter'] = $filter;
         }
-
-        [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher, $where, $values);
 
         $whereCondition = implode(' AND ', $where);
         if (! empty($whereCondition)) {
@@ -703,8 +694,11 @@ SQL;
         return $projectionNames;
     }
 
-    private function createWhereClauseForMetadata(?MetadataMatcher $metadataMatcher, array $where, array $values): array
+    private function createWhereClauseForMetadata(?MetadataMatcher $metadataMatcher): array
     {
+        $where = [];
+        $values = [];
+
         if (! $metadataMatcher) {
             return [
                 $where,
