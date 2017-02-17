@@ -17,6 +17,7 @@ use CachingIterator;
 use Closure;
 use DateTimeImmutable;
 use DateTimeZone;
+use EmptyIterator;
 use Iterator;
 use PDO;
 use Prooph\Common\Messaging\Message;
@@ -121,6 +122,11 @@ final class PdoEventStoreProjection implements Projection
      * @var int
      */
     private $sleep;
+
+    /**
+     * @var bool
+     */
+    private $streamCreated = false;
 
     public function __construct(
         EventStore $eventStore,
@@ -307,6 +313,11 @@ EOT;
 
     public function emit(Message $event): void
     {
+        if (! $this->streamCreated || ! $this->eventStore->hasStream(new StreamName($this->name))) {
+            $this->eventStore->create(new Stream(new StreamName($this->name), new EmptyIterator()));
+            $this->streamCreated = true;
+        }
+
         $this->linkTo($this->name, $event);
     }
 
@@ -403,7 +414,11 @@ EOT;
         $statement->execute([$this->name]);
 
         if ($deleteEmittedEvents) {
-            $this->eventStore->delete(new StreamName($this->name));
+            try {
+                $this->eventStore->delete(new StreamName($this->name));
+            } catch (Exception\StreamNotFound $e) {
+                // ignore
+            }
         }
 
         $this->isStopped = true;
@@ -453,10 +468,6 @@ EOT;
         $this->acquireLock();
 
         $this->load();
-
-        if (! $this->eventStore->hasStream(new StreamName($this->name))) {
-            $this->eventStore->create(new Stream(new StreamName($this->name), new ArrayIterator()));
-        }
 
         $singleHandler = null !== $this->handler;
 
