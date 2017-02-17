@@ -266,13 +266,11 @@ EOT;
         $where = [];
         $values = [];
 
-        $where[] = '`no` >= :fromNumber';
-
         [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher, $where, $values);
 
         $whereCondition = implode(' AND ', $where);
         if (! empty($whereCondition)) {
-            $whereCondition = 'WHERE ' . $whereCondition;
+            $whereCondition = ' AND ' . $whereCondition;
         }
         $limit = min($count, $this->loadBatchSize);
 
@@ -280,7 +278,7 @@ EOT;
 
         $query = <<<EOT
 SELECT * FROM $tableName
-$whereCondition
+WHERE `no` >= :fromNumber $whereCondition
 ORDER BY `no` ASC
 LIMIT :limit;
 EOT;
@@ -329,13 +327,11 @@ EOT;
         $where = [];
         $values = [];
 
-        $where[] = '`no` <= :fromNumber';
-
         [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher, $where, $values);
 
         $whereCondition = implode(' AND ', $where);
-        if (! empty($whereCondition)) {
-            $whereCondition = 'WHERE ' . $whereCondition;
+        if (count($where)) {
+            $whereCondition = ' AND ' . $whereCondition;
         }
         $limit = min($count, $this->loadBatchSize);
 
@@ -343,7 +339,7 @@ EOT;
 
         $query = <<<EOT
 SELECT * FROM $tableName
-$whereCondition
+WHERE `no` >= :fromNumber $whereCondition
 ORDER BY `no` DESC
 LIMIT :limit;
 EOT;
