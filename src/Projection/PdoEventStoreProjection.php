@@ -477,7 +477,7 @@ EOT;
                     try {
                         $streamEvents = $this->eventStore->load(new StreamName($streamName), $position + 1);
                     } catch (Exception\StreamNotFound $e) {
-                        // no newer events found
+                        // ignore
                         continue;
                     }
 
@@ -586,7 +586,7 @@ EOT;
                 $this->state = $result;
             }
 
-            if ($this->eventCounter === $this->persistBlockSize) {
+            if ($this->eventCounter >= $this->persistBlockSize) {
                 $this->persist();
                 $this->eventCounter = 0;
             }
