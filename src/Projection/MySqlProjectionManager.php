@@ -59,8 +59,8 @@ final class MySqlProjectionManager implements ProjectionManager
     public function __construct(
         EventStore $eventStore,
         PDO $connection,
-        string $eventStreamsTable,
-        string $projectionsTable
+        string $eventStreamsTable = 'event_streams',
+        string $projectionsTable = 'projections'
     ) {
         $this->eventStore = $eventStore;
         $this->connection = $connection;
@@ -220,16 +220,64 @@ SQL;
 
     public function fetchProjectionStatus(string $name): ProjectionStatus
     {
-        // TODO: Implement fetchProjectionStatus() method.
+        $query = <<<SQL
+SELECT `status` FROM $this->projectionsTable
+WHERE `name` = ?
+LIMIT 1
+SQL;
+
+        $statement = $this->connection->prepare($query);
+        $statement->setFetchMode(PDO::FETCH_OBJ);
+        $statement->execute([$name]);
+
+        $result = $statement->fetch();
+
+        if (false === $result) {
+            throw new Exception\RuntimeException('A projection with name "' . $name . '" could not be found.');
+        }
+
+        return ProjectionStatus::byValue($result->status);
     }
 
     public function fetchProjectionStreamPositions(string $name): ?array
     {
-        // TODO: Implement fetchProjectionStreamPositions() method.
+        $query = <<<SQL
+SELECT `position` FROM $this->projectionsTable
+WHERE `name` = ?
+LIMIT 1
+SQL;
+
+        $statement = $this->connection->prepare($query);
+        $statement->setFetchMode(PDO::FETCH_OBJ);
+        $statement->execute([$name]);
+
+        $result = $statement->fetch();
+
+        if (false === $result) {
+            throw new Exception\RuntimeException('A projection with name "' . $name . '" could not be found.');
+        }
+
+        return json_decode($result->position, true);
     }
 
     public function fetchProjectionState(string $name): array
     {
-        // TODO: Implement fetchProjectionState() method.
+        $query = <<<SQL
+SELECT `state` FROM $this->projectionsTable
+WHERE `name` = ?
+LIMIT 1
+SQL;
+
+        $statement = $this->connection->prepare($query);
+        $statement->setFetchMode(PDO::FETCH_OBJ);
+        $statement->execute([$name]);
+
+        $result = $statement->fetch();
+
+        if (false === $result) {
+            throw new Exception\RuntimeException('A projection with name "' . $name . '" could not be found.');
+        }
+
+        return json_decode($result->state, true);
     }
 }

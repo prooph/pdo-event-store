@@ -15,15 +15,13 @@ namespace ProophTest\EventStore\Pdo\Projection;
 use ArrayIterator;
 use PDO;
 use PHPUnit\Framework\TestCase;
-use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\Message;
-use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception\InvalidArgumentException;
 use Prooph\EventStore\Exception\RuntimeException;
 use Prooph\EventStore\Exception\StreamNotFound;
 use Prooph\EventStore\Pdo\Projection\PdoEventStoreProjection;
-use Prooph\EventStore\Pdo\Projection\ProjectionOptions;
+use Prooph\EventStore\Projection\ProjectionManager;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\UserCreated;
@@ -31,6 +29,11 @@ use ProophTest\EventStore\Mock\UsernameChanged;
 
 abstract class PdoEventStoreProjectionTestCase extends TestCase
 {
+    /**
+     * @var ProjectionManager
+     */
+    protected $projectionManager;
+
     /**
      * @var EventStore
      */
@@ -77,23 +80,11 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
     /**
      * @test
      */
-    public function it_unwraps_event_store_decorator(): void
-    {
-        $eventStoreDecorator = new ActionEventEmitterEventStore($this->eventStore, new ProophActionEventEmitter());
-
-        $projection = $eventStoreDecorator->createProjection('test_projection', new ProjectionOptions());
-
-        $this->assertEquals([], $projection->getState());
-    }
-
-    /**
-     * @test
-     */
     public function it_can_query_from_stream_and_reset()
     {
         $this->prepareEventStream('user-123');
 
-        $projection = $this->eventStore->createProjection('test_projection');
+        $projection = $this->projectionManager->createProjection('test_projection');
 
         $projection
             ->init(function (): array {
@@ -126,7 +117,7 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
         $this->prepareEventStream('user-123');
         $this->prepareEventStream('user-234');
 
-        $projection = $this->eventStore->createProjection('test_projection');
+        $projection = $this->projectionManager->createProjection('test_projection');
 
         $projection
             ->init(function (): array {
@@ -154,7 +145,7 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
         $this->prepareEventStream('user-234');
         $this->prepareEventStream('$iternal-345');
 
-        $projection = $this->eventStore->createProjection('test_projection');
+        $projection = $this->projectionManager->createProjection('test_projection');
 
         $projection
             ->init(function (): array {
@@ -182,10 +173,9 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
 
         $testCase = $this;
 
-        $projection = $this->eventStore->createProjection('test_projection', new ProjectionOptions(
-            1000,
-            10
-        ));
+        $projection = $this->projectionManager->createProjection('test_projection', [
+            $this->projectionManager::OPTION_PERSIST_BLOCK_SIZE => 10,
+        ]);
 
         $projection
             ->fromAll()
@@ -220,10 +210,9 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
         $this->prepareEventStream('user-123');
         $this->prepareEventStream('user-234');
 
-        $projection = $this->eventStore->createProjection('test_projection', new ProjectionOptions(
-            1000,
-            10
-        ));
+        $projection = $this->projectionManager->createProjection('test_projection', [
+            $this->projectionManager::OPTION_PERSIST_BLOCK_SIZE => 10,
+        ]);
 
         $projection
             ->init(function (): array {
@@ -252,7 +241,7 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
         $this->prepareEventStream('guest-345');
         $this->prepareEventStream('guest-456');
 
-        $projection = $this->eventStore->createProjection('test_projection');
+        $projection = $this->projectionManager->createProjection('test_projection');
 
         $projection
             ->init(function (): array {
@@ -275,7 +264,7 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
     {
         $this->prepareEventStream('user-123');
 
-        $projection = $this->eventStore->createProjection('test_projection');
+        $projection = $this->projectionManager->createProjection('test_projection');
 
         $projection
             ->init(function (): array {
@@ -312,7 +301,7 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
      */
     public function it_resets_to_empty_array(): void
     {
-        $projection = $this->eventStore->createProjection('test_projection');
+        $projection = $this->projectionManager->createProjection('test_projection');
 
         $state = $projection->getState();
 
@@ -332,7 +321,7 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
     {
         $this->prepareEventStream('user-123');
 
-        $projection = $this->eventStore->createProjection('test_projection');
+        $projection = $this->projectionManager->createProjection('test_projection');
 
         $projection
             ->init(function (): array {
@@ -360,7 +349,7 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
     {
         $this->prepareEventStream('user-123');
 
-        $projection = $this->eventStore->createProjection('test_projection');
+        $projection = $this->projectionManager->createProjection('test_projection');
 
         $projection
             ->fromStream('user-123')
@@ -393,7 +382,7 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
 
         $this->eventStore->appendTo(new StreamName('user-123'), new ArrayIterator($events));
 
-        $projection = $this->eventStore->createProjection('test_projection');
+        $projection = $this->projectionManager->createProjection('test_projection');
 
         $projection
             ->fromStream('user-123')
@@ -422,7 +411,7 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
     {
         $this->prepareEventStream('user-123');
 
-        $projection = $this->eventStore->createProjection('test_projection');
+        $projection = $this->projectionManager->createProjection('test_projection');
 
         $projection
             ->fromStream('user-123')
@@ -453,7 +442,7 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
     {
         $this->prepareEventStream('user-123');
 
-        $projection = $this->eventStore->createProjection('test_projection');
+        $projection = $this->projectionManager->createProjection('test_projection');
 
         $projection
             ->fromStream('user-123')
@@ -485,7 +474,7 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
     {
         $this->prepareEventStream('user-123');
 
-        $projection = $this->eventStore->createProjection('test_projection');
+        $projection = $this->projectionManager->createProjection('test_projection');
 
         $projection
             ->fromStream('user-123')
@@ -510,7 +499,7 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $projection = $this->eventStore->createProjection('test_projection');
+        $projection = $this->projectionManager->createProjection('test_projection');
 
         $projection->run();
     }
@@ -525,15 +514,15 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
 
         $this->prepareEventStream('user-123');
 
-        $projection = $this->eventStore->createProjection('test_projection');
+        $projection = $this->projectionManager->createProjection('test_projection');
 
-        $eventStore = $this->eventStore;
+        $projectionManager = $this->projectionManager;
 
         $projection
             ->fromStream('user-123')
             ->whenAny(
-                function (array $state, Message $event) use ($eventStore): array {
-                    $projection = $eventStore->createProjection('test_projection');
+                function (array $state, Message $event) use ($projectionManager): array {
+                    $projection = $projectionManager->createProjection('test_projection');
 
                     $projection
                         ->fromStream('user-123')
@@ -562,7 +551,7 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
 
         $this->connection->exec('DROP TABLE projections;');
 
-        $projection = $this->eventStore->createProjection('test_projection');
+        $projection = $this->projectionManager->createProjection('test_projection');
 
         $projection
             ->fromStream('user-123')
@@ -583,7 +572,7 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $projection = $this->eventStore->createProjection('test_projection');
+        $projection = $this->projectionManager->createProjection('test_projection');
 
         $projection->init(function (): array {
             return [];
@@ -600,7 +589,7 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $projection = $this->eventStore->createProjection('test_projection');
+        $projection = $this->projectionManager->createProjection('test_projection');
 
         $projection->fromStream('foo');
         $projection->fromStream('bar');
@@ -613,7 +602,7 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $projection = $this->eventStore->createProjection('test_projection');
+        $projection = $this->projectionManager->createProjection('test_projection');
 
         $projection->fromStreams('foo');
         $projection->fromCategory('bar');
@@ -626,7 +615,7 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $projection = $this->eventStore->createProjection('test_projection');
+        $projection = $this->projectionManager->createProjection('test_projection');
 
         $projection->fromCategory('foo');
         $projection->fromStreams('bar');
@@ -639,7 +628,7 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $projection = $this->eventStore->createProjection('test_projection');
+        $projection = $this->projectionManager->createProjection('test_projection');
 
         $projection->fromCategories('foo');
         $projection->fromCategories('bar');
@@ -652,7 +641,7 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $projection = $this->eventStore->createProjection('test_projection');
+        $projection = $this->projectionManager->createProjection('test_projection');
 
         $projection->fromCategories('foo');
         $projection->fromAll('bar');
@@ -665,7 +654,7 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $projection = $this->eventStore->createProjection('test_projection');
+        $projection = $this->projectionManager->createProjection('test_projection');
 
         $projection->when(['foo' => function (): void {
         }]);
@@ -680,7 +669,7 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        $projection = $this->eventStore->createProjection('test_projection');
+        $projection = $this->projectionManager->createProjection('test_projection');
 
         $projection->when(['1' => function (): void {
         }]);
@@ -693,7 +682,7 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        $projection = $this->eventStore->createProjection('test_projection');
+        $projection = $this->projectionManager->createProjection('test_projection');
 
         $projection->when(['foo' => 'invalid']);
     }
@@ -705,7 +694,7 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $projection = $this->eventStore->createProjection('test_projection');
+        $projection = $this->projectionManager->createProjection('test_projection');
 
         $projection->whenAny(function (): void {
         });
@@ -745,7 +734,9 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
 
         $calledTimes = 0;
 
-        $projection = $this->eventStore->createProjection('test_projection', new ProjectionOptions(10, 5));
+        $projection = $this->projectionManager->createProjection('test_projection', [
+            $this->projectionManager::OPTION_PERSIST_BLOCK_SIZE => 10,
+        ]);
 
         $projection
             ->init(function (): array {
@@ -771,7 +762,7 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
 
         $this->eventStore->appendTo(new StreamName('user-123'), new ArrayIterator($events));
 
-        $this->eventStore->deleteProjection('test_projection', false);
+        $this->projectionManager->deleteProjection('test_projection', false);
 
         $projection->run(false);
 
@@ -788,9 +779,11 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
 
         $calledTimes = 0;
 
-        $eventStore = $this->eventStore;
+        $projectionManager = $this->projectionManager;
 
-        $projection = $this->eventStore->createProjection('test_projection', new ProjectionOptions(10, 5));
+        $projection = $this->projectionManager->createProjection('test_projection', [
+            $this->projectionManager::OPTION_PERSIST_BLOCK_SIZE => 5,
+        ]);
 
         $projection
             ->init(function (): array {
@@ -798,11 +791,11 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
             })
             ->fromStream('user-123')
             ->when([
-                UsernameChanged::class => function (array $state, UsernameChanged $event) use (&$calledTimes, $eventStore): array {
+                UsernameChanged::class => function (array $state, UsernameChanged $event) use (&$calledTimes, $projectionManager): array {
                     static $wasReset = false;
 
                     if (! $wasReset) {
-                        $eventStore->deleteProjection('test_projection', false);
+                        $projectionManager->deleteProjection('test_projection', false);
                         $wasReset = true;
                     }
 
@@ -829,7 +822,9 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
 
         $calledTimes = 0;
 
-        $projection = $this->eventStore->createProjection('test_projection', new ProjectionOptions(10, 5));
+        $projection = $this->projectionManager->createProjection('test_projection', [
+            $this->projectionManager::OPTION_PERSIST_BLOCK_SIZE => 5,
+        ]);
 
         $projection
             ->init(function (): array {
@@ -855,7 +850,7 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
 
         $this->eventStore->appendTo(new StreamName('user-123'), new ArrayIterator($events));
 
-        $this->eventStore->resetProjection('test_projection');
+        $this->projectionManager->resetProjection('test_projection');
 
         $projection->run(false);
 
@@ -872,9 +867,11 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
 
         $calledTimes = 0;
 
-        $eventStore = $this->eventStore;
+        $projectionManager = $this->projectionManager;
 
-        $projection = $this->eventStore->createProjection('test_projection', new ProjectionOptions(10, 5));
+        $projection = $this->projectionManager->createProjection('test_projection', [
+            $this->projectionManager::OPTION_PERSIST_BLOCK_SIZE => 5,
+        ]);
 
         $projection
             ->init(function (): array {
@@ -882,11 +879,11 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
             })
             ->fromStream('user-123')
             ->when([
-                UsernameChanged::class => function (array $state, UsernameChanged $event) use (&$calledTimes, $eventStore): array {
+                UsernameChanged::class => function (array $state, UsernameChanged $event) use (&$calledTimes, $projectionManager): array {
                     static $wasReset = false;
 
                     if (! $wasReset) {
-                        $eventStore->resetProjection('test_projection');
+                        $projectionManager->resetProjection('test_projection');
                         $wasReset = true;
                     }
 
@@ -913,7 +910,9 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
 
         $calledTimes = 0;
 
-        $projection = $this->eventStore->createProjection('test_projection', new ProjectionOptions(10, 5));
+        $projection = $this->projectionManager->createProjection('test_projection', [
+            $this->projectionManager::OPTION_PERSIST_BLOCK_SIZE => 5,
+        ]);
 
         $projection
             ->init(function (): array {
@@ -939,7 +938,7 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
 
         $this->eventStore->appendTo(new StreamName('user-123'), new ArrayIterator($events));
 
-        $this->eventStore->stopProjection('test_projection');
+        $this->projectionManager->stopProjection('test_projection');
 
         $projection->run(false);
 
@@ -956,9 +955,11 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
 
         $calledTimes = 0;
 
-        $eventStore = $this->eventStore;
+        $projectionManager = $this->projectionManager;
 
-        $projection = $this->eventStore->createProjection('test_projection', new ProjectionOptions(10, 5));
+        $projection = $this->projectionManager->createProjection('test_projection', [
+            $this->projectionManager::OPTION_PERSIST_BLOCK_SIZE => 5,
+        ]);
 
         $projection
             ->init(function (): array {
@@ -966,11 +967,11 @@ abstract class PdoEventStoreProjectionTestCase extends TestCase
             })
             ->fromStream('user-123')
             ->when([
-                UsernameChanged::class => function (array $state, UsernameChanged $event) use (&$calledTimes, $eventStore): array {
+                UsernameChanged::class => function (array $state, UsernameChanged $event) use (&$calledTimes, $projectionManager): array {
                     static $wasReset = false;
 
                     if (! $wasReset) {
-                        $eventStore->stopProjection('test_projection');
+                        $projectionManager->stopProjection('test_projection');
                         $wasReset = true;
                     }
 

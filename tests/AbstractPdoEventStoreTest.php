@@ -24,10 +24,8 @@ use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;
 use Prooph\EventStore\Pdo\Exception\InvalidArgumentException;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
-use Prooph\EventStore\Projection\ProjectionOptions;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
-use ProophTest\EventStore\Mock\ReadModelMock;
 use ProophTest\EventStore\Mock\TestDomainEvent;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
@@ -47,7 +45,6 @@ abstract class AbstractPdoEventStoreTest extends TestCase
     protected function tearDown(): void
     {
         $this->connection->exec('DROP TABLE event_streams;');
-        $this->connection->exec('DROP TABLE projections;');
         $this->connection->exec('DROP TABLE _' . sha1('Prooph\Model\User'));
     }
 
@@ -752,26 +749,6 @@ abstract class AbstractPdoEventStoreTest extends TestCase
     /**
      * @test
      */
-    public function it_throws_exception_when_base_projection_options_given_to_projection(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-
-        $this->eventStore->createProjection('foo', new ProjectionOptions());
-    }
-
-    /**
-     * @test
-     */
-    public function it_throws_exception_when_base_projection_options_given_to_read_model_projection(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-
-        $this->eventStore->createReadModelProjection('foo', new ReadModelMock(), new ProjectionOptions());
-    }
-
-    /**
-     * @test
-     */
     public function it_handles_not_existing_event_streams_table(): void
     {
         $this->expectException(RuntimeException::class);
@@ -995,80 +972,5 @@ abstract class AbstractPdoEventStoreTest extends TestCase
         $this->expectExceptionMessage('Invalid regex pattern given');
 
         $this->eventStore->fetchCategoryNames('invalid)', true, 10, 0);
-    }
-
-    /**
-     * @test
-     */
-    public function it_fetches_projection_names(): void
-    {
-        $projections = [];
-
-        try {
-            for ($i = 0; $i < 50; $i++) {
-                $projection = $this->eventStore->createProjection('user-' . $i);
-                $projection->fromAll()->whenAny(function (): void {
-                })->run(false);
-                $projections[] = $projection;
-            }
-
-            for ($i = 0; $i < 20; $i++) {
-                $projection = $this->eventStore->createProjection(uniqid('rand'));
-                $projection->fromAll()->whenAny(function (): void {
-                })->run(false);
-                $projections[] = $projection;
-            }
-
-            $this->assertCount(1, $this->eventStore->fetchProjectionNames('user-0', false, 200, 0));
-            $this->assertCount(70, $this->eventStore->fetchProjectionNames(null, false, 200, 0));
-            $this->assertCount(0, $this->eventStore->fetchProjectionNames(null, false, 200, 100));
-            $this->assertCount(10, $this->eventStore->fetchProjectionNames(null, false, 10, 0));
-            $this->assertCount(10, $this->eventStore->fetchProjectionNames(null, false, 10, 10));
-            $this->assertCount(5, $this->eventStore->fetchProjectionNames(null, false, 10, 65));
-
-            for ($i = 0; $i < 20; $i++) {
-                $this->assertStringStartsWith('rand', $this->eventStore->fetchProjectionNames(null, false, 1, $i)[0]);
-            }
-
-            $this->assertCount(30, $this->eventStore->fetchProjectionNames('ser-', true, 30, 0));
-            $this->assertCount(0, $this->eventStore->fetchProjectionNames('n-', true, 30, 0));
-        } finally {
-            foreach ($projections as $projection) {
-                $projection->delete(false);
-            }
-        }
-    }
-
-    /**
-     * @test
-     */
-    public function it_throws_exception_when_fetching_projecton_names_with_missing_db_table(): void
-    {
-        $this->expectException(RuntimeException::class);
-
-        $this->connection->exec('DROP TABLE projections;');
-        $this->eventStore->fetchProjectionNames(null, false, 200, 0);
-    }
-
-    /**
-     * @test
-     */
-    public function it_throws_exception_when_fetching_projection_names_using_regex_and_no_filter(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('No regex pattern given');
-
-        $this->eventStore->fetchProjectionNames(null, true, 10, 0);
-    }
-
-    /**
-     * @test
-     */
-    public function it_throws_exception_when_fetching_projection_names_using_invalid_regex(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid regex pattern given');
-
-        $this->eventStore->fetchProjectionNames('invalid)', true, 10, 0);
     }
 }
