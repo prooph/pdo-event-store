@@ -95,8 +95,7 @@ abstract class AbstractEventStoreFactory implements
             $connection,
             $container->get($config['persistence_strategy']),
             $config['load_batch_size'],
-            $config['event_streams_table'],
-            $config['projections_table']
+            $config['event_streams_table']
         );
 
         if (! $config['wrap_action_event_emitter']) {

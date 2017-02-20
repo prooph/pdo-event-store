@@ -29,7 +29,7 @@
     },
     "suggest": {
         "psr/container": "^1.0 for usage of provided factories",
-        "sandrokeil/interop-config": "For usage of provided factories",
+        "sandrokeil/interop-config": "^2.0.1 for usage of provided factories",
         "ext-pdo_mysql": "For usage with MySQL",
         "ext-pdo_pgsql": "For usage with PostgreSQL"
     },

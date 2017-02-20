@@ -24,18 +24,6 @@ use Prooph\EventStore\Exception\TransactionNotStarted;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Pdo\Exception\ExtensionNotLoaded;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
-use Prooph\EventStore\Pdo\Projection\PdoEventStoreProjectionFactory;
-use Prooph\EventStore\Pdo\Projection\PdoEventStoreQueryFactory;
-use Prooph\EventStore\Pdo\Projection\PdoEventStoreReadModelProjectionFactory;
-use Prooph\EventStore\Pdo\Projection\ProjectionStatus;
-use Prooph\EventStore\Projection\Projection;
-use Prooph\EventStore\Projection\ProjectionFactory;
-use Prooph\EventStore\Projection\ProjectionOptions as BaseProjectionOptions;
-use Prooph\EventStore\Projection\Query;
-use Prooph\EventStore\Projection\QueryFactory;
-use Prooph\EventStore\Projection\ReadModel;
-use Prooph\EventStore\Projection\ReadModelProjection;
-use Prooph\EventStore\Projection\ReadModelProjectionFactory;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use Prooph\EventStore\TransactionalEventStore;
@@ -69,32 +57,6 @@ final class PostgresEventStore implements TransactionalEventStore
     private $eventStreamsTable;
 
     /**
-     * @var string
-     */
-    private $projectionsTable;
-
-    /**
-     * Will be lazy initialized if needed
-     *
-     * @var QueryFactory
-     */
-    private $defaultQueryFactory;
-
-    /**
-     * Will be lazy initialized if needed
-     *
-     * @var ProjectionFactory
-     */
-    private $defaultProjectionFactory;
-
-    /**
-     * Will be lazy initialized if needed
-     *
-     * @var ReadModelProjectionFactory
-     */
-    private $defaultReadModelProjectionFactory;
-
-    /**
      * @throws ExtensionNotLoaded
      */
     public function __construct(
@@ -102,8 +64,7 @@ final class PostgresEventStore implements TransactionalEventStore
         PDO $connection,
         PersistenceStrategy $persistenceStrategy,
         int $loadBatchSize = 10000,
-        string $eventStreamsTable = 'event_streams',
-        string $projectionsTable = 'projections'
+        string $eventStreamsTable = 'event_streams'
     ) {
         if (! extension_loaded('pdo_pgsql')) {
             throw ExtensionNotLoaded::with('pdo_pgsql');
@@ -116,7 +77,6 @@ final class PostgresEventStore implements TransactionalEventStore
         $this->persistenceStrategy = $persistenceStrategy;
         $this->loadBatchSize = $loadBatchSize;
         $this->eventStreamsTable = $eventStreamsTable;
-        $this->projectionsTable = $projectionsTable;
     }
 
     public function fetchStreamMetadata(StreamName $streamName): array
@@ -392,123 +352,6 @@ EOT;
         return $result ?: true;
     }
 
-    public function createQuery(QueryFactory $factory = null): Query
-    {
-        if (null === $factory) {
-            $factory = $this->getDefaultQueryFactory();
-        }
-
-        return $factory($this);
-    }
-
-    public function createProjection(
-        string $name,
-        BaseProjectionOptions $options = null,
-        ProjectionFactory $factory = null
-    ): Projection {
-        if (null === $factory) {
-            $factory = $this->getDefaultProjectionFactory();
-        }
-
-        return $factory($this, $name, $options);
-    }
-
-    public function createReadModelProjection(
-        string $name,
-        ReadModel $readModel,
-        BaseProjectionOptions $options = null,
-        ReadModelProjectionFactory $factory = null
-    ): ReadModelProjection {
-        if (null === $factory) {
-            $factory = $this->getDefaultReadModelProjectionFactory();
-        }
-
-        return $factory($this, $name, $readModel, $options);
-    }
-
-    public function getDefaultQueryFactory(): QueryFactory
-    {
-        if (null === $this->defaultQueryFactory) {
-            $this->defaultQueryFactory = new PdoEventStoreQueryFactory(
-                $this->connection,
-                    $this->eventStreamsTable
-            );
-        }
-
-        return $this->defaultQueryFactory;
-    }
-
-    public function getDefaultProjectionFactory(): ProjectionFactory
-    {
-        if (null === $this->defaultProjectionFactory) {
-            $this->defaultProjectionFactory = new PdoEventStoreProjectionFactory(
-                $this->connection,
-                $this->eventStreamsTable,
-                $this->projectionsTable
-            );
-        }
-
-        return $this->defaultProjectionFactory;
-    }
-
-    public function getDefaultReadModelProjectionFactory(): ReadModelProjectionFactory
-    {
-        if (null === $this->defaultReadModelProjectionFactory) {
-            $this->defaultReadModelProjectionFactory = new PdoEventStoreReadModelProjectionFactory(
-                $this->connection,
-                $this->eventStreamsTable,
-                $this->projectionsTable
-            );
-        }
-
-        return $this->defaultReadModelProjectionFactory;
-    }
-
-    public function deleteProjection(string $name, bool $deleteEmittedEvents): void
-    {
-        $sql = <<<EOT
-UPDATE $this->projectionsTable SET status = ? WHERE name = ?;
-EOT;
-
-        if ($deleteEmittedEvents) {
-            $status = ProjectionStatus::DELETING_INCL_EMITTED_EVENTS()->getValue();
-        } else {
-            $status = ProjectionStatus::DELETING()->getValue();
-        }
-
-        $statement = $this->connection->prepare($sql);
-        $statement->execute([
-            $status,
-            $name,
-        ]);
-    }
-
-    public function resetProjection(string $name): void
-    {
-        $sql = <<<EOT
-UPDATE $this->projectionsTable SET status = ? WHERE name = ?;
-EOT;
-
-        $statement = $this->connection->prepare($sql);
-        $statement->execute([
-            ProjectionStatus::RESETTING()->getValue(),
-            $name,
-        ]);
-    }
-
-    public function stopProjection(string $name): void
-    {
-        $sql = <<<EOT
-UPDATE $this->projectionsTable SET status = ? WHERE name = ?;
-EOT;
-
-        $statement = $this->connection->prepare($sql);
-        $statement->execute([
-            ProjectionStatus::STOPPING()->getValue(),
-            $name,
-        ]);
-    }
-
     public function fetchStreamNames(
         ?string $filter,
         bool $regex,
@@ -627,63 +470,6 @@ SQL;
         }
 
         return $categoryNames;
-    }
-
-    public function fetchProjectionNames(?string $filter, bool $regex, int $limit, int $offset): array
-    {
-        if (null === $filter && $regex) {
-            throw new Exception\InvalidArgumentException('No regex pattern given');
-        }
-
-        if ($regex && false === @preg_match("/$filter/", '')) {
-            throw new Exception\InvalidArgumentException('Invalid regex pattern given');
-        }
-
-        $where = [];
-        $values = [];
-
-        if (null !== $filter && $regex) {
-            $where[] = 'name ~ :filter ';
-            $values[':filter'] = $filter;
-        } elseif (null !== $filter && ! $regex) {
-            $where[] = 'name = :filter ';
-            $values[':filter'] = $filter;
-        }
-
-        $whereCondition = implode(' AND ', $where);
-        if (! empty($whereCondition)) {
-            $whereCondition = 'WHERE ' . $whereCondition;
-        }
-
-        $query = <<<SQL
-SELECT name FROM $this->projectionsTable
-$whereCondition
-ORDER BY name ASC
-LIMIT $limit OFFSET $offset
-SQL;
-
-        $statement = $this->connection->prepare($query);
-        $statement->setFetchMode(PDO::FETCH_OBJ);
-        $statement->execute($values);
-
-        if ($statement->errorCode() !== '00000') {
-            $errorCode = $statement->errorCode();
-            $errorInfo = $statement->errorInfo()[2];
-
-            throw new RuntimeException(
-                "Error $errorCode. Maybe the event streams table is not setup?\nError-Info: $errorInfo"
-            );
-        }
-
-        $result = $statement->fetchAll();
-
-        $projectionNames = [];
-
-        foreach ($result as $projectionName) {
-            $projectionNames[] = $projectionName->name;
-        }
-
-        return $projectionNames;
     }
 
     private function createWhereClauseForMetadata(?MetadataMatcher $metadataMatcher): array
