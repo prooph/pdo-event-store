@@ -22,7 +22,7 @@ use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception\InvalidArgumentException;
 use Prooph\EventStore\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\Projection\PdoEventStoreReadModelProjection;
-use Prooph\EventStore\Pdo\Projection\ProjectionOptions;
+use Prooph\EventStore\Projection\ProjectionManager;
 use Prooph\EventStore\Projection\ReadModel;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
@@ -32,6 +32,11 @@ use ProophTest\EventStore\Mock\UsernameChanged;
 
 abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
 {
+    /**
+     * @var ProjectionManager
+     */
+    protected $projectionManager;
+
     /**
      * @var EventStore
      */
@@ -78,23 +83,11 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
     /**
      * @test
      */
-    public function it_unwraps_event_store_decorator(): void
-    {
-        $eventStoreDecorator = new ActionEventEmitterEventStore($this->eventStore, new ProophActionEventEmitter());
-
-        $projection = $eventStoreDecorator->createReadModelProjection('test_projection', new ReadModelMock(), new ProjectionOptions());
-
-        $this->assertEquals([], $projection->getState());
-    }
-
-    /**
-     * @test
-     */
     public function it_can_query_from_stream_and_reset()
     {
         $this->prepareEventStream('user-123');
 
-        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 
         $projection
             ->init(function (): array {
@@ -128,7 +121,7 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
         $this->prepareEventStream('user-123');
         $this->prepareEventStream('user-234');
 
-        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 
         $projection
             ->init(function (): array {
@@ -156,7 +149,7 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
         $this->prepareEventStream('user-234');
         $this->prepareEventStream('$iternal-345');
 
-        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 
         $projection
             ->init(function (): array {
@@ -183,7 +176,7 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
         $this->prepareEventStream('user-123');
         $this->prepareEventStream('user-234');
 
-        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 
         $projection
             ->init(function (): array {
@@ -212,7 +205,7 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
         $this->prepareEventStream('guest-345');
         $this->prepareEventStream('guest-456');
 
-        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 
         $projection
             ->init(function (): array {
@@ -235,7 +228,7 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
     {
         $this->prepareEventStream('user-123');
 
-        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 
         $projection
             ->init(function (): array {
@@ -272,7 +265,7 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
      */
     public function it_resets_to_empty_array(): void
     {
-        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 
         $state = $projection->getState();
 
@@ -292,7 +285,7 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
     {
         $this->prepareEventStream('user-123');
 
-        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 
         $projection
             ->init(function (): array {
@@ -324,10 +317,9 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
 
         $readModel = new ReadModelMock();
 
-        $projection = $this->eventStore->createReadModelProjection('test_projection', $readModel, new ProjectionOptions(
-            1000,
-            10
-        ));
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', $readModel, [
+            $this->projectionManager::OPTION_PERSIST_BLOCK_SIZE => 10,
+        ]);
 
         $projection
             ->fromAll()
@@ -363,7 +355,7 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
 
         $readModel = new ReadModelMock();
 
-        $projection = $this->eventStore->createReadModelProjection('test_projection', $readModel);
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', $readModel);
 
         $projection
             ->fromAll()
@@ -395,7 +387,7 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
 
         $this->eventStore->appendTo(new StreamName('user-123'), new ArrayIterator($events));
 
-        $projection = $this->eventStore->createReadModelProjection('test_projection', $readModel);
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', $readModel);
 
         $projection
             ->fromAll()
@@ -429,10 +421,9 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
 
         $readModel = new ReadModelMock();
 
-        $projection = $this->eventStore->createReadModelProjection('test_projection', $readModel, new ProjectionOptions(
-            1000,
-            10
-        ));
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', $readModel, [
+            $this->projectionManager::OPTION_PERSIST_BLOCK_SIZE => 10,
+        ]);
 
         $projection
             ->init(function (): void {
@@ -456,7 +447,7 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
 
         $readModel = new ReadModelMock();
 
-        $projection = $this->eventStore->createReadModelProjection('test_projection', $readModel);
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', $readModel);
 
         $projection
             ->fromStream('user-123')
@@ -486,7 +477,7 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
 
         $readModel = new ReadModelMock();
 
-        $projection = $this->eventStore->createReadModelProjection('test_projection', $readModel);
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', $readModel);
         $projection->run();
     }
 
@@ -497,7 +488,7 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 
         $projection->init(function (): array {
             return [];
@@ -514,7 +505,7 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 
         $projection->fromStream('foo');
         $projection->fromStream('bar');
@@ -527,7 +518,7 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 
         $projection->fromStreams('foo');
         $projection->fromCategory('bar');
@@ -540,7 +531,7 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 
         $projection->fromCategory('foo');
         $projection->fromStreams('bar');
@@ -553,7 +544,7 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 
         $projection->fromCategories('foo');
         $projection->fromCategories('bar');
@@ -566,7 +557,7 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 
         $projection->fromCategories('foo');
         $projection->fromAll('bar');
@@ -579,7 +570,7 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 
         $projection->when(['foo' => function (): void {
         }]);
@@ -594,7 +585,7 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 
         $projection->when(['1' => function (): void {
         }]);
@@ -607,7 +598,7 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 
         $projection->when(['foo' => 'invalid']);
     }
@@ -619,7 +610,7 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 
         $projection->whenAny(function (): void {
         });
@@ -662,15 +653,14 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
 
         $this->prepareEventStream('user-123');
 
-        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
-
-        $eventStore = $this->eventStore;
+        $projectionManager = $this->projectionManager;
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 
         $projection
             ->fromStream('user-123')
             ->whenAny(
-                function (array $state, Message $event) use ($eventStore): array {
-                    $projection = $eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+                function (array $state, Message $event) use ($projectionManager): array {
+                    $projection = $projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 
                     $projection
                         ->fromStream('user-123')
@@ -696,7 +686,7 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
 
         $this->connection->exec('DROP TABLE projections;');
 
-        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 
         $projection
             ->fromStream('user-123')
@@ -719,7 +709,7 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
 
         $calledTimes = 0;
 
-        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 
         $projection
             ->init(function (): array {
@@ -745,7 +735,7 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
 
         $this->eventStore->appendTo(new StreamName('user-123'), new ArrayIterator($events));
 
-        $this->eventStore->deleteProjection('test_projection', false);
+        $this->projectionManager->deleteProjection('test_projection', false);
 
         $projection->run(false);
 
@@ -762,9 +752,8 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
 
         $calledTimes = 0;
 
-        $eventStore = $this->eventStore;
-
-        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+        $projectionManager = $this->projectionManager;
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 
         $projection
             ->init(function (): array {
@@ -772,11 +761,11 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
             })
             ->fromStream('user-123')
             ->when([
-                UsernameChanged::class => function (array $state, UsernameChanged $event) use (&$calledTimes, $eventStore): array {
+                UsernameChanged::class => function (array $state, UsernameChanged $event) use (&$calledTimes, $projectionManager): array {
                     static $wasReset = false;
 
                     if (! $wasReset) {
-                        $eventStore->deleteProjection('test_projection', false);
+                        $projectionManager->deleteProjection('test_projection', false);
                         $wasReset = true;
                     }
 
@@ -803,7 +792,7 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
 
         $calledTimes = 0;
 
-        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 
         $projection
             ->init(function (): array {
@@ -829,7 +818,7 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
 
         $this->eventStore->appendTo(new StreamName('user-123'), new ArrayIterator($events));
 
-        $this->eventStore->resetProjection('test_projection');
+        $this->projectionManager->resetProjection('test_projection');
 
         $projection->run(false);
 
@@ -846,9 +835,8 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
 
         $calledTimes = 0;
 
-        $eventStore = $this->eventStore;
-
-        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+        $projectionManager = $this->projectionManager;
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 
         $projection
             ->init(function (): array {
@@ -856,11 +844,11 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
             })
             ->fromStream('user-123')
             ->when([
-                UsernameChanged::class => function (array $state, UsernameChanged $event) use (&$calledTimes, $eventStore): array {
+                UsernameChanged::class => function (array $state, UsernameChanged $event) use (&$calledTimes, $projectionManager): array {
                     static $wasReset = false;
 
                     if (! $wasReset) {
-                        $eventStore->resetProjection('test_projection');
+                        $projectionManager->resetProjection('test_projection');
                         $wasReset = true;
                     }
 
@@ -887,7 +875,7 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
 
         $calledTimes = 0;
 
-        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 
         $projection
             ->init(function (): array {
@@ -913,7 +901,7 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
 
         $this->eventStore->appendTo(new StreamName('user-123'), new ArrayIterator($events));
 
-        $this->eventStore->stopProjection('test_projection');
+        $this->projectionManager->stopProjection('test_projection');
 
         $projection->run(false);
 
@@ -930,9 +918,8 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
 
         $calledTimes = 0;
 
-        $eventStore = $this->eventStore;
-
-        $projection = $this->eventStore->createReadModelProjection('test_projection', new ReadModelMock());
+        $projectionManager = $this->projectionManager;
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 
         $projection
             ->init(function (): array {
@@ -940,11 +927,11 @@ abstract class PdoEventStoreReadModelProjectionTestCase extends TestCase
             })
             ->fromStream('user-123')
             ->when([
-                UsernameChanged::class => function (array $state, UsernameChanged $event) use (&$calledTimes, $eventStore): array {
+                UsernameChanged::class => function (array $state, UsernameChanged $event) use (&$calledTimes, $projectionManager): array {
                     static $wasReset = false;
 
                     if (! $wasReset) {
-                        $eventStore->stopProjection('test_projection');
+                        $projectionManager->stopProjection('test_projection');
                         $wasReset = true;
                     }
 

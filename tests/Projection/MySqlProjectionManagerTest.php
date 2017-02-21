@@ -57,7 +57,7 @@ class MySqlProjectionManagerTest extends TestCase
         TestUtil::initDefaultDatabaseTables($this->connection);
 
         $this->eventStore = $this->createEventStore($this->connection);
-        $this->projectionManager = new InMemoryProjectionManager($this->eventStore);
+        $this->projectionManager = new MySqlProjectionManager($this->eventStore, $this->connection);
     }
 
     protected function tearDown(): void

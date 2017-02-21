@@ -22,6 +22,7 @@ use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception\InvalidArgumentException;
 use Prooph\EventStore\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\Projection\PdoEventStoreQuery;
+use Prooph\EventStore\Projection\ProjectionManager;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\UserCreated;
@@ -29,6 +30,11 @@ use ProophTest\EventStore\Mock\UsernameChanged;
 
 abstract class PdoEventStoreQueryTestCase extends TestCase
 {
+    /**
+     * @var ProjectionManager
+     */
+    protected $projectionManager;
+
     /**
      * @var EventStore
      */
@@ -75,23 +81,11 @@ abstract class PdoEventStoreQueryTestCase extends TestCase
     /**
      * @test
      */
-    public function it_unwraps_event_store_decorator(): void
-    {
-        $eventStoreDecorator = new ActionEventEmitterEventStore($this->eventStore, new ProophActionEventEmitter());
-
-        $query = $eventStoreDecorator->createQuery();
-
-        $this->assertEquals([], $query->getState());
-    }
-
-    /**
-     * @test
-     */
     public function it_can_query_from_stream_and_reset()
     {
         $this->prepareEventStream('user-123');
 
-        $query = $this->eventStore->createQuery();
+        $query = $this->projectionManager->createQuery();
 
         $query
             ->init(function (): array {
@@ -124,7 +118,7 @@ abstract class PdoEventStoreQueryTestCase extends TestCase
         $this->prepareEventStream('user-123');
         $this->prepareEventStream('user-234');
 
-        $query = $this->eventStore->createQuery();
+        $query = $this->projectionManager->createQuery();
 
         $query
             ->init(function (): array {
@@ -152,7 +146,7 @@ abstract class PdoEventStoreQueryTestCase extends TestCase
         $this->prepareEventStream('user-234');
         $this->prepareEventStream('$iternal-345');
 
-        $query = $this->eventStore->createQuery();
+        $query = $this->projectionManager->createQuery();
 
         $query
             ->init(function (): array {
@@ -180,7 +174,7 @@ abstract class PdoEventStoreQueryTestCase extends TestCase
 
         $testCase = $this;
 
-        $query = $this->eventStore->createQuery();
+        $query = $this->projectionManager->createQuery();
 
         $query
             ->fromAll()
@@ -215,7 +209,7 @@ abstract class PdoEventStoreQueryTestCase extends TestCase
         $this->prepareEventStream('user-123');
         $this->prepareEventStream('user-234');
 
-        $query = $this->eventStore->createQuery();
+        $query = $this->projectionManager->createQuery();
 
         $query
             ->init(function (): array {
@@ -244,7 +238,7 @@ abstract class PdoEventStoreQueryTestCase extends TestCase
         $this->prepareEventStream('guest-345');
         $this->prepareEventStream('guest-456');
 
-        $query = $this->eventStore->createQuery();
+        $query = $this->projectionManager->createQuery();
 
         $query
             ->init(function (): array {
@@ -267,7 +261,7 @@ abstract class PdoEventStoreQueryTestCase extends TestCase
     {
         $this->prepareEventStream('user-123');
 
-        $query = $this->eventStore->createQuery();
+        $query = $this->projectionManager->createQuery();
 
         $query
             ->init(function (): array {
@@ -304,7 +298,7 @@ abstract class PdoEventStoreQueryTestCase extends TestCase
      */
     public function it_resets_to_empty_array(): void
     {
-        $query = $this->eventStore->createQuery();
+        $query = $this->projectionManager->createQuery();
 
         $state = $query->getState();
 
@@ -324,7 +318,7 @@ abstract class PdoEventStoreQueryTestCase extends TestCase
     {
         $this->prepareEventStream('user-123');
 
-        $query = $this->eventStore->createQuery();
+        $query = $this->projectionManager->createQuery();
 
         $query
             ->init(function (): array {
@@ -352,7 +346,7 @@ abstract class PdoEventStoreQueryTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $query = $this->eventStore->createQuery();
+        $query = $this->projectionManager->createQuery();
 
         $query->init(function (): array {
             return [];
@@ -369,7 +363,7 @@ abstract class PdoEventStoreQueryTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $query = $this->eventStore->createQuery();
+        $query = $this->projectionManager->createQuery();
 
         $query->fromStream('foo');
         $query->fromStream('bar');
@@ -382,7 +376,7 @@ abstract class PdoEventStoreQueryTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $query = $this->eventStore->createQuery();
+        $query = $this->projectionManager->createQuery();
 
         $query->fromStreams('foo');
         $query->fromCategory('bar');
@@ -395,7 +389,7 @@ abstract class PdoEventStoreQueryTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $query = $this->eventStore->createQuery();
+        $query = $this->projectionManager->createQuery();
 
         $query->fromCategory('foo');
         $query->fromStreams('bar');
@@ -408,7 +402,7 @@ abstract class PdoEventStoreQueryTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $query = $this->eventStore->createQuery();
+        $query = $this->projectionManager->createQuery();
 
         $query->fromCategories('foo');
         $query->fromCategories('bar');
@@ -421,7 +415,7 @@ abstract class PdoEventStoreQueryTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $query = $this->eventStore->createQuery();
+        $query = $this->projectionManager->createQuery();
 
         $query->fromCategories('foo');
         $query->fromAll('bar');
@@ -434,7 +428,7 @@ abstract class PdoEventStoreQueryTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $query = $this->eventStore->createQuery();
+        $query = $this->projectionManager->createQuery();
 
         $query->when(['foo' => function (): void {
         }]);
@@ -449,7 +443,7 @@ abstract class PdoEventStoreQueryTestCase extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        $query = $this->eventStore->createQuery();
+        $query = $this->projectionManager->createQuery();
 
         $query->when(['1' => function (): void {
         }]);
@@ -462,7 +456,7 @@ abstract class PdoEventStoreQueryTestCase extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        $query = $this->eventStore->createQuery();
+        $query = $this->projectionManager->createQuery();
 
         $query->when(['foo' => 'invalid']);
     }
@@ -474,7 +468,7 @@ abstract class PdoEventStoreQueryTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $query = $this->eventStore->createQuery();
+        $query = $this->projectionManager->createQuery();
 
         $query->whenAny(function (): void {
         });
@@ -489,7 +483,7 @@ abstract class PdoEventStoreQueryTestCase extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $query = $this->eventStore->createQuery();
+        $query = $this->projectionManager->createQuery();
         $query->run();
     }
 
