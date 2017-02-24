@@ -78,16 +78,6 @@ class MySqlProjectionManagerTest extends TestCase
     /**
      * @test
      */
-    public function it_throws_exception_when_base_projection_options_given_to_projection(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-
-        $this->projectionManager->createProjection('foo');
-    }
-
-    /**
-     * @test
-     */
     public function it_fetches_projection_names(): void
     {
         $projections = [];
@@ -107,19 +97,19 @@ class MySqlProjectionManagerTest extends TestCase
                 $projections[] = $projection;
             }
 
-            $this->assertCount(1, $this->projectionManager->fetchProjectionNames('user-0', false, 200, 0));
-            $this->assertCount(70, $this->projectionManager->fetchProjectionNames(null, false, 200, 0));
-            $this->assertCount(0, $this->projectionManager->fetchProjectionNames(null, false, 200, 100));
-            $this->assertCount(10, $this->projectionManager->fetchProjectionNames(null, false, 10, 0));
-            $this->assertCount(10, $this->projectionManager->fetchProjectionNames(null, false, 10, 10));
-            $this->assertCount(5, $this->projectionManager->fetchProjectionNames(null, false, 10, 65));
+            $this->assertCount(1, $this->projectionManager->fetchProjectionNames('user-0', 200, 0));
+            $this->assertCount(70, $this->projectionManager->fetchProjectionNames(null, 200, 0));
+            $this->assertCount(0, $this->projectionManager->fetchProjectionNames(null, 200, 100));
+            $this->assertCount(10, $this->projectionManager->fetchProjectionNames(null, 10, 0));
+            $this->assertCount(10, $this->projectionManager->fetchProjectionNames(null, 10, 10));
+            $this->assertCount(5, $this->projectionManager->fetchProjectionNames(null, 10, 65));
 
             for ($i = 0; $i < 20; $i++) {
-                $this->assertStringStartsWith('rand', $this->projectionManager->fetchProjectionNames(null, false, 1, $i)[0]);
+                $this->assertStringStartsWith('rand', $this->projectionManager->fetchProjectionNames(null, 1, $i)[0]);
             }
 
-            $this->assertCount(30, $this->projectionManager->fetchProjectionNames('ser-', true, 30, 0));
-            $this->assertCount(0, $this->projectionManager->fetchProjectionNames('n-', true, 30, 0));
+            $this->assertCount(30, $this->projectionManager->fetchProjectionNamesRegex('ser-', 30, 0));
+            $this->assertCount(0, $this->projectionManager->fetchProjectionNamesRegex('n-', 30, 0));
         } finally {
             foreach ($projections as $projection) {
                 $projection->delete(false);
@@ -135,18 +125,7 @@ class MySqlProjectionManagerTest extends TestCase
         $this->expectException(RuntimeException::class);
 
         $this->connection->exec('DROP TABLE projections;');
-        $this->projectionManager->fetchProjectionNames(null, false, 200, 0);
-    }
-
-    /**
-     * @test
-     */
-    public function it_throws_exception_when_fetching_projection_names_using_regex_and_no_filter(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('No regex pattern given');
-
-        $this->projectionManager->fetchProjectionNames(null, true, 10, 0);
+        $this->projectionManager->fetchProjectionNames(null, 200, 0);
     }
 
     /**
@@ -157,17 +136,7 @@ class MySqlProjectionManagerTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid regex pattern given');
 
-        $this->projectionManager->fetchProjectionNames('invalid)', true, 10, 0);
-    }
-
-    /**
-     * @test
-     */
-    public function it_throws_exception_when_base_projection_options_given_to_read_model_projection(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-
-        $this->projectionManager->createReadModelProjection('foo', new ReadModelMock());
+        $this->projectionManager->fetchProjectionNamesRegex('invalid)', 10, 0);
     }
 
     /**

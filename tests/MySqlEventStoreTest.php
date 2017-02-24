@@ -23,7 +23,6 @@ use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlAggregateStreamStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSingleStreamStrategy;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
-use ProophTest\EventStore\Mock\TestDomainEvent;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
 use Ramsey\Uuid\Uuid;
@@ -47,14 +46,9 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
         $this->connection = TestUtil::getConnection();
         TestUtil::initDefaultDatabaseTables($this->connection);
 
-        $this->eventStore = $this->createEventStore($this->connection);
-    }
-
-    protected function createEventStore(PDO $connection): MySqlEventStore
-    {
-        return new MySqlEventStore(
+        $this->eventStore = new MySqlEventStore(
             new FQCNMessageFactory(),
-            $connection,
+            $this->connection,
             new MySqlAggregateStreamStrategy()
         );
     }
@@ -116,41 +110,7 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
     /**
      * @test
      */
-    public function it_fails_to_write_with_duplicate_version_and_single_stream_per_aggregate_strategy(): void
-    {
-        $this->expectException(ConcurrencyException::class);
-
-        $streamEvent = UserCreated::with(
-            ['name' => 'Max Mustermann', 'email' => 'contact@prooph.de'],
-            1
-        );
-
-        $aggregateId = Uuid::uuid4()->toString();
-
-        $streamEvent = $streamEvent->withAddedMetadata('tag', 'person');
-        $streamEvent = $streamEvent->withAddedMetadata('_aggregate_id', $aggregateId);
-        $streamEvent = $streamEvent->withAddedMetadata('_aggregate_type', 'user');
-
-        $stream = new Stream(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
-
-        $this->eventStore->create($stream);
-
-        $streamEvent = UsernameChanged::with(
-            ['name' => 'John Doe'],
-            1
-        );
-
-        $streamEvent = $streamEvent->withAddedMetadata('tag', 'person');
-        $streamEvent = $streamEvent->withAddedMetadata('_aggregate_id', $aggregateId);
-        $streamEvent = $streamEvent->withAddedMetadata('_aggregate_type', 'user');
-
-        $this->eventStore->appendTo(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
-    }
-
-    /**
-     * @test
-     */
-    public function it_fails_to_write_with_duplicate_version_and_aggregate_stream_strategy(): void
+    public function it_fails_to_write_with_duplicate_version_and_mulitple_streams_per_aggregate_strategy(): void
     {
         $this->expectException(ConcurrencyException::class);
 
@@ -185,25 +145,5 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_type', 'user');
 
         $this->eventStore->appendTo(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
-    }
-
-    /**
-     * @test
-     */
-    public function it_throws_exception_using_aggregate_stream_strategy_if_aggregate_version_is_missing_in_metadata(): void
-    {
-        $this->expectException(RuntimeException::class);
-
-        $event = TestDomainEvent::fromArray([
-            'uuid' => Uuid::uuid4()->toString(),
-            'message_name' => 'test-message',
-            'created_at' => new \DateTimeImmutable('now', new \DateTimeZone('UTC')),
-            'payload' => [],
-            'metadata' => [],
-        ]);
-
-        $stream = new Stream(new StreamName('Prooph\Model\User'), new \ArrayIterator([$event]));
-
-        $this->eventStore->create($stream);
     }
 }

@@ -161,31 +161,66 @@ EOT;
         ]);
     }
 
-    public function fetchProjectionNames(?string $filter, bool $regex, int $limit, int $offset): array
+    public function fetchProjectionNames(?string $filter, int $limit = 20, int $offset = 0): array
     {
-        if (null === $filter && $regex) {
-            throw new Exception\InvalidArgumentException('No regex pattern given');
+        $where = [];
+        $values = [];
+
+        if (null !== $filter) {
+            $where[] = '`name` = :filter ';
+            $values[':filter'] = $filter;
         }
 
-        if ($regex && false === @preg_match("/$filter/", '')) {
+        $whereCondition = implode(' AND ', $where);
+
+        if (! empty($whereCondition)) {
+            $whereCondition = 'WHERE ' . $whereCondition;
+        }
+
+        $query = <<<SQL
+SELECT `name` FROM $this->projectionsTable
+$whereCondition
+ORDER BY `name` ASC
+LIMIT $offset, $limit
+SQL;
+
+        $statement = $this->connection->prepare($query);
+        $statement->setFetchMode(PDO::FETCH_OBJ);
+        $statement->execute($values);
+
+        if ($statement->errorCode() !== '00000') {
+            $errorCode = $statement->errorCode();
+            $errorInfo = $statement->errorInfo()[2];
+
+            throw new Exception\RuntimeException(
+                "Error $errorCode. Maybe the event streams table is not setup?\nError-Info: $errorInfo"
+            );
+        }
+
+        $result = $statement->fetchAll();
+
+        $projectionNames = [];
+
+        foreach ($result as $projectionName) {
+            $projectionNames[] = $projectionName->name;
+        }
+
+        return $projectionNames;
+    }
+
+    public function fetchProjectionNamesRegex(string $filter, int $limit = 20, int $offset = 0): array
+    {
+        if (false === @preg_match("/$filter/", '')) {
             throw new Exception\InvalidArgumentException('Invalid regex pattern given');
         }
 
         $where = [];
         $values = [];
 
-        if (null !== $filter && $regex) {
-            $where[] = '`name` REGEXP :filter ';
-            $values[':filter'] = $filter;
-        } elseif (null !== $filter && ! $regex) {
-            $where[] = '`name` = :filter ';
-            $values[':filter'] = $filter;
-        }
+        $where[] = '`name` REGEXP :filter ';
+        $values[':filter'] = $filter;
 
-        $whereCondition = implode(' AND ', $where);
-        if (! empty($whereCondition)) {
-            $whereCondition = 'WHERE ' . $whereCondition;
-        }
+        $whereCondition = 'WHERE ' . implode(' AND ', $where);
 
         $query = <<<SQL
 SELECT `name` FROM $this->projectionsTable

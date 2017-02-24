@@ -355,29 +355,19 @@ EOT;
 
     public function fetchStreamNames(
         ?string $filter,
-        bool $regex,
         ?MetadataMatcher $metadataMatcher,
-        int $limit,
-        int $offset
+        int $limit = 20,
+        int $offset = 0
     ): array {
-        if (null === $filter && $regex) {
-            throw new Exception\InvalidArgumentException('No regex pattern given');
-        }
-
-        if ($regex && false === @preg_match("/$filter/", '')) {
-            throw new Exception\InvalidArgumentException('Invalid regex pattern given');
-        }
         [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher);
 
-        if (null !== $filter && $regex) {
-            $where[] = '`real_stream_name` REGEXP :filter ';
-            $values[':filter'] = $filter;
-        } elseif (null !== $filter && ! $regex) {
+        if (null !== $filter) {
             $where[] = '`real_stream_name` = :filter ';
             $values[':filter'] = $filter;
         }
 
         $whereCondition = implode(' AND ', $where);
+
         if (! empty($whereCondition)) {
             $whereCondition = 'WHERE ' . $whereCondition;
         }
@@ -413,33 +403,117 @@ SQL;
         return $streamNames;
     }
 
-    public function fetchCategoryNames(?string $filter, bool $regex, int $limit, int $offset): array
-    {
-        if (null === $filter && $regex) {
-            throw new Exception\InvalidArgumentException('No regex pattern given');
+    public function fetchStreamNamesRegex(
+        string $filter,
+        ?MetadataMatcher $metadataMatcher,
+        int $limit = 20,
+        int $offset = 0
+    ): array {
+        if (false === @preg_match("/$filter/", '')) {
+            throw new Exception\InvalidArgumentException('Invalid regex pattern given');
         }
 
-        if ($regex && false === @preg_match("/$filter/", '')) {
+        [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher);
+
+        $where[] = '`real_stream_name` REGEXP :filter ';
+        $values[':filter'] = $filter;
+
+        $whereCondition = 'WHERE ' . implode(' AND ', $where);
+
+        $query = <<<SQL
+SELECT `real_stream_name` FROM $this->eventStreamsTable
+$whereCondition
+ORDER BY `real_stream_name` ASC
+LIMIT $offset, $limit
+SQL;
+
+        $statement = $this->connection->prepare($query);
+        $statement->setFetchMode(PDO::FETCH_OBJ);
+        $statement->execute($values);
+
+        if ($statement->errorCode() !== '00000') {
+            $errorCode = $statement->errorCode();
+            $errorInfo = $statement->errorInfo()[2];
+
+            throw new RuntimeException(
+                "Error $errorCode. Maybe the event streams table is not setup?\nError-Info: $errorInfo"
+            );
+        }
+
+        $result = $statement->fetchAll();
+
+        $streamNames = [];
+
+        foreach ($result as $streamName) {
+            $streamNames[] = new StreamName($streamName->real_stream_name);
+        }
+
+        return $streamNames;
+    }
+
+    public function fetchCategoryNames(?string $filter, int $limit = 20, int $offset = 0): array
+    {
+        $where = [];
+        $values = [];
+
+        if (null !== $filter) {
+            $where[] = '`category` = :filter ';
+            $values[':filter'] = $filter;
+        }
+
+        $whereCondition = implode(' AND ', $where);
+
+        if (! empty($whereCondition)) {
+            $whereCondition = 'WHERE ' . $whereCondition . ' AND `category` IS NOT NULL';
+        } else {
+            $whereCondition = 'WHERE `category` IS NOT NULL';
+        }
+
+        $query = <<<SQL
+SELECT `category` FROM $this->eventStreamsTable
+$whereCondition
+GROUP BY `category`
+ORDER BY `category` ASC
+LIMIT $offset, $limit
+SQL;
+
+        $statement = $this->connection->prepare($query);
+        $statement->setFetchMode(PDO::FETCH_OBJ);
+        $statement->execute($values);
+
+        if ($statement->errorCode() !== '00000') {
+            $errorCode = $statement->errorCode();
+            $errorInfo = $statement->errorInfo()[2];
+
+            throw new RuntimeException(
+                "Error $errorCode. Maybe the event streams table is not setup?\nError-Info: $errorInfo"
+            );
+        }
+
+        $result = $statement->fetchAll();
+
+        $categoryNames = [];
+
+        foreach ($result as $categoryName) {
+            $categoryNames[] = $categoryName->category;
+        }
+
+        return $categoryNames;
+    }
+
+    public function fetchCategoryNamesRegex(string $filter, int $limit = 20, int $offset = 0): array
+    {
+        if (false === @preg_match("/$filter/", '')) {
             throw new Exception\InvalidArgumentException('Invalid regex pattern given');
         }
 
         $where = [];
         $values = [];
 
-        if (null !== $filter && $regex) {
-            $where[] = '`category` REGEXP :filter ';
-            $values[':filter'] = $filter;
-        } elseif (null !== $filter && ! $regex) {
-            $where[] = '`category` = :filter ';
-            $values[':filter'] = $filter;
-        }
+        $where[] = '`category` REGEXP :filter ';
+        $values[':filter'] = $filter;
 
-        $whereCondition = implode(' AND ', $where);
-        if (! empty($whereCondition)) {
-            $whereCondition = 'WHERE ' . $whereCondition . ' AND `category` IS NOT NULL';
-        } else {
-            $whereCondition = 'WHERE `category` IS NOT NULL';
-        }
+        $whereCondition = 'WHERE ' . implode(' AND ', $where) . ' AND `category` IS NOT NULL';
 
         $query = <<<SQL
 SELECT `category` FROM $this->eventStreamsTable
