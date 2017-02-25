@@ -291,6 +291,8 @@ EOT;
 
         $singleHandler = null !== $this->handler;
 
+        $this->isStopped = false;
+
         foreach ($this->streamPositions as $streamName => $position) {
             $streamEvents = $this->eventStore->load(new StreamName($streamName), $position + 1);
 

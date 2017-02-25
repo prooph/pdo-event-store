@@ -472,6 +472,8 @@ EOT;
 
         $singleHandler = null !== $this->handler;
 
+        $this->isStopped = false;
+
         try {
             do {
                 foreach ($this->streamPositions as $streamName => $position) {
@@ -574,11 +576,12 @@ EOT;
         foreach ($events as $event) {
             /* @var Message $event */
             $this->streamPositions[$streamName]++;
-            $this->eventCounter++;
 
             if (! isset($this->handlers[$event->messageName()])) {
                 continue;
             }
+
+            $this->eventCounter++;
 
             $handler = $this->handlers[$event->messageName()];
             $result = $handler($this->state, $event);
@@ -587,7 +590,7 @@ EOT;
                 $this->state = $result;
             }
 
-            if ($this->eventCounter >= $this->persistBlockSize) {
+            if ($this->eventCounter === $this->persistBlockSize) {
                 $this->persist();
                 $this->eventCounter = 0;
             }

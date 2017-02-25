@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace ProophTest\EventStore\Pdo\Projection;
 
 use PDO;
-use PHPUnit\Framework\TestCase;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception\InvalidArgumentException;
@@ -21,8 +20,9 @@ use Prooph\EventStore\Pdo\Projection\PdoEventStoreProjection;
 use Prooph\EventStore\Projection\ProjectionManager;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
+use ProophTest\EventStore\Projection\AbstractEventStoreProjectionTest;
 
-abstract class PdoEventStoreProjectionTest extends TestCase
+abstract class PdoEventStoreProjectionTest extends AbstractEventStoreProjectionTest
 {
     /**
      * @var ProjectionManager
