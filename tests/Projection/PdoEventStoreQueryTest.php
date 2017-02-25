@@ -26,7 +26,7 @@ use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
 
-abstract class PdoEventStoreQueryTestCase extends TestCase
+abstract class PdoEventStoreQueryTest extends TestCase
 {
     /**
      * @var ProjectionManager

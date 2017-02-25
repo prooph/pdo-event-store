@@ -21,7 +21,7 @@ use ProophTest\EventStore\Pdo\TestUtil;
 /**
  * @group pdo_pgsql
  */
-class PostgresEventStoreQueryTest extends PdoEventStoreQueryTestCase
+class PostgresEventStoreQueryTest extends PdoEventStoreQueryTest
 {
     protected function setUp(): void
     {
