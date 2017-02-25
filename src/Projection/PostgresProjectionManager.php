@@ -15,6 +15,7 @@ namespace Prooph\EventStore\Pdo\Projection;
 use PDO;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\EventStoreDecorator;
+use Prooph\EventStore\Exception\OutOfRangeException;
 use Prooph\EventStore\Pdo\Exception;
 use Prooph\EventStore\Pdo\PostgresEventStore;
 use Prooph\EventStore\Projection\Projection;
@@ -59,8 +60,8 @@ final class PostgresProjectionManager implements ProjectionManager
     public function __construct(
         EventStore $eventStore,
         PDO $connection,
-        string $eventStreamsTable,
-        string $projectionsTable
+        string $eventStreamsTable = 'event_streams',
+        string $projectionsTable = 'projections'
     ) {
         $this->eventStore = $eventStore;
         $this->connection = $connection;
@@ -163,6 +164,18 @@ EOT;
 
     public function fetchProjectionNames(?string $filter, int $limit = 20, int $offset = 0): array
     {
+        if (1 > $limit) {
+            throw new OutOfRangeException(
+                'Invalid limit "'.$limit.'" given. Must be greater than 0.'
+            );
+        }
+
+        if (0 > $offset) {
+            throw new OutOfRangeException(
+                'Invalid offset "'.$offset.'" given. Must be greater or equal than 0.'
+            );
+        }
+
         $where = [];
         $values = [];
 
@@ -210,6 +223,18 @@ SQL;
 
     public function fetchProjectionNamesRegex(string $filter, int $limit = 20, int $offset = 0): array
     {
+        if (1 > $limit) {
+            throw new OutOfRangeException(
+                'Invalid limit "'.$limit.'" given. Must be greater than 0.'
+            );
+        }
+
+        if (0 > $offset) {
+            throw new OutOfRangeException(
+                'Invalid offset "'.$offset.'" given. Must be greater or equal than 0.'
+            );
+        }
+
         if (false === @preg_match("/$filter/", '')) {
             throw new Exception\InvalidArgumentException('Invalid regex pattern given');
         }
@@ -255,16 +280,64 @@ SQL;
 
     public function fetchProjectionStatus(string $name): ProjectionStatus
     {
-        // TODO: Implement fetchProjectionStatus() method.
+        $query = <<<SQL
+SELECT status FROM $this->projectionsTable
+WHERE name = ?
+LIMIT 1
+SQL;
+
+        $statement = $this->connection->prepare($query);
+        $statement->setFetchMode(PDO::FETCH_OBJ);
+        $statement->execute([$name]);
+
+        $result = $statement->fetch();
+
+        if (false === $result) {
+            throw new Exception\RuntimeException('A projection with name "' . $name . '" could not be found.');
+        }
+
+        return ProjectionStatus::byValue($result->status);
     }
 
     public function fetchProjectionStreamPositions(string $name): ?array
     {
-        // TODO: Implement fetchProjectionStreamPositions() method.
+        $query = <<<SQL
+SELECT position FROM $this->projectionsTable
+WHERE name = ?
+LIMIT 1
+SQL;
+
+        $statement = $this->connection->prepare($query);
+        $statement->setFetchMode(PDO::FETCH_OBJ);
+        $statement->execute([$name]);
+
+        $result = $statement->fetch();
+
+        if (false === $result) {
+            throw new Exception\RuntimeException('A projection with name "' . $name . '" could not be found.');
+        }
+
+        return json_decode($result->position, true);
     }
 
     public function fetchProjectionState(string $name): array
     {
-        // TODO: Implement fetchProjectionState() method.
+        $query = <<<SQL
+SELECT state FROM $this->projectionsTable
+WHERE name = ?
+LIMIT 1
+SQL;
+
+        $statement = $this->connection->prepare($query);
+        $statement->setFetchMode(PDO::FETCH_OBJ);
+        $statement->execute([$name]);
+
+        $result = $statement->fetch();
+
+        if (false === $result) {
+            throw new Exception\RuntimeException('A projection with name "' . $name . '" could not be found.');
+        }
+
+        return json_decode($result->state, true);
     }
 }

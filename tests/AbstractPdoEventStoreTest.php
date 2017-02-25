@@ -12,18 +12,10 @@ declare(strict_types=1);
 
 namespace ProophTest\EventStore\Pdo;
 
-use ArrayIterator;
 use PDO;
-use PHPUnit\Framework\TestCase;
 use Prooph\Common\Messaging\Message;
-use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception\ConcurrencyException;
-use Prooph\EventStore\Exception\StreamExistsAlready;
-use Prooph\EventStore\Exception\StreamNotFound;
-use Prooph\EventStore\Metadata\MetadataMatcher;
-use Prooph\EventStore\Metadata\Operator;
-use Prooph\EventStore\Pdo\Exception\InvalidArgumentException;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;

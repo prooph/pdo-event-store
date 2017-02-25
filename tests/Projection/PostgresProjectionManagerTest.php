@@ -18,24 +18,25 @@ use Prooph\EventStore\EventStore;
 use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Pdo\Exception\InvalidArgumentException;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
-use Prooph\EventStore\Pdo\MySqlEventStore;
-use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlAggregateStreamStrategy;
-use Prooph\EventStore\Pdo\Projection\MySqlProjectionManager;
+use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresAggregateStreamStrategy;
+use Prooph\EventStore\Pdo\PostgresEventStore;
+use Prooph\EventStore\Pdo\Projection\PostgresProjectionManager;
+use Prooph\EventStore\Projection\InMemoryProjectionManager;
 use ProophTest\EventStore\Pdo\TestUtil;
 use ProophTest\EventStore\Projection\AbstractProjectionManagerTest;
 
 /**
- * @group pdo_mysql
+ * @group pdo_pgsql
  */
-class MySqlProjectionManagerTest extends AbstractProjectionManagerTest
+class PostgresProjectionManagerTest extends AbstractProjectionManagerTest
 {
     /**
-     * @var MySqlProjectionManager
+     * @var PostgresProjectionManager
      */
     protected $projectionManager;
 
     /**
-     * @var MySqlEventStore
+     * @var PostgresEventStore
      */
     private $eventStore;
 
@@ -46,19 +47,19 @@ class MySqlProjectionManagerTest extends AbstractProjectionManagerTest
 
     protected function setUp(): void
     {
-        if (TestUtil::getDatabaseVendor() !== 'pdo_mysql') {
+        if (TestUtil::getDatabaseVendor() !== 'pdo_pgsql') {
             throw new \RuntimeException('Invalid database vendor');
         }
 
         $this->connection = TestUtil::getConnection();
         TestUtil::initDefaultDatabaseTables($this->connection);
 
-        $this->eventStore = new MySqlEventStore(
+        $this->eventStore = new PostgresEventStore(
             new FQCNMessageFactory(),
             $this->connection,
-            new MySqlAggregateStreamStrategy()
+            new PostgresAggregateStreamStrategy()
         );
-        $this->projectionManager = new MySqlProjectionManager($this->eventStore, $this->connection);
+        $this->projectionManager = new PostgresProjectionManager($this->eventStore, $this->connection);
     }
 
     protected function tearDown(): void
@@ -76,7 +77,7 @@ class MySqlProjectionManagerTest extends AbstractProjectionManagerTest
 
         $eventStore = $this->prophesize(EventStore::class);
 
-        new MysqlProjectionManager($eventStore->reveal(), $this->connection);
+        new InMemoryProjectionManager($eventStore->reveal());
     }
 
     /**
@@ -90,7 +91,7 @@ class MySqlProjectionManagerTest extends AbstractProjectionManagerTest
         $wrappedEventStore = $this->prophesize(EventStoreDecorator::class);
         $wrappedEventStore->getInnerEventStore()->willReturn($eventStore->reveal())->shouldBeCalled();
 
-        new MysqlProjectionManager($wrappedEventStore->reveal(), $this->connection);
+        new PostgresProjectionManager($wrappedEventStore->reveal(), $this->connection);
     }
 
     /**

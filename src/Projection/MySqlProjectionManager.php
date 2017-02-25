@@ -15,6 +15,7 @@ namespace Prooph\EventStore\Pdo\Projection;
 use PDO;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\EventStoreDecorator;
+use Prooph\EventStore\Exception\OutOfRangeException;
 use Prooph\EventStore\Pdo\Exception;
 use Prooph\EventStore\Pdo\MySqlEventStore;
 use Prooph\EventStore\Projection\Projection;
@@ -163,6 +164,18 @@ EOT;
 
     public function fetchProjectionNames(?string $filter, int $limit = 20, int $offset = 0): array
     {
+        if (1 > $limit) {
+            throw new OutOfRangeException(
+                'Invalid limit "'.$limit.'" given. Must be greater than 0.'
+            );
+        }
+
+        if (0 > $offset) {
+            throw new OutOfRangeException(
+                'Invalid offset "'.$offset.'" given. Must be greater or equal than 0.'
+            );
+        }
+
         $where = [];
         $values = [];
 
@@ -210,6 +223,18 @@ SQL;
 
     public function fetchProjectionNamesRegex(string $filter, int $limit = 20, int $offset = 0): array
     {
+        if (1 > $limit) {
+            throw new OutOfRangeException(
+                'Invalid limit "'.$limit.'" given. Must be greater than 0.'
+            );
+        }
+
+        if (0 > $offset) {
+            throw new OutOfRangeException(
+                'Invalid offset "'.$offset.'" given. Must be greater or equal than 0.'
+            );
+        }
+
         if (false === @preg_match("/$filter/", '')) {
             throw new Exception\InvalidArgumentException('Invalid regex pattern given');
         }
@@ -274,7 +299,7 @@ SQL;
         return ProjectionStatus::byValue($result->status);
     }
 
-    public function fetchProjectionStreamPositions(string $name): ?array
+    public function fetchProjectionStreamPositions(string $name): array
     {
         $query = <<<SQL
 SELECT `position` FROM $this->projectionsTable
