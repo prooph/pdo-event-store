@@ -412,7 +412,6 @@ SQL;
         if (empty($filter) || false === @preg_match("/$filter/", '')) {
             throw new Exception\InvalidArgumentException('Invalid regex pattern given');
         }
-
         [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher);
 
         $where[] = '`real_stream_name` REGEXP :filter';
@@ -462,7 +461,7 @@ SQL;
             $whereCondition = 'WHERE `category` IS NOT NULL';
         }
 
-$query = <<<SQL
+        $query = <<<SQL
 SELECT `category` FROM $this->eventStreamsTable
 $whereCondition
 GROUP BY `category`
