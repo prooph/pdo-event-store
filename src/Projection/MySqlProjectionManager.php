@@ -170,15 +170,13 @@ EOT;
             );
         }
 
-        $where = [];
         $values = [];
         $whereCondition = '';
 
         if (null !== $filter) {
-            $where[] = '`name` = :filter';
             $values[':filter'] = $filter;
 
-            $whereCondition = 'WHERE ' . implode(' AND ', $where);
+            $whereCondition = 'WHERE `name` = :filter';
         }
 
         $query = <<<SQL
@@ -226,17 +224,15 @@ SQL;
             );
         }
 
-        if (false === @preg_match("/$filter/", '')) {
+        if (empty($filter) || false === @preg_match("/$filter/", '')) {
             throw new Exception\InvalidArgumentException('Invalid regex pattern given');
         }
 
-        $where = [];
         $values = [];
 
-        $where[] = '`name` REGEXP :filter';
         $values[':filter'] = $filter;
 
-        $whereCondition = 'WHERE ' . implode(' AND ', $where);
+        $whereCondition = 'WHERE `name` REGEXP :filter';
 
         $query = <<<SQL
 SELECT `name` FROM $this->projectionsTable

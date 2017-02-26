@@ -409,9 +409,10 @@ SQL;
         int $limit = 20,
         int $offset = 0
     ): array {
-        if (false === @preg_match("/$filter/", '')) {
+        if (empty($filter) || false === @preg_match("/$filter/", '')) {
             throw new Exception\InvalidArgumentException('Invalid regex pattern given');
         }
+
         [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher);
 
         $where[] = '`real_stream_name` REGEXP :filter';
@@ -452,23 +453,16 @@ SQL;
 
     public function fetchCategoryNames(?string $filter, int $limit = 20, int $offset = 0): array
     {
-        $where = [];
         $values = [];
 
         if (null !== $filter) {
-            $where[] = '`category` = :filter ';
+            $whereCondition = 'WHERE `category` = :filter AND `category` IS NOT NULL';
             $values[':filter'] = $filter;
-        }
-
-        $whereCondition = implode(' AND ', $where);
-
-        if (! empty($whereCondition)) {
-            $whereCondition = 'WHERE ' . $whereCondition . ' AND `category` IS NOT NULL';
         } else {
             $whereCondition = 'WHERE `category` IS NOT NULL';
         }
 
-        $query = <<<SQL
+$query = <<<SQL
 SELECT `category` FROM $this->eventStreamsTable
 $whereCondition
 GROUP BY `category`
@@ -502,17 +496,13 @@ SQL;
 
     public function fetchCategoryNamesRegex(string $filter, int $limit = 20, int $offset = 0): array
     {
-        if (false === @preg_match("/$filter/", '')) {
+        if (empty($filter) || false === @preg_match("/$filter/", '')) {
             throw new Exception\InvalidArgumentException('Invalid regex pattern given');
         }
 
-        $where = [];
-        $values = [];
-
-        $where[] = '`category` REGEXP :filter ';
         $values[':filter'] = $filter;
 
-        $whereCondition = 'WHERE ' . implode(' AND ', $where) . ' AND `category` IS NOT NULL';
+        $whereCondition = 'WHERE `category` REGEXP :filter AND `category` IS NOT NULL';
 
         $query = <<<SQL
 SELECT `category` FROM $this->eventStreamsTable

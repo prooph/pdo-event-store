@@ -170,15 +170,13 @@ EOT;
             );
         }
 
-        $where = [];
         $values = [];
         $whereCondition = '';
 
         if (null !== $filter) {
-            $where[] = 'name = :filter';
             $values[':filter'] = $filter;
 
-            $whereCondition = 'WHERE ' . implode(' AND ', $where);
+            $whereCondition = 'WHERE name = :filter';
         }
 
         $query = <<<SQL
@@ -226,17 +224,9 @@ SQL;
             );
         }
 
-        if (false === @preg_match("/$filter/", '')) {
-            throw new Exception\InvalidArgumentException('Invalid regex pattern given');
-        }
-
-        $where = [];
-        $values = [];
-
-        $where[] = 'name ~ :filter';
         $values[':filter'] = $filter;
 
-        $whereCondition = 'WHERE ' . implode(' AND ', $where);
+        $whereCondition = 'WHERE name ~ :filter';
 
         $query = <<<SQL
 SELECT name FROM $this->projectionsTable
@@ -249,7 +239,9 @@ SQL;
         $statement->setFetchMode(PDO::FETCH_OBJ);
         $statement->execute($values);
 
-        if ($statement->errorCode() !== '00000') {
+        if ($statement->errorCode() === '2201B') {
+            throw new Exception\InvalidArgumentException('Invalid regex pattern given');
+        } elseif ($statement->errorCode() !== '00000') {
             $errorCode = $statement->errorCode();
             $errorInfo = $statement->errorInfo()[2];
 
