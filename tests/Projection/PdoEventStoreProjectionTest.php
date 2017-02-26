@@ -15,6 +15,7 @@ namespace ProophTest\EventStore\Pdo\Projection;
 use PDO;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
+use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Exception\InvalidArgumentException;
 use Prooph\EventStore\Pdo\Projection\PdoEventStoreProjection;
 use Prooph\EventStore\Projection\ProjectionManager;
@@ -116,6 +117,30 @@ abstract class PdoEventStoreProjectionTest extends AbstractEventStoreProjectionT
                 },
             ])
             ->run();
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_invalid_wrapped_event_store_instance_passed(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $eventStore = $this->prophesize(EventStore::class);
+        $wrappedEventStore = $this->prophesize(EventStoreDecorator::class);
+        $wrappedEventStore->getInnerEventStore()->willReturn($eventStore->reveal())->shouldBeCalled();
+
+        new PdoEventStoreProjection(
+            $wrappedEventStore->reveal(),
+            $this->connection,
+            'test_projection',
+            'event_streams',
+            'projections',
+            1,
+            1,
+            1,
+            1
+        );
     }
 
     /**

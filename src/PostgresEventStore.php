@@ -111,7 +111,7 @@ EOT;
         $statement = $this->connection->prepare($sql);
         $statement->execute([
             'streamName' => $streamName->toString(),
-            'metadata' => json_encode($newMetadata),
+            'metadata' => json_encode($newMetadata, \JSON_FORCE_OBJECT),
         ]);
 
         if (1 !== $statement->rowCount()) {
@@ -191,6 +191,7 @@ EOT;
         if (null === $count) {
             $count = PHP_INT_MAX;
         }
+
         [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher);
         $where[] = 'no >= :fromNumber';
 
@@ -246,6 +247,7 @@ EOT;
         if (null === $count) {
             $count = PHP_INT_MAX;
         }
+
         [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher);
         $where[] = 'no <= :fromNumber';
 
@@ -358,9 +360,6 @@ EOT;
         int $limit = 20,
         int $offset = 0
     ): array {
-        if (false === @preg_match("/$filter/", '')) {
-            throw new Exception\InvalidArgumentException('Invalid regex pattern given');
-        }
         [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher);
 
         if (null !== $filter) {
@@ -414,6 +413,7 @@ SQL;
         if (false === @preg_match("/$filter/", '')) {
             throw new Exception\InvalidArgumentException('Invalid regex pattern given');
         }
+
         [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher);
 
         $where[] = 'real_stream_name ~ :filter ';
@@ -567,12 +567,17 @@ SQL;
             $parameter = ':metadata_'.$key;
 
             if (is_bool($value)) {
-                $where[] = "metadata->'$field' $operator '".var_export($value, true)."'";
+                $where[] = "metadata->>'$field' $operator '".var_export($value, true)."'";
                 continue;
             }
 
-            $where[] = "metadata->>'$field' $operator $parameter";
-            $values[$parameter] = $value;
+            if (is_int($value)) {
+                $where[] = "CAST(metadata->>'$field' as int) $operator $parameter";
+                $values[$parameter] = $value;
+            } else {
+                $where[] = "metadata->>'$field' $operator $parameter";
+                $values[$parameter] = $value;
+            }
         }
 
         return [

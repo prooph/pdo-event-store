@@ -66,7 +66,7 @@ final class PdoEventStoreReadModelProjection implements ReadModelProjection
     /**
      * @var array
      */
-    private $streamPositions;
+    private $streamPositions = [];
 
     /**
      * @var int
@@ -123,6 +123,11 @@ final class PdoEventStoreReadModelProjection implements ReadModelProjection
      */
     private $sleep;
 
+    /**
+     * @var array|null
+     */
+    private $query;
+
     public function __construct(
         EventStore $eventStore,
         PDO $connection,
@@ -177,23 +182,23 @@ final class PdoEventStoreReadModelProjection implements ReadModelProjection
 
     public function fromStream(string $streamName): ReadModelProjection
     {
-        if (null !== $this->streamPositions) {
+        if (null !== $this->query) {
             throw new Exception\RuntimeException('From was already called');
         }
 
-        $this->streamPositions = [$streamName => 0];
+        $this->query['streams'][] = $streamName;
 
         return $this;
     }
 
     public function fromStreams(string ...$streamNames): ReadModelProjection
     {
-        if (null !== $this->streamPositions) {
+        if (null !== $this->query) {
             throw new Exception\RuntimeException('From was already called');
         }
 
         foreach ($streamNames as $streamName) {
-            $this->streamPositions[$streamName] = 0;
+            $this->query['streams'][] = $streamName;
         }
 
         return $this;
@@ -201,53 +206,23 @@ final class PdoEventStoreReadModelProjection implements ReadModelProjection
 
     public function fromCategory(string $name): ReadModelProjection
     {
-        if (null !== $this->streamPositions) {
+        if (null !== $this->query) {
             throw new Exception\RuntimeException('From was already called');
         }
 
-        $sql = <<<EOT
-SELECT real_stream_name FROM $this->eventStreamsTable WHERE real_stream_name LIKE ?;
-EOT;
-        $statement = $this->connection->prepare($sql);
-        $statement->execute([$name . '-%']);
-
-        $this->streamPositions = [];
-
-        while ($row = $statement->fetch(PDO::FETCH_OBJ)) {
-            $this->streamPositions[$row->real_stream_name] = 0;
-        }
+        $this->query['categories'][] = $name;
 
         return $this;
     }
 
     public function fromCategories(string ...$names): ReadModelProjection
     {
-        if (null !== $this->streamPositions) {
+        if (null !== $this->query) {
             throw new Exception\RuntimeException('From was already called');
         }
 
-        $it = new CachingIterator(new ArrayIterator($names), CachingIterator::FULL_CACHE);
-
-        $where = 'WHERE ';
-        $params = [];
-        foreach ($it as $name) {
-            $where .= 'real_stream_name LIKE ?';
-            if ($it->hasNext()) {
-                $where .= ' OR ';
-            }
-            $params[] = $name . '-%';
-        }
-
-        $sql = <<<EOT
-SELECT real_stream_name FROM $this->eventStreamsTable $where;
-EOT;
-        $statement = $this->connection->prepare($sql);
-        $statement->execute($params);
-
-        $this->streamPositions = [];
-
-        while ($row = $statement->fetch(PDO::FETCH_OBJ)) {
-            $this->streamPositions[$row->real_stream_name] = 0;
+        foreach ($names as $name) {
+            $this->query['categories'][] = $name;
         }
 
         return $this;
@@ -255,21 +230,11 @@ EOT;
 
     public function fromAll(): ReadModelProjection
     {
-        if (null !== $this->streamPositions) {
+        if (null !== $this->query) {
             throw new Exception\RuntimeException('From was already called');
         }
 
-        $sql = <<<EOT
-SELECT real_stream_name FROM $this->eventStreamsTable WHERE real_stream_name NOT LIKE '$%';
-EOT;
-        $statement = $this->connection->prepare($sql);
-        $statement->execute();
-
-        $this->streamPositions = [];
-
-        while ($row = $statement->fetch(PDO::FETCH_OBJ)) {
-            $this->streamPositions[$row->real_stream_name] = 0;
-        }
+        $this->query['all'] = true;
 
         return $this;
     }
@@ -308,14 +273,7 @@ EOT;
 
     public function reset(): void
     {
-        if (null !== $this->streamPositions) {
-            $this->streamPositions = array_map(
-                function (): int {
-                    return 0;
-                },
-                $this->streamPositions
-            );
-        }
+        $this->streamPositions = [];
 
         $callback = $this->initCallback;
 
@@ -338,8 +296,8 @@ EOT;
 
         $statement = $this->connection->prepare($sql);
         $statement->execute([
-            json_encode($this->streamPositions),
-            json_encode($this->state),
+            json_encode($this->streamPositions, \JSON_FORCE_OBJECT),
+            json_encode($this->state, \JSON_FORCE_OBJECT),
             $this->status->getValue(),
             $this->name,
         ]);
@@ -398,11 +356,13 @@ EOT;
                 $this->state = $result;
             }
         }
+
+        $this->streamPositions = [];
     }
 
     public function run(bool $keepRunning = true): void
     {
-        if (null === $this->streamPositions
+        if (null === $this->query
             || (null === $this->handler && empty($this->handlers))
         ) {
             throw new Exception\RuntimeException('No handlers configured');
@@ -435,6 +395,7 @@ EOT;
             $this->readModel->init();
         }
 
+        $this->prepareStreamPositions();
         $this->load();
 
         $singleHandler = null !== $this->handler;
@@ -486,6 +447,8 @@ EOT;
                     default:
                         break;
                 }
+
+                $this->prepareStreamPositions();
             } while ($keepRunning && ! $this->isStopped);
         } finally {
             $this->releaseLock();
@@ -497,6 +460,7 @@ EOT;
         $sql = <<<EOT
 SELECT status FROM $this->projectionsTable WHERE name = ? LIMIT 1;
 EOT;
+
         $statement = $this->connection->prepare($sql);
         $statement->execute([$this->name]);
 
@@ -539,6 +503,7 @@ EOT;
     private function handleStreamWithHandlers(string $streamName, Iterator $events): void
     {
         $this->currentStreamName = $streamName;
+
         foreach ($events as $event) {
             /* @var Message $event */
             $this->streamPositions[$streamName]++;
@@ -692,10 +657,67 @@ EOT;
 
         $statement = $this->connection->prepare($sql);
         $statement->execute([
-            json_encode($this->streamPositions),
-            json_encode($this->state),
+            json_encode($this->streamPositions, \JSON_FORCE_OBJECT),
+            json_encode($this->state, \JSON_FORCE_OBJECT),
             $lockUntilString,
             $this->name,
         ]);
+    }
+
+    private function prepareStreamPositions(): void
+    {
+        $streamPositions = [];
+
+        if (isset($this->query['all'])) {
+            $sql = <<<EOT
+SELECT real_stream_name FROM $this->eventStreamsTable WHERE real_stream_name NOT LIKE '$%';
+EOT;
+            $statement = $this->connection->prepare($sql);
+            $statement->execute();
+
+            while ($row = $statement->fetch(PDO::FETCH_OBJ)) {
+                $streamPositions[$row->real_stream_name] = 0;
+            }
+
+            $this->streamPositions = array_merge($streamPositions, $this->streamPositions);
+
+            return;
+        }
+
+        if (isset($this->query['categories'])) {
+            $it = new CachingIterator(new ArrayIterator($this->query['categories']), CachingIterator::FULL_CACHE);
+
+            $where = 'WHERE ';
+            $params = [];
+
+            foreach ($it as $name) {
+                $where .= 'real_stream_name LIKE ?';
+                if ($it->hasNext()) {
+                    $where .= ' OR ';
+                }
+                $params[] = $name . '-%';
+            }
+
+            $sql = <<<EOT
+SELECT real_stream_name FROM $this->eventStreamsTable $where;
+EOT;
+            $statement = $this->connection->prepare($sql);
+            $statement->execute($params);
+
+            while ($row = $statement->fetch(PDO::FETCH_OBJ)) {
+                $streamPositions[$row->real_stream_name] = 0;
+            }
+
+            $this->streamPositions = array_merge($streamPositions, $this->streamPositions);
+
+            return;
+        }
+
+        // stream names given
+        foreach ($this->query['streams'] as $streamName) {
+            $streamPositions[$streamName] = 0;
+        }
+
+        $this->streamPositions = array_merge($streamPositions, $this->streamPositions);
     }
 }

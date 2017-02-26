@@ -14,11 +14,10 @@ namespace ProophTest\EventStore\Pdo\Projection;
 
 use ArrayIterator;
 use PDO;
-use PHPUnit\Framework\TestCase;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
+use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Exception\InvalidArgumentException;
-use Prooph\EventStore\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\Projection\PdoEventStoreReadModelProjection;
 use Prooph\EventStore\Projection\ProjectionManager;
 use Prooph\EventStore\Projection\ReadModel;
@@ -27,8 +26,9 @@ use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\ReadModelMock;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
+use ProophTest\EventStore\Projection\AbstractEventStoreReadModelProjectionTest;
 
-abstract class PdoEventStoreReadModelProjectionTest extends TestCase
+abstract class PdoEventStoreReadModelProjectionTest extends AbstractEventStoreReadModelProjectionTest
 {
     /**
      * @var ProjectionManager
@@ -147,6 +147,30 @@ abstract class PdoEventStoreReadModelProjectionTest extends TestCase
     /**
      * @test
      */
+    public function it_throws_exception_when_invalid_wrapped_event_store_instance_passed(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $eventStore = $this->prophesize(EventStore::class);
+        $wrappedEventStore = $this->prophesize(EventStoreDecorator::class);
+        $wrappedEventStore->getInnerEventStore()->willReturn($eventStore->reveal())->shouldBeCalled();
+
+        new PdoEventStoreReadModelProjection(
+            $wrappedEventStore->reveal(),
+            $this->connection,
+            'test_projection',
+            new ReadModelMock(),
+            'event_streams',
+            'projections',
+            1,
+            1,
+            1
+        );
+    }
+
+    /**
+     * @test
+     */
     public function it_throws_exception_when_unknown_event_store_instance_passed(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -164,8 +188,7 @@ abstract class PdoEventStoreReadModelProjectionTest extends TestCase
             'projections',
             10,
             10,
-            10,
-            10000
+            10
         );
     }
 

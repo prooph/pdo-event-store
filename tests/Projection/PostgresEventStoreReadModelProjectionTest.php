@@ -15,6 +15,7 @@ namespace ProophTest\EventStore\Pdo\Projection;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresSimpleStreamStrategy;
 use Prooph\EventStore\Pdo\PostgresEventStore;
+use Prooph\EventStore\Pdo\Projection\PostgresProjectionManager;
 use Prooph\EventStore\Projection\ReadModel;
 use ProophTest\EventStore\Pdo\TestUtil;
 
@@ -37,22 +38,10 @@ class PostgresEventStoreReadModelProjectionTest extends PdoEventStoreReadModelPr
             TestUtil::getConnection(),
             new PostgresSimpleStreamStrategy()
         );
-    }
 
-    /**
-     * @test
-     */
-    public function it_calls_reset_projection_also_if_init_callback_returns_state()
-    {
-        $readModel = $this->prophesize(ReadModel::class);
-        $readModel->reset()->shouldBeCalled();
-
-        $readModelProjection = $this->eventStore->createReadModelProjection('test-projection', $readModel->reveal());
-
-        $readModelProjection->init(function () {
-            return ['state' => 'some value'];
-        });
-
-        $readModelProjection->reset();
+        $this->projectionManager = new PostgresProjectionManager(
+            $this->eventStore,
+            $this->connection
+        );
     }
 }

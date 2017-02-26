@@ -27,15 +27,9 @@ use Prooph\EventStore\Projection\ReadModelProjection;
 
 final class MySqlProjectionManager implements ProjectionManager
 {
-    public const OPTION_CACHE_SIZE = 'cache_size';
-    public const OPTION_SLEEP = 'sleep';
-    public const OPTION_PERSIST_BLOCK_SIZE = 'persist_block_size';
     public const OPTION_LOCK_TIMEOUT_MS = 'lock_timeout_ms';
 
-    private const DEFAULT_CACHE_SIZE = 1000;
-    private const DEFAULT_SLEEP = 100000;
-    private const DEFAULT_PERSIST_BLOCK_SIZE = 1000;
-    private const DEFAULT_LOCK_TIMEOUT_MS = 1000;
+    public const DEFAULT_LOCK_TIMEOUT_MS = 1000;
 
     /**
      * @var EventStore
@@ -92,9 +86,9 @@ final class MySqlProjectionManager implements ProjectionManager
             $name,
             $this->eventStreamsTable,
             $this->projectionsTable,
-            $options[self::DEFAULT_LOCK_TIMEOUT_MS] ?? self::DEFAULT_LOCK_TIMEOUT_MS,
+            $options[self::OPTION_LOCK_TIMEOUT_MS] ?? self::DEFAULT_LOCK_TIMEOUT_MS,
             $options[self::OPTION_CACHE_SIZE] ?? self::DEFAULT_CACHE_SIZE,
-            $options[self::DEFAULT_PERSIST_BLOCK_SIZE] ?? self::DEFAULT_PERSIST_BLOCK_SIZE,
+            $options[self::OPTION_PERSIST_BLOCK_SIZE] ?? self::DEFAULT_PERSIST_BLOCK_SIZE,
             $options[self::OPTION_SLEEP] ?? self::DEFAULT_SLEEP
         );
     }
@@ -111,8 +105,8 @@ final class MySqlProjectionManager implements ProjectionManager
             $readModel,
             $this->eventStreamsTable,
             $this->projectionsTable,
-            $options[self::DEFAULT_LOCK_TIMEOUT_MS] ?? self::DEFAULT_LOCK_TIMEOUT_MS,
-            $options[self::DEFAULT_PERSIST_BLOCK_SIZE] ?? self::DEFAULT_PERSIST_BLOCK_SIZE,
+            $options[self::OPTION_LOCK_TIMEOUT_MS] ?? self::DEFAULT_LOCK_TIMEOUT_MS,
+            $options[self::OPTION_PERSIST_BLOCK_SIZE] ?? self::DEFAULT_PERSIST_BLOCK_SIZE,
             $options[self::OPTION_SLEEP] ?? self::DEFAULT_SLEEP
         );
     }

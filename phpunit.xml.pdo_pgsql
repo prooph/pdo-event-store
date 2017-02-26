@@ -22,9 +22,7 @@
                 <file>./src/PersistenceStrategy/MySqlAggregateStreamStrategy.php</file>
                 <file>./src/PersistenceStrategy/MySqlSimpleStreamStrategy.php</file>
                 <file>./src/PersistenceStrategy/MySqlSingleStreamStrategy.php</file>
-                <file>./src/Projection/MySqlEventStoreProjection.php</file>
-                <file>./src/Projection/MySqlEventStoreQuery.php</file>
-                <file>./src/Projection/MySqlEventStoreReadModelProjection.php</file>
+                <file>./src/Projection/MySqlProjectionManager.php</file>
                 <file>./src/MySqlEventStore.php</file>
             </exclude>
         </whitelist>

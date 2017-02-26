@@ -115,4 +115,15 @@ class PostgresProjectionManagerTest extends AbstractProjectionManagerTest
 
         $this->projectionManager->fetchProjectionNamesRegex('invalid)', 10, 0);
     }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_fetching_projecton_names_regex_with_missing_db_table(): void
+    {
+        $this->expectException(RuntimeException::class);
+
+        $this->connection->exec('DROP TABLE projections;');
+        $this->projectionManager->fetchProjectionNamesRegex('^foo', 200, 0);
+    }
 }

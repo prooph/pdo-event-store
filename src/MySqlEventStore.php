@@ -114,7 +114,7 @@ EOT;
         $statement = $this->connection->prepare($sql);
         $statement->execute([
             'streamName' => $streamName->toString(),
-            'metadata' => json_encode($newMetadata),
+            'metadata' => json_encode($newMetadata, \JSON_FORCE_OBJECT),
         ]);
 
         if (1 !== $statement->rowCount()) {
@@ -412,6 +412,7 @@ SQL;
         if (false === @preg_match("/$filter/", '')) {
             throw new Exception\InvalidArgumentException('Invalid regex pattern given');
         }
+
         [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher);
 
         $where[] = '`real_stream_name` REGEXP :filter ';

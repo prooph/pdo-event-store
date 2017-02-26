@@ -114,15 +114,4 @@ class MySqlProjectionManagerTest extends AbstractProjectionManagerTest
         $this->connection->exec('DROP TABLE projections;');
         $this->projectionManager->fetchProjectionNamesRegex('^foo', 200, 0);
     }
-
-    /**
-     * @test
-     */
-    public function it_throws_exception_when_fetching_projection_names_using_invalid_regex(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid regex pattern given');
-
-        $this->projectionManager->fetchProjectionNamesRegex('invalid)', 10, 0);
-    }
 }
