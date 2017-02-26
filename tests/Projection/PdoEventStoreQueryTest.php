@@ -118,7 +118,7 @@ abstract class PdoEventStoreQueryTest extends AbstractEventStoreQueryTest
         $this->expectException(InvalidArgumentException::class);
 
         $eventStore = $this->prophesize(EventStore::class);
-        $connection = $this->prophesize(\PDO::class);
+        $connection = $this->prophesize(PDO::class);
 
         new PdoEventStoreQuery($eventStore->reveal(), $connection->reveal(), 'event_streams');
     }

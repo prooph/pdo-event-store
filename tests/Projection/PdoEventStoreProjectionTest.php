@@ -151,7 +151,7 @@ abstract class PdoEventStoreProjectionTest extends AbstractEventStoreProjectionT
         $this->expectException(InvalidArgumentException::class);
 
         $eventStore = $this->prophesize(EventStore::class);
-        $connection = $this->prophesize(\PDO::class);
+        $connection = $this->prophesize(PDO::class);
 
         new PdoEventStoreProjection(
             $eventStore->reveal(),

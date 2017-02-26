@@ -361,7 +361,7 @@ EOT;
         [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher);
 
         if (null !== $filter) {
-            $where[] = 'real_stream_name = :filter ';
+            $where[] = 'real_stream_name = :filter';
             $values[':filter'] = $filter;
         }
 
@@ -413,7 +413,7 @@ SQL;
         }
         [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher);
 
-        $where[] = 'real_stream_name ~ :filter ';
+        $where[] = 'real_stream_name ~ :filter';
         $values[':filter'] = $filter;
 
         $whereCondition = 'WHERE ' . implode(' AND ', $where);
@@ -508,7 +508,7 @@ SQL;
         $where = [];
         $values = [];
 
-        $where[] = 'category ~ :filter ';
+        $where[] = 'category ~ :filter';
         $values[':filter'] = $filter;
 
         $whereCondition = 'WHERE ' . implode(' AND ', $where) . ' AND category IS NOT NULL';

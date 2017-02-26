@@ -362,7 +362,7 @@ EOT;
         [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher);
 
         if (null !== $filter) {
-            $where[] = '`real_stream_name` = :filter ';
+            $where[] = '`real_stream_name` = :filter';
             $values[':filter'] = $filter;
         }
 
@@ -414,7 +414,7 @@ SQL;
         }
         [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher);
 
-        $where[] = '`real_stream_name` REGEXP :filter ';
+        $where[] = '`real_stream_name` REGEXP :filter';
         $values[':filter'] = $filter;
 
         $whereCondition = 'WHERE ' . implode(' AND ', $where);

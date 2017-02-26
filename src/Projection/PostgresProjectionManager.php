@@ -172,16 +172,13 @@ EOT;
 
         $where = [];
         $values = [];
+        $whereCondition = '';
 
         if (null !== $filter) {
-            $where[] = 'name = :filter ';
+            $where[] = 'name = :filter';
             $values[':filter'] = $filter;
-        }
 
-        $whereCondition = implode(' AND ', $where);
-
-        if (! empty($whereCondition)) {
-            $whereCondition = 'WHERE ' . $whereCondition;
+            $whereCondition = 'WHERE ' . implode(' AND ', $where);
         }
 
         $query = <<<SQL
@@ -236,7 +233,7 @@ SQL;
         $where = [];
         $values = [];
 
-        $where[] = 'name ~ :filter ';
+        $where[] = 'name ~ :filter';
         $values[':filter'] = $filter;
 
         $whereCondition = 'WHERE ' . implode(' AND ', $where);
