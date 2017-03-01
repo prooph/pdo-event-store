@@ -15,12 +15,13 @@ namespace ProophTest\EventStore\Pdo\Projection;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresSimpleStreamStrategy;
 use Prooph\EventStore\Pdo\PostgresEventStore;
+use Prooph\EventStore\Pdo\Projection\PostgresProjectionManager;
 use ProophTest\EventStore\Pdo\TestUtil;
 
 /**
  * @group pdo_pgsql
  */
-class PostgresEventStoreProjectionTest extends PdoEventStoreProjectionTestCase
+class PostgresEventStoreProjectionTest extends PdoEventStoreProjectionTest
 {
     protected function setUp(): void
     {
@@ -35,6 +36,11 @@ class PostgresEventStoreProjectionTest extends PdoEventStoreProjectionTestCase
             new FQCNMessageFactory(),
             TestUtil::getConnection(),
             new PostgresSimpleStreamStrategy()
+        );
+
+        $this->projectionManager = new PostgresProjectionManager(
+            $this->eventStore,
+            $this->connection
         );
     }
 }

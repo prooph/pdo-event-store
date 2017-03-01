@@ -23,18 +23,6 @@ use Prooph\EventStore\Exception\StreamNotFound;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Pdo\Exception\ExtensionNotLoaded;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
-use Prooph\EventStore\Pdo\Projection\PdoEventStoreProjectionFactory;
-use Prooph\EventStore\Pdo\Projection\PdoEventStoreQueryFactory;
-use Prooph\EventStore\Pdo\Projection\PdoEventStoreReadModelProjectionFactory;
-use Prooph\EventStore\Pdo\Projection\ProjectionStatus;
-use Prooph\EventStore\Projection\Projection;
-use Prooph\EventStore\Projection\ProjectionFactory;
-use Prooph\EventStore\Projection\ProjectionOptions as BaseProjectionOptions;
-use Prooph\EventStore\Projection\Query;
-use Prooph\EventStore\Projection\QueryFactory;
-use Prooph\EventStore\Projection\ReadModel;
-use Prooph\EventStore\Projection\ReadModelProjection;
-use Prooph\EventStore\Projection\ReadModelProjectionFactory;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use Prooph\EventStore\Util\Assertion;
@@ -67,35 +55,9 @@ final class MySqlEventStore implements EventStore
     private $eventStreamsTable;
 
     /**
-     * @var string
-     */
-    private $projectionsTable;
-
-    /**
      * @var bool
      */
     private $duringCreate = false;
-
-    /**
-     * Will be lazy initialized if needed
-     *
-     * @var QueryFactory
-     */
-    private $defaultQueryFactory;
-
-    /**
-     * Will be lazy initialized if needed
-     *
-     * @var ProjectionFactory
-     */
-    private $defaultProjectionFactory;
-
-    /**
-     * Will be lazy initialized if needed
-     *
-     * @var ReadModelProjectionFactory
-     */
-    private $defaultReadModelProjectionFactory;
 
     /**
      * @throws ExtensionNotLoaded
@@ -105,8 +67,7 @@ final class MySqlEventStore implements EventStore
         PDO $connection,
         PersistenceStrategy $persistenceStrategy,
         int $loadBatchSize = 10000,
-        string $eventStreamsTable = 'event_streams',
-        string $projectionsTable = 'projections'
+        string $eventStreamsTable = 'event_streams'
     ) {
         if (! extension_loaded('pdo_mysql')) {
             throw ExtensionNotLoaded::with('pdo_mysql');
@@ -119,7 +80,6 @@ final class MySqlEventStore implements EventStore
         $this->persistenceStrategy = $persistenceStrategy;
         $this->loadBatchSize = $loadBatchSize;
         $this->eventStreamsTable = $eventStreamsTable;
-        $this->projectionsTable = $projectionsTable;
     }
 
     public function fetchStreamMetadata(StreamName $streamName): array
@@ -154,7 +114,7 @@ EOT;
         $statement = $this->connection->prepare($sql);
         $statement->execute([
             'streamName' => $streamName->toString(),
-            'metadata' => json_encode($newMetadata),
+            'metadata' => json_encode($newMetadata, \JSON_FORCE_OBJECT),
         ]);
 
         if (1 !== $statement->rowCount()) {
@@ -393,148 +353,21 @@ EOT;
         }
     }
 
-    public function createQuery(QueryFactory $factory = null): Query
-    {
-        if (null === $factory) {
-            $factory = $this->getDefaultQueryFactory();
-        }
-
-        return $factory($this);
-    }
-
-    public function createProjection(
-        string $name,
-        BaseProjectionOptions $options = null,
-        ProjectionFactory $factory = null
-    ): Projection {
-        if (null === $factory) {
-            $factory = $this->getDefaultProjectionFactory();
-        }
-
-        return $factory($this, $name, $options);
-    }
-
-    public function createReadModelProjection(
-        string $name,
-        ReadModel $readModel,
-        BaseProjectionOptions $options = null,
-        ReadModelProjectionFactory $factory = null
-    ): ReadModelProjection {
-        if (null === $factory) {
-            $factory = $this->getDefaultReadModelProjectionFactory();
-        }
-
-        return $factory($this, $name, $readModel, $options);
-    }
-
-    public function getDefaultQueryFactory(): QueryFactory
-    {
-        if (null === $this->defaultQueryFactory) {
-            $this->defaultQueryFactory = new PdoEventStoreQueryFactory(
-                $this->connection,
-                $this->eventStreamsTable
-            );
-        }
-
-        return $this->defaultQueryFactory;
-    }
-
-    public function getDefaultProjectionFactory(): ProjectionFactory
-    {
-        if (null === $this->defaultProjectionFactory) {
-            $this->defaultProjectionFactory = new PdoEventStoreProjectionFactory(
-                $this->connection,
-                $this->eventStreamsTable,
-                $this->projectionsTable
-            );
-        }
-
-        return $this->defaultProjectionFactory;
-    }
-
-    public function getDefaultReadModelProjectionFactory(): ReadModelProjectionFactory
-    {
-        if (null === $this->defaultReadModelProjectionFactory) {
-            $this->defaultReadModelProjectionFactory = new PdoEventStoreReadModelProjectionFactory(
-                $this->connection,
-                $this->eventStreamsTable,
-                $this->projectionsTable
-            );
-        }
-
-        return $this->defaultReadModelProjectionFactory;
-    }
-
-    public function deleteProjection(string $name, bool $deleteEmittedEvents): void
-    {
-        $sql = <<<EOT
-UPDATE $this->projectionsTable SET status = ? WHERE name = ? LIMIT 1;
-EOT;
-
-        if ($deleteEmittedEvents) {
-            $status = ProjectionStatus::DELETING_INCL_EMITTED_EVENTS()->getValue();
-        } else {
-            $status = ProjectionStatus::DELETING()->getValue();
-        }
-
-        $statement = $this->connection->prepare($sql);
-        $statement->execute([
-            $status,
-            $name,
-        ]);
-    }
-
-    public function resetProjection(string $name): void
-    {
-        $sql = <<<EOT
-UPDATE $this->projectionsTable SET status = ? WHERE name = ? LIMIT 1;
-EOT;
-
-        $statement = $this->connection->prepare($sql);
-        $statement->execute([
-            ProjectionStatus::RESETTING()->getValue(),
-            $name,
-        ]);
-    }
-
-    public function stopProjection(string $name): void
-    {
-        $sql = <<<EOT
-UPDATE $this->projectionsTable SET status = ? WHERE name = ? LIMIT 1;
-EOT;
-
-        $statement = $this->connection->prepare($sql);
-        $statement->execute([
-            ProjectionStatus::STOPPING()->getValue(),
-            $name,
-        ]);
-    }
-
     public function fetchStreamNames(
         ?string $filter,
-        bool $regex,
         ?MetadataMatcher $metadataMatcher,
-        int $limit,
-        int $offset
+        int $limit = 20,
+        int $offset = 0
     ): array {
-        if (null === $filter && $regex) {
-            throw new Exception\InvalidArgumentException('No regex pattern given');
-        }
-
-        if ($regex && false === @preg_match("/$filter/", '')) {
-            throw new Exception\InvalidArgumentException('Invalid regex pattern given');
-        }
         [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher);
 
-        if (null !== $filter && $regex) {
-            $where[] = '`real_stream_name` REGEXP :filter ';
-            $values[':filter'] = $filter;
-        } elseif (null !== $filter && ! $regex) {
-            $where[] = '`real_stream_name` = :filter ';
+        if (null !== $filter) {
+            $where[] = '`real_stream_name` = :filter';
             $values[':filter'] = $filter;
         }
 
         $whereCondition = implode(' AND ', $where);
+
         if (! empty($whereCondition)) {
             $whereCondition = 'WHERE ' . $whereCondition;
         }
@@ -570,30 +403,60 @@ SQL;
         return $streamNames;
     }
 
-    public function fetchCategoryNames(?string $filter, bool $regex, int $limit, int $offset): array
-    {
-        if (null === $filter && $regex) {
-            throw new Exception\InvalidArgumentException('No regex pattern given');
-        }
-
-        if ($regex && false === @preg_match("/$filter/", '')) {
+    public function fetchStreamNamesRegex(
+        string $filter,
+        ?MetadataMatcher $metadataMatcher,
+        int $limit = 20,
+        int $offset = 0
+    ): array {
+        if (empty($filter) || false === @preg_match("/$filter/", '')) {
             throw new Exception\InvalidArgumentException('Invalid regex pattern given');
         }
+        [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher);
 
-        $where = [];
-        $values = [];
+        $where[] = '`real_stream_name` REGEXP :filter';
+        $values[':filter'] = $filter;
 
-        if (null !== $filter && $regex) {
-            $where[] = '`category` REGEXP :filter ';
-            $values[':filter'] = $filter;
-        } elseif (null !== $filter && ! $regex) {
-            $where[] = '`category` = :filter ';
-            $values[':filter'] = $filter;
+        $whereCondition = 'WHERE ' . implode(' AND ', $where);
+
+        $query = <<<SQL
+SELECT `real_stream_name` FROM $this->eventStreamsTable
+$whereCondition
+ORDER BY `real_stream_name` ASC
+LIMIT $offset, $limit
+SQL;
+
+        $statement = $this->connection->prepare($query);
+        $statement->setFetchMode(PDO::FETCH_OBJ);
+        $statement->execute($values);
+
+        if ($statement->errorCode() !== '00000') {
+            $errorCode = $statement->errorCode();
+            $errorInfo = $statement->errorInfo()[2];
+
+            throw new RuntimeException(
+                "Error $errorCode. Maybe the event streams table is not setup?\nError-Info: $errorInfo"
+            );
         }
 
-        $whereCondition = implode(' AND ', $where);
-        if (! empty($whereCondition)) {
-            $whereCondition = 'WHERE ' . $whereCondition . ' AND `category` IS NOT NULL';
+        $result = $statement->fetchAll();
+
+        $streamNames = [];
+
+        foreach ($result as $streamName) {
+            $streamNames[] = new StreamName($streamName->real_stream_name);
+        }
+
+        return $streamNames;
+    }
+
+    public function fetchCategoryNames(?string $filter, int $limit = 20, int $offset = 0): array
+    {
+        $values = [];
+
+        if (null !== $filter) {
+            $whereCondition = 'WHERE `category` = :filter AND `category` IS NOT NULL';
+            $values[':filter'] = $filter;
         } else {
             $whereCondition = 'WHERE `category` IS NOT NULL';
         }
@@ -630,36 +493,21 @@ SQL;
         return $categoryNames;
     }
 
-    public function fetchProjectionNames(?string $filter, bool $regex, int $limit, int $offset): array
+    public function fetchCategoryNamesRegex(string $filter, int $limit = 20, int $offset = 0): array
     {
-        if (null === $filter && $regex) {
-            throw new Exception\InvalidArgumentException('No regex pattern given');
-        }
-
-        if ($regex && false === @preg_match("/$filter/", '')) {
+        if (empty($filter) || false === @preg_match("/$filter/", '')) {
             throw new Exception\InvalidArgumentException('Invalid regex pattern given');
         }
 
-        $where = [];
-        $values = [];
+        $values[':filter'] = $filter;
 
-        if (null !== $filter && $regex) {
-            $where[] = '`name` REGEXP :filter ';
-            $values[':filter'] = $filter;
-        } elseif (null !== $filter && ! $regex) {
-            $where[] = '`name` = :filter ';
-            $values[':filter'] = $filter;
-        }
-
-        $whereCondition = implode(' AND ', $where);
-        if (! empty($whereCondition)) {
-            $whereCondition = 'WHERE ' . $whereCondition;
-        }
+        $whereCondition = 'WHERE `category` REGEXP :filter AND `category` IS NOT NULL';
 
         $query = <<<SQL
-SELECT `name` FROM $this->projectionsTable
+SELECT `category` FROM $this->eventStreamsTable
 $whereCondition
-ORDER BY `name` ASC
+GROUP BY `category`
+ORDER BY `category` ASC
 LIMIT $offset, $limit
 SQL;
 
@@ -678,13 +526,13 @@ SQL;
 
         $result = $statement->fetchAll();
 
-        $projectionNames = [];
+        $categoryNames = [];
 
-        foreach ($result as $projectionName) {
-            $projectionNames[] = $projectionName->name;
+        foreach ($result as $categoryName) {
+            $categoryNames[] = $categoryName->category;
         }
 
-        return $projectionNames;
+        return $categoryNames;
     }
 
     private function createWhereClauseForMetadata(?MetadataMatcher $metadataMatcher): array

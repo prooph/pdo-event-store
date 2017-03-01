@@ -15,13 +15,14 @@ namespace ProophTest\EventStore\Pdo\Projection;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\EventStore\Pdo\MySqlEventStore;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSimpleStreamStrategy;
+use Prooph\EventStore\Pdo\Projection\MySqlProjectionManager;
 use Prooph\EventStore\Projection\ReadModel;
 use ProophTest\EventStore\Pdo\TestUtil;
 
 /**
  * @group pdo_mysql
  */
-class MySqlEventStoreReadModelProjectionTest extends PdoEventStoreReadModelProjectionTestCase
+class MySqlEventStoreReadModelProjectionTest extends PdoEventStoreReadModelProjectionTest
 {
     protected function setUp(): void
     {
@@ -34,8 +35,13 @@ class MySqlEventStoreReadModelProjectionTest extends PdoEventStoreReadModelProje
 
         $this->eventStore = new MySqlEventStore(
             new FQCNMessageFactory(),
-            TestUtil::getConnection(),
+            $this->connection,
             new MySqlSimpleStreamStrategy()
+        );
+
+        $this->projectionManager = new MySqlProjectionManager(
+            $this->eventStore,
+            $this->connection
         );
     }
 
@@ -47,7 +53,7 @@ class MySqlEventStoreReadModelProjectionTest extends PdoEventStoreReadModelProje
         $readModel = $this->prophesize(ReadModel::class);
         $readModel->reset()->shouldBeCalled();
 
-        $readModelProjection = $this->eventStore->createReadModelProjection('test-projection', $readModel->reveal());
+        $readModelProjection = $this->projectionManager->createReadModelProjection('test-projection', $readModel->reveal());
 
         $readModelProjection->init(function () {
             return ['state' => 'some value'];

@@ -16,12 +16,13 @@ use PDO;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresSimpleStreamStrategy;
 use Prooph\EventStore\Pdo\PostgresEventStore;
+use Prooph\EventStore\Pdo\Projection\PostgresProjectionManager;
 use ProophTest\EventStore\Pdo\TestUtil;
 
 /**
  * @group pdo_pgsql
  */
-class PostgresEventStoreQueryTest extends PdoEventStoreQueryTestCase
+class PostgresEventStoreQueryTest extends PdoEventStoreQueryTest
 {
     protected function setUp(): void
     {
@@ -36,6 +37,11 @@ class PostgresEventStoreQueryTest extends PdoEventStoreQueryTestCase
             new FQCNMessageFactory(),
             TestUtil::getConnection(),
             new PostgresSimpleStreamStrategy()
+        );
+
+        $this->projectionManager = new PostgresProjectionManager(
+            $this->eventStore,
+            $this->connection
         );
     }
 }
