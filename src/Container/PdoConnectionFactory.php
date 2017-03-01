@@ -76,7 +76,7 @@ class PdoConnectionFactory implements ProvidesDefaultOptions, RequiresConfigId, 
     {
         return [
             'prooph',
-            'pdo_connection'
+            'pdo_connection',
         ];
     }
 
@@ -95,7 +95,7 @@ class PdoConnectionFactory implements ProvidesDefaultOptions, RequiresConfigId, 
             'schema',
             'user',
             'password',
-            'port'
+            'port',
         ];
     }
 
