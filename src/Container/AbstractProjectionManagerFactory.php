@@ -14,7 +14,6 @@ namespace Prooph\EventStore\Pdo\Container;
 
 use Interop\Config\ConfigurationTrait;
 use Interop\Config\ProvidesDefaultOptions;
-use Interop\Config\RequiresConfig;
 use Interop\Config\RequiresConfigId;
 use Interop\Config\RequiresMandatoryOptions;
 use Prooph\EventStore\EventStore;
@@ -24,7 +23,6 @@ use Psr\Container\ContainerInterface;
 
 abstract class AbstractProjectionManagerFactory implements
     ProvidesDefaultOptions,
-    RequiresConfig,
     RequiresConfigId,
     RequiresMandatoryOptions
 {

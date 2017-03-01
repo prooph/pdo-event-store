@@ -14,7 +14,6 @@ namespace Prooph\EventStore\Pdo\Container;
 
 use Interop\Config\ConfigurationTrait;
 use Interop\Config\ProvidesDefaultOptions;
-use Interop\Config\RequiresConfig;
 use Interop\Config\RequiresConfigId;
 use Interop\Config\RequiresMandatoryOptions;
 use Prooph\EventStore\ActionEventEmitterEventStore;
@@ -29,7 +28,6 @@ use Psr\Container\ContainerInterface;
 
 abstract class AbstractEventStoreFactory implements
     ProvidesDefaultOptions,
-    RequiresConfig,
     RequiresConfigId,
     RequiresMandatoryOptions
 {
