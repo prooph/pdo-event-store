@@ -412,7 +412,6 @@ SQL;
         if (empty($filter) || false === @preg_match("/$filter/", '')) {
             throw new Exception\InvalidArgumentException('Invalid regex pattern given');
         }
-
         [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher);
 
         $where[] = '`real_stream_name` REGEXP :filter';
