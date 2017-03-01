@@ -74,7 +74,7 @@ abstract class AbstractProjectionManagerFactory implements
 
         return new $projectionManagerClassName(
             $container->get(EventStore::class),
-            $container->get($config['connection_service']),
+            $container->get($config['connection']),
             $config['event_streams_table'],
             $config['projections_table']
         );
@@ -89,7 +89,7 @@ abstract class AbstractProjectionManagerFactory implements
 
     public function mandatoryOptions(): iterable
     {
-        return ['connection_service'];
+        return ['connection'];
     }
 
     public function defaultOptions(): iterable
