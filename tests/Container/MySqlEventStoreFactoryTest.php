@@ -36,7 +36,7 @@ final class MySqlEventStoreFactoryTest extends TestCase
     public function it_creates_adapter_via_connection_service(): void
     {
         $config['prooph']['event_store']['default'] = [
-            'connection_service' => 'my_connection',
+            'connection' => 'my_connection',
             'persistence_strategy' => PersistenceStrategy\MySqlAggregateStreamStrategy::class,
             'wrap_action_event_emitter' => false,
         ];
@@ -59,39 +59,19 @@ final class MySqlEventStoreFactoryTest extends TestCase
     /**
      * @test
      */
-    public function it_creates_adapter_via_connection_options(): void
-    {
-        $config['prooph']['event_store']['custom'] = [
-            'connection_options' => TestUtil::getConnectionParams(),
-            'persistence_strategy' => PersistenceStrategy\MySqlAggregateStreamStrategy::class,
-            'wrap_action_event_emitter' => false,
-        ];
-
-        $container = $this->prophesize(ContainerInterface::class);
-
-        $container->get('config')->willReturn($config)->shouldBeCalled();
-        $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
-        $container->get(PersistenceStrategy\MySqlAggregateStreamStrategy::class)->willReturn(new PersistenceStrategy\MySqlAggregateStreamStrategy())->shouldBeCalled();
-
-        $eventStoreName = 'custom';
-        $eventStore = MySqlEventStoreFactory::$eventStoreName($container->reveal());
-
-        $this->assertInstanceOf(MySqlEventStore::class, $eventStore);
-    }
-
-    /**
-     * @test
-     */
     public function it_wraps_action_event_emitter(): void
     {
         $config['prooph']['event_store']['custom'] = [
-            'connection_options' => TestUtil::getConnectionParams(),
+            'connection' => 'my_connection',
             'persistence_strategy' => PersistenceStrategy\MySqlAggregateStreamStrategy::class,
         ];
+
+        $connection = TestUtil::getConnection();
 
         $container = $this->prophesize(ContainerInterface::class);
 
         $container->get('config')->willReturn($config)->shouldBeCalled();
+        $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
         $container->get(PersistenceStrategy\MySqlAggregateStreamStrategy::class)->willReturn(new PersistenceStrategy\MySqlAggregateStreamStrategy())->shouldBeCalled();
 
@@ -107,14 +87,17 @@ final class MySqlEventStoreFactoryTest extends TestCase
     public function it_injects_plugins(): void
     {
         $config['prooph']['event_store']['custom'] = [
-            'connection_options' => TestUtil::getConnectionParams(),
+            'connection' => 'my_connection',
             'persistence_strategy' => PersistenceStrategy\MySqlAggregateStreamStrategy::class,
             'plugins' => ['plugin'],
         ];
 
+        $connection = TestUtil::getConnection();
+
         $container = $this->prophesize(ContainerInterface::class);
 
         $container->get('config')->willReturn($config)->shouldBeCalled();
+        $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
         $container->get(PersistenceStrategy\MySqlAggregateStreamStrategy::class)->willReturn(new PersistenceStrategy\MySqlAggregateStreamStrategy())->shouldBeCalled();
 
@@ -138,14 +121,17 @@ final class MySqlEventStoreFactoryTest extends TestCase
         $this->expectExceptionMessage('Plugin plugin does not implement the Plugin interface');
 
         $config['prooph']['event_store']['custom'] = [
-            'connection_options' => TestUtil::getConnectionParams(),
+            'connection' => 'my_connection',
             'persistence_strategy' => PersistenceStrategy\MySqlAggregateStreamStrategy::class,
             'plugins' => ['plugin'],
         ];
 
+        $connection = TestUtil::getConnection();
+
         $container = $this->prophesize(ContainerInterface::class);
 
         $container->get('config')->willReturn($config)->shouldBeCalled();
+        $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
         $container->get(PersistenceStrategy\MySqlAggregateStreamStrategy::class)->willReturn(new PersistenceStrategy\MySqlAggregateStreamStrategy())->shouldBeCalled();
 
@@ -161,7 +147,7 @@ final class MySqlEventStoreFactoryTest extends TestCase
     public function it_injects_metadata_enrichers(): void
     {
         $config['prooph']['event_store']['custom'] = [
-            'connection_options' => TestUtil::getConnectionParams(),
+            'connection' => 'my_connection',
             'persistence_strategy' => PersistenceStrategy\MySqlAggregateStreamStrategy::class,
             'metadata_enrichers' => ['metadata_enricher1', 'metadata_enricher2'],
         ];
@@ -169,8 +155,12 @@ final class MySqlEventStoreFactoryTest extends TestCase
         $metadataEnricher1 = $this->prophesize(MetadataEnricher::class);
         $metadataEnricher2 = $this->prophesize(MetadataEnricher::class);
 
+        $connection = TestUtil::getConnection();
+
         $container = $this->prophesize(ContainerInterface::class);
+
         $container->get('config')->willReturn($config);
+        $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
         $container->get(PersistenceStrategy\MySqlAggregateStreamStrategy::class)->willReturn(new PersistenceStrategy\MySqlAggregateStreamStrategy())->shouldBeCalled();
 
@@ -192,13 +182,17 @@ final class MySqlEventStoreFactoryTest extends TestCase
         $this->expectExceptionMessage('Metadata enricher foobar does not implement the MetadataEnricher interface');
 
         $config['prooph']['event_store']['custom'] = [
-            'connection_options' => TestUtil::getConnectionParams(),
+            'connection' => 'my_connection',
             'persistence_strategy' => PersistenceStrategy\MySqlAggregateStreamStrategy::class,
             'metadata_enrichers' => ['foobar'],
         ];
 
+        $connection = TestUtil::getConnection();
+
         $container = $this->prophesize(ContainerInterface::class);
+
         $container->get('config')->willReturn($config);
+        $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
         $container->get(PersistenceStrategy\MySqlAggregateStreamStrategy::class)->willReturn(new PersistenceStrategy\MySqlAggregateStreamStrategy())->shouldBeCalled();
 

@@ -46,40 +46,9 @@ final class MySqlEventStoreFactory extends AbstractEventStoreFactory
         return MySqlEventStore::class;
     }
 
-    protected function buildConnectionDsn(array $params): string
-    {
-        $dsn = 'mysql:';
-
-        if (isset($params['host']) && $params['host'] !== '') {
-            $dsn .= 'host=' . $params['host'] . ';';
-        }
-
-        if (isset($params['port'])) {
-            $dsn .= 'port=' . $params['port'] . ';';
-        }
-
-        if (isset($params['dbname'])) {
-            $dsn .= 'dbname=' . $params['dbname'] . ';';
-        }
-
-        if (isset($params['charset'])) {
-            $dsn .= 'charset=' . $params['charset'] . ';';
-        }
-
-        return $dsn;
-    }
-
     public function defaultOptions(): iterable
     {
         return [
-            'connection_options' => [
-                'user' => 'root',
-                'password' => '',
-                'host' => '127.0.0.1',
-                'dbname' => 'event_store',
-                'port' => 3306,
-                'charset' => 'utf8',
-            ],
             'load_batch_size' => 1000,
             'event_streams_table' => 'event_streams',
             'message_factory' => FQCNMessageFactory::class,

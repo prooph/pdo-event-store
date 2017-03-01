@@ -17,7 +17,6 @@ use Interop\Config\ProvidesDefaultOptions;
 use Interop\Config\RequiresConfig;
 use Interop\Config\RequiresConfigId;
 use Interop\Config\RequiresMandatoryOptions;
-use PDO;
 use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception\ConfigurationException;
@@ -78,21 +77,11 @@ abstract class AbstractEventStoreFactory implements
         $config = $container->get('config');
         $config = $this->options($config, $this->configId);
 
-        if (isset($config['connection_service'])) {
-            $connection = $container->get($config['connection_service']);
-        } else {
-            $connection = new PDO(
-                $this->buildConnectionDsn($config['connection_options']),
-                $config['connection_options']['user'],
-                $config['connection_options']['password']
-            );
-        }
-
         $eventStoreClassName = $this->eventStoreClassName();
 
         $eventStore = new $eventStoreClassName(
             $container->get($config['message_factory']),
-            $connection,
+            $container->get($config['connection']),
             $container->get($config['persistence_strategy']),
             $config['load_batch_size'],
             $config['event_streams_table']
@@ -147,8 +136,6 @@ abstract class AbstractEventStoreFactory implements
 
     abstract protected function eventStoreClassName(): string;
 
-    abstract protected function buildConnectionDsn(array $params): string;
-
     public function dimensions(): iterable
     {
         return ['prooph', 'event_store'];
@@ -157,6 +144,7 @@ abstract class AbstractEventStoreFactory implements
     public function mandatoryOptions(): iterable
     {
         return [
+            'connection',
             'persistence_strategy',
         ];
     }

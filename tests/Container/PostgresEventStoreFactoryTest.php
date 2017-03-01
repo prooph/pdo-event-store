@@ -37,7 +37,7 @@ final class PostgresEventStoreFactoryTest extends TestCase
     public function it_creates_adapter_via_connection_service(): void
     {
         $config['prooph']['event_store']['default'] = [
-            'connection_service' => 'my_connection',
+            'connection' => 'my_connection',
             'persistence_strategy' => PersistenceStrategy\PostgresAggregateStreamStrategy::class,
             'wrap_action_event_emitter' => false,
         ];
@@ -46,8 +46,8 @@ final class PostgresEventStoreFactoryTest extends TestCase
 
         $container = $this->prophesize(ContainerInterface::class);
 
-        $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
         $container->get('config')->willReturn($config)->shouldBeCalled();
+        $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
         $container->get(PersistenceStrategy\PostgresAggregateStreamStrategy::class)->willReturn(new PersistenceStrategy\PostgresAggregateStreamStrategy())->shouldBeCalled();
 
@@ -60,39 +60,19 @@ final class PostgresEventStoreFactoryTest extends TestCase
     /**
      * @test
      */
-    public function it_creates_adapter_via_connection_options(): void
-    {
-        $config['prooph']['event_store']['custom'] = [
-            'connection_options' => TestUtil::getConnectionParams(),
-            'persistence_strategy' => PersistenceStrategy\PostgresAggregateStreamStrategy::class,
-            'wrap_action_event_emitter' => false,
-        ];
-
-        $container = $this->prophesize(ContainerInterface::class);
-
-        $container->get('config')->willReturn($config)->shouldBeCalled();
-        $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
-        $container->get(PersistenceStrategy\PostgresAggregateStreamStrategy::class)->willReturn(new PersistenceStrategy\PostgresAggregateStreamStrategy())->shouldBeCalled();
-
-        $eventStoreName = 'custom';
-        $eventStore = PostgresEventStoreFactory::$eventStoreName($container->reveal());
-
-        $this->assertInstanceOf(PostgresEventStore::class, $eventStore);
-    }
-
-    /**
-     * @test
-     */
     public function it_wraps_action_event_emitter(): void
     {
         $config['prooph']['event_store']['custom'] = [
-            'connection_options' => TestUtil::getConnectionParams(),
+            'connection' => 'my_connection',
             'persistence_strategy' => PersistenceStrategy\PostgresAggregateStreamStrategy::class,
         ];
+
+        $connection = TestUtil::getConnection();
 
         $container = $this->prophesize(ContainerInterface::class);
 
         $container->get('config')->willReturn($config)->shouldBeCalled();
+        $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
         $container->get(PersistenceStrategy\PostgresAggregateStreamStrategy::class)->willReturn(new PersistenceStrategy\PostgresAggregateStreamStrategy())->shouldBeCalled();
 
@@ -108,14 +88,17 @@ final class PostgresEventStoreFactoryTest extends TestCase
     public function it_injects_plugins(): void
     {
         $config['prooph']['event_store']['custom'] = [
-            'connection_options' => TestUtil::getConnectionParams(),
+            'connection' => 'my_connection',
             'persistence_strategy' => PersistenceStrategy\PostgresAggregateStreamStrategy::class,
             'plugins' => ['plugin'],
         ];
 
+        $connection = TestUtil::getConnection();
+
         $container = $this->prophesize(ContainerInterface::class);
 
         $container->get('config')->willReturn($config)->shouldBeCalled();
+        $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
         $container->get(PersistenceStrategy\PostgresAggregateStreamStrategy::class)->willReturn(new PersistenceStrategy\PostgresAggregateStreamStrategy())->shouldBeCalled();
 
@@ -139,14 +122,17 @@ final class PostgresEventStoreFactoryTest extends TestCase
         $this->expectExceptionMessage('Plugin plugin does not implement the Plugin interface');
 
         $config['prooph']['event_store']['custom'] = [
-            'connection_options' => TestUtil::getConnectionParams(),
+            'connection' => 'my_connection',
             'persistence_strategy' => PersistenceStrategy\PostgresAggregateStreamStrategy::class,
             'plugins' => ['plugin'],
         ];
 
+        $connection = TestUtil::getConnection();
+
         $container = $this->prophesize(ContainerInterface::class);
 
         $container->get('config')->willReturn($config)->shouldBeCalled();
+        $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
         $container->get(PersistenceStrategy\PostgresAggregateStreamStrategy::class)->willReturn(new PersistenceStrategy\PostgresAggregateStreamStrategy())->shouldBeCalled();
 
@@ -162,7 +148,7 @@ final class PostgresEventStoreFactoryTest extends TestCase
     public function it_injects_metadata_enrichers(): void
     {
         $config['prooph']['event_store']['custom'] = [
-            'connection_options' => TestUtil::getConnectionParams(),
+            'connection' => 'my_connection',
             'persistence_strategy' => PersistenceStrategy\PostgresAggregateStreamStrategy::class,
             'metadata_enrichers' => ['metadata_enricher1', 'metadata_enricher2'],
         ];
@@ -170,8 +156,12 @@ final class PostgresEventStoreFactoryTest extends TestCase
         $metadataEnricher1 = $this->prophesize(MetadataEnricher::class);
         $metadataEnricher2 = $this->prophesize(MetadataEnricher::class);
 
+        $connection = TestUtil::getConnection();
+
         $container = $this->prophesize(ContainerInterface::class);
+
         $container->get('config')->willReturn($config);
+        $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
         $container->get(PersistenceStrategy\PostgresAggregateStreamStrategy::class)->willReturn(new PersistenceStrategy\PostgresAggregateStreamStrategy())->shouldBeCalled();
 
@@ -193,13 +183,17 @@ final class PostgresEventStoreFactoryTest extends TestCase
         $this->expectExceptionMessage('Metadata enricher foobar does not implement the MetadataEnricher interface');
 
         $config['prooph']['event_store']['custom'] = [
-            'connection_options' => TestUtil::getConnectionParams(),
+            'connection' => 'my_connection',
             'persistence_strategy' => PersistenceStrategy\PostgresAggregateStreamStrategy::class,
             'metadata_enrichers' => ['foobar'],
         ];
 
+        $connection = TestUtil::getConnection();
+
         $container = $this->prophesize(ContainerInterface::class);
+
         $container->get('config')->willReturn($config);
+        $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
         $container->get(PersistenceStrategy\PostgresAggregateStreamStrategy::class)->willReturn(new PersistenceStrategy\PostgresAggregateStreamStrategy())->shouldBeCalled();
 

@@ -1,0 +1,111 @@
+<?php
+/**
+ * This file is part of the prooph/pdo-event-store.
+ * (c) 2016-2017 prooph software GmbH <contact@prooph.de>
+ * (c) 2016-2017 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+
+namespace Prooph\EventStore\Pdo\Container;
+
+use PDO;
+use PHPUnit\Framework\TestCase;
+use ProophTest\EventStore\Pdo\TestUtil;
+use Psr\Container\ContainerInterface;
+
+class PdoConnectionFactoryTest extends TestCase
+{
+    /**
+     * @var array
+     */
+    protected $config;
+
+    protected function setUp()
+    {
+        $vendor = TestUtil::getDatabaseVendor();
+
+        if ($vendor === 'pdo_mysql') {
+            $vendor = 'mysql';
+        } elseif ($vendor === 'pdo_pgsql') {
+            $vendor = 'pgsql';
+        } else {
+            throw new \RuntimeException('Invalid database vendor');
+        }
+
+        $this->config = [
+            'prooph' => [
+                'pdo_connection' => [
+                    'default' => array_merge(TestUtil::getConnectionParams(), ['schema' => $vendor]),
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @test
+     * @group pdo_mysql
+     */
+    public function it_creates_mysql_connection(): void
+    {
+        $container = $this->prophesize(ContainerInterface::class);
+
+        $container->get('config')->willReturn($this->config)->shouldBeCalled();
+
+        $factory = new PdoConnectionFactory();
+        $pdo = $factory($container->reveal());
+
+        $this->assertInstanceOf(PDO::class, $pdo);
+    }
+
+    /**
+     * @test
+     * @group pdo_mysql
+     */
+    public function it_creates_mysql_connection_via_callstatic(): void
+    {
+        $container = $this->prophesize(ContainerInterface::class);
+
+        $container->get('config')->willReturn($this->config)->shouldBeCalled();
+
+        $name = 'default';
+        $pdo = PdoConnectionFactory::$name($container->reveal());
+
+        $this->assertInstanceOf(PDO::class, $pdo);
+    }
+
+    /**
+     * @test
+     * @group pdo_pgsql
+     */
+    public function it_creates_postgres_connection(): void
+    {
+        $container = $this->prophesize(ContainerInterface::class);
+
+        $container->get('config')->willReturn($this->config)->shouldBeCalled();
+
+        $factory = new PdoConnectionFactory();
+        $pdo = $factory($container->reveal());
+
+        $this->assertInstanceOf(PDO::class, $pdo);
+    }
+
+    /**
+     * @test
+     * @group pdo_pgsql
+     */
+    public function it_creates_postgres_connection_via_callstatic(): void
+    {
+        $container = $this->prophesize(ContainerInterface::class);
+
+        $container->get('config')->willReturn($this->config)->shouldBeCalled();
+
+        $name = 'default';
+        $pdo = PdoConnectionFactory::$name($container->reveal());
+
+        $this->assertInstanceOf(PDO::class, $pdo);
+    }
+}
