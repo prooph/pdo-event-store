@@ -19,6 +19,7 @@
             <directory>./src/</directory>
             <exclude>
                 <file>./src/Container/PostgresEventStoreFactory.php</file>
+                <file>./src/Container/PostgresProjectionManagerFactory.php</file>
                 <file>./src/PersistenceStrategy/PostgresAggregateStreamStrategy.php</file>
                 <file>./src/PersistenceStrategy/PostgresSimpleStreamStrategy.php</file>
                 <file>./src/PersistenceStrategy/PostgresSingleStreamStrategy.php</file>
