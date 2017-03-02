@@ -87,7 +87,7 @@ abstract class AbstractProjectionManagerFactory implements
 
     public function mandatoryOptions(): iterable
     {
-        return ['event_store', 'connection'];
+        return ['connection'];
     }
 
     public function defaultOptions(): iterable
