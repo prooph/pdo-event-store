@@ -13,8 +13,11 @@ declare(strict_types=1);
 namespace ProophTest\EventStore\Pdo\Container;
 
 use PHPUnit\Framework\TestCase;
+use Prooph\Common\Messaging\MessageFactory;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Pdo\Container\PostgresProjectionManagerFactory;
+use Prooph\EventStore\Pdo\PersistenceStrategy;
+use Prooph\EventStore\Pdo\PostgresEventStore;
 use Prooph\EventStore\Pdo\Projection\PostgresProjectionManager;
 use ProophTest\EventStore\Pdo\TestUtil;
 use Psr\Container\ContainerInterface;
@@ -36,10 +39,14 @@ class PostgresProjectionManagerFactoryTest extends TestCase
         $connection = TestUtil::getConnection();
 
         $container = $this->prophesize(ContainerInterface::class);
-        $eventStore = $this->prophesize(EventStore::class);
+        $eventStore = new PostgresEventStore(
+            $this->createMock(MessageFactory::class),
+            TestUtil::getConnection(),
+            $this->createMock(PersistenceStrategy::class)
+        );
 
         $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
-        $container->get('event_store')->willReturn($eventStore)->shouldBeCalled();
+        $container->get(EventStore::class)->willReturn($eventStore)->shouldBeCalled();
         $container->get('config')->willReturn($config)->shouldBeCalled();
 
         $factory = new PostgresProjectionManagerFactory();
