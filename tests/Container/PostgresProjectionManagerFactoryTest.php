@@ -54,4 +54,32 @@ class PostgresProjectionManagerFactoryTest extends TestCase
 
         $this->assertInstanceOf(PostgresProjectionManager::class, $projectionManager);
     }
+
+    /**
+     * @test
+     */
+    public function it_creates_service_via_callstatic(): void
+    {
+        $config['prooph']['projection_manager']['default'] = [
+            'connection' => 'my_connection',
+        ];
+
+        $connection = TestUtil::getConnection();
+
+        $container = $this->prophesize(ContainerInterface::class);
+        $eventStore = new PostgresEventStore(
+            $this->createMock(MessageFactory::class),
+            TestUtil::getConnection(),
+            $this->createMock(PersistenceStrategy::class)
+        );
+
+        $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
+        $container->get(EventStore::class)->willReturn($eventStore)->shouldBeCalled();
+        $container->get('config')->willReturn($config)->shouldBeCalled();
+
+        $name = 'default';
+        $pdo = PostgresProjectionManagerFactory::$name($container->reveal());
+
+        $this->assertInstanceOf(PostgresProjectionManager::class, $pdo);
+    }
 }

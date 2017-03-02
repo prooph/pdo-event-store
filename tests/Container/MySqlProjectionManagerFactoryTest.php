@@ -54,4 +54,32 @@ class MySqlProjectionManagerFactoryTest extends TestCase
 
         $this->assertInstanceOf(MySqlProjectionManager::class, $projectionManager);
     }
+
+    /**
+     * @test
+     */
+    public function it_creates_service_via_callstatic(): void
+    {
+        $config['prooph']['projection_manager']['default'] = [
+            'connection' => 'my_connection',
+        ];
+
+        $connection = TestUtil::getConnection();
+
+        $container = $this->prophesize(ContainerInterface::class);
+        $eventStore = new MySqlEventStore(
+            $this->createMock(MessageFactory::class),
+            TestUtil::getConnection(),
+            $this->createMock(PersistenceStrategy::class)
+        );
+
+        $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
+        $container->get(EventStore::class)->willReturn($eventStore)->shouldBeCalled();
+        $container->get('config')->willReturn($config)->shouldBeCalled();
+
+        $name = 'default';
+        $pdo = MySqlProjectionManagerFactory::$name($container->reveal());
+
+        $this->assertInstanceOf(MySqlProjectionManager::class, $pdo);
+    }
 }
