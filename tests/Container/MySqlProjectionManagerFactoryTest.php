@@ -22,7 +22,7 @@ use Psr\Container\ContainerInterface;
 /**
  * @group pdo_pgsql
  */
-final class MySqlProjectionManagerFactoryTest extends TestCase
+class MySqlProjectionManagerFactoryTest extends TestCase
 {
     /**
      * @test

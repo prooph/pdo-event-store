@@ -14,7 +14,7 @@ namespace Prooph\EventStore\Pdo\Container;
 
 use Prooph\EventStore\Pdo\Projection\MySqlProjectionManager;
 
-final class MySqlProjectionManagerFactory extends AbstractProjectionManagerFactory
+class MySqlProjectionManagerFactory extends AbstractProjectionManagerFactory
 {
     protected function projectionManagerClassName(): string
     {

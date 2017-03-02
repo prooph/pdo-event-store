@@ -14,7 +14,7 @@ namespace Prooph\EventStore\Pdo\Container;
 
 use Prooph\EventStore\Pdo\Projection\PostgresProjectionManager;
 
-final class PostgresProjectionManagerFactory extends AbstractProjectionManagerFactory
+class PostgresProjectionManagerFactory extends AbstractProjectionManagerFactory
 {
     protected function projectionManagerClassName(): string
     {
