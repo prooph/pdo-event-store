@@ -23,7 +23,7 @@ use ProophTest\EventStore\Pdo\TestUtil;
 use Psr\Container\ContainerInterface;
 
 /**
- * @group pdo_pgsql
+ * @group pdo_mysql
  */
 class MySqlProjectionManagerFactoryTest extends TestCase
 {
