@@ -24,7 +24,7 @@ use ProophTest\EventStore\Pdo\TestUtil;
 use Psr\Container\ContainerInterface;
 
 /**
- * @group pdo_mysql
+ * @group pdo_pgsql
  */
 class PostgresProjectionManagerFactoryTest extends TestCase
 {
