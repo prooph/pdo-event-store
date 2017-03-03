@@ -16,6 +16,7 @@ use PHPUnit\Framework\TestCase;
 use Prooph\Common\Messaging\MessageFactory;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Pdo\Container\PostgresProjectionManagerFactory;
+use Prooph\EventStore\Pdo\Exception\InvalidArgumentException;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\Pdo\PostgresEventStore;
 use Prooph\EventStore\Pdo\Projection\PostgresProjectionManager;
@@ -81,5 +82,16 @@ class PostgresProjectionManagerFactoryTest extends TestCase
         $pdo = PostgresProjectionManagerFactory::$name($container->reveal());
 
         $this->assertInstanceOf(PostgresProjectionManager::class, $pdo);
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_invalid_container_given(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $projectionName = 'custom';
+        PostgresProjectionManagerFactory::$projectionName('invalid container');
     }
 }

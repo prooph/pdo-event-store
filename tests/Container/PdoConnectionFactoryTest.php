@@ -14,6 +14,7 @@ namespace Prooph\EventStore\Pdo\Container;
 
 use PDO;
 use PHPUnit\Framework\TestCase;
+use Prooph\EventStore\Pdo\Exception\InvalidArgumentException;
 use ProophTest\EventStore\Pdo\TestUtil;
 use Psr\Container\ContainerInterface;
 
@@ -107,5 +108,16 @@ class PdoConnectionFactoryTest extends TestCase
         $pdo = PdoConnectionFactory::$name($container->reveal());
 
         $this->assertInstanceOf(PDO::class, $pdo);
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_invalid_container_given(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $projectionName = 'custom';
+        PdoConnectionFactory::$projectionName('invalid container');
     }
 }

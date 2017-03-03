@@ -16,6 +16,7 @@ use PHPUnit\Framework\TestCase;
 use Prooph\Common\Messaging\MessageFactory;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Pdo\Container\MySqlProjectionManagerFactory;
+use Prooph\EventStore\Pdo\Exception\InvalidArgumentException;
 use Prooph\EventStore\Pdo\MySqlEventStore;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\Pdo\Projection\MySqlProjectionManager;
@@ -81,5 +82,16 @@ class MySqlProjectionManagerFactoryTest extends TestCase
         $pdo = MySqlProjectionManagerFactory::$name($container->reveal());
 
         $this->assertInstanceOf(MySqlProjectionManager::class, $pdo);
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_invalid_container_given(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $projectionName = 'custom';
+        MySqlProjectionManagerFactory::$projectionName('invalid container');
     }
 }
