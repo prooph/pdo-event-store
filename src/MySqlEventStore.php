@@ -219,14 +219,16 @@ EOT;
         int $count = null,
         MetadataMatcher $metadataMatcher = null
     ): Iterator {
-        if (null === $count) {
-            $count = PHP_INT_MAX;
-        }
         [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher);
         $where[] = '`no` >= :fromNumber';
 
         $whereCondition = 'WHERE ' . implode(' AND ', $where);
-        $limit = min($count, $this->loadBatchSize);
+
+        if (null === $count) {
+            $limit = $this->loadBatchSize;
+        } else {
+            $limit = min($count, $this->loadBatchSize);
+        }
 
         $tableName = $this->persistenceStrategy->generateTableName($streamName);
 
@@ -270,18 +272,23 @@ EOT;
 
     public function loadReverse(
         StreamName $streamName,
-        int $fromNumber = PHP_INT_MAX,
+        int $fromNumber = null,
         int $count = null,
         MetadataMatcher $metadataMatcher = null
     ): Iterator {
-        if (null === $count) {
-            $count = PHP_INT_MAX;
+        if (null === $fromNumber) {
+            $fromNumber = PHP_INT_MAX;
         }
         [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher);
         $where[] = '`no` <= :fromNumber';
 
         $whereCondition = 'WHERE ' . implode(' AND ', $where);
-        $limit = min($count, $this->loadBatchSize);
+
+        if (null === $count) {
+            $limit = $this->loadBatchSize;
+        } else {
+            $limit = min($count, $this->loadBatchSize);
+        }
 
         $tableName = $this->persistenceStrategy->generateTableName($streamName);
 

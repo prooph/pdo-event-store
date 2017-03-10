@@ -53,7 +53,7 @@ final class PdoStreamIterator implements Iterator
     private $batchPosition = 0;
 
     /**
-     * @var int|null
+     * @var int
      */
     private $batchSize;
 
@@ -81,9 +81,9 @@ final class PdoStreamIterator implements Iterator
         PDO $connection,
         PDOStatement $statement,
         MessageFactory $messageFactory,
-        ?int $batchSize,
+        int $batchSize,
         int $fromNumber,
-        int $count,
+        ?int $count,
         bool $forward
     ) {
         $this->connection = $connection;
@@ -129,7 +129,7 @@ final class PdoStreamIterator implements Iterator
 
     public function next(): void
     {
-        if (($this->count - 1) === $this->currentKey) {
+        if ($this->count && ($this->count - 1) === $this->currentKey) {
             $this->currentKey = -1;
             $this->currentItem = false;
 
@@ -202,9 +202,13 @@ final class PdoStreamIterator implements Iterator
 
     private function buildStatement(int $fromNumber): PDOStatement
     {
-        $limit = $this->count < ($this->batchSize * ($this->batchPosition + 1))
-            ? $this->count - ($this->batchSize * $this->batchPosition)
-            : $this->batchSize;
+        if (null === $this->count
+            || $this->count < ($this->batchSize * ($this->batchPosition + 1))
+        ) {
+            $limit = $this->batchSize;
+        } else {
+            $limit = $this->count - ($this->batchSize * $this->batchPosition);
+        }
 
         $this->statement->bindValue(':fromNumber', $fromNumber, PDO::PARAM_INT);
         $this->statement->bindValue(':limit', $limit, PDO::PARAM_INT);
