@@ -279,7 +279,6 @@ EOT;
         if (null === $fromNumber) {
             $fromNumber = PHP_INT_MAX;
         }
-
         [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher);
         $where[] = '`no` <= :fromNumber';
 
