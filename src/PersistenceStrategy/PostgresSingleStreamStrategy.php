@@ -42,7 +42,7 @@ EOT;
 
         $index = <<<EOT
 CREATE UNIQUE INDEX on $tableName
-((metadata->>'_aggregate_version'), (metadata->>'_aggregate_id'), (metadata->>'_aggregate_type'));
+((metadata->>'_aggregate_type'), (metadata->>'_aggregate_id'), (metadata->>'_aggregate_version'));
 EOT;
 
         return [
