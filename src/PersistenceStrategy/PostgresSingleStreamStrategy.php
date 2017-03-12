@@ -40,14 +40,20 @@ CREATE TABLE $tableName (
 );
 EOT;
 
-        $index = <<<EOT
+        $index1 = <<<EOT
 CREATE UNIQUE INDEX on $tableName
 ((metadata->>'_aggregate_type'), (metadata->>'_aggregate_id'), (metadata->>'_aggregate_version'));
 EOT;
 
+        $index2 = <<<EOT
+CREATE INDEX on $tableName
+((metadata->>'_aggregate_type'), (metadata->>'_aggregate_id'), (metadata->>'_aggregate_version'), no);
+EOT;
+
         return [
             $statement,
-            $index,
+            $index1,
+            $index2
         ];
     }
 
