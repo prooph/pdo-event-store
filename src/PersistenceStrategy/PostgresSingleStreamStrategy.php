@@ -53,7 +53,7 @@ EOT;
         return [
             $statement,
             $index1,
-            $index2
+            $index2,
         ];
     }
 
