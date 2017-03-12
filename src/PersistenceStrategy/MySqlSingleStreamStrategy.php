@@ -87,6 +87,6 @@ EOT;
 
     public function indexName(): string
     {
-        return 'ix_unique_event';
+        return 'ix_query_aggregate';
     }
 }
