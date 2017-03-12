@@ -22,6 +22,7 @@ use Prooph\EventStore\Exception\StreamExistsAlready;
 use Prooph\EventStore\Exception\StreamNotFound;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Pdo\Exception\ExtensionNotLoaded;
+use Prooph\EventStore\Pdo\Exception\InvalidArgumentException;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
@@ -71,6 +72,12 @@ final class MySqlEventStore implements EventStore
     ) {
         if (! extension_loaded('pdo_mysql')) {
             throw ExtensionNotLoaded::with('pdo_mysql');
+        }
+
+        if (! $persistenceStrategy instanceof HasQueryHint) {
+            throw new InvalidArgumentException(
+                MySqlEventStore::class . ' requires the persistence strategy to implement ' . HasQueryHint::class
+            );
         }
 
         Assertion::min($loadBatchSize, 1);
@@ -231,9 +238,10 @@ EOT;
         }
 
         $tableName = $this->persistenceStrategy->generateTableName($streamName);
+        $indexName = $this->persistenceStrategy->indexName();
 
         $query = <<<EOT
-SELECT * FROM $tableName
+SELECT * FROM $tableName USE INDEX($indexName)
 $whereCondition
 ORDER BY `no` ASC
 LIMIT :limit;
@@ -291,9 +299,10 @@ EOT;
         }
 
         $tableName = $this->persistenceStrategy->generateTableName($streamName);
+        $indexName = $this->persistenceStrategy->indexName();
 
         $query = <<<EOT
-SELECT * FROM $tableName
+SELECT * FROM $tableName USE INDEX($indexName)
 $whereCondition
 ORDER BY `no` DESC
 LIMIT :limit;

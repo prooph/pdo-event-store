@@ -41,13 +41,13 @@ CREATE TABLE $tableName (
 EOT;
 
         $index1 = <<<EOT
-CREATE UNIQUE INDEX on $tableName
+CREATE UNIQUE INDEX ON $tableName
 ((metadata->>'_aggregate_type'), (metadata->>'_aggregate_id'), (metadata->>'_aggregate_version'));
 EOT;
 
         $index2 = <<<EOT
-CREATE INDEX on $tableName
-((metadata->>'_aggregate_type'), (metadata->>'_aggregate_id'), (metadata->>'_aggregate_version'), no);
+CREATE INDEX ON $tableName
+((metadata->>'_aggregate_type'), (metadata->>'_aggregate_id'), no);
 EOT;
 
         return [
