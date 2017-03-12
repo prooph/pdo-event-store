@@ -17,8 +17,10 @@ use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;
+use Prooph\EventStore\Pdo\Exception\InvalidArgumentException;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\MySqlEventStore;
+use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlAggregateStreamStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSingleStreamStrategy;
 use Prooph\EventStore\Stream;
@@ -50,6 +52,22 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
             new FQCNMessageFactory(),
             $this->connection,
             new MySqlAggregateStreamStrategy()
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function it_requires_has_query_hint_implementation_for_persistence_strategy(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $persistenceStrategy = $this->prophesize(PersistenceStrategy::class);
+
+        new MySqlEventStore(
+            new FQCNMessageFactory(),
+            $this->connection,
+            $persistenceStrategy->reveal()
         );
     }
 
