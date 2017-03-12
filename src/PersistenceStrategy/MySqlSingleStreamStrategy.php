@@ -13,10 +13,11 @@ declare(strict_types=1);
 namespace Prooph\EventStore\Pdo\PersistenceStrategy;
 
 use Iterator;
+use Prooph\EventStore\Pdo\HasQueryHint;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\StreamName;
 
-final class MySqlSingleStreamStrategy implements PersistenceStrategy
+final class MySqlSingleStreamStrategy implements PersistenceStrategy, HasQueryHint
 {
     /**
      * @param string $tableName
@@ -32,12 +33,13 @@ CREATE TABLE `$tableName` (
     `payload` JSON NOT NULL,
     `metadata` JSON NOT NULL,
     `created_at` DATETIME(6) NOT NULL,
-    `version` INT(11) UNSIGNED GENERATED ALWAYS AS (JSON_EXTRACT(metadata, '$._aggregate_version')) STORED NOT NULL,
+    `aggregate_version` INT(11) UNSIGNED GENERATED ALWAYS AS (JSON_EXTRACT(metadata, '$._aggregate_version')) STORED NOT NULL,
     `aggregate_id` CHAR(36) CHARACTER SET utf8 COLLATE utf8_bin GENERATED ALWAYS AS (JSON_UNQUOTE(JSON_EXTRACT(metadata, '$._aggregate_id'))) STORED NOT NULL,
     `aggregate_type` VARCHAR(150) GENERATED ALWAYS AS (JSON_UNQUOTE(JSON_EXTRACT(metadata, '$._aggregate_type'))) STORED NOT NULL,
     PRIMARY KEY (`no`),
     UNIQUE KEY `ix_event_id` (`event_id`),
-    UNIQUE KEY `ix_unique_event` (`version`, `aggregate_id`, `aggregate_type`)
+    UNIQUE KEY `ix_unique_event` (`aggregate_type`, `aggregate_id`, `aggregate_version`),
+    KEY `ix_query_aggregate` (`aggregate_type`,`aggregate_id`,`no`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 EOT;
 
@@ -81,5 +83,10 @@ EOT;
     public function generateTableName(StreamName $streamName): string
     {
         return '_' . sha1($streamName->toString());
+    }
+
+    public function indexName(): string
+    {
+        return 'ix_query_aggregate';
     }
 }

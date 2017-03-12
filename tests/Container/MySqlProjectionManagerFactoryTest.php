@@ -17,6 +17,7 @@ use Prooph\Common\Messaging\MessageFactory;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Pdo\Container\MySqlProjectionManagerFactory;
 use Prooph\EventStore\Pdo\Exception\InvalidArgumentException;
+use Prooph\EventStore\Pdo\HasQueryHint;
 use Prooph\EventStore\Pdo\MySqlEventStore;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\Pdo\Projection\MySqlProjectionManager;
@@ -39,11 +40,15 @@ class MySqlProjectionManagerFactoryTest extends TestCase
 
         $connection = TestUtil::getConnection();
 
+        $messageFactory = $this->prophesize(MessageFactory::class);
+        $persistenceStrategy = $this->prophesize(PersistenceStrategy::class);
+        $persistenceStrategy->willImplement(HasQueryHint::class);
+
         $container = $this->prophesize(ContainerInterface::class);
         $eventStore = new MySqlEventStore(
-            $this->createMock(MessageFactory::class),
+            $messageFactory->reveal(),
             TestUtil::getConnection(),
-            $this->createMock(PersistenceStrategy::class)
+            $persistenceStrategy->reveal()
         );
 
         $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
@@ -67,11 +72,15 @@ class MySqlProjectionManagerFactoryTest extends TestCase
 
         $connection = TestUtil::getConnection();
 
+        $messageFactory = $this->prophesize(MessageFactory::class);
+        $persistenceStrategy = $this->prophesize(PersistenceStrategy::class);
+        $persistenceStrategy->willImplement(HasQueryHint::class);
+
         $container = $this->prophesize(ContainerInterface::class);
         $eventStore = new MySqlEventStore(
-            $this->createMock(MessageFactory::class),
+            $messageFactory->reveal(),
             TestUtil::getConnection(),
-            $this->createMock(PersistenceStrategy::class)
+            $persistenceStrategy->reveal()
         );
 
         $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
