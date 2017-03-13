@@ -58,22 +58,6 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
     /**
      * @test
      */
-    public function it_requires_has_query_hint_implementation_for_persistence_strategy(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-
-        $persistenceStrategy = $this->prophesize(PersistenceStrategy::class);
-
-        new MySqlEventStore(
-            new FQCNMessageFactory(),
-            $this->connection,
-            $persistenceStrategy->reveal()
-        );
-    }
-
-    /**
-     * @test
-     */
     public function it_cannot_create_new_stream_if_table_name_is_already_used(): void
     {
         $this->expectException(RuntimeException::class);

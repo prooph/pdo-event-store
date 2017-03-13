@@ -74,12 +74,6 @@ final class MySqlEventStore implements EventStore
             throw ExtensionNotLoaded::with('pdo_mysql');
         }
 
-        if (! $persistenceStrategy instanceof HasQueryHint) {
-            throw new InvalidArgumentException(
-                MySqlEventStore::class . ' requires the persistence strategy to implement ' . HasQueryHint::class
-            );
-        }
-
         Assertion::min($loadBatchSize, 1);
 
         $this->messageFactory = $messageFactory;
@@ -238,10 +232,16 @@ EOT;
         }
 
         $tableName = $this->persistenceStrategy->generateTableName($streamName);
-        $indexName = $this->persistenceStrategy->indexName();
+
+        if ($this->persistenceStrategy instanceof HasQueryHint) {
+            $indexName = $this->persistenceStrategy->indexName();
+            $queryHint = "USE INDEX($indexName)";
+        } else {
+            $queryHint = '';
+        }
 
         $query = <<<EOT
-SELECT * FROM $tableName USE INDEX($indexName)
+SELECT * FROM $tableName $queryHint
 $whereCondition
 ORDER BY `no` ASC
 LIMIT :limit;
@@ -299,10 +299,16 @@ EOT;
         }
 
         $tableName = $this->persistenceStrategy->generateTableName($streamName);
-        $indexName = $this->persistenceStrategy->indexName();
+
+        if ($this->persistenceStrategy instanceof HasQueryHint) {
+            $indexName = $this->persistenceStrategy->indexName();
+            $queryHint = "USE INDEX($indexName)";
+        } else {
+            $queryHint = '';
+        }
 
         $query = <<<EOT
-SELECT * FROM $tableName USE INDEX($indexName)
+SELECT * FROM $tableName $queryHint
 $whereCondition
 ORDER BY `no` DESC
 LIMIT :limit;
