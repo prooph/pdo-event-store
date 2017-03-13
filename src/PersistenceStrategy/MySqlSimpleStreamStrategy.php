@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace Prooph\EventStore\Pdo\PersistenceStrategy;
 
 use Iterator;
-use Prooph\EventStore\Pdo\HasQueryHint;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\StreamName;
 
