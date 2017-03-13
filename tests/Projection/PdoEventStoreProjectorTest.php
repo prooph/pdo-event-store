@@ -17,13 +17,14 @@ use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Exception\InvalidArgumentException;
-use Prooph\EventStore\Pdo\Projection\PdoEventStoreProjection;
+use Prooph\EventStore\Pdo\Projection\PdoEventStoreProjector;
 use Prooph\EventStore\Projection\ProjectionManager;
+use Prooph\EventStore\Projection\Projector;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
-use ProophTest\EventStore\Projection\AbstractEventStoreProjectionTest;
+use ProophTest\EventStore\Projection\AbstractEventStoreProjectorTest;
 
-abstract class PdoEventStoreProjectionTest extends AbstractEventStoreProjectionTest
+abstract class PdoEventStoreProjectorTest extends AbstractEventStoreProjectorTest
 {
     /**
      * @var ProjectionManager
@@ -65,7 +66,7 @@ abstract class PdoEventStoreProjectionTest extends AbstractEventStoreProjectionT
         $testCase = $this;
 
         $projection = $this->projectionManager->createProjection('test_projection', [
-            $this->projectionManager::OPTION_PERSIST_BLOCK_SIZE => 10,
+            Projector::OPTION_PERSIST_BLOCK_SIZE => 10,
         ]);
 
         $projection
@@ -130,7 +131,7 @@ abstract class PdoEventStoreProjectionTest extends AbstractEventStoreProjectionT
         $wrappedEventStore = $this->prophesize(EventStoreDecorator::class);
         $wrappedEventStore->getInnerEventStore()->willReturn($eventStore->reveal())->shouldBeCalled();
 
-        new PdoEventStoreProjection(
+        new PdoEventStoreProjector(
             $wrappedEventStore->reveal(),
             $this->connection,
             'test_projection',
@@ -153,7 +154,7 @@ abstract class PdoEventStoreProjectionTest extends AbstractEventStoreProjectionT
         $eventStore = $this->prophesize(EventStore::class);
         $connection = $this->prophesize(PDO::class);
 
-        new PdoEventStoreProjection(
+        new PdoEventStoreProjector(
             $eventStore->reveal(),
             $connection->reveal(),
             'test_projection',

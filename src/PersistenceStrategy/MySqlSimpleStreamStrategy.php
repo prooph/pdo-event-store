@@ -13,11 +13,10 @@ declare(strict_types=1);
 namespace Prooph\EventStore\Pdo\PersistenceStrategy;
 
 use Iterator;
-use Prooph\EventStore\Pdo\HasQueryHint;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\StreamName;
 
-final class MySqlSimpleStreamStrategy implements PersistenceStrategy, HasQueryHint
+final class MySqlSimpleStreamStrategy implements PersistenceStrategy
 {
     /**
      * @param string $tableName
@@ -78,10 +77,5 @@ EOT;
     public function generateTableName(StreamName $streamName): string
     {
         return '_' . sha1($streamName->toString());
-    }
-
-    public function indexName(): string
-    {
-        return 'PRIMARY';
     }
 }
