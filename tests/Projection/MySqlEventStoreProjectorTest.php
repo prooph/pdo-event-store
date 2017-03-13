@@ -13,32 +13,32 @@ declare(strict_types=1);
 namespace ProophTest\EventStore\Pdo\Projection;
 
 use Prooph\Common\Messaging\FQCNMessageFactory;
-use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresSimpleStreamStrategy;
-use Prooph\EventStore\Pdo\PostgresEventStore;
-use Prooph\EventStore\Pdo\Projection\PostgresProjectionManager;
+use Prooph\EventStore\Pdo\MySqlEventStore;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSimpleStreamStrategy;
+use Prooph\EventStore\Pdo\Projection\MySqlProjectionManager;
 use ProophTest\EventStore\Pdo\TestUtil;
 
 /**
- * @group pdo_pgsql
+ * @group pdo_mysql
  */
-class PostgresEventStoreProjectionTest extends PdoEventStoreProjectionTest
+class MySqlEventStoreProjectorTest extends PdoEventStoreProjectorTest
 {
     protected function setUp(): void
     {
-        if (TestUtil::getDatabaseVendor() !== 'pdo_pgsql') {
+        if (TestUtil::getDatabaseVendor() !== 'pdo_mysql') {
             throw new \RuntimeException('Invalid database vendor');
         }
 
         $this->connection = TestUtil::getConnection();
         TestUtil::initDefaultDatabaseTables($this->connection);
 
-        $this->eventStore = new PostgresEventStore(
+        $this->eventStore = new MySqlEventStore(
             new FQCNMessageFactory(),
-            TestUtil::getConnection(),
-            new PostgresSimpleStreamStrategy()
+            $this->connection,
+            new MySqlSimpleStreamStrategy()
         );
 
-        $this->projectionManager = new PostgresProjectionManager(
+        $this->projectionManager = new MySqlProjectionManager(
             $this->eventStore,
             $this->connection
         );

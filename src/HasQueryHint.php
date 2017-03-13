@@ -12,6 +12,10 @@ declare(strict_types=1);
 
 namespace Prooph\EventStore\Pdo;
 
+/**
+ * Additional interface to be implemented for persistence strategies
+ * to specify a query hint being used when loading events
+ */
 interface HasQueryHint
 {
     public function indexName(): string;

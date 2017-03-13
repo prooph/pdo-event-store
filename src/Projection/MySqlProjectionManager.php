@@ -18,19 +18,15 @@ use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Exception\OutOfRangeException;
 use Prooph\EventStore\Pdo\Exception;
 use Prooph\EventStore\Pdo\MySqlEventStore;
-use Prooph\EventStore\Projection\Projection;
+use Prooph\EventStore\Projection\Projector;
 use Prooph\EventStore\Projection\ProjectionManager;
 use Prooph\EventStore\Projection\ProjectionStatus;
 use Prooph\EventStore\Projection\Query;
 use Prooph\EventStore\Projection\ReadModel;
-use Prooph\EventStore\Projection\ReadModelProjection;
+use Prooph\EventStore\Projection\ReadModelProjector;
 
 final class MySqlProjectionManager implements ProjectionManager
 {
-    public const OPTION_LOCK_TIMEOUT_MS = 'lock_timeout_ms';
-
-    public const DEFAULT_LOCK_TIMEOUT_MS = 1000;
-
     /**
      * @var EventStore
      */
@@ -79,17 +75,17 @@ final class MySqlProjectionManager implements ProjectionManager
     public function createProjection(
         string $name,
         array $options = []
-    ): Projection {
-        return new PdoEventStoreProjection(
+    ): Projector {
+        return new PdoEventStoreProjector(
             $this->eventStore,
             $this->connection,
             $name,
             $this->eventStreamsTable,
             $this->projectionsTable,
-            $options[self::OPTION_LOCK_TIMEOUT_MS] ?? self::DEFAULT_LOCK_TIMEOUT_MS,
-            $options[self::OPTION_CACHE_SIZE] ?? self::DEFAULT_CACHE_SIZE,
-            $options[self::OPTION_PERSIST_BLOCK_SIZE] ?? self::DEFAULT_PERSIST_BLOCK_SIZE,
-            $options[self::OPTION_SLEEP] ?? self::DEFAULT_SLEEP
+            $options[PdoEventStoreProjector::OPTION_LOCK_TIMEOUT_MS] ?? PdoEventStoreProjector::DEFAULT_LOCK_TIMEOUT_MS,
+            $options[PdoEventStoreProjector::OPTION_CACHE_SIZE] ?? PdoEventStoreProjector::DEFAULT_CACHE_SIZE,
+            $options[PdoEventStoreProjector::OPTION_PERSIST_BLOCK_SIZE] ?? PdoEventStoreProjector::DEFAULT_PERSIST_BLOCK_SIZE,
+            $options[PdoEventStoreProjector::OPTION_SLEEP] ?? PdoEventStoreProjector::DEFAULT_SLEEP
         );
     }
 
@@ -97,17 +93,17 @@ final class MySqlProjectionManager implements ProjectionManager
         string $name,
         ReadModel $readModel,
         array $options = []
-    ): ReadModelProjection {
-        return new PdoEventStoreReadModelProjection(
+    ): ReadModelProjector {
+        return new PdoEventStoreReadModelProjector(
             $this->eventStore,
             $this->connection,
             $name,
             $readModel,
             $this->eventStreamsTable,
             $this->projectionsTable,
-            $options[self::OPTION_LOCK_TIMEOUT_MS] ?? self::DEFAULT_LOCK_TIMEOUT_MS,
-            $options[self::OPTION_PERSIST_BLOCK_SIZE] ?? self::DEFAULT_PERSIST_BLOCK_SIZE,
-            $options[self::OPTION_SLEEP] ?? self::DEFAULT_SLEEP
+            $options[PdoEventStoreReadModelProjector::OPTION_LOCK_TIMEOUT_MS] ?? PdoEventStoreReadModelProjector::DEFAULT_LOCK_TIMEOUT_MS,
+            $options[PdoEventStoreReadModelProjector::OPTION_PERSIST_BLOCK_SIZE] ?? PdoEventStoreReadModelProjector::DEFAULT_PERSIST_BLOCK_SIZE,
+            $options[PdoEventStoreReadModelProjector::OPTION_SLEEP] ?? PdoEventStoreReadModelProjector::DEFAULT_SLEEP
         );
     }
 

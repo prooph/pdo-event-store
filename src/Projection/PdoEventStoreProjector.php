@@ -26,14 +26,17 @@ use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Exception;
 use Prooph\EventStore\Pdo\MySqlEventStore;
 use Prooph\EventStore\Pdo\PostgresEventStore;
-use Prooph\EventStore\Projection\Projection;
+use Prooph\EventStore\Projection\Projector;
 use Prooph\EventStore\Projection\ProjectionStatus;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use Prooph\EventStore\Util\ArrayCache;
 
-final class PdoEventStoreProjection implements Projection
+final class PdoEventStoreProjector implements Projector
 {
+    public const OPTION_LOCK_TIMEOUT_MS = 'lock_timeout_ms';
+    public const DEFAULT_LOCK_TIMEOUT_MS = 1000;
+
     /**
      * @var EventStore
      */
@@ -167,7 +170,7 @@ final class PdoEventStoreProjection implements Projection
         }
     }
 
-    public function init(Closure $callback): Projection
+    public function init(Closure $callback): Projector
     {
         if (null !== $this->initCallback) {
             throw new Exception\RuntimeException('Projection already initialized');
@@ -186,7 +189,7 @@ final class PdoEventStoreProjection implements Projection
         return $this;
     }
 
-    public function fromStream(string $streamName): Projection
+    public function fromStream(string $streamName): Projector
     {
         if (null !== $this->query) {
             throw new Exception\RuntimeException('From was already called');
@@ -197,7 +200,7 @@ final class PdoEventStoreProjection implements Projection
         return $this;
     }
 
-    public function fromStreams(string ...$streamNames): Projection
+    public function fromStreams(string ...$streamNames): Projector
     {
         if (null !== $this->query) {
             throw new Exception\RuntimeException('From was already called');
@@ -210,7 +213,7 @@ final class PdoEventStoreProjection implements Projection
         return $this;
     }
 
-    public function fromCategory(string $name): Projection
+    public function fromCategory(string $name): Projector
     {
         if (null !== $this->query) {
             throw new Exception\RuntimeException('From was already called');
@@ -221,7 +224,7 @@ final class PdoEventStoreProjection implements Projection
         return $this;
     }
 
-    public function fromCategories(string ...$names): Projection
+    public function fromCategories(string ...$names): Projector
     {
         if (null !== $this->query) {
             throw new Exception\RuntimeException('From was already called');
@@ -234,7 +237,7 @@ final class PdoEventStoreProjection implements Projection
         return $this;
     }
 
-    public function fromAll(): Projection
+    public function fromAll(): Projector
     {
         if (null !== $this->query) {
             throw new Exception\RuntimeException('From was already called');
@@ -245,7 +248,7 @@ final class PdoEventStoreProjection implements Projection
         return $this;
     }
 
-    public function when(array $handlers): Projection
+    public function when(array $handlers): Projector
     {
         if (null !== $this->handler || ! empty($this->handlers)) {
             throw new Exception\RuntimeException('When was already called');
@@ -266,7 +269,7 @@ final class PdoEventStoreProjection implements Projection
         return $this;
     }
 
-    public function whenAny(Closure $handler): Projection
+    public function whenAny(Closure $handler): Projector
     {
         if (null !== $this->handler || ! empty($this->handlers)) {
             throw new Exception\RuntimeException('When was already called');
@@ -569,34 +572,34 @@ EOT;
     {
         return new class($this, $streamName) {
             /**
-             * @var Projection
+             * @var Projector
              */
-            private $projection;
+            private $projector;
 
             /**
              * @var ?string
              */
             private $streamName;
 
-            public function __construct(Projection $projection, ?string &$streamName)
+            public function __construct(Projector $projector, ?string &$streamName)
             {
-                $this->projection = $projection;
+                $this->projector = $projector;
                 $this->streamName = &$streamName;
             }
 
             public function stop(): void
             {
-                $this->projection->stop();
+                $this->projector->stop();
             }
 
             public function linkTo(string $streamName, Message $event): void
             {
-                $this->projection->linkTo($streamName, $event);
+                $this->projector->linkTo($streamName, $event);
             }
 
             public function emit(Message $event): void
             {
-                $this->projection->emit($event);
+                $this->projector->emit($event);
             }
 
             public function streamName(): ?string
