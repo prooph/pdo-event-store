@@ -33,9 +33,6 @@ use Prooph\EventStore\StreamName;
 
 final class PdoEventStoreReadModelProjector implements ReadModelProjector
 {
-    public const OPTION_LOCK_TIMEOUT_MS = 'lock_timeout_ms';
-    public const DEFAULT_LOCK_TIMEOUT_MS = 1000;
-
     /**
      * @var EventStore
      */

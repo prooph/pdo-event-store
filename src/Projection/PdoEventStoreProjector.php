@@ -34,9 +34,6 @@ use Prooph\EventStore\Util\ArrayCache;
 
 final class PdoEventStoreProjector implements Projector
 {
-    public const OPTION_LOCK_TIMEOUT_MS = 'lock_timeout_ms';
-    public const DEFAULT_LOCK_TIMEOUT_MS = 1000;
-
     /**
      * @var EventStore
      */
