@@ -200,7 +200,7 @@ EOT;
             throw StreamNotFound::with($streamName);
         }
 
-        if (in_array($statement->errorCode(), $this->persistenceStrategy->uniqueViolationErrorCodes(), true)) {
+        if ($statement->errorCode() === '23000') {
             if ($this->connection->inTransaction() && ! $this->duringCreate) {
                 $this->connection->rollBack();
             }
@@ -618,7 +618,7 @@ EOT;
         ]);
 
         if (! $result) {
-            if (in_array($statement->errorCode(), $this->persistenceStrategy->uniqueViolationErrorCodes())) {
+            if ($statement->errorCode() === '23000') {
                 throw StreamExistsAlready::with($stream->streamName());
             }
 
