@@ -27,10 +27,5 @@ interface PersistenceStrategy
 
     public function prepareData(Iterator $streamEvents): array;
 
-    /**
-     * @return string[]
-     */
-    public function uniqueViolationErrorCodes(): array;
-
     public function generateTableName(StreamName $streamName): string;
 }

@@ -74,14 +74,6 @@ EOT;
         return $data;
     }
 
-    /**
-     * @return string[]
-     */
-    public function uniqueViolationErrorCodes(): array
-    {
-        return ['23000'];
-    }
-
     public function generateTableName(StreamName $streamName): string
     {
         return '_' . sha1($streamName->toString());

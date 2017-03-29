@@ -177,7 +177,7 @@ EOT;
             throw StreamNotFound::with($streamName);
         }
 
-        if (in_array($statement->errorCode(), $this->persistenceStrategy->uniqueViolationErrorCodes(), true)) {
+        if (in_array($statement->errorCode(), ['23000', '23505'], true)) {
             throw new ConcurrencyException();
         }
     }
@@ -605,7 +605,7 @@ EOT;
         ]);
 
         if (! $result) {
-            if (in_array($statement->errorCode(), $this->persistenceStrategy->uniqueViolationErrorCodes())) {
+            if (in_array($statement->errorCode(), ['23000', '23505'], true)) {
                 throw StreamExistsAlready::with($stream->streamName());
             }
 
