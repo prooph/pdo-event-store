@@ -25,6 +25,7 @@ use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
+use ProophTest\EventStore\TransactionalEventStoreTestTrait;
 use Ramsey\Uuid\Uuid;
 
 /**
@@ -32,6 +33,8 @@ use Ramsey\Uuid\Uuid;
  */
 final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
 {
+    use TransactionalEventStoreTestTrait;
+
     /**
      * @var MySqlEventStore
      */

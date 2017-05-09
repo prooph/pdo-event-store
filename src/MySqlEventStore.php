@@ -20,14 +20,17 @@ use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Exception\StreamExistsAlready;
 use Prooph\EventStore\Exception\StreamNotFound;
+use Prooph\EventStore\Exception\TransactionAlreadyStarted;
+use Prooph\EventStore\Exception\TransactionNotStarted;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Pdo\Exception\ExtensionNotLoaded;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
+use Prooph\EventStore\TransactionalEventStore;
 use Prooph\EventStore\Util\Assertion;
 
-final class MySqlEventStore implements EventStore
+final class MySqlEventStore implements TransactionalEventStore
 {
     /**
      * @var MessageFactory
@@ -55,9 +58,9 @@ final class MySqlEventStore implements EventStore
     private $eventStreamsTable;
 
     /**
-     * @var bool
+     * @var array
      */
-    private $duringCreate = false;
+    private $createRollbacks = [];
 
     /**
      * @throws ExtensionNotLoaded
@@ -145,6 +148,12 @@ EOT;
         try {
             $tableName = $this->persistenceStrategy->generateTableName($streamName);
             $this->createSchemaFor($tableName);
+            if ($this->inTransaction()) {
+                $this->createRollbacks[] = [
+                    'dropTable' => "DROP TABLE $tableName;",
+                    'streamName' => $streamName,
+                ];
+            }
         } catch (RuntimeException $exception) {
             $this->connection->exec("DROP TABLE $tableName;");
             $this->removeStreamFromStreamsTable($streamName);
@@ -152,19 +161,7 @@ EOT;
             throw $exception;
         }
 
-        $this->connection->beginTransaction();
-        $this->duringCreate = true;
-
-        try {
-            $this->appendTo($streamName, $stream->streamEvents());
-        } catch (\Throwable $e) {
-            $this->connection->rollBack();
-            $this->duringCreate = false;
-            throw $e;
-        }
-
-        $this->connection->commit();
-        $this->duringCreate = false;
+        $this->appendTo($streamName, $stream->streamEvents());
     }
 
     public function appendTo(StreamName $streamName, Iterator $streamEvents): void
@@ -185,31 +182,15 @@ EOT;
 
         $sql = 'INSERT INTO ' . $tableName . ' (' . implode(', ', $columnNames) . ') VALUES ' . $allPlaces;
 
-        if (! $this->connection->inTransaction()) {
-            $this->connection->beginTransaction();
-        }
-
         $statement = $this->connection->prepare($sql);
         $statement->execute($data);
 
         if ($statement->errorInfo()[0] === '42S02') {
-            if ($this->connection->inTransaction() && ! $this->duringCreate) {
-                $this->connection->rollBack();
-            }
-
             throw StreamNotFound::with($streamName);
         }
 
         if ($statement->errorCode() === '23000') {
-            if ($this->connection->inTransaction() && ! $this->duringCreate) {
-                $this->connection->rollBack();
-            }
-
             throw new ConcurrencyException();
-        }
-
-        if ($this->connection->inTransaction() && ! $this->duringCreate) {
-            $this->connection->commit();
         }
     }
 
@@ -346,19 +327,7 @@ EOT;
 
     public function delete(StreamName $streamName): void
     {
-        if (! $this->connection->inTransaction()) {
-            $this->connection->beginTransaction();
-        }
-
-        try {
-            $this->removeStreamFromStreamsTable($streamName);
-        } catch (StreamNotFound $exception) {
-            if ($this->connection->inTransaction()) {
-                $this->connection->rollBack();
-            }
-
-            throw $exception;
-        }
+        $this->removeStreamFromStreamsTable($streamName);
 
         $encodedStreamName = $this->persistenceStrategy->generateTableName($streamName);
 
@@ -368,10 +337,6 @@ EOT;
 
         $statement = $this->connection->prepare($deleteEventStreamSql);
         $statement->execute();
-
-        if ($this->connection->inTransaction()) {
-            $this->connection->commit();
-        }
     }
 
     public function fetchStreamNames(
@@ -657,5 +622,58 @@ EOT;
                 throw new RuntimeException('Error during createSchemaFor: ' . implode('; ', $statement->errorInfo()));
             }
         }
+    }
+
+    public function beginTransaction(): void
+    {
+        try {
+            $this->connection->beginTransaction();
+        } catch (\PDOException $exception) {
+            throw new TransactionAlreadyStarted();
+        }
+    }
+
+    public function commit(): void
+    {
+        try {
+            $this->connection->commit();
+            $this->createRollbacks = [];
+        } catch (\PDOException $exception) {
+            throw new TransactionNotStarted();
+        }
+    }
+
+    public function rollback(): void
+    {
+        try {
+            foreach ($this->createRollbacks as $rollback) {
+                $this->connection->exec($rollback['dropTable']);
+                $this->removeStreamFromStreamsTable($rollback['streamName']);
+            }
+            $this->createRollbacks = [];
+            $this->connection->rollBack();
+        } catch (\PDOException $exception) {
+            throw new TransactionNotStarted();
+        }
+    }
+
+    public function inTransaction(): bool
+    {
+        return $this->connection->inTransaction();
+    }
+
+    public function transactional(callable $callable)
+    {
+        $this->beginTransaction();
+
+        try {
+            $result = $callable($this);
+            $this->commit();
+        } catch (\Exception $e) {
+            $this->rollback();
+            throw $e;
+        }
+
+        return $result ?: true;
     }
 }
