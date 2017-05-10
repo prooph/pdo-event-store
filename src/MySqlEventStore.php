@@ -16,7 +16,6 @@ use EmptyIterator;
 use Iterator;
 use PDO;
 use Prooph\Common\Messaging\MessageFactory;
-use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Exception\StreamExistsAlready;
 use Prooph\EventStore\Exception\StreamNotFound;
