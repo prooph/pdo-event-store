@@ -19,6 +19,7 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Iterator;
 use PDO;
+use PDOException;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\EventStoreDecorator;
@@ -26,7 +27,6 @@ use Prooph\EventStore\Exception;
 use Prooph\EventStore\Pdo\MySqlEventStore;
 use Prooph\EventStore\Pdo\PostgresEventStore;
 use Prooph\EventStore\Projection\ProjectionStatus;
-use Prooph\EventStore\Projection\Projector;
 use Prooph\EventStore\Projection\ReadModel;
 use Prooph\EventStore\Projection\ReadModelProjector;
 use Prooph\EventStore\StreamName;
@@ -462,7 +462,11 @@ SELECT status FROM $this->projectionsTable WHERE name = ? LIMIT 1;
 EOT;
 
         $statement = $this->connection->prepare($sql);
-        $statement->execute([$this->name]);
+        try {
+            $statement->execute([$this->name]);
+        } catch (PDOException $exception) {
+            // ignore
+        }
 
         $result = $statement->fetch(PDO::FETCH_OBJ);
 
@@ -595,8 +599,11 @@ VALUES (?, '{}', '{}', ?, NULL);
 EOT;
 
         $statement = $this->connection->prepare($sql);
-        // we ignore any occuring error here (duplicate projection)
-        $statement->execute([$this->name, $this->status->getValue()]);
+        try {
+            $statement->execute([$this->name, $this->status->getValue()]);
+        } catch (PDOException $exception) {
+            // we ignore any occurring error here (duplicate projection)
+        }
     }
 
     /**
@@ -613,7 +620,11 @@ UPDATE $this->projectionsTable SET locked_until = ?, status = ? WHERE name = ? A
 EOT;
 
         $statement = $this->connection->prepare($sql);
-        $statement->execute([$lockUntilString, ProjectionStatus::RUNNING()->getValue(), $this->name, $nowString]);
+        try {
+            $statement->execute([$lockUntilString, ProjectionStatus::RUNNING()->getValue(), $this->name, $nowString]);
+        } catch (PDOException $exception) {
+            // ignore and check error code
+        }
 
         if ($statement->rowCount() !== 1) {
             if ($statement->errorCode() !== '00000') {

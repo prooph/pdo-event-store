@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Prooph\EventStore\Pdo\Projection;
 
 use PDO;
+use PDOException;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Exception\OutOfRangeException;
@@ -184,7 +185,11 @@ SQL;
 
         $statement = $this->connection->prepare($query);
         $statement->setFetchMode(PDO::FETCH_OBJ);
-        $statement->execute($values);
+        try {
+            $statement->execute($values);
+        } catch (PDOException $exception) {
+            // ignore and check error code
+        }
 
         if ($statement->errorCode() !== '00000') {
             $errorCode = $statement->errorCode();
@@ -233,7 +238,11 @@ SQL;
 
         $statement = $this->connection->prepare($query);
         $statement->setFetchMode(PDO::FETCH_OBJ);
-        $statement->execute($values);
+        try {
+            $statement->execute($values);
+        } catch (PDOException $exception) {
+            // ignore and check error code
+        }
 
         if ($statement->errorCode() === '2201B') {
             throw new Exception\InvalidArgumentException('Invalid regex pattern given');

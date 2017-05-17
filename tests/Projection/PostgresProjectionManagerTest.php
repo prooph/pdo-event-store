@@ -64,8 +64,8 @@ class PostgresProjectionManagerTest extends AbstractProjectionManagerTest
 
     protected function tearDown(): void
     {
-        $this->connection->exec('DROP TABLE event_streams;');
-        $this->connection->exec('DROP TABLE projections;');
+        $this->connection->exec('DROP TABLE IF EXISTS event_streams;');
+        $this->connection->exec('DROP TABLE IF EXISTS projections;');
     }
 
     /**

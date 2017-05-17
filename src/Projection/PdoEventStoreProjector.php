@@ -20,6 +20,7 @@ use DateTimeZone;
 use EmptyIterator;
 use Iterator;
 use PDO;
+use PDOException;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\EventStoreDecorator;
@@ -501,7 +502,11 @@ SELECT status FROM $this->projectionsTable WHERE name = ? LIMIT 1;
 EOT;
 
         $statement = $this->connection->prepare($sql);
-        $statement->execute([$this->name]);
+        try {
+            $statement->execute([$this->name]);
+        } catch (PDOException $exception) {
+            // ignore
+        }
 
         $result = $statement->fetch(PDO::FETCH_OBJ);
 
@@ -639,9 +644,13 @@ VALUES (?, '{}', '{}', ?, NULL);
 EOT;
 
         $statement = $this->connection->prepare($sql);
-        $statement->execute([$this->name, $this->status->getValue()]);
-        // we ignore duplicate projection errors
+        try {
+            $statement->execute([$this->name, $this->status->getValue()]);
+        } catch (PDOException $exception) {
+            // ignore and check error code
+        }
         if ($statement->errorCode() !== '00000') {
+            // we ignore duplicate projection errors
             $driver = $this->connection->getAttribute(PDO::ATTR_DRIVER_NAME);
             if (! isset(self::UNIQUE_VIOLATION_ERROR_CODES[$driver]) || self::UNIQUE_VIOLATION_ERROR_CODES[$driver] !== $statement->errorCode()) {
                 throw ProjectionNotCreatedException::with($this->name);
