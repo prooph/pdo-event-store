@@ -19,6 +19,7 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Iterator;
 use PDO;
+use PDOException;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\EventStoreDecorator;
@@ -595,8 +596,11 @@ VALUES (?, '{}', '{}', ?, NULL);
 EOT;
 
         $statement = $this->connection->prepare($sql);
-        // we ignore any occuring error here (duplicate projection)
-        $statement->execute([$this->name, $this->status->getValue()]);
+        try {
+            $statement->execute([$this->name, $this->status->getValue()]);
+        } catch (PDOException $e) {
+            // we ignore any occuring error here (duplicate projection)
+        }
     }
 
     /**
