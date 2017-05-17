@@ -24,6 +24,7 @@ use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Exception;
+use Prooph\EventStore\Pdo\Exception\ProjectionNotCreatedException;
 use Prooph\EventStore\Pdo\MySqlEventStore;
 use Prooph\EventStore\Pdo\PostgresEventStore;
 use Prooph\EventStore\Projection\ProjectionStatus;
@@ -34,6 +35,11 @@ use Prooph\EventStore\Util\ArrayCache;
 
 final class PdoEventStoreProjector implements Projector
 {
+    private const UNIQUE_VIOLATION_ERROR_CODES = [
+        'pgsql' => '23505',
+        'mysql' => '23000',
+    ];
+
     /**
      * @var EventStore
      */
@@ -633,8 +639,14 @@ VALUES (?, '{}', '{}', ?, NULL);
 EOT;
 
         $statement = $this->connection->prepare($sql);
-        // we ignore any occuring error here (duplicate projection)
         $statement->execute([$this->name, $this->status->getValue()]);
+        // we ignore duplicate projection errors
+        if ($statement->errorCode() !== '00000') {
+            $driver = $this->connection->getAttribute(PDO::ATTR_DRIVER_NAME);
+            if (! isset(self::UNIQUE_VIOLATION_ERROR_CODES[$driver]) || self::UNIQUE_VIOLATION_ERROR_CODES[$driver] !== $statement->errorCode()) {
+                throw ProjectionNotCreatedException::with($this->name);
+            }
+        }
     }
 
     /**

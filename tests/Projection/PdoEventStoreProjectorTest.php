@@ -99,8 +99,8 @@ abstract class PdoEventStoreProjectorTest extends AbstractEventStoreProjectorTes
      */
     public function it_handles_missing_projection_table(): void
     {
-        $this->expectException(\Prooph\EventStore\Exception\RuntimeException::class);
-        $this->expectExceptionMessage('Maybe the projection table is not setup?');
+        $this->expectException(\Prooph\EventStore\Pdo\Exception\RuntimeException::class);
+        $this->expectExceptionMessage('Projection "test_projection" was not created');
 
         $this->prepareEventStream('user-123');
 
@@ -118,6 +118,34 @@ abstract class PdoEventStoreProjectorTest extends AbstractEventStoreProjectorTes
                 },
             ])
             ->run();
+    }
+
+    /**
+     * @test
+     */
+    public function it_handles_existing_projection_table(): void
+    {
+        $this->prepareEventStream('user-123');
+
+        $projection = $this->projectionManager->createProjection('test_projection');
+
+        $projection
+            ->init(function (): array {
+                return ['count' => 0];
+            })
+            ->fromAll()
+            ->when([
+                UsernameChanged::class => function (array $state, Message $event): array {
+                    $state['count']++;
+
+                    return $state;
+                },
+            ])
+            ->run(false);
+
+        $this->assertEquals(49, $projection->getState()['count']);
+
+        $projection->run(false);
     }
 
     /**
