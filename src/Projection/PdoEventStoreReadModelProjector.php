@@ -296,12 +296,20 @@ WHERE name = ?
 EOT;
 
         $statement = $this->connection->prepare($sql);
-        $statement->execute([
-            json_encode($this->streamPositions, \JSON_FORCE_OBJECT),
-            json_encode($this->state, \JSON_FORCE_OBJECT),
-            $this->status->getValue(),
-            $this->name,
-        ]);
+        try {
+            $statement->execute([
+                json_encode($this->streamPositions, \JSON_FORCE_OBJECT),
+                json_encode($this->state, \JSON_FORCE_OBJECT),
+                $this->status->getValue(),
+                $this->name,
+            ]);
+        } catch (PDOException $exception) {
+            // ignore and check error code
+        }
+
+        if ($statement->errorCode() !== '00000') {
+            throw RuntimeException::forStatementErrorInfo($statement->errorInfo());
+        }
     }
 
     public function stop(): void
@@ -312,7 +320,15 @@ EOT;
 UPDATE $this->projectionsTable SET status = ? WHERE name = ?;
 EOT;
         $statement = $this->connection->prepare($stopProjectionSql);
-        $statement->execute([ProjectionStatus::IDLE()->getValue(), $this->name]);
+        try {
+            $statement->execute([ProjectionStatus::IDLE()->getValue(), $this->name]);
+        } catch (PDOException $exception) {
+            // ignore and check error code
+        }
+
+        if ($statement->errorCode() !== '00000') {
+            throw RuntimeException::forStatementErrorInfo($statement->errorInfo());
+        }
 
         $this->status = ProjectionStatus::IDLE();
     }
@@ -338,7 +354,15 @@ EOT;
 DELETE FROM $this->projectionsTable WHERE name = ?;
 EOT;
         $statement = $this->connection->prepare($deleteProjectionSql);
-        $statement->execute([$this->name]);
+        try {
+            $statement->execute([$this->name]);
+        } catch (PDOException $exception) {
+            // ignore and check error code
+        }
+
+        if ($statement->errorCode() !== '00000') {
+            throw RuntimeException::forStatementErrorInfo($statement->errorInfo());
+        }
 
         if ($deleteProjection) {
             $this->readModel->delete();
@@ -589,7 +613,15 @@ SELECT position, state FROM $this->projectionsTable WHERE name = ? ORDER BY no D
 EOT;
 
         $statement = $this->connection->prepare($sql);
-        $statement->execute([$this->name]);
+        try {
+            $statement->execute([$this->name]);
+        } catch (PDOException $exception) {
+            // ignore and check error code
+        }
+
+        if ($statement->errorCode() !== '00000') {
+            throw RuntimeException::forStatementErrorInfo($statement->errorInfo());
+        }
 
         $result = $statement->fetch(PDO::FETCH_OBJ);
 
@@ -659,7 +691,15 @@ UPDATE $this->projectionsTable SET locked_until = NULL, status = ? WHERE name = 
 EOT;
 
         $statement = $this->connection->prepare($sql);
-        $statement->execute([ProjectionStatus::IDLE()->getValue(), $this->name]);
+        try {
+            $statement->execute([ProjectionStatus::IDLE()->getValue(), $this->name]);
+        } catch (PDOException $exception) {
+            // ignore and check error code
+        }
+
+        if ($statement->errorCode() !== '00000') {
+            throw RuntimeException::forStatementErrorInfo($statement->errorInfo());
+        }
 
         $this->status = ProjectionStatus::IDLE();
     }
@@ -677,12 +717,20 @@ WHERE name = ?
 EOT;
 
         $statement = $this->connection->prepare($sql);
-        $statement->execute([
-            json_encode($this->streamPositions, \JSON_FORCE_OBJECT),
-            json_encode($this->state, \JSON_FORCE_OBJECT),
-            $lockUntilString,
-            $this->name,
-        ]);
+        try {
+            $statement->execute([
+                json_encode($this->streamPositions, \JSON_FORCE_OBJECT),
+                json_encode($this->state, \JSON_FORCE_OBJECT),
+                $lockUntilString,
+                $this->name,
+            ]);
+        } catch (PDOException $exception) {
+            // ignore and check error code
+        }
+
+        if ($statement->errorCode() !== '00000') {
+            throw RuntimeException::forStatementErrorInfo($statement->errorInfo());
+        }
     }
 
     private function prepareStreamPositions(): void
@@ -694,7 +742,15 @@ EOT;
 SELECT real_stream_name FROM $this->eventStreamsTable WHERE real_stream_name NOT LIKE '$%';
 EOT;
             $statement = $this->connection->prepare($sql);
-            $statement->execute();
+            try {
+                $statement->execute();
+            } catch (PDOException $exception) {
+                // ignore and check error code
+            }
+
+            if ($statement->errorCode() !== '00000') {
+                throw RuntimeException::forStatementErrorInfo($statement->errorInfo());
+            }
 
             while ($row = $statement->fetch(PDO::FETCH_OBJ)) {
                 $streamPositions[$row->real_stream_name] = 0;
@@ -723,7 +779,15 @@ EOT;
 SELECT real_stream_name FROM $this->eventStreamsTable $where;
 EOT;
             $statement = $this->connection->prepare($sql);
-            $statement->execute($params);
+            try {
+                $statement->execute($params);
+            } catch (PDOException $exception) {
+                // ignore and check error code
+            }
+
+            if ($statement->errorCode() !== '00000') {
+                throw RuntimeException::forStatementErrorInfo($statement->errorInfo());
+            }
 
             while ($row = $statement->fetch(PDO::FETCH_OBJ)) {
                 $streamPositions[$row->real_stream_name] = 0;

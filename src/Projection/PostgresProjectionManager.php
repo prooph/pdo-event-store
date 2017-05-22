@@ -121,10 +121,18 @@ EOT;
         }
 
         $statement = $this->connection->prepare($sql);
-        $statement->execute([
-            $status,
-            $name,
-        ]);
+        try {
+            $statement->execute([
+                $status,
+                $name,
+            ]);
+        } catch (PDOException $exception) {
+            // ignore and check error code
+        }
+
+        if ($statement->errorCode() !== '00000') {
+            throw Exception\RuntimeException::forStatementErrorInfo($statement->errorInfo());
+        }
     }
 
     public function resetProjection(string $name): void
@@ -134,10 +142,18 @@ UPDATE $this->projectionsTable SET status = ? WHERE name = ?;
 EOT;
 
         $statement = $this->connection->prepare($sql);
-        $statement->execute([
-            ProjectionStatus::RESETTING()->getValue(),
-            $name,
-        ]);
+        try {
+            $statement->execute([
+                ProjectionStatus::RESETTING()->getValue(),
+                $name,
+            ]);
+        } catch (PDOException $exception) {
+            // ignore and check error code
+        }
+
+        if ($statement->errorCode() !== '00000') {
+            throw Exception\RuntimeException::forStatementErrorInfo($statement->errorInfo());
+        }
     }
 
     public function stopProjection(string $name): void
@@ -147,10 +163,18 @@ UPDATE $this->projectionsTable SET status = ? WHERE name = ?;
 EOT;
 
         $statement = $this->connection->prepare($sql);
-        $statement->execute([
-            ProjectionStatus::STOPPING()->getValue(),
-            $name,
-        ]);
+        try {
+            $statement->execute([
+                ProjectionStatus::STOPPING()->getValue(),
+                $name,
+            ]);
+        } catch (PDOException $exception) {
+            // ignore and check error code
+        }
+
+        if ($statement->errorCode() !== '00000') {
+            throw Exception\RuntimeException::forStatementErrorInfo($statement->errorInfo());
+        }
     }
 
     public function fetchProjectionNames(?string $filter, int $limit = 20, int $offset = 0): array
@@ -276,7 +300,15 @@ SQL;
 
         $statement = $this->connection->prepare($query);
         $statement->setFetchMode(PDO::FETCH_OBJ);
-        $statement->execute([$name]);
+        try {
+            $statement->execute([$name]);
+        } catch (PDOException $exception) {
+            // ignore and check error code
+        }
+
+        if ($statement->errorCode() !== '00000') {
+            throw Exception\RuntimeException::forStatementErrorInfo($statement->errorInfo());
+        }
 
         $result = $statement->fetch();
 
@@ -297,7 +329,15 @@ SQL;
 
         $statement = $this->connection->prepare($query);
         $statement->setFetchMode(PDO::FETCH_OBJ);
-        $statement->execute([$name]);
+        try {
+            $statement->execute([$name]);
+        } catch (PDOException $exception) {
+            // ignore and check error code
+        }
+
+        if ($statement->errorCode() !== '00000') {
+            throw Exception\RuntimeException::forStatementErrorInfo($statement->errorInfo());
+        }
 
         $result = $statement->fetch();
 
@@ -318,7 +358,15 @@ SQL;
 
         $statement = $this->connection->prepare($query);
         $statement->setFetchMode(PDO::FETCH_OBJ);
-        $statement->execute([$name]);
+        try {
+            $statement->execute([$name]);
+        } catch (PDOException $exception) {
+            // ignore and check error code
+        }
+
+        if ($statement->errorCode() !== '00000') {
+            throw Exception\RuntimeException::forStatementErrorInfo($statement->errorInfo());
+        }
 
         $result = $statement->fetch();
 

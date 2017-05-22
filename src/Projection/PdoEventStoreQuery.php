@@ -17,10 +17,12 @@ use CachingIterator;
 use Closure;
 use Iterator;
 use PDO;
+use PDOException;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Exception;
+use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\MySqlEventStore;
 use Prooph\EventStore\Pdo\PostgresEventStore;
 use Prooph\EventStore\Projection\Query;
@@ -358,7 +360,15 @@ final class PdoEventStoreQuery implements Query
 SELECT real_stream_name FROM $this->eventStreamsTable WHERE real_stream_name NOT LIKE '$%';
 EOT;
             $statement = $this->connection->prepare($sql);
-            $statement->execute();
+            try {
+                $statement->execute();
+            } catch (PDOException $exception) {
+                // ignore and check error code
+            }
+
+            if ($statement->errorCode() !== '00000') {
+                throw RuntimeException::forStatementErrorInfo($statement->errorInfo());
+            }
 
             while ($row = $statement->fetch(PDO::FETCH_OBJ)) {
                 $streamPositions[$row->real_stream_name] = 0;
@@ -387,7 +397,15 @@ EOT;
 SELECT real_stream_name FROM $this->eventStreamsTable $where;
 EOT;
             $statement = $this->connection->prepare($sql);
-            $statement->execute($params);
+            try {
+                $statement->execute($params);
+            } catch (PDOException $exception) {
+                // ignore and check error code
+            }
+
+            if ($statement->errorCode() !== '00000') {
+                throw RuntimeException::forStatementErrorInfo($statement->errorInfo());
+            }
 
             while ($row = $statement->fetch(PDO::FETCH_OBJ)) {
                 $streamPositions[$row->real_stream_name] = 0;

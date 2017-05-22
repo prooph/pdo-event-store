@@ -16,9 +16,11 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Iterator;
 use PDO;
+use PDOException;
 use PDOStatement;
 use Prooph\Common\Messaging\Message;
 use Prooph\Common\Messaging\MessageFactory;
+use Prooph\EventStore\Pdo\Exception\RuntimeException;
 
 final class PdoStreamIterator implements Iterator
 {
@@ -149,7 +151,16 @@ final class PdoStreamIterator implements Iterator
                 $from = $this->currentFromNumber - 1;
             }
             $this->statement = $this->buildStatement($from);
-            $this->statement->execute();
+            try {
+                $this->statement->execute();
+            } catch (PDOException $exception) {
+                // ignore and check error code
+            }
+
+            if ($this->statement->errorCode() !== '00000') {
+                throw RuntimeException::forStatementErrorInfo($this->statement->errorInfo());
+            }
+
             $this->statement->setFetchMode(PDO::FETCH_OBJ);
 
             $this->currentItem = $this->statement->fetch();
@@ -190,7 +201,15 @@ final class PdoStreamIterator implements Iterator
             $this->batchPosition = 0;
 
             $this->statement = $this->buildStatement($this->fromNumber);
-            $this->statement->execute();
+            try {
+                $this->statement->execute();
+            } catch (PDOException $exception) {
+                // ignore and check error code
+            }
+
+            if ($this->statement->errorCode() !== '00000') {
+                throw RuntimeException::forStatementErrorInfo($this->statement->errorInfo());
+            }
 
             $this->currentItem = null;
             $this->currentKey = -1;

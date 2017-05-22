@@ -91,7 +91,15 @@ WHERE real_stream_name = :streamName;
 EOT;
 
         $statement = $this->connection->prepare($sql);
-        $statement->execute(['streamName' => $streamName->toString()]);
+        try {
+            $statement->execute(['streamName' => $streamName->toString()]);
+        } catch (PDOException $exception) {
+            // ignore and check error code
+        }
+
+        if ($statement->errorCode() !== '00000') {
+            throw RuntimeException::forStatementErrorInfo($statement->errorInfo());
+        }
 
         $stream = $statement->fetch(PDO::FETCH_OBJ);
 
@@ -113,10 +121,18 @@ WHERE real_stream_name = :streamName;
 EOT;
 
         $statement = $this->connection->prepare($sql);
-        $statement->execute([
-            'streamName' => $streamName->toString(),
-            'metadata' => json_encode($newMetadata, \JSON_FORCE_OBJECT),
-        ]);
+        try {
+            $statement->execute([
+                'streamName' => $streamName->toString(),
+                'metadata' => json_encode($newMetadata, \JSON_FORCE_OBJECT),
+            ]);
+        } catch (PDOException $exception) {
+            // ignore and check error code
+        }
+
+        if ($statement->errorCode() !== '00000') {
+            throw RuntimeException::forStatementErrorInfo($statement->errorInfo());
+        }
 
         if (1 !== $statement->rowCount()) {
             throw StreamNotFound::with($streamName);
@@ -132,7 +148,15 @@ EOT;
 
         $statement = $this->connection->prepare($sql);
 
-        $statement->execute(['streamName' => $streamName->toString()]);
+        try {
+            $statement->execute(['streamName' => $streamName->toString()]);
+        } catch (PDOException $exception) {
+            // ignore and check error code
+        }
+
+        if ($statement->errorCode() !== '00000') {
+            throw RuntimeException::forStatementErrorInfo($statement->errorInfo());
+        }
 
         return '1' === $statement->fetchColumn();
     }
@@ -394,7 +418,15 @@ DROP TABLE IF EXISTS $encodedStreamName;
 EOT;
 
         $statement = $this->connection->prepare($deleteEventStreamSql);
-        $statement->execute();
+        try {
+            $statement->execute();
+        } catch (PDOException $exception) {
+            // ignore and check error code
+        }
+
+        if ($statement->errorCode() !== '00000') {
+            throw RuntimeException::forStatementErrorInfo($statement->errorInfo());
+        }
 
         if ($this->connection->inTransaction()) {
             $this->connection->commit();
@@ -685,7 +717,15 @@ DELETE FROM $this->eventStreamsTable WHERE real_stream_name = ?;
 EOT;
 
         $statement = $this->connection->prepare($deleteEventStreamTableEntrySql);
-        $statement->execute([$streamName->toString()]);
+        try {
+            $statement->execute([$streamName->toString()]);
+        } catch (PDOException $exception) {
+            // ignore and check error code
+        }
+
+        if ($statement->errorCode() !== '00000') {
+            throw RuntimeException::forStatementErrorInfo($statement->errorInfo());
+        }
 
         if (1 !== $statement->rowCount()) {
             throw StreamNotFound::with($streamName);
