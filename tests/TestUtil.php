@@ -45,7 +45,7 @@ abstract class TestUtil
             $dsn .= 'dbname=' . $connectionParams['dbname'] . $separator;
             $dsn .= self::getCharsetValue($connectionParams['charset'], $connectionParams['driver']) . $separator;
             $dsn = rtrim($dsn);
-            self::$connection = new PDO($dsn, $connectionParams['user'], $connectionParams['password'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+            self::$connection = new PDO($dsn, $connectionParams['user'], $connectionParams['password'], $connectionParams['options']);
         }
 
         try {
@@ -127,6 +127,7 @@ abstract class TestUtil
             'dbname' => getenv('DB_NAME'),
             'port' => getenv('DB_PORT'),
             'charset' => getenv('DB_CHARSET'),
+            'options' => [PDO::ATTR_ERRMODE => (int) getenv('DB_ATTR_ERRMODE')],
         ];
     }
 

@@ -49,6 +49,15 @@ matrix:
         - DB=postgres_9.5
       addons:
         postgresql: '9.5'
+    - php: 7.1
+      dist: trusty
+      env:
+        - DEPENDENCIES=""
+        - DRIVER="pdo_pgsql"
+        - DB=postgres_9.5
+        - DB_ATTR_ERRMODE=2 # \PDO::ERRMODE_EXCEPTION
+      addons:
+        postgresql: '9.5'
 
 cache:
   directories:
