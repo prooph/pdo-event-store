@@ -65,6 +65,8 @@ one for each aggregate.
 This stream strategy is the most performant of all, but it will create a lot of database tables, which is something not
 everyone likes (especially DB admins).
 
+All needed database tables will be created automatically for you.
+
 ### SingleStreamStrategy
 
 This stream strategy should be used together with event-sourcing, if you want to store all events of an aggregate type into a single stream, for example
@@ -75,6 +77,8 @@ You can also store all stream of all aggregate types into a single stream, for e
 
 This stream strategy is slightly less performant then the aggregate stream strategy.
 
+You need to setup the database table yourself when using this strategy. An example script to do that can be [found here](https://github.com/prooph/proophessor-do/blob/master/scripts/create_event_stream.php).
+
 ### SimpleStreamStrategy
 
 This stream strategy is not meant to be used for event-sourcing. It will create simple event streams without any constraints
@@ -82,3 +86,11 @@ at all, so having two events of the same aggregate with the same version will no
 
 This is very useful for projections, where you copy events from one stream to another (the resulting stream may need to use
 the simple stream strategy) or when you want to use the event-store outside the scope of event-sourcing.
+
+You need to setup the database table yourself when using this strategy. An example script to do that can be [found here](https://github.com/prooph/proophessor-do/blob/master/scripts/create_event_stream.php).
+
+### Using custom stream strategies
+
+When you query the event streams a lot, it might be a good idea to create your own stream strategy, so you can add
+custom indexes to your database tables. When using with the MetadataMatcher, take care that you add the metadata
+matches in the right order, so they can match your indexes.
