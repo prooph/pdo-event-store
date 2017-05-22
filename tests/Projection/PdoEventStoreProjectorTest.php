@@ -97,32 +97,6 @@ abstract class PdoEventStoreProjectorTest extends AbstractEventStoreProjectorTes
     /**
      * @test
      */
-    public function it_handles_missing_projection_table(): void
-    {
-        $this->expectException(\Prooph\EventStore\Pdo\Exception\RuntimeException::class);
-        $this->expectExceptionMessage('Projection "test_projection" was not created');
-
-        $this->prepareEventStream('user-123');
-
-        $this->connection->exec('DROP TABLE projections;');
-
-        $projection = $this->projectionManager->createProjection('test_projection');
-
-        $projection
-            ->fromStream('user-123')
-            ->when([
-                UserCreated::class => function (array $state, UserCreated $event): array {
-                    $this->stop();
-
-                    return $state;
-                },
-            ])
-            ->run();
-    }
-
-    /**
-     * @test
-     */
     public function it_handles_existing_projection_table(): void
     {
         $this->prepareEventStream('user-123');
