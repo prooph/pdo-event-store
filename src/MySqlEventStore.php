@@ -613,15 +613,6 @@ SQL;
 
                 $where[] = "metadata->>\"$.$field\" $operatorString $parameterString $operatorStringEnd";
             } else {
-                if ($field === 'createdAt') {
-                    $field = 'created_at';
-                }
-                if ($field === 'messageName') {
-                    $field = 'event_name';
-                }
-                if ($field === 'uuid') {
-                    $field = 'event_id';
-                }
                 if (is_bool($value)) {
                     $where[] = "$field $operatorString " . var_export($value, true) . ' ' . $operatorStringEnd;
                     continue;
