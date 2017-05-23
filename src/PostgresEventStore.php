@@ -557,8 +557,10 @@ SQL;
         }
 
         foreach ($metadataMatcher->data() as $key => $match) {
+            /** @var FieldType $fieldType */
             $fieldType = $match['fieldType'];
             $field = $match['field'];
+            /** @var Operator $operator */
             $operator = $match['operator'];
             $value = $match['value'];
             $parameters = [];
@@ -576,19 +578,19 @@ SQL;
 
             $operatorStringEnd = '';
 
-            if (Operator::REGEX()->is($operator)) {
+            if ($operator->is(Operator::REGEX())) {
                 $operatorString = '~';
-            } elseif (Operator::IN()->is($operator)) {
+            } elseif ($operator->is(Operator::IN())) {
                 $operatorString = 'IN (';
                 $operatorStringEnd = ')';
-            } elseif (Operator::NOT_IN()->is($operator)) {
+            } elseif ($operator->is(Operator::NOT_IN())) {
                 $operatorString = 'NOT IN (';
                 $operatorStringEnd = ')';
             } else {
                 $operatorString = $operator->getValue();
             }
 
-            if (FieldType::METADATA()->is($fieldType)) {
+            if ($fieldType->is(FieldType::METADATA())) {
                 if (is_bool($value)) {
                     $where[] = "metadata->>'$field' $operatorString '" . var_export($value, true) . "' $operatorStringEnd";
                     continue;
