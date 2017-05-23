@@ -589,7 +589,7 @@ SQL;
                 $parameters = [':metadata_' . $key];
             }
 
-            $parameterString = join(', ', $parameters);
+            $parameterString = implode(', ', $parameters);
 
             $operatorStringEnd = '';
 
