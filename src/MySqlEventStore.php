@@ -20,7 +20,9 @@ use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Exception\StreamExistsAlready;
 use Prooph\EventStore\Exception\StreamNotFound;
+use Prooph\EventStore\Metadata\FieldType;
 use Prooph\EventStore\Metadata\MetadataMatcher;
+use Prooph\EventStore\Metadata\Operator;
 use Prooph\EventStore\Pdo\Exception\ExtensionNotLoaded;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Stream;
@@ -219,7 +221,7 @@ EOT;
         int $count = null,
         MetadataMatcher $metadataMatcher = null
     ): Iterator {
-        [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher);
+        [$where, $values] = $this->createWhereClause($metadataMatcher);
         $where[] = '`no` >= :fromNumber';
 
         $whereCondition = 'WHERE ' . implode(' AND ', $where);
@@ -258,6 +260,10 @@ EOT;
 
         $statement->execute();
 
+        if ($statement->errorCode() === '42S22') {
+            throw new \UnexpectedValueException('Unknown field given in metadata matcher');
+        }
+
         if ($statement->errorCode() !== '00000') {
             throw StreamNotFound::with($streamName);
         }
@@ -286,7 +292,7 @@ EOT;
         if (null === $fromNumber) {
             $fromNumber = PHP_INT_MAX;
         }
-        [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher);
+        [$where, $values] = $this->createWhereClause($metadataMatcher);
         $where[] = '`no` <= :fromNumber';
 
         $whereCondition = 'WHERE ' . implode(' AND ', $where);
@@ -380,7 +386,7 @@ EOT;
         int $limit = 20,
         int $offset = 0
     ): array {
-        [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher);
+        [$where, $values] = $this->createWhereClause($metadataMatcher);
 
         if (null !== $filter) {
             $where[] = '`real_stream_name` = :filter';
@@ -433,7 +439,7 @@ SQL;
         if (empty($filter) || false === @preg_match("/$filter/", '')) {
             throw new Exception\InvalidArgumentException('Invalid regex pattern given');
         }
-        [$where, $values] = $this->createWhereClauseForMetadata($metadataMatcher);
+        [$where, $values] = $this->createWhereClause($metadataMatcher);
 
         $where[] = '`real_stream_name` REGEXP :filter';
         $values[':filter'] = $filter;
@@ -556,7 +562,7 @@ SQL;
         return $categoryNames;
     }
 
-    private function createWhereClauseForMetadata(?MetadataMatcher $metadataMatcher): array
+    private function createWhereClause(?MetadataMatcher $metadataMatcher): array
     {
         $where = [];
         $values = [];
@@ -569,18 +575,58 @@ SQL;
         }
 
         foreach ($metadataMatcher->data() as $key => $match) {
+            /** @var FieldType $fieldType */
+            $fieldType = $match['fieldType'];
             $field = $match['field'];
-            $operator = $match['operator']->getValue();
+            /** @var Operator $operator */
+            $operator = $match['operator'];
             $value = $match['value'];
-            $parameter = ':metadata_'.$key;
+            $parameters = [];
 
-            if (is_bool($value)) {
-                $where[] = "metadata->\"$.$field\" $operator ".var_export($value, true);
-                continue;
+            if (is_array($value)) {
+                foreach ($value as $k => $v) {
+                    $parameters[] = ':metadata_' . $key . '_' . $k;
+                }
+            } else {
+                $parameters = [':metadata_' . $key];
             }
 
-            $where[] = "metadata->\"$.$field\" $operator $parameter";
-            $values[$parameter] = $value;
+            $parameterString = implode(', ', $parameters);
+
+            $operatorStringEnd = '';
+
+            if ($operator->is(Operator::REGEX())) {
+                $operatorString = 'REGEXP';
+            } elseif ($operator->is(Operator::IN())) {
+                $operatorString = 'IN (';
+                $operatorStringEnd = ')';
+            } elseif ($operator->is(Operator::NOT_IN())) {
+                $operatorString = 'NOT IN (';
+                $operatorStringEnd = ')';
+            } else {
+                $operatorString = $operator->getValue();
+            }
+
+            if ($fieldType->is(FieldType::METADATA())) {
+                if (is_bool($value)) {
+                    $where[] = "metadata->\"$.$field\" $operatorString " . var_export($value, true) . ' '. $operatorStringEnd;
+                    continue;
+                }
+
+                $where[] = "metadata->>\"$.$field\" $operatorString $parameterString $operatorStringEnd";
+            } else {
+                if (is_bool($value)) {
+                    $where[] = "$field $operatorString " . var_export($value, true) . ' ' . $operatorStringEnd;
+                    continue;
+                }
+
+                $where[] = "$field $operatorString $parameterString $operatorStringEnd";
+            }
+
+            $value = (array) $value;
+            foreach ($value as $k => $v) {
+                $values[$parameters[$k]] = $v;
+            }
         }
 
         return [
