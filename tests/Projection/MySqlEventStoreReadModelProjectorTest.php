@@ -17,6 +17,8 @@ use Prooph\EventStore\Pdo\MySqlEventStore;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSimpleStreamStrategy;
 use Prooph\EventStore\Pdo\Projection\MySqlProjectionManager;
 use Prooph\EventStore\Projection\ReadModel;
+use ProophTest\EventStore\Mock\ReadModelMock;
+use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Pdo\TestUtil;
 
 /**
@@ -60,5 +62,31 @@ class MySqlEventStoreReadModelProjectorTest extends PdoEventStoreReadModelProjec
         });
 
         $readModelProjection->reset();
+    }
+
+    /**
+     * @test
+     */
+    public function it_handles_missing_projection_table(): void
+    {
+        $this->expectException(\Prooph\EventStore\Pdo\Exception\RuntimeException::class);
+        $this->expectExceptionMessage("Error 42S02. Maybe the projection table is not setup?\nError-Info: Table 'event_store_tests.projections' doesn't exist");
+
+        $this->prepareEventStream('user-123');
+
+        $this->connection->exec('DROP TABLE projections;');
+
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
+
+        $projection
+            ->fromStream('user-123')
+            ->when([
+                UserCreated::class => function (array $state, UserCreated $event): array {
+                    $this->stop();
+
+                    return $state;
+                },
+            ])
+            ->run();
     }
 }

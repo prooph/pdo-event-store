@@ -48,9 +48,9 @@ abstract class PdoEventStoreReadModelProjectorTest extends AbstractEventStoreRea
     protected function tearDown(): void
     {
         // these tables are used in every test case
-        $this->connection->exec('DROP TABLE event_streams;');
-        $this->connection->exec('DROP TABLE projections;');
-        $this->connection->exec('DROP TABLE _' . sha1('user-123'));
+        $this->connection->exec('DROP TABLE IF EXISTS event_streams;');
+        $this->connection->exec('DROP TABLE IF EXISTS projections;');
+        $this->connection->exec('DROP TABLE IF EXISTS _' . sha1('user-123'));
         // these tables are used only in some test cases
         $this->connection->exec('DROP TABLE IF EXISTS _' . sha1('user-234'));
         $this->connection->exec('DROP TABLE IF EXISTS _' . sha1('$iternal-345'));
@@ -190,31 +190,5 @@ abstract class PdoEventStoreReadModelProjectorTest extends AbstractEventStoreRea
             10,
             10
         );
-    }
-
-    /**
-     * @test
-     */
-    public function it_handles_missing_projection_table(): void
-    {
-        $this->expectException(\Prooph\EventStore\Exception\RuntimeException::class);
-        $this->expectExceptionMessage('Maybe the projection table is not setup?');
-
-        $this->prepareEventStream('user-123');
-
-        $this->connection->exec('DROP TABLE projections;');
-
-        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
-
-        $projection
-            ->fromStream('user-123')
-            ->when([
-                UserCreated::class => function (array $state, UserCreated $event): array {
-                    $this->stop();
-
-                    return $state;
-                },
-            ])
-            ->run();
     }
 }

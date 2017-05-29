@@ -14,6 +14,13 @@ matrix:
     - php: 7.1
       sudo: true
       env:
+        - DEPENDENCIES=""
+        - DRIVER="pdo_mysql"
+        - DB=mysql_5.7
+        - DB_ATTR_ERRMODE=2 # \PDO::ERRMODE_EXCEPTION
+    - php: 7.1
+      sudo: true
+      env:
         - DEPENDENCIES="--prefer-lowest --prefer-stable"
         - DRIVER="pdo_mysql"
         - DB=mysql_5.7
@@ -47,6 +54,15 @@ matrix:
         - DEPENDENCIES="--prefer-lowest --prefer-stable"
         - DRIVER="pdo_pgsql"
         - DB=postgres_9.5
+      addons:
+        postgresql: '9.5'
+    - php: 7.1
+      dist: trusty
+      env:
+        - DEPENDENCIES=""
+        - DRIVER="pdo_pgsql"
+        - DB=postgres_9.5
+        - DB_ATTR_ERRMODE=2 # \PDO::ERRMODE_EXCEPTION
       addons:
         postgresql: '9.5'
 

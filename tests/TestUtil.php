@@ -45,7 +45,7 @@ abstract class TestUtil
             $dsn .= 'dbname=' . $connectionParams['dbname'] . $separator;
             $dsn .= self::getCharsetValue($connectionParams['charset'], $connectionParams['driver']) . $separator;
             $dsn = rtrim($dsn);
-            self::$connection = new PDO($dsn, $connectionParams['user'], $connectionParams['password']);
+            self::$connection = new PDO($dsn, $connectionParams['user'], $connectionParams['password'], $connectionParams['options']);
         }
 
         try {
@@ -96,7 +96,9 @@ abstract class TestUtil
             throw new \RuntimeException('Invalid database vendor');
         }
 
+        $connection->exec('DROP TABLE IF EXISTS event_streams');
         $connection->exec(file_get_contents(__DIR__.'/../scripts/' . $vendor . '/01_event_streams_table.sql'));
+        $connection->exec('DROP TABLE IF EXISTS projections');
         $connection->exec(file_get_contents(__DIR__.'/../scripts/' . $vendor . '/02_projections_table.sql'));
     }
 
@@ -125,6 +127,7 @@ abstract class TestUtil
             'dbname' => getenv('DB_NAME'),
             'port' => getenv('DB_PORT'),
             'charset' => getenv('DB_CHARSET'),
+            'options' => [PDO::ATTR_ERRMODE => (int) getenv('DB_ATTR_ERRMODE')],
         ];
     }
 

@@ -16,4 +16,14 @@ use Prooph\EventStore\Exception\RuntimeException as EventStoreRuntimeException;
 
 class RuntimeException extends EventStoreRuntimeException implements PdoEventStoreException
 {
+    public static function forStatementErrorInfo(array $errorInfo): RuntimeException
+    {
+        return new self(
+            sprintf(
+                "Error %s. \nError-Info: %s",
+                $errorInfo[0],
+                $errorInfo[2]
+            )
+        );
+    }
 }
