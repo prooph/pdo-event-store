@@ -367,7 +367,7 @@ EOT;
             }
 
             if ($statement->errorCode() !== '00000') {
-                throw RuntimeException::forStatementErrorInfo($statement->errorInfo());
+                throw RuntimeException::fromStatementErrorInfo($statement->errorInfo());
             }
 
             while ($row = $statement->fetch(PDO::FETCH_OBJ)) {
@@ -404,7 +404,7 @@ EOT;
             }
 
             if ($statement->errorCode() !== '00000') {
-                throw RuntimeException::forStatementErrorInfo($statement->errorInfo());
+                throw RuntimeException::fromStatementErrorInfo($statement->errorInfo());
             }
 
             while ($row = $statement->fetch(PDO::FETCH_OBJ)) {

@@ -158,7 +158,7 @@ final class PdoStreamIterator implements Iterator
             }
 
             if ($this->statement->errorCode() !== '00000') {
-                throw RuntimeException::forStatementErrorInfo($this->statement->errorInfo());
+                throw RuntimeException::fromStatementErrorInfo($this->statement->errorInfo());
             }
 
             $this->statement->setFetchMode(PDO::FETCH_OBJ);
@@ -208,7 +208,7 @@ final class PdoStreamIterator implements Iterator
             }
 
             if ($this->statement->errorCode() !== '00000') {
-                throw RuntimeException::forStatementErrorInfo($this->statement->errorInfo());
+                throw RuntimeException::fromStatementErrorInfo($this->statement->errorInfo());
             }
 
             $this->currentItem = null;

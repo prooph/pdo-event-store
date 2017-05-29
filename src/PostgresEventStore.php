@@ -97,7 +97,7 @@ EOT;
         }
 
         if ($statement->errorCode() !== '00000') {
-            throw RuntimeException::forStatementErrorInfo($statement->errorInfo());
+            throw RuntimeException::fromStatementErrorInfo($statement->errorInfo());
         }
 
         $stream = $statement->fetch(PDO::FETCH_OBJ);
@@ -130,7 +130,7 @@ EOT;
         }
 
         if ($statement->errorCode() !== '00000') {
-            throw RuntimeException::forStatementErrorInfo($statement->errorInfo());
+            throw RuntimeException::fromStatementErrorInfo($statement->errorInfo());
         }
 
         if (1 !== $statement->rowCount()) {
@@ -154,7 +154,7 @@ EOT;
         }
 
         if ($statement->errorCode() !== '00000') {
-            throw RuntimeException::forStatementErrorInfo($statement->errorInfo());
+            throw RuntimeException::fromStatementErrorInfo($statement->errorInfo());
         }
 
         return 1 === $statement->fetchColumn();
@@ -359,7 +359,7 @@ EOT;
         }
 
         if ($statement->errorCode() !== '00000') {
-            throw RuntimeException::forStatementErrorInfo($statement->errorInfo());
+            throw RuntimeException::fromStatementErrorInfo($statement->errorInfo());
         }
     }
 

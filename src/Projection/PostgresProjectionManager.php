@@ -131,7 +131,7 @@ EOT;
         }
 
         if ($statement->errorCode() !== '00000') {
-            throw Exception\RuntimeException::forStatementErrorInfo($statement->errorInfo());
+            throw Exception\RuntimeException::fromStatementErrorInfo($statement->errorInfo());
         }
     }
 
@@ -152,7 +152,7 @@ EOT;
         }
 
         if ($statement->errorCode() !== '00000') {
-            throw Exception\RuntimeException::forStatementErrorInfo($statement->errorInfo());
+            throw Exception\RuntimeException::fromStatementErrorInfo($statement->errorInfo());
         }
     }
 
@@ -173,7 +173,7 @@ EOT;
         }
 
         if ($statement->errorCode() !== '00000') {
-            throw Exception\RuntimeException::forStatementErrorInfo($statement->errorInfo());
+            throw Exception\RuntimeException::fromStatementErrorInfo($statement->errorInfo());
         }
     }
 
@@ -307,7 +307,7 @@ SQL;
         }
 
         if ($statement->errorCode() !== '00000') {
-            throw Exception\RuntimeException::forStatementErrorInfo($statement->errorInfo());
+            throw Exception\RuntimeException::fromStatementErrorInfo($statement->errorInfo());
         }
 
         $result = $statement->fetch();
@@ -336,7 +336,7 @@ SQL;
         }
 
         if ($statement->errorCode() !== '00000') {
-            throw Exception\RuntimeException::forStatementErrorInfo($statement->errorInfo());
+            throw Exception\RuntimeException::fromStatementErrorInfo($statement->errorInfo());
         }
 
         $result = $statement->fetch();
@@ -365,7 +365,7 @@ SQL;
         }
 
         if ($statement->errorCode() !== '00000') {
-            throw Exception\RuntimeException::forStatementErrorInfo($statement->errorInfo());
+            throw Exception\RuntimeException::fromStatementErrorInfo($statement->errorInfo());
         }
 
         $result = $statement->fetch();

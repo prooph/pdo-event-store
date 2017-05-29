@@ -16,7 +16,7 @@ use Prooph\EventStore\Exception\RuntimeException as EventStoreRuntimeException;
 
 class RuntimeException extends EventStoreRuntimeException implements PdoEventStoreException
 {
-    public static function forStatementErrorInfo(array $errorInfo): RuntimeException
+    public static function fromStatementErrorInfo(array $errorInfo): RuntimeException
     {
         return new self(
             sprintf(

@@ -347,7 +347,7 @@ EOT;
         }
 
         if ($statement->errorCode() !== '00000') {
-            throw RuntimeException::forStatementErrorInfo($statement->errorInfo());
+            throw RuntimeException::fromStatementErrorInfo($statement->errorInfo());
         }
 
         try {
@@ -372,7 +372,7 @@ EOT;
         }
 
         if ($statement->errorCode() !== '00000') {
-            throw RuntimeException::forStatementErrorInfo($statement->errorInfo());
+            throw RuntimeException::fromStatementErrorInfo($statement->errorInfo());
         }
 
         $this->status = ProjectionStatus::IDLE();
@@ -401,7 +401,7 @@ EOT;
         }
 
         if ($statement->errorCode() !== '00000') {
-            throw RuntimeException::forStatementErrorInfo($statement->errorInfo());
+            throw RuntimeException::fromStatementErrorInfo($statement->errorInfo());
         }
 
         if ($deleteEmittedEvents) {
@@ -665,7 +665,7 @@ EOT;
         }
 
         if ($statement->errorCode() !== '00000') {
-            throw RuntimeException::forStatementErrorInfo($statement->errorInfo());
+            throw RuntimeException::fromStatementErrorInfo($statement->errorInfo());
         }
 
         $result = $statement->fetch(PDO::FETCH_OBJ);
@@ -750,7 +750,7 @@ EOT;
         }
 
         if ($statement->errorCode() !== '00000') {
-            throw RuntimeException::forStatementErrorInfo($statement->errorInfo());
+            throw RuntimeException::fromStatementErrorInfo($statement->errorInfo());
         }
 
         $this->status = ProjectionStatus::IDLE();
@@ -779,7 +779,7 @@ EOT;
         }
 
         if ($statement->errorCode() !== '00000') {
-            throw RuntimeException::forStatementErrorInfo($statement->errorInfo());
+            throw RuntimeException::fromStatementErrorInfo($statement->errorInfo());
         }
     }
 
@@ -799,7 +799,7 @@ EOT;
             }
 
             if ($statement->errorCode() !== '00000') {
-                throw RuntimeException::forStatementErrorInfo($statement->errorInfo());
+                throw RuntimeException::fromStatementErrorInfo($statement->errorInfo());
             }
 
             while ($row = $statement->fetch(PDO::FETCH_OBJ)) {
@@ -836,7 +836,7 @@ EOT;
             }
 
             if ($statement->errorCode() !== '00000') {
-                throw RuntimeException::forStatementErrorInfo($statement->errorInfo());
+                throw RuntimeException::fromStatementErrorInfo($statement->errorInfo());
             }
 
             while ($row = $statement->fetch(PDO::FETCH_OBJ)) {
