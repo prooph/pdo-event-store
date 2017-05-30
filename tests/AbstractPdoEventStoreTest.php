@@ -438,7 +438,7 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
         $readEvent = $streamEvents->current();
 
         $this->assertArrayHasKey('_position', $readEvent->metadata());
-        $this->assertSame(1, $readEvent->metadata()['_position']);
+        $this->assertEquals(1, $readEvent->metadata()['_position']);
     }
 
     /**
