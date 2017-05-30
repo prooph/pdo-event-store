@@ -422,6 +422,47 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
     }
 
     /**
+     * @test
+     */
+    public function it_adds_event_position_to_metadata_if_field_not_occupied(): void
+    {
+        $event = UserCreated::with(['name' => 'John'], 1);
+
+        $streamName = new StreamName('Prooph\Model\User');
+        $stream = new Stream($streamName, new ArrayIterator([$event]));
+
+        $this->eventStore->create($stream);
+
+        $streamEvents = $this->eventStore->load($streamName);
+
+        $readEvent = $streamEvents->current();
+
+        $this->assertArrayHasKey('_position', $readEvent->metadata());
+        $this->assertSame(1, $readEvent->metadata()['_position']);
+    }
+
+    /**
+     * @test
+     */
+    public function it_does_not_add_event_position_to_metadata_if_field_is_occupied(): void
+    {
+        $event = UserCreated::with(['name' => 'John'], 1);
+        $event = $event->withAddedMetadata('_position', 'foo');
+
+        $streamName = new StreamName('Prooph\Model\User');
+        $stream = new Stream($streamName, new ArrayIterator([$event]));
+
+        $this->eventStore->create($stream);
+
+        $streamEvents = $this->eventStore->load($streamName);
+
+        $readEvent = $streamEvents->current();
+
+        $this->assertArrayHasKey('_position', $readEvent->metadata());
+        $this->assertSame('foo', $readEvent->metadata()['_position']);
+    }
+
+    /**
      * @return Message[]
      */
     protected function getMultipleTestEvents(): array

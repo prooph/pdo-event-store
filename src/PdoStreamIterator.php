@@ -121,11 +121,17 @@ final class PdoStreamIterator implements Iterator
             new DateTimeZone('UTC')
         );
 
+        $metadata = json_decode($this->currentItem->metadata, true);
+
+        if (! array_key_exists('_position', $metadata)) {
+            $metadata['_position'] = $this->currentItem->no;
+        }
+
         return $this->messageFactory->createMessageFromArray($this->currentItem->event_name, [
             'uuid' => $this->currentItem->event_id,
             'created_at' => $createdAt,
             'payload' => json_decode($this->currentItem->payload, true),
-            'metadata' => json_decode($this->currentItem->metadata, true),
+            'metadata' => $metadata,
         ]);
     }
 
