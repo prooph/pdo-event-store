@@ -25,7 +25,7 @@ matrix:
         - DRIVER="pdo_mysql"
         - DB=mariadb_10
       addons:
-          mariadb: '10'
+          mariadb: '10.0'
     - php: 7.1
       sudo: true
       env:
@@ -34,7 +34,7 @@ matrix:
         - DB=mariadb_10
         - DB_ATTR_ERRMODE=2 # \PDO::ERRMODE_EXCEPTION
       addons:
-          mariadb: '10'
+          mariadb: '10.0'
     - php: 7.1
       sudo: true
       env:
