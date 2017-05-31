@@ -96,6 +96,10 @@ abstract class TestUtil
             throw new \RuntimeException('Invalid database vendor');
         }
 
+        if (getenv('DB') === 'mariadb_10') {
+            $vendor = 'mariadb';
+        }
+
         $connection->exec('DROP TABLE IF EXISTS event_streams');
         $connection->exec(file_get_contents(__DIR__.'/../scripts/' . $vendor . '/01_event_streams_table.sql'));
         $connection->exec('DROP TABLE IF EXISTS projections');

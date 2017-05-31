@@ -19,6 +19,8 @@ use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\MySqlEventStore;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbAggregateStreamStrategy;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbSingleStreamStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlAggregateStreamStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSingleStreamStrategy;
 use Prooph\EventStore\Stream;
@@ -37,11 +39,18 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
      */
     protected $eventStore;
 
+    /**
+     * @var bool
+     */
+    private $isMariaDb;
+
     protected function setUp(): void
     {
         if (TestUtil::getDatabaseVendor() !== 'pdo_mysql') {
             throw new \RuntimeException('Invalid database vendor');
         }
+
+        $this->isMariaDb = getenv('DB') === 'mariadb_10';
 
         $this->connection = TestUtil::getConnection();
         TestUtil::initDefaultDatabaseTables($this->connection);
@@ -49,7 +58,7 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
         $this->eventStore = new MySqlEventStore(
             new FQCNMessageFactory(),
             $this->connection,
-            new MySqlAggregateStreamStrategy()
+            $this->isMariaDb ? new MariaDbAggregateStreamStrategy() : new MySqlAggregateStreamStrategy()
         );
     }
 
@@ -62,7 +71,7 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
         $this->expectExceptionMessage('Error during createSchemaFor');
 
         $streamName = new StreamName('foo');
-        $strategy = new MySqlAggregateStreamStrategy();
+        $strategy = $this->isMariaDb ? new MariaDbAggregateStreamStrategy() : new MySqlAggregateStreamStrategy();
         $schema = $strategy->createSchema($strategy->generateTableName($streamName));
 
         foreach ($schema as $command) {
@@ -81,7 +90,7 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
         $this->eventStore = new MySqlEventStore(
             new FQCNMessageFactory(),
             $this->connection,
-            new MySqlSingleStreamStrategy(),
+            $this->isMariaDb ? new MariaDbSingleStreamStrategy() : new MySqlSingleStreamStrategy(),
             5
         );
 
@@ -117,7 +126,7 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
         $this->eventStore = new MySqlEventStore(
             new FQCNMessageFactory(),
             $this->connection,
-            new MySqlSingleStreamStrategy()
+            $this->isMariaDb ? new MariaDbSingleStreamStrategy() : new MySqlSingleStreamStrategy()
         );
 
         $streamEvent = UserCreated::with(
