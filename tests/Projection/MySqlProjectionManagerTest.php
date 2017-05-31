@@ -46,7 +46,7 @@ class MySqlProjectionManagerTest extends AbstractProjectionManagerTest
 
     protected function setUp(): void
     {
-        if (TestUtil::getDatabaseVendor() !== 'pdo_mysql') {
+        if (TestUtil::getDatabaseDriver() !== 'pdo_mysql') {
             throw new \RuntimeException('Invalid database vendor');
         }
 

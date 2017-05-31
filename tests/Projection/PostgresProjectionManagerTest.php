@@ -47,7 +47,7 @@ class PostgresProjectionManagerTest extends AbstractProjectionManagerTest
 
     protected function setUp(): void
     {
-        if (TestUtil::getDatabaseVendor() !== 'pdo_pgsql') {
+        if (TestUtil::getDatabaseDriver() !== 'pdo_pgsql') {
             throw new \RuntimeException('Invalid database vendor');
         }
 

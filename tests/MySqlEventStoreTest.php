@@ -46,11 +46,11 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
 
     protected function setUp(): void
     {
-        if (TestUtil::getDatabaseVendor() !== 'pdo_mysql') {
+        if (TestUtil::getDatabaseDriver() !== 'pdo_mysql') {
             throw new \RuntimeException('Invalid database vendor');
         }
 
-        $this->isMariaDb = getenv('DB') === 'mariadb_10';
+        $this->isMariaDb = TestUtil::getDatabaseVendor() === 'mariadb';
 
         $this->connection = TestUtil::getConnection();
         TestUtil::initDefaultDatabaseTables($this->connection);

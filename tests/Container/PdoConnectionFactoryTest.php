@@ -27,7 +27,7 @@ class PdoConnectionFactoryTest extends TestCase
 
     protected function setUp()
     {
-        $vendor = TestUtil::getDatabaseVendor();
+        $vendor = TestUtil::getDatabaseDriver();
 
         if ($vendor === 'pdo_mysql') {
             $vendor = 'mysql';

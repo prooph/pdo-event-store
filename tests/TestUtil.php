@@ -66,13 +66,22 @@ abstract class TestUtil
         return getenv('DB_NAME');
     }
 
+    public static function getDatabaseDriver(): string
+    {
+        if (! self::hasRequiredConnectionParams()) {
+            throw new \RuntimeException('No connection params given');
+        }
+
+        return getenv('DB_DRIVER');
+    }
+
     public static function getDatabaseVendor(): string
     {
         if (! self::hasRequiredConnectionParams()) {
             throw new \RuntimeException('No connection params given');
         }
 
-        return getenv('DB_TYPE');
+        return getenv('DB');
     }
 
     public static function getConnectionParams(): array
@@ -88,18 +97,6 @@ abstract class TestUtil
     {
         $vendor = self::getDatabaseVendor();
 
-        if ($vendor === 'pdo_mysql') {
-            $vendor = 'mysql';
-        } elseif ($vendor === 'pdo_pgsql') {
-            $vendor = 'postgres';
-        } else {
-            throw new \RuntimeException('Invalid database vendor');
-        }
-
-        if (getenv('DB') === 'mariadb_10') {
-            $vendor = 'mariadb';
-        }
-
         $connection->exec('DROP TABLE IF EXISTS event_streams');
         $connection->exec(file_get_contents(__DIR__.'/../scripts/' . $vendor . '/01_event_streams_table.sql'));
         $connection->exec('DROP TABLE IF EXISTS projections');
@@ -111,7 +108,8 @@ abstract class TestUtil
         $env = getenv();
 
         return isset(
-            $env['DB_TYPE'],
+            $env['DB'],
+            $env['DB_DRIVER'],
             $env['DB_USERNAME'],
             $env['DB_PASSWORD'],
             $env['DB_HOST'],
@@ -124,7 +122,7 @@ abstract class TestUtil
     private static function getSpecifiedConnectionParams(): array
     {
         return [
-            'driver' => getenv('DB_TYPE'),
+            'driver' => getenv('DB_DRIVER'),
             'user' => getenv('DB_USERNAME'),
             'password' => getenv('DB_PASSWORD'),
             'host' => getenv('DB_HOST'),

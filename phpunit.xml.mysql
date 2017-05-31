@@ -38,7 +38,8 @@
     </groups>
 
     <php>
-        <env name="DB_TYPE" value="pdo_mysql"/>
+        <env name="DB" value="mysql"/>
+        <env name="DB_DRIVER" value="pdo_mysql"/>
         <env name="DB_HOST" value="127.0.0.1"/>
         <env name="DB_USERNAME" value="root"/>
         <env name="DB_PASSWORD" value=""/>
