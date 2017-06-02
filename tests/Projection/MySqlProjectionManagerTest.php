@@ -19,6 +19,7 @@ use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Pdo\Exception\InvalidArgumentException;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\MySqlEventStore;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbAggregateStreamStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlAggregateStreamStrategy;
 use Prooph\EventStore\Pdo\Projection\MySqlProjectionManager;
 use ProophTest\EventStore\Pdo\TestUtil;
@@ -44,11 +45,18 @@ class MySqlProjectionManagerTest extends AbstractProjectionManagerTest
      */
     private $connection;
 
+    /**
+     * @var bool
+     */
+    private $isMariaDb;
+
     protected function setUp(): void
     {
         if (TestUtil::getDatabaseDriver() !== 'pdo_mysql') {
-            throw new \RuntimeException('Invalid database vendor');
+            throw new \RuntimeException('Invalid database driver');
         }
+
+        $this->isMariaDb = TestUtil::getDatabaseVendor() === 'mariadb';
 
         $this->connection = TestUtil::getConnection();
         TestUtil::initDefaultDatabaseTables($this->connection);
@@ -56,7 +64,7 @@ class MySqlProjectionManagerTest extends AbstractProjectionManagerTest
         $this->eventStore = new MySqlEventStore(
             new FQCNMessageFactory(),
             $this->connection,
-            new MySqlAggregateStreamStrategy()
+            $this->isMariaDb ? new MariaDbAggregateStreamStrategy() : new MySqlAggregateStreamStrategy()
         );
         $this->projectionManager = new MySqlProjectionManager($this->eventStore, $this->connection);
     }

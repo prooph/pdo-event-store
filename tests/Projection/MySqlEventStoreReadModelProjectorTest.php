@@ -14,6 +14,7 @@ namespace ProophTest\EventStore\Pdo\Projection;
 
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\EventStore\Pdo\MySqlEventStore;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbSimpleStreamStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSimpleStreamStrategy;
 use Prooph\EventStore\Pdo\Projection\MySqlProjectionManager;
 use Prooph\EventStore\Projection\ReadModel;
@@ -26,11 +27,18 @@ use ProophTest\EventStore\Pdo\TestUtil;
  */
 class MySqlEventStoreReadModelProjectorTest extends PdoEventStoreReadModelProjectorTest
 {
+    /**
+     * @var bool
+     */
+    private $isMariaDb;
+
     protected function setUp(): void
     {
         if (TestUtil::getDatabaseDriver() !== 'pdo_mysql') {
-            throw new \RuntimeException('Invalid database vendor');
+            throw new \RuntimeException('Invalid database driver');
         }
+
+        $this->isMariaDb = TestUtil::getDatabaseVendor() === 'mariadb';
 
         $this->connection = TestUtil::getConnection();
         TestUtil::initDefaultDatabaseTables($this->connection);
@@ -38,7 +46,7 @@ class MySqlEventStoreReadModelProjectorTest extends PdoEventStoreReadModelProjec
         $this->eventStore = new MySqlEventStore(
             new FQCNMessageFactory(),
             $this->connection,
-            new MySqlSimpleStreamStrategy()
+            $this->isMariaDb ? new MariaDbSimpleStreamStrategy() : new MySqlSimpleStreamStrategy()
         );
 
         $this->projectionManager = new MySqlProjectionManager(
