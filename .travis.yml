@@ -6,31 +6,16 @@ matrix:
   fast_finish: true
   include:
     - php: 7.1
-      sudo: true
-      env:
-        - DEPENDENCIES=""
-        - DRIVER="pdo_mysql"
-        - DB=mariadb_10.0
-      addons:
-          mariadb: '10.0'
-    - php: 7.1
-      sudo: true
-      env:
-        - DEPENDENCIES=""
-        - DRIVER="pdo_mysql"
-        - DB=mariadb_10.0
-        - DB_ATTR_ERRMODE=2 # \PDO::ERRMODE_EXCEPTION
-      addons:
-          mariadb: '10.0'
-    - php: 7.1
+      dist: trusty
       sudo: true
       env:
         - DEPENDENCIES=""
         - DRIVER="pdo_mysql"
         - DB=mariadb_10.2
       addons:
-          mariadb: '10.2.4'
+          mariadb: '10.2'
     - php: 7.1
+      dist: trusty
       sudo: true
       env:
         - DEPENDENCIES=""
@@ -38,24 +23,7 @@ matrix:
         - DB=mariadb_10.2
         - DB_ATTR_ERRMODE=2 # \PDO::ERRMODE_EXCEPTION
       addons:
-          mariadb: '10.2.4'
-    - php: 7.1
-      sudo: true
-      env:
-        - DEPENDENCIES=""
-        - DRIVER="pdo_mysql"
-        - DB=mariadb_10.3
-      addons:
-          mariadb: '10.3'
-    - php: 7.1
-      sudo: true
-      env:
-        - DEPENDENCIES=""
-        - DRIVER="pdo_mysql"
-        - DB=mariadb_10.3
-        - DB_ATTR_ERRMODE=2 # \PDO::ERRMODE_EXCEPTION
-      addons:
-          mariadb: '10.3'
+          mariadb: '10.2'
 
 cache:
   directories:
@@ -67,10 +35,10 @@ before_script:
   - mkdir -p "$HOME/.php-cs-fixer"
   - phpenv config-rm xdebug.ini
   - if [[ $DB == 'mysql_5.7' ]]; then bash .travis.install-mysql-5.7.sh; fi
+  - if [[ $DB == 'mariadb_10.2' ]]; then bash .travis.install-mariadb-10.2.sh; fi
   - VENDOR=$(echo $DB | cut -d'_' -f 1)
   - if [[ $VENDOR == 'mariadb' ]]; then mysql -e 'SELECT VERSION();'; fi
   - if [[ $DRIVER == 'pdo_mysql' ]]; then  mysql -e 'create database event_store_tests;'; fi
-  - if [[ $VENDOR == 'mariadb' ]]; then mysql -uroot -e 'GRANT ALL PRIVILEGES ON event_store_tests.* TO travis;'; fi
   - if [[ $DRIVER == 'pdo_pgsql' ]]; then psql -c 'create database event_store_tests;' -U postgres; fi
   - composer self-update
   - composer update $DEPENDENCIES
