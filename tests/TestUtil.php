@@ -81,7 +81,7 @@ abstract class TestUtil
             throw new \RuntimeException('No connection params given');
         }
 
-        return getenv('DB');
+        return explode('_', getenv('DB'))[0];
     }
 
     public static function getConnectionParams(): array
