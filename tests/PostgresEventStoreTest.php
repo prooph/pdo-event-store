@@ -29,7 +29,7 @@ use ProophTest\EventStore\TransactionalEventStoreTestTrait;
 use Ramsey\Uuid\Uuid;
 
 /**
- * @group pdo_pgsql
+ * @group postgres
  */
 final class PostgresEventStoreTest extends AbstractPdoEventStoreTest
 {

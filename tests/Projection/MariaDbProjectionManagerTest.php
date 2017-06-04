@@ -18,24 +18,24 @@ use Prooph\EventStore\EventStore;
 use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Pdo\Exception\InvalidArgumentException;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
-use Prooph\EventStore\Pdo\MySqlEventStore;
-use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlAggregateStreamStrategy;
-use Prooph\EventStore\Pdo\Projection\MySqlProjectionManager;
+use Prooph\EventStore\Pdo\MariaDbEventStore;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbAggregateStreamStrategy;
+use Prooph\EventStore\Pdo\Projection\MariaDbProjectionManager;
 use ProophTest\EventStore\Pdo\TestUtil;
 use ProophTest\EventStore\Projection\AbstractProjectionManagerTest;
 
 /**
- * @group mysql
+ * @group mariadb
  */
-class MySqlProjectionManagerTest extends AbstractProjectionManagerTest
+class MariaDbProjectionManagerTest extends AbstractProjectionManagerTest
 {
     /**
-     * @var MySqlProjectionManager
+     * @var MariaDbProjectionManager
      */
     protected $projectionManager;
 
     /**
-     * @var MySqlEventStore
+     * @var MariaDbEventStore
      */
     private $eventStore;
 
@@ -53,12 +53,12 @@ class MySqlProjectionManagerTest extends AbstractProjectionManagerTest
         $this->connection = TestUtil::getConnection();
         TestUtil::initDefaultDatabaseTables($this->connection);
 
-        $this->eventStore = new MySqlEventStore(
+        $this->eventStore = new MariaDbEventStore(
             new FQCNMessageFactory(),
             $this->connection,
-            new MySqlAggregateStreamStrategy()
+            new MariaDbAggregateStreamStrategy()
         );
-        $this->projectionManager = new MySqlProjectionManager($this->eventStore, $this->connection);
+        $this->projectionManager = new MariaDbProjectionManager($this->eventStore, $this->connection);
     }
 
     protected function tearDown(): void
@@ -76,7 +76,7 @@ class MySqlProjectionManagerTest extends AbstractProjectionManagerTest
 
         $eventStore = $this->prophesize(EventStore::class);
 
-        new MysqlProjectionManager($eventStore->reveal(), $this->connection);
+        new MariaDbProjectionManager($eventStore->reveal(), $this->connection);
     }
 
     /**
@@ -90,7 +90,7 @@ class MySqlProjectionManagerTest extends AbstractProjectionManagerTest
         $wrappedEventStore = $this->prophesize(EventStoreDecorator::class);
         $wrappedEventStore->getInnerEventStore()->willReturn($eventStore->reveal())->shouldBeCalled();
 
-        new MysqlProjectionManager($wrappedEventStore->reveal(), $this->connection);
+        new MariaDbProjectionManager($wrappedEventStore->reveal(), $this->connection);
     }
 
     /**

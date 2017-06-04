@@ -26,7 +26,7 @@ use ProophTest\EventStore\Pdo\TestUtil;
 use ProophTest\EventStore\Projection\AbstractProjectionManagerTest;
 
 /**
- * @group pdo_pgsql
+ * @group postgres
  */
 class PostgresProjectionManagerTest extends AbstractProjectionManagerTest
 {

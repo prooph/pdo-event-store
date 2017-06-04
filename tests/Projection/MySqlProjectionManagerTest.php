@@ -19,14 +19,13 @@ use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Pdo\Exception\InvalidArgumentException;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\MySqlEventStore;
-use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbAggregateStreamStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlAggregateStreamStrategy;
 use Prooph\EventStore\Pdo\Projection\MySqlProjectionManager;
 use ProophTest\EventStore\Pdo\TestUtil;
 use ProophTest\EventStore\Projection\AbstractProjectionManagerTest;
 
 /**
- * @group pdo_mysql
+ * @group mysql
  */
 class MySqlProjectionManagerTest extends AbstractProjectionManagerTest
 {
@@ -45,18 +44,11 @@ class MySqlProjectionManagerTest extends AbstractProjectionManagerTest
      */
     private $connection;
 
-    /**
-     * @var bool
-     */
-    private $isMariaDb;
-
     protected function setUp(): void
     {
         if (TestUtil::getDatabaseDriver() !== 'pdo_mysql') {
             throw new \RuntimeException('Invalid database driver');
         }
-
-        $this->isMariaDb = TestUtil::getDatabaseVendor() === 'mariadb';
 
         $this->connection = TestUtil::getConnection();
         TestUtil::initDefaultDatabaseTables($this->connection);
@@ -64,7 +56,7 @@ class MySqlProjectionManagerTest extends AbstractProjectionManagerTest
         $this->eventStore = new MySqlEventStore(
             new FQCNMessageFactory(),
             $this->connection,
-            $this->isMariaDb ? new MariaDbAggregateStreamStrategy() : new MySqlAggregateStreamStrategy()
+            new MySqlAggregateStreamStrategy()
         );
         $this->projectionManager = new MySqlProjectionManager($this->eventStore, $this->connection);
     }
@@ -84,7 +76,7 @@ class MySqlProjectionManagerTest extends AbstractProjectionManagerTest
 
         $eventStore = $this->prophesize(EventStore::class);
 
-        new MysqlProjectionManager($eventStore->reveal(), $this->connection);
+        new MySqlProjectionManager($eventStore->reveal(), $this->connection);
     }
 
     /**
@@ -98,7 +90,7 @@ class MySqlProjectionManagerTest extends AbstractProjectionManagerTest
         $wrappedEventStore = $this->prophesize(EventStoreDecorator::class);
         $wrappedEventStore->getInnerEventStore()->willReturn($eventStore->reveal())->shouldBeCalled();
 
-        new MysqlProjectionManager($wrappedEventStore->reveal(), $this->connection);
+        new MySqlProjectionManager($wrappedEventStore->reveal(), $this->connection);
     }
 
     /**

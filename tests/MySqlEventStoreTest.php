@@ -12,15 +12,13 @@ declare(strict_types=1);
 
 namespace ProophTest\EventStore\Pdo;
 
-use PDO;
+use ArrayIterator;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\MySqlEventStore;
-use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbAggregateStreamStrategy;
-use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbSingleStreamStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlAggregateStreamStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSingleStreamStrategy;
 use Prooph\EventStore\Stream;
@@ -30,7 +28,7 @@ use ProophTest\EventStore\Mock\UsernameChanged;
 use Ramsey\Uuid\Uuid;
 
 /**
- * @group pdo_mysql
+ * @group mysql
  */
 final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
 {
@@ -39,18 +37,11 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
      */
     protected $eventStore;
 
-    /**
-     * @var bool
-     */
-    private $isMariaDb;
-
     protected function setUp(): void
     {
         if (TestUtil::getDatabaseDriver() !== 'pdo_mysql') {
             throw new \RuntimeException('Invalid database driver');
         }
-
-        $this->isMariaDb = TestUtil::getDatabaseVendor() === 'mariadb';
 
         $this->connection = TestUtil::getConnection();
         TestUtil::initDefaultDatabaseTables($this->connection);
@@ -58,7 +49,7 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
         $this->eventStore = new MySqlEventStore(
             new FQCNMessageFactory(),
             $this->connection,
-            $this->isMariaDb ? new MariaDbAggregateStreamStrategy() : new MySqlAggregateStreamStrategy()
+            new MySqlAggregateStreamStrategy()
         );
     }
 
@@ -71,7 +62,7 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
         $this->expectExceptionMessage('Error during createSchemaFor');
 
         $streamName = new StreamName('foo');
-        $strategy = $this->isMariaDb ? new MariaDbAggregateStreamStrategy() : new MySqlAggregateStreamStrategy();
+        $strategy = new MySqlAggregateStreamStrategy();
         $schema = $strategy->createSchema($strategy->generateTableName($streamName));
 
         foreach ($schema as $command) {
@@ -79,7 +70,7 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
             $statement->execute();
         }
 
-        $this->eventStore->create(new Stream($streamName, new \ArrayIterator()));
+        $this->eventStore->create(new Stream($streamName, new ArrayIterator()));
     }
 
     /**
@@ -90,13 +81,13 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
         $this->eventStore = new MySqlEventStore(
             new FQCNMessageFactory(),
             $this->connection,
-            $this->isMariaDb ? new MariaDbSingleStreamStrategy() : new MySqlSingleStreamStrategy(),
+            new MySqlSingleStreamStrategy(),
             5
         );
 
         $streamName = new StreamName('Prooph\Model\User');
 
-        $stream = new Stream($streamName, new \ArrayIterator($this->getMultipleTestEvents()));
+        $stream = new Stream($streamName, new ArrayIterator($this->getMultipleTestEvents()));
 
         $this->eventStore->create($stream);
 
@@ -126,7 +117,7 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
         $this->eventStore = new MySqlEventStore(
             new FQCNMessageFactory(),
             $this->connection,
-            $this->isMariaDb ? new MariaDbSingleStreamStrategy() : new MySqlSingleStreamStrategy()
+            new MySqlSingleStreamStrategy()
         );
 
         $streamEvent = UserCreated::with(
@@ -140,7 +131,7 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_id', $aggregateId);
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_type', 'user');
 
-        $stream = new Stream(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
+        $stream = new Stream(new StreamName('Prooph\Model\User'), new ArrayIterator([$streamEvent]));
 
         $this->eventStore->create($stream);
 
@@ -153,6 +144,6 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_id', $aggregateId);
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_type', 'user');
 
-        $this->eventStore->appendTo(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
+        $this->eventStore->appendTo(new StreamName('Prooph\Model\User'), new ArrayIterator([$streamEvent]));
     }
 }

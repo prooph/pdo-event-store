@@ -15,19 +15,19 @@ namespace ProophTest\EventStore\Pdo\Container;
 use PHPUnit\Framework\TestCase;
 use Prooph\Common\Messaging\MessageFactory;
 use Prooph\EventStore\EventStore;
-use Prooph\EventStore\Pdo\Container\MySqlProjectionManagerFactory;
+use Prooph\EventStore\Pdo\Container\MariaDbProjectionManagerFactory;
 use Prooph\EventStore\Pdo\Exception\InvalidArgumentException;
 use Prooph\EventStore\Pdo\HasQueryHint;
-use Prooph\EventStore\Pdo\MySqlEventStore;
+use Prooph\EventStore\Pdo\MariaDbEventStore;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
-use Prooph\EventStore\Pdo\Projection\MySqlProjectionManager;
+use Prooph\EventStore\Pdo\Projection\MariaDbProjectionManager;
 use ProophTest\EventStore\Pdo\TestUtil;
 use Psr\Container\ContainerInterface;
 
 /**
- * @group mysql
+ * @group mariadb
  */
-class MySqlProjectionManagerFactoryTest extends TestCase
+class MariaDbProjectionManagerFactoryTest extends TestCase
 {
     /**
      * @test
@@ -45,7 +45,7 @@ class MySqlProjectionManagerFactoryTest extends TestCase
         $persistenceStrategy->willImplement(HasQueryHint::class);
 
         $container = $this->prophesize(ContainerInterface::class);
-        $eventStore = new MySqlEventStore(
+        $eventStore = new MariaDbEventStore(
             $messageFactory->reveal(),
             TestUtil::getConnection(),
             $persistenceStrategy->reveal()
@@ -55,10 +55,10 @@ class MySqlProjectionManagerFactoryTest extends TestCase
         $container->get(EventStore::class)->willReturn($eventStore)->shouldBeCalled();
         $container->get('config')->willReturn($config)->shouldBeCalled();
 
-        $factory = new MySqlProjectionManagerFactory();
+        $factory = new MariaDbProjectionManagerFactory();
         $projectionManager = $factory($container->reveal());
 
-        $this->assertInstanceOf(MySqlProjectionManager::class, $projectionManager);
+        $this->assertInstanceOf(MariaDbProjectionManager::class, $projectionManager);
     }
 
     /**
@@ -77,7 +77,7 @@ class MySqlProjectionManagerFactoryTest extends TestCase
         $persistenceStrategy->willImplement(HasQueryHint::class);
 
         $container = $this->prophesize(ContainerInterface::class);
-        $eventStore = new MySqlEventStore(
+        $eventStore = new MariaDbEventStore(
             $messageFactory->reveal(),
             TestUtil::getConnection(),
             $persistenceStrategy->reveal()
@@ -88,9 +88,9 @@ class MySqlProjectionManagerFactoryTest extends TestCase
         $container->get('config')->willReturn($config)->shouldBeCalled();
 
         $name = 'default';
-        $pdo = MySqlProjectionManagerFactory::$name($container->reveal());
+        $pdo = MariaDbProjectionManagerFactory::$name($container->reveal());
 
-        $this->assertInstanceOf(MySqlProjectionManager::class, $pdo);
+        $this->assertInstanceOf(MariaDbProjectionManager::class, $pdo);
     }
 
     /**
@@ -101,6 +101,6 @@ class MySqlProjectionManagerFactoryTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         $projectionName = 'custom';
-        MySqlProjectionManagerFactory::$projectionName('invalid container');
+        MariaDbProjectionManagerFactory::$projectionName('invalid container');
     }
 }

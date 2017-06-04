@@ -21,7 +21,7 @@ use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Pdo\TestUtil;
 
 /**
- * @group pdo_pgsql
+ * @group postgres
  */
 class PostgresEventStoreReadModelProjectorTest extends PdoEventStoreReadModelProjectorTest
 {

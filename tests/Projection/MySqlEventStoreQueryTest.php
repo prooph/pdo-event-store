@@ -14,21 +14,15 @@ namespace ProophTest\EventStore\Pdo\Projection;
 
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\EventStore\Pdo\MySqlEventStore;
-use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbSimpleStreamStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSimpleStreamStrategy;
 use Prooph\EventStore\Pdo\Projection\MySqlProjectionManager;
 use ProophTest\EventStore\Pdo\TestUtil;
 
 /**
- * @group pdo_mysql
+ * @group mysql
  */
 class MySqlEventStoreQueryTest extends PdoEventStoreQueryTest
 {
-    /**
-     * @var bool
-     */
-    private $isMariaDb;
-
     protected function setUp(): void
     {
         if (TestUtil::getDatabaseDriver() !== 'pdo_mysql') {
@@ -43,7 +37,7 @@ class MySqlEventStoreQueryTest extends PdoEventStoreQueryTest
         $this->eventStore = new MySqlEventStore(
             new FQCNMessageFactory(),
             $this->connection,
-            $this->isMariaDb ? new MariaDbSimpleStreamStrategy() : new MySqlSimpleStreamStrategy()
+            new MySqlSimpleStreamStrategy()
         );
 
         $this->projectionManager = new MySqlProjectionManager(

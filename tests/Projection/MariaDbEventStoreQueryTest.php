@@ -13,40 +13,32 @@ declare(strict_types=1);
 namespace ProophTest\EventStore\Pdo\Projection;
 
 use Prooph\Common\Messaging\FQCNMessageFactory;
-use Prooph\EventStore\Pdo\MySqlEventStore;
+use Prooph\EventStore\Pdo\MariaDbEventStore;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbSimpleStreamStrategy;
-use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSimpleStreamStrategy;
-use Prooph\EventStore\Pdo\Projection\MySqlProjectionManager;
+use Prooph\EventStore\Pdo\Projection\MariaDbProjectionManager;
 use ProophTest\EventStore\Pdo\TestUtil;
 
 /**
- * @group mysql
+ * @group mariadb
  */
-class MySqlEventStoreQueryTest extends PdoEventStoreQueryTest
+class MariaDbEventStoreQueryTest extends PdoEventStoreQueryTest
 {
-    /**
-     * @var bool
-     */
-    private $isMariaDb;
-
     protected function setUp(): void
     {
         if (TestUtil::getDatabaseDriver() !== 'pdo_mysql') {
             throw new \RuntimeException('Invalid database driver');
         }
 
-        $this->isMariaDb = TestUtil::getDatabaseVendor() === 'mariadb';
-
         $this->connection = TestUtil::getConnection();
         TestUtil::initDefaultDatabaseTables($this->connection);
 
-        $this->eventStore = new MySqlEventStore(
+        $this->eventStore = new MariaDbEventStore(
             new FQCNMessageFactory(),
             $this->connection,
-            $this->isMariaDb ? new MariaDbSimpleStreamStrategy() : new MySqlSimpleStreamStrategy()
+            new MariaDbSimpleStreamStrategy()
         );
 
-        $this->projectionManager = new MySqlProjectionManager(
+        $this->projectionManager = new MariaDbProjectionManager(
             $this->eventStore,
             $this->connection
         );
