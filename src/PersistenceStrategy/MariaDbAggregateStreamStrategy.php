@@ -34,8 +34,8 @@ CREATE TABLE `$tableName` (
     `metadata` TEXT NOT NULL,
     `created_at` DATETIME(6) NOT NULL,
     `aggregate_version` INT(11) UNSIGNED GENERATED ALWAYS AS (JSON_EXTRACT(metadata, '$._aggregate_version')) STORED,
-    CHECK (`payload` IS NOT NULL OR JSON_VALID(`payload`)),
-    CHECK (`metadata` IS NOT NULL OR JSON_VALID(`metadata`)),
+    CHECK (`payload` IS NOT NULL AND JSON_VALID(`payload`)),
+    CHECK (`metadata` IS NOT NULL AND JSON_VALID(`metadata`)),
     PRIMARY KEY (`no`),
     UNIQUE KEY `ix_event_id` (`event_id`),
     UNIQUE KEY `ix_aggregate_version` (`aggregate_version`)

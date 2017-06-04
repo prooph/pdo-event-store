@@ -32,8 +32,8 @@ CREATE TABLE `$tableName` (
     `payload` TEXT NOT NULL,
     `metadata` TEXT NOT NULL,
     `created_at` DATETIME(6) NOT NULL,
-    CHECK (`payload` IS NOT NULL OR JSON_VALID(`payload`)),
-    CHECK (`metadata` IS NOT NULL OR JSON_VALID(`metadata`)),
+    CHECK (`payload` IS NOT NULL AND JSON_VALID(`payload`)),
+    CHECK (`metadata` IS NOT NULL AND JSON_VALID(`metadata`)),
     PRIMARY KEY (`no`),
     UNIQUE KEY `ix_event_id` (`event_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
