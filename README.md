@@ -12,11 +12,14 @@ Requirements
 - PHP >= 7.1
 - PDO_MySQL Extension or PDO_PGSQL Extension
 
+For MariaDB you need server vesion >= 10.2.6.
 For MySQL you need server version >= 5.7.9.
 For Postgres you need server version >= 9.4.
 
 Setup
 -----
+
+For MariaDB run the script in `scripts/mariadb/01_event_streams_table.sql` on your server.
 
 For MySQL run the script in `scripts/mysql/01_event_streams_table.sql` on your server.
 
@@ -24,8 +27,9 @@ For Postgres run the script in `scripts/postgres/01_event_streams_table.sql` on 
 
 This will setup the required event streams table.
 
-If you want to use the projections, run additionally the scripts `scripts/mysql/02_projections_table.sql` (for MySQL)
-or `scripts/postgres/02_projections_table.sql` (for Postgres) on your server.
+If you want to use the projections, run additionally the scripts `scripts/mariadb/02_projections_table.sql`
+(for MariaDB), `scripts/mysql/02_projections_table.sql` (for MySQL) or
+`scripts/postgres/02_projections_table.sql` (for Postgres) on your server.
 
 Tests
 -----
@@ -34,20 +38,28 @@ and a running Postgres server listening on port `5432`. Both should contain an e
 
 ## Run Tests With Composer
 
-### Postgres
+### MariaDb
 
-`$ composer test-postgres`
+Todo
 
 ### MySql
 
 `$ composer test-mysql`
 
-## Run Tests With Docker
-
 ### Postgres
 
-`$ docker-compose -f docker-compose-tests.yml run -e DB_HOST=postgres --rm composer run-script test-postgres --timeout 0`
+`$ composer test-postgres`
+
+## Run Tests With Docker
+
+### MariaDb
+
+Todo
 
 ### MySql
 
 `$ docker-compose -f docker-compose-tests.yml run -e DB_HOST=mysql --rm composer run-script test-mysql --timeout 0`
+
+### Postgres
+
+`$ docker-compose -f docker-compose-tests.yml run -e DB_HOST=postgres --rm composer run-script test-postgres --timeout 0`
