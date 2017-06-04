@@ -20,6 +20,13 @@
         <whitelist>
             <directory>./src/</directory>
             <exclude>
+                <file>./src/Container/MariaDbEventStoreFactory.php</file>
+                <file>./src/Container/MariaDbProjectionManagerFactory.php</file>
+                <file>./src/PersistenceStrategy/MariaDbAggregateStreamStrategy.php</file>
+                <file>./src/PersistenceStrategy/MariaDbSimpleStreamStrategy.php</file>
+                <file>./src/PersistenceStrategy/MariaDbSingleStreamStrategy.php</file>
+                <file>./src/Projection/MariaDbProjectionManager.php</file>
+                <file>./src/MariaDbEventStore.php</file>
                 <file>./src/Container/MySqlEventStoreFactory.php</file>
                 <file>./src/Container/MySqlProjectionManagerFactory.php</file>
                 <file>./src/PersistenceStrategy/MySqlAggregateStreamStrategy.php</file>

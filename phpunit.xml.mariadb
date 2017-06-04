@@ -20,6 +20,13 @@
         <whitelist>
             <directory>./src/</directory>
             <exclude>
+                <file>./src/Container/MySqlEventStoreFactory.php</file>
+                <file>./src/Container/MySqlProjectionManagerFactory.php</file>
+                <file>./src/PersistenceStrategy/MySqlAggregateStreamStrategy.php</file>
+                <file>./src/PersistenceStrategy/MySqlSimpleStreamStrategy.php</file>
+                <file>./src/PersistenceStrategy/MySqlSingleStreamStrategy.php</file>
+                <file>./src/Projection/MySqlProjectionManager.php</file>
+                <file>./src/MySqlEventStore.php</file>
                 <file>./src/Container/PostgresEventStoreFactory.php</file>
                 <file>./src/Container/PostgresProjectionManagerFactory.php</file>
                 <file>./src/PersistenceStrategy/PostgresAggregateStreamStrategy.php</file>
