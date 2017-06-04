@@ -33,7 +33,8 @@
 
     <groups>
         <exclude>
-            <group>pdo_pgsql</group>
+            <group>mariadb</group>
+            <group>postgres</group>
         </exclude>
     </groups>
 

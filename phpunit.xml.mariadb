@@ -33,7 +33,8 @@
 
     <groups>
         <exclude>
-            <group>pdo_pgsql</group>
+            <group>mysql</group>
+            <group>postgres</group>
         </exclude>
     </groups>
 
