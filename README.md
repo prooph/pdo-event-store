@@ -15,6 +15,8 @@ Requirements
 For MySQL you need server version >= 5.7.9.
 For Postgres you need server version >= 9.4.
 
+Due to a bug in PHP 7.1.3 this library is not compatible with that specific php version.
+
 Setup
 -----
 
