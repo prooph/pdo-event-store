@@ -229,7 +229,6 @@ EOT;
         if ($statement->rowCount() === 0) {
             throw StreamNotFound::with($streamName);
         }
-
         [$where, $values] = $this->createWhereClause($metadataMatcher);
         $where[] = 'no >= :fromNumber';
 
