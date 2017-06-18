@@ -13,18 +13,18 @@ declare(strict_types=1);
 namespace ProophTest\EventStore\Pdo\Projection;
 
 use Prooph\Common\Messaging\FQCNMessageFactory;
-use Prooph\EventStore\Pdo\MySqlEventStore;
-use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSimpleStreamStrategy;
-use Prooph\EventStore\Pdo\Projection\MySqlProjectionManager;
+use Prooph\EventStore\Pdo\MariaDbEventStore;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbSimpleStreamStrategy;
+use Prooph\EventStore\Pdo\Projection\MariaDbProjectionManager;
 use Prooph\EventStore\Projection\ReadModel;
 use ProophTest\EventStore\Mock\ReadModelMock;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Pdo\TestUtil;
 
 /**
- * @group mysql
+ * @group mariadb
  */
-class MySqlEventStoreReadModelProjectorTest extends PdoEventStoreReadModelProjectorTest
+class MariaDbEventStoreReadModelProjectorTest extends PdoEventStoreReadModelProjectorTest
 {
     protected function setUp(): void
     {
@@ -35,13 +35,13 @@ class MySqlEventStoreReadModelProjectorTest extends PdoEventStoreReadModelProjec
         $this->connection = TestUtil::getConnection();
         TestUtil::initDefaultDatabaseTables($this->connection);
 
-        $this->eventStore = new MySqlEventStore(
+        $this->eventStore = new MariaDbEventStore(
             new FQCNMessageFactory(),
             $this->connection,
-            new MySqlSimpleStreamStrategy()
+            new MariaDbSimpleStreamStrategy()
         );
 
-        $this->projectionManager = new MySqlProjectionManager(
+        $this->projectionManager = new MariaDbProjectionManager(
             $this->eventStore,
             $this->connection
         );

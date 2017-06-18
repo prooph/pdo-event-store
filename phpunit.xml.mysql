@@ -20,6 +20,13 @@
         <whitelist>
             <directory>./src/</directory>
             <exclude>
+                <file>./src/Container/MariaDbEventStoreFactory.php</file>
+                <file>./src/Container/MariaDbProjectionManagerFactory.php</file>
+                <file>./src/PersistenceStrategy/MariaDbAggregateStreamStrategy.php</file>
+                <file>./src/PersistenceStrategy/MariaDbSimpleStreamStrategy.php</file>
+                <file>./src/PersistenceStrategy/MariaDbSingleStreamStrategy.php</file>
+                <file>./src/Projection/MariaDbProjectionManager.php</file>
+                <file>./src/MariaDbEventStore.php</file>
                 <file>./src/Container/PostgresEventStoreFactory.php</file>
                 <file>./src/Container/PostgresProjectionManagerFactory.php</file>
                 <file>./src/PersistenceStrategy/PostgresAggregateStreamStrategy.php</file>
@@ -33,12 +40,14 @@
 
     <groups>
         <exclude>
-            <group>pdo_pgsql</group>
+            <group>mariadb</group>
+            <group>postgres</group>
         </exclude>
     </groups>
 
     <php>
-        <env name="DB_TYPE" value="pdo_mysql"/>
+        <env name="DB" value="mysql"/>
+        <env name="DB_DRIVER" value="pdo_mysql"/>
         <env name="DB_HOST" value="127.0.0.1"/>
         <env name="DB_USERNAME" value="root"/>
         <env name="DB_PASSWORD" value=""/>

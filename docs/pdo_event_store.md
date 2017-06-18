@@ -5,11 +5,11 @@ MySQL as well as PostgreSQL.
 
 For a better understanding, we recommend to read the event-store docs, first.
 
-## Differences of MySql- & PostgresEventStore
+## Differences of MariaDb-/MySql- & PostgresEventStore
 
 The PostgresEventStore has a better performance (at least with default database configuration) and implements the
 `TransactionalEventStore` interface. If you need maximum performance or transaction support, we recommend to use the
- PostgresEventStore over the MySqlEventStore.
+PostgresEventStore over the MariaDb-/MySqlEventStore.
 
 ## Event streams / projections table
 
@@ -36,8 +36,11 @@ It's recommended to just use the same pdo connection instance for both.
 
 ## Persistance Strategies
 
-This component ships with 6 default persistance strategies:
+This component ships with 9 default persistance strategies:
 
+- MariaDbAggregateStreamStrategy
+- MariaDbSimpleStreamStrategy
+- MariaDbSingleStreamStrategy
 - MySqlAggregateStreamStrategy
 - MySqlSimpleStreamStrategy
 - MySqlSingleStreamStrategy

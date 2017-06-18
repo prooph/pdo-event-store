@@ -25,7 +25,7 @@ use ProophTest\EventStore\Pdo\TestUtil;
 use ProophTest\EventStore\Projection\AbstractProjectionManagerTest;
 
 /**
- * @group pdo_mysql
+ * @group mysql
  */
 class MySqlProjectionManagerTest extends AbstractProjectionManagerTest
 {
@@ -46,8 +46,8 @@ class MySqlProjectionManagerTest extends AbstractProjectionManagerTest
 
     protected function setUp(): void
     {
-        if (TestUtil::getDatabaseVendor() !== 'pdo_mysql') {
-            throw new \RuntimeException('Invalid database vendor');
+        if (TestUtil::getDatabaseDriver() !== 'pdo_mysql') {
+            throw new \RuntimeException('Invalid database driver');
         }
 
         $this->connection = TestUtil::getConnection();
@@ -76,7 +76,7 @@ class MySqlProjectionManagerTest extends AbstractProjectionManagerTest
 
         $eventStore = $this->prophesize(EventStore::class);
 
-        new MysqlProjectionManager($eventStore->reveal(), $this->connection);
+        new MySqlProjectionManager($eventStore->reveal(), $this->connection);
     }
 
     /**
@@ -90,7 +90,7 @@ class MySqlProjectionManagerTest extends AbstractProjectionManagerTest
         $wrappedEventStore = $this->prophesize(EventStoreDecorator::class);
         $wrappedEventStore->getInnerEventStore()->willReturn($eventStore->reveal())->shouldBeCalled();
 
-        new MysqlProjectionManager($wrappedEventStore->reveal(), $this->connection);
+        new MySqlProjectionManager($wrappedEventStore->reveal(), $this->connection);
     }
 
     /**

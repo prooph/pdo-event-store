@@ -26,7 +26,7 @@ use ProophTest\EventStore\Pdo\TestUtil;
 use Psr\Container\ContainerInterface;
 
 /**
- * @group pdo_mysql
+ * @group mysql
  */
 final class MySqlEventStoreFactoryTest extends TestCase
 {

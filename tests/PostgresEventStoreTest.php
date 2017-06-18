@@ -29,7 +29,7 @@ use ProophTest\EventStore\TransactionalEventStoreTestTrait;
 use Ramsey\Uuid\Uuid;
 
 /**
- * @group pdo_pgsql
+ * @group postgres
  */
 final class PostgresEventStoreTest extends AbstractPdoEventStoreTest
 {
@@ -42,7 +42,7 @@ final class PostgresEventStoreTest extends AbstractPdoEventStoreTest
 
     protected function setUp(): void
     {
-        if (TestUtil::getDatabaseVendor() !== 'pdo_pgsql') {
+        if (TestUtil::getDatabaseDriver() !== 'pdo_pgsql') {
             throw new \RuntimeException('Invalid database vendor');
         }
 

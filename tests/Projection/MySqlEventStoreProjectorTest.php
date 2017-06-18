@@ -20,14 +20,14 @@ use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Pdo\TestUtil;
 
 /**
- * @group pdo_mysql
+ * @group mysql
  */
 class MySqlEventStoreProjectorTest extends PdoEventStoreProjectorTest
 {
     protected function setUp(): void
     {
-        if (TestUtil::getDatabaseVendor() !== 'pdo_mysql') {
-            throw new \RuntimeException('Invalid database vendor');
+        if (TestUtil::getDatabaseDriver() !== 'pdo_mysql') {
+            throw new \RuntimeException('Invalid database driver');
         }
 
         $this->connection = TestUtil::getConnection();

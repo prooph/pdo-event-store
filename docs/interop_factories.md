@@ -16,6 +16,83 @@ without the need to rely on a specific framework. However, the factories have th
 *Note: Don't worry, if your environment doesn't provide these requirements, you can
 always bootstrap the components by hand. Just look at the factories for inspiration in this case.*
 
+### MariaDbEventStoreFactory
+
+If the requirements are met you just need to add a new section in your application config ...
+
+```php
+[
+    'prooph' => [
+        'event_store' => [
+            'default' => [
+                'wrap_action_event_emitter' => true,
+                'metadata_enrichers' => [
+                    // The factory will get the metadata enrichers and inject them in the MetadataEnricherPlugin.
+                    // Note: you can obtain the same result by instanciating the plugin yourself
+                    // and pass it to the 'plugin' section bellow.
+                    'metadata_enricher_1',
+                    'metadata_enricher_2',
+                    // ...
+                ],
+                'plugins' => [
+                    //And again the factory will use each service id to get the plugin from the container
+                    //Plugin::attachToEventStore($eventStore) is then invoked by the factory so your plugins
+                    // get attached automatically
+                    //Awesome, isn't it?
+                    'plugin_1_service_id',
+                    'plugin_2_service_id',
+                    //...
+                ],
+                'connection' => 'my_pdo_connection', // service id for the used pdo connection
+                'persistence_strategy' => MariaDbSingleStreamStrategy::class, // service id for the used persistance strategy
+                'load_batch_size' => 1000, // how many events a query should return in one batch, defaults to 1000
+                'event_streams_table' => 'event_streams', // event stream table to use, defaults to `event_streams`
+                'message_factory' => FQCNMessageFactory::class, // message factory to use, defauls to `FQCNMessageFactory::class`
+            ],
+        ],
+    ],
+    'dependencies' => [
+        'factories' => [
+            'MariaDbEventStore' => [
+                \Prooph\EventStore\Container\MariaDbEventStoreFactory::class,
+                'default',
+            ],
+        ],
+    ],
+    //... other application config here
+]
+```
+
+$eventStore = $container->get('MariaDbEventStore');
+
+### MariaDbProjectionManagerFactory
+
+```php
+[
+    'prooph' => [
+        'projection_manager' => [
+            'default' => [
+                'event_store' => 'MariaDbEventStore',
+                'connection' => 'my_pdo_connection', // service id for the used pdo connection
+                'event_streams_table' => 'event_streams', // event stream table to use, defaults to `event_streams` 
+                'projections_table' => 'projections', // projection table to use, defaults to `projections`
+            ],
+        ],
+    ],
+    'dependencies' => [
+        'factories' => [
+            'MariaDbProjectionManager' => [
+                \Prooph\EventStore\Container\MariaDbProjectionManagerFactory::class,
+                'default',
+            ],
+        ],
+    ],
+    //... other application config here
+]
+```
+
+$projectionManager = $container->get('MariaDbProjectionManager');
+
 ### MySqlEventStoreFactory
 
 If the requirements are met you just need to add a new section in your application config ...

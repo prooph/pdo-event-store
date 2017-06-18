@@ -20,13 +20,13 @@ use Prooph\EventStore\Pdo\Projection\PostgresProjectionManager;
 use ProophTest\EventStore\Pdo\TestUtil;
 
 /**
- * @group pdo_pgsql
+ * @group postgres
  */
 class PostgresEventStoreQueryTest extends PdoEventStoreQueryTest
 {
     protected function setUp(): void
     {
-        if (TestUtil::getDatabaseVendor() !== 'pdo_pgsql') {
+        if (TestUtil::getDatabaseDriver() !== 'pdo_pgsql') {
             throw new \RuntimeException('Invalid database vendor');
         }
 

@@ -18,9 +18,9 @@ use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
-use Prooph\EventStore\Pdo\MySqlEventStore;
-use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlAggregateStreamStrategy;
-use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSingleStreamStrategy;
+use Prooph\EventStore\Pdo\MariaDbEventStore;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbAggregateStreamStrategy;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbSingleStreamStrategy;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\UserCreated;
@@ -28,12 +28,12 @@ use ProophTest\EventStore\Mock\UsernameChanged;
 use Ramsey\Uuid\Uuid;
 
 /**
- * @group mysql
+ * @group mariadb
  */
-final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
+final class MariaDbEventStoreTest extends AbstractPdoEventStoreTest
 {
     /**
-     * @var MySqlEventStore
+     * @var MariaDbEventStore
      */
     protected $eventStore;
 
@@ -46,10 +46,10 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
         $this->connection = TestUtil::getConnection();
         TestUtil::initDefaultDatabaseTables($this->connection);
 
-        $this->eventStore = new MySqlEventStore(
+        $this->eventStore = new MariaDbEventStore(
             new FQCNMessageFactory(),
             $this->connection,
-            new MySqlAggregateStreamStrategy()
+            new MariaDbAggregateStreamStrategy()
         );
     }
 
@@ -62,7 +62,7 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
         $this->expectExceptionMessage('Error during createSchemaFor');
 
         $streamName = new StreamName('foo');
-        $strategy = new MySqlAggregateStreamStrategy();
+        $strategy = new MariaDbAggregateStreamStrategy();
         $schema = $strategy->createSchema($strategy->generateTableName($streamName));
 
         foreach ($schema as $command) {
@@ -78,10 +78,10 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
      */
     public function it_loads_correctly_using_single_stream_per_aggregate_type_strategy(): void
     {
-        $this->eventStore = new MySqlEventStore(
+        $this->eventStore = new MariaDbEventStore(
             new FQCNMessageFactory(),
             $this->connection,
-            new MySqlSingleStreamStrategy(),
+            new MariaDbSingleStreamStrategy(),
             5
         );
 
@@ -114,10 +114,10 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
     {
         $this->expectException(ConcurrencyException::class);
 
-        $this->eventStore = new MySqlEventStore(
+        $this->eventStore = new MariaDbEventStore(
             new FQCNMessageFactory(),
             $this->connection,
-            new MySqlSingleStreamStrategy()
+            new MariaDbSingleStreamStrategy()
         );
 
         $streamEvent = UserCreated::with(

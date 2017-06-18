@@ -13,18 +13,16 @@ declare(strict_types=1);
 namespace ProophTest\EventStore\Pdo\Projection;
 
 use Prooph\Common\Messaging\FQCNMessageFactory;
-use Prooph\EventStore\Pdo\MySqlEventStore;
-use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSimpleStreamStrategy;
-use Prooph\EventStore\Pdo\Projection\MySqlProjectionManager;
-use Prooph\EventStore\Projection\ReadModel;
-use ProophTest\EventStore\Mock\ReadModelMock;
+use Prooph\EventStore\Pdo\MariaDbEventStore;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbSimpleStreamStrategy;
+use Prooph\EventStore\Pdo\Projection\MariaDbProjectionManager;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Pdo\TestUtil;
 
 /**
- * @group mysql
+ * @group mariadb
  */
-class MySqlEventStoreReadModelProjectorTest extends PdoEventStoreReadModelProjectorTest
+class MariaDbEventStoreProjectorTest extends PdoEventStoreProjectorTest
 {
     protected function setUp(): void
     {
@@ -35,33 +33,16 @@ class MySqlEventStoreReadModelProjectorTest extends PdoEventStoreReadModelProjec
         $this->connection = TestUtil::getConnection();
         TestUtil::initDefaultDatabaseTables($this->connection);
 
-        $this->eventStore = new MySqlEventStore(
+        $this->eventStore = new MariaDbEventStore(
             new FQCNMessageFactory(),
             $this->connection,
-            new MySqlSimpleStreamStrategy()
+            new MariaDbSimpleStreamStrategy()
         );
 
-        $this->projectionManager = new MySqlProjectionManager(
+        $this->projectionManager = new MariaDbProjectionManager(
             $this->eventStore,
             $this->connection
         );
-    }
-
-    /**
-     * @test
-     */
-    public function it_calls_reset_projection_also_if_init_callback_returns_state()
-    {
-        $readModel = $this->prophesize(ReadModel::class);
-        $readModel->reset()->shouldBeCalled();
-
-        $readModelProjection = $this->projectionManager->createReadModelProjection('test-projection', $readModel->reveal());
-
-        $readModelProjection->init(function () {
-            return ['state' => 'some value'];
-        });
-
-        $readModelProjection->reset();
     }
 
     /**
@@ -76,7 +57,7 @@ class MySqlEventStoreReadModelProjectorTest extends PdoEventStoreReadModelProjec
 
         $this->connection->exec('DROP TABLE projections;');
 
-        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
+        $projection = $this->projectionManager->createProjection('test_projection');
 
         $projection
             ->fromStream('user-123')

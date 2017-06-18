@@ -18,25 +18,24 @@ use Prooph\EventStore\EventStore;
 use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Pdo\Exception\InvalidArgumentException;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
-use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresAggregateStreamStrategy;
-use Prooph\EventStore\Pdo\PostgresEventStore;
-use Prooph\EventStore\Pdo\Projection\PostgresProjectionManager;
-use Prooph\EventStore\Projection\InMemoryProjectionManager;
+use Prooph\EventStore\Pdo\MariaDbEventStore;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbAggregateStreamStrategy;
+use Prooph\EventStore\Pdo\Projection\MariaDbProjectionManager;
 use ProophTest\EventStore\Pdo\TestUtil;
 use ProophTest\EventStore\Projection\AbstractProjectionManagerTest;
 
 /**
- * @group postgres
+ * @group mariadb
  */
-class PostgresProjectionManagerTest extends AbstractProjectionManagerTest
+class MariaDbProjectionManagerTest extends AbstractProjectionManagerTest
 {
     /**
-     * @var PostgresProjectionManager
+     * @var MariaDbProjectionManager
      */
     protected $projectionManager;
 
     /**
-     * @var PostgresEventStore
+     * @var MariaDbEventStore
      */
     private $eventStore;
 
@@ -47,19 +46,19 @@ class PostgresProjectionManagerTest extends AbstractProjectionManagerTest
 
     protected function setUp(): void
     {
-        if (TestUtil::getDatabaseDriver() !== 'pdo_pgsql') {
-            throw new \RuntimeException('Invalid database vendor');
+        if (TestUtil::getDatabaseDriver() !== 'pdo_mysql') {
+            throw new \RuntimeException('Invalid database driver');
         }
 
         $this->connection = TestUtil::getConnection();
         TestUtil::initDefaultDatabaseTables($this->connection);
 
-        $this->eventStore = new PostgresEventStore(
+        $this->eventStore = new MariaDbEventStore(
             new FQCNMessageFactory(),
             $this->connection,
-            new PostgresAggregateStreamStrategy()
+            new MariaDbAggregateStreamStrategy()
         );
-        $this->projectionManager = new PostgresProjectionManager($this->eventStore, $this->connection);
+        $this->projectionManager = new MariaDbProjectionManager($this->eventStore, $this->connection);
     }
 
     protected function tearDown(): void
@@ -77,7 +76,7 @@ class PostgresProjectionManagerTest extends AbstractProjectionManagerTest
 
         $eventStore = $this->prophesize(EventStore::class);
 
-        new InMemoryProjectionManager($eventStore->reveal());
+        new MariaDbProjectionManager($eventStore->reveal(), $this->connection);
     }
 
     /**
@@ -91,7 +90,7 @@ class PostgresProjectionManagerTest extends AbstractProjectionManagerTest
         $wrappedEventStore = $this->prophesize(EventStoreDecorator::class);
         $wrappedEventStore->getInnerEventStore()->willReturn($eventStore->reveal())->shouldBeCalled();
 
-        new PostgresProjectionManager($wrappedEventStore->reveal(), $this->connection);
+        new MariaDbProjectionManager($wrappedEventStore->reveal(), $this->connection);
     }
 
     /**
@@ -103,17 +102,6 @@ class PostgresProjectionManagerTest extends AbstractProjectionManagerTest
 
         $this->connection->exec('DROP TABLE projections;');
         $this->projectionManager->fetchProjectionNames(null, 200, 0);
-    }
-
-    /**
-     * @test
-     */
-    public function it_throws_exception_when_fetching_projection_names_using_invalid_regex(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid regex pattern given');
-
-        $this->projectionManager->fetchProjectionNamesRegex('invalid)', 10, 0);
     }
 
     /**

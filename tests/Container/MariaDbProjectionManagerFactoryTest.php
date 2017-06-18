@@ -15,18 +15,19 @@ namespace ProophTest\EventStore\Pdo\Container;
 use PHPUnit\Framework\TestCase;
 use Prooph\Common\Messaging\MessageFactory;
 use Prooph\EventStore\EventStore;
-use Prooph\EventStore\Pdo\Container\PostgresProjectionManagerFactory;
+use Prooph\EventStore\Pdo\Container\MariaDbProjectionManagerFactory;
 use Prooph\EventStore\Pdo\Exception\InvalidArgumentException;
+use Prooph\EventStore\Pdo\HasQueryHint;
+use Prooph\EventStore\Pdo\MariaDbEventStore;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
-use Prooph\EventStore\Pdo\PostgresEventStore;
-use Prooph\EventStore\Pdo\Projection\PostgresProjectionManager;
+use Prooph\EventStore\Pdo\Projection\MariaDbProjectionManager;
 use ProophTest\EventStore\Pdo\TestUtil;
 use Psr\Container\ContainerInterface;
 
 /**
- * @group postgres
+ * @group mariadb
  */
-class PostgresProjectionManagerFactoryTest extends TestCase
+class MariaDbProjectionManagerFactoryTest extends TestCase
 {
     /**
      * @test
@@ -39,21 +40,25 @@ class PostgresProjectionManagerFactoryTest extends TestCase
 
         $connection = TestUtil::getConnection();
 
+        $messageFactory = $this->prophesize(MessageFactory::class);
+        $persistenceStrategy = $this->prophesize(PersistenceStrategy::class);
+        $persistenceStrategy->willImplement(HasQueryHint::class);
+
         $container = $this->prophesize(ContainerInterface::class);
-        $eventStore = new PostgresEventStore(
-            $this->createMock(MessageFactory::class),
+        $eventStore = new MariaDbEventStore(
+            $messageFactory->reveal(),
             TestUtil::getConnection(),
-            $this->createMock(PersistenceStrategy::class)
+            $persistenceStrategy->reveal()
         );
 
         $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
         $container->get(EventStore::class)->willReturn($eventStore)->shouldBeCalled();
         $container->get('config')->willReturn($config)->shouldBeCalled();
 
-        $factory = new PostgresProjectionManagerFactory();
+        $factory = new MariaDbProjectionManagerFactory();
         $projectionManager = $factory($container->reveal());
 
-        $this->assertInstanceOf(PostgresProjectionManager::class, $projectionManager);
+        $this->assertInstanceOf(MariaDbProjectionManager::class, $projectionManager);
     }
 
     /**
@@ -67,11 +72,15 @@ class PostgresProjectionManagerFactoryTest extends TestCase
 
         $connection = TestUtil::getConnection();
 
+        $messageFactory = $this->prophesize(MessageFactory::class);
+        $persistenceStrategy = $this->prophesize(PersistenceStrategy::class);
+        $persistenceStrategy->willImplement(HasQueryHint::class);
+
         $container = $this->prophesize(ContainerInterface::class);
-        $eventStore = new PostgresEventStore(
-            $this->createMock(MessageFactory::class),
+        $eventStore = new MariaDbEventStore(
+            $messageFactory->reveal(),
             TestUtil::getConnection(),
-            $this->createMock(PersistenceStrategy::class)
+            $persistenceStrategy->reveal()
         );
 
         $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
@@ -79,9 +88,9 @@ class PostgresProjectionManagerFactoryTest extends TestCase
         $container->get('config')->willReturn($config)->shouldBeCalled();
 
         $name = 'default';
-        $pdo = PostgresProjectionManagerFactory::$name($container->reveal());
+        $pdo = MariaDbProjectionManagerFactory::$name($container->reveal());
 
-        $this->assertInstanceOf(PostgresProjectionManager::class, $pdo);
+        $this->assertInstanceOf(MariaDbProjectionManager::class, $pdo);
     }
 
     /**
@@ -92,6 +101,6 @@ class PostgresProjectionManagerFactoryTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         $projectionName = 'custom';
-        PostgresProjectionManagerFactory::$projectionName('invalid container');
+        MariaDbProjectionManagerFactory::$projectionName('invalid container');
     }
 }
