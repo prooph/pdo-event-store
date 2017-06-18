@@ -219,6 +219,16 @@ EOT;
         int $count = null,
         MetadataMatcher $metadataMatcher = null
     ): Iterator {
+        $tableName = $this->persistenceStrategy->generateTableName($streamName);
+
+        $query = "SELECT stream_name FROM $this->eventStreamsTable WHERE stream_name = ?";
+
+        $statement = $this->connection->prepare($query);
+        $statement->execute([$tableName]);
+
+        if ($statement->rowCount() === 0) {
+            throw StreamNotFound::with($streamName);
+        }
         [$where, $values] = $this->createWhereClause($metadataMatcher);
         $where[] = 'no >= :fromNumber';
 
@@ -229,8 +239,6 @@ EOT;
         } else {
             $limit = min($count, $this->loadBatchSize);
         }
-
-        $tableName = $this->persistenceStrategy->generateTableName($streamName);
 
         $query = <<<EOT
 SELECT * FROM $tableName
