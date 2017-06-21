@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace ProophTest\EventStore\PersistenceStrategy;
 
 use ArrayIterator;
+use PHPUnit\Framework\TestCase;
 use Prooph\Common\Messaging\DomainEvent;
 use Prooph\Common\Messaging\PayloadTrait;
-use PHPUnit\Framework\TestCase;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSimpleStreamStrategy;
 
 final class MySqlSimpleStreamStrategyTest extends TestCase
@@ -33,13 +33,13 @@ final class MySqlSimpleStreamStrategyTest extends TestCase
                 'item_two',
                 'item_three',
                 'item_four',
-            ]
+            ],
         ];
 
         $events = new ArrayIterator([
             new class($expected) extends DomainEvent {
                 use PayloadTrait;
-            }
+            },
         ]);
 
         $out = $stategy->prepareData($events);
