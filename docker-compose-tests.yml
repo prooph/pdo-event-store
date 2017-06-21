@@ -10,15 +10,11 @@ services:
 
   postgres:
     image: postgres:alpine
-    ports:
-      - 5432:5432
     environment:
       - POSTGRES_DB=event_store_tests
 
   mysql:
     image: mysql
-    ports:
-     - 3306:3306
     environment:
       - MYSQL_ROOT_PASSWORD=
       - MYSQL_ALLOW_EMPTY_PASSWORD=yes
