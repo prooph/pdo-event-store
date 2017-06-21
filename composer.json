@@ -63,7 +63,7 @@
     "scripts": {
         "cs": "php-cs-fixer fix -v --diff --dry-run",
         "cs-fix": "php-cs-fixer fix -v --diff",
-        "test-postgres": "vendor/bin/phpunit -c phpunit.xml.pdo_pgsql",
-        "test-mysql": "vendor/bin/phpunit -c phpunit.xml.pdo_mysql"
+        "test-postgres": "vendor/bin/phpunit -c phpunit.xml.postgres",
+        "test-mysql": "vendor/bin/phpunit -c phpunit.xml.mysql"
     }
 }
