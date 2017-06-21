@@ -6,6 +6,7 @@ services:
       - .:/app
     links:
       - postgres:postgres
+      - mariadb:mariadb
       - mysql:mysql
 
   postgres:
@@ -14,6 +15,13 @@ services:
       - 5432:5432
     environment:
       - POSTGRES_DB=event_store_tests
+
+  mariadb:
+    image: mariadb:10
+    environment:
+      - MYSQL_ROOT_PASSWORD=
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+      - MYSQL_DATABASE=event_store_tests
 
   mysql:
     image: mysql
