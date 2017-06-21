@@ -63,7 +63,8 @@
     "scripts": {
         "cs": "php-cs-fixer fix -v --diff --dry-run",
         "cs-fix": "php-cs-fixer fix -v --diff",
-        "test-postgres": "vendor/bin/phpunit -c phpunit.xml.pdo_pgsql",
-        "test-mysql": "vendor/bin/phpunit -c phpunit.xml.pdo_mysql"
+        "test-postgres": "DB_HOST=postgres vendor/bin/phpunit -c phpunit.xml.postgres",
+        "test-mariadb": "DB_HOST=mariadb vendor/bin/phpunit -c phpunit.xml.mariadb",
+        "test-mysql": "DB_HOST=mysql vendor/bin/phpunit -c phpunit.xml.mysql"
     }
 }
