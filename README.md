@@ -40,26 +40,26 @@ and a running Postgres server listening on port `5432`. Both should contain an e
 
 ### MariaDb
 
-Todo
+`$ vendor/bin/phpunit -c phpunit.xml.mariadb`
 
 ### MySql
 
-`$ composer test-mysql`
+`$ vendor/bin/phpunit -c phpunit.xml.mysql`
 
 ### Postgres
 
-`$ composer test-postgres`
+`$ vendor/bin/phpunit -c phpunit.xml.postgres`
 
-## Run Tests With Docker
+## Run Tests With Docker Compose
 
 ### MariaDb
 
-Todo
+`$ docker-compose -f docker-compose-tests.yml run --rm composer run-script test-mariadb --timeout 0`
 
 ### MySql
 
-`$ docker-compose -f docker-compose-tests.yml run -e DB_HOST=mysql --rm composer run-script test-mysql --timeout 0`
+`$ docker-compose -f docker-compose-tests.yml run --rm composer run-script test-mysql --timeout 0`
 
 ### Postgres
 
-`$ docker-compose -f docker-compose-tests.yml run -e DB_HOST=postgres --rm composer run-script test-postgres --timeout 0`
+`$ docker-compose -f docker-compose-tests.yml run --rm composer run-script test-postgres --timeout 0`
