@@ -339,8 +339,8 @@ EOT;
         $statement = $this->connection->prepare($sql);
         try {
             $statement->execute([
-                json_encode($this->streamPositions, \JSON_FORCE_OBJECT),
-                json_encode($this->state, \JSON_FORCE_OBJECT),
+                json_encode($this->streamPositions),
+                json_encode($this->state),
                 $this->status->getValue(),
                 $this->name,
             ]);
@@ -771,8 +771,8 @@ EOT;
         $statement = $this->connection->prepare($sql);
         try {
             $statement->execute([
-                json_encode($this->streamPositions, \JSON_FORCE_OBJECT),
-                json_encode($this->state, \JSON_FORCE_OBJECT),
+                json_encode($this->streamPositions),
+                json_encode($this->state),
                 $lockUntilString,
                 $this->name,
             ]);
