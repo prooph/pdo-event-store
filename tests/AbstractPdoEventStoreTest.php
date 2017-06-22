@@ -463,6 +463,36 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
     }
 
     /**
+     * @test
+     */
+    public function it_does_not_use_json_force_object_for_stream_metadata_and_event_payload_and_metadata(): void
+    {
+        $event = UserCreated::with(['name' => ['John', 'Jane']], 1);
+        $event = $event->withAddedMetadata('key', 'value');
+
+        $streamName = new StreamName('Prooph\Model\User');
+        $stream = new Stream($streamName, new ArrayIterator([$event]), ['some' => ['metadata', 'as', 'well']]);
+
+        $this->eventStore->create($stream);
+
+        $statement = $this->connection->prepare('SELECT * FROM event_streams');
+        $statement->execute();
+
+        $result = $statement->fetch(\PDO::FETCH_ASSOC);
+
+        // mariadb does not add spaces to json, while mysql and postgres do, so strip them
+        $this->assertSame('{"some":["metadata","as","well"]}', str_replace(' ', '', $result['metadata']));
+
+        $statement = $this->connection->prepare('SELECT * FROM _' . sha1('Prooph\Model\User'));
+        $statement->execute();
+
+        $result = $statement->fetch(\PDO::FETCH_ASSOC);
+
+        // mariadb does not add spaces to json, while mysql and postgres do, so strip them
+        $this->assertSame('{"name":["John","Jane"]}', str_replace(' ', '', $result['payload']));
+    }
+
+    /**
      * @return Message[]
      */
     protected function getMultipleTestEvents(): array

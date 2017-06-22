@@ -126,7 +126,7 @@ EOT;
         try {
             $statement->execute([
                 'streamName' => $streamName->toString(),
-                'metadata' => json_encode($newMetadata, \JSON_FORCE_OBJECT),
+                'metadata' => json_encode($newMetadata),
             ]);
         } catch (PDOException $exception) {
             // ignore and check error code
@@ -723,7 +723,7 @@ SQL;
         }
 
         $streamName = $this->persistenceStrategy->generateTableName($stream->streamName());
-        $metadata = json_encode($stream->metadata(), \JSON_FORCE_OBJECT);
+        $metadata = json_encode($stream->metadata());
 
         $sql = <<<EOT
 INSERT INTO $this->eventStreamsTable (real_stream_name, stream_name, metadata, category)

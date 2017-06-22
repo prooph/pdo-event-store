@@ -68,8 +68,8 @@ EOT;
             $data[] = $event->metadata()['_aggregate_version'];
             $data[] = $event->uuid()->toString();
             $data[] = $event->messageName();
-            $data[] = json_encode($event->payload(), \JSON_FORCE_OBJECT);
-            $data[] = json_encode($event->metadata(), \JSON_FORCE_OBJECT);
+            $data[] = json_encode($event->payload());
+            $data[] = json_encode($event->metadata());
             $data[] = $event->createdAt()->format('Y-m-d\TH:i:s.u');
         }
 
