@@ -1,5 +1,24 @@
 # Change Log
 
+## [1.3.1](https://github.com/prooph/pdo-event-store/tree/v1.3.1)
+
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.3.0...v1.3.1)
+
+**Implemented enhancements:**
+
+- Remove JSON\_FORCE\_OBJECT [\#93](https://github.com/prooph/pdo-event-store/pull/93) ([prolic](https://github.com/prolic))
+
+**Closed issues:**
+
+- Invalid DB\_HOST in phpunit files when using docker-compose to run the tests. [\#90](https://github.com/prooph/pdo-event-store/issues/90)
+- Unreasonable use of JSON\_FORCE\_OBJECT in PersistenceStrategies' implementations [\#87](https://github.com/prooph/pdo-event-store/issues/87)
+
+**Merged pull requests:**
+
+- Documentation update for running tests. [\#92](https://github.com/prooph/pdo-event-store/pull/92) ([bweston92](https://github.com/bweston92))
+- Fix path to phpunit files from composer.json [\#89](https://github.com/prooph/pdo-event-store/pull/89) ([bweston92](https://github.com/bweston92))
+- Remove port bindings from docker-compose [\#88](https://github.com/prooph/pdo-event-store/pull/88) ([bweston92](https://github.com/bweston92))
+
 ## [v1.3.0](https://github.com/prooph/pdo-event-store/tree/v1.3.0) (2017-06-18)
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.2.0...v1.3.0)
 
