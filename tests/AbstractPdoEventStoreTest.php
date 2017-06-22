@@ -480,6 +480,7 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
 
         $result = $statement->fetch(\PDO::FETCH_ASSOC);
 
+        // mariadb does not add spaces to json, while mysql and postgres do, so strip them
         $this->assertSame('{"some":["metadata","as","well"]}', str_replace(' ', '', $result['metadata']));
 
         $statement = $this->connection->prepare('SELECT * FROM _' . sha1('Prooph\Model\User'));
@@ -487,6 +488,7 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
 
         $result = $statement->fetch(\PDO::FETCH_ASSOC);
 
+        // mariadb does not add spaces to json, while mysql and postgres do, so strip them
         $this->assertSame('{"name":["John","Jane"]}', str_replace(' ', '', $result['payload']));
     }
 
