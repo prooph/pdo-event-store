@@ -480,14 +480,14 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
 
         $result = $statement->fetch(\PDO::FETCH_ASSOC);
 
-        $this->assertSame('{"some":["metadata","as","well"]}', $result['metadata']);
+        $this->assertSame('{"some":["metadata","as","well"]}', str_replace(' ', '', $result['metadata']));
 
         $statement = $this->connection->prepare('SELECT * FROM _' . sha1('Prooph\Model\User'));
         $statement->execute();
 
         $result = $statement->fetch(\PDO::FETCH_ASSOC);
 
-        $this->assertSame('{"name":["John","Jane"]}', $result['payload']);
+        $this->assertSame('{"name":["John","Jane"]}', str_replace(' ', '', $result['payload']));
     }
 
     /**
