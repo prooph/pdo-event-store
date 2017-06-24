@@ -17,6 +17,7 @@ use PDOException;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Exception\OutOfRangeException;
+use Prooph\EventStore\Exception\ProjectionNotFound;
 use Prooph\EventStore\Pdo\Exception;
 use Prooph\EventStore\Pdo\MariaDbEventStore;
 use Prooph\EventStore\Projection\ProjectionManager;
@@ -133,6 +134,10 @@ EOT;
         if ($statement->errorCode() !== '00000') {
             throw Exception\RuntimeException::fromStatementErrorInfo($statement->errorInfo());
         }
+
+        if (0 === $statement->rowCount()) {
+            throw ProjectionNotFound::withName($name);
+        }
     }
 
     public function resetProjection(string $name): void
@@ -154,6 +159,10 @@ EOT;
         if ($statement->errorCode() !== '00000') {
             throw Exception\RuntimeException::fromStatementErrorInfo($statement->errorInfo());
         }
+
+        if (0 === $statement->rowCount()) {
+            throw ProjectionNotFound::withName($name);
+        }
     }
 
     public function stopProjection(string $name): void
@@ -174,6 +183,10 @@ EOT;
 
         if ($statement->errorCode() !== '00000') {
             throw Exception\RuntimeException::fromStatementErrorInfo($statement->errorInfo());
+        }
+
+        if (0 === $statement->rowCount()) {
+            throw ProjectionNotFound::withName($name);
         }
     }
 
@@ -317,7 +330,7 @@ SQL;
         $result = $statement->fetch();
 
         if (false === $result) {
-            throw new Exception\RuntimeException('A projection with name "' . $name . '" could not be found.');
+            throw ProjectionNotFound::withName($name);
         }
 
         return ProjectionStatus::byValue($result->status);
@@ -346,7 +359,7 @@ SQL;
         $result = $statement->fetch();
 
         if (false === $result) {
-            throw new Exception\RuntimeException('A projection with name "' . $name . '" could not be found.');
+            throw ProjectionNotFound::withName($name);
         }
 
         return json_decode($result->position, true);
@@ -375,7 +388,7 @@ SQL;
         $result = $statement->fetch();
 
         if (false === $result) {
-            throw new Exception\RuntimeException('A projection with name "' . $name . '" could not be found.');
+            throw ProjectionNotFound::withName($name);
         }
 
         return json_decode($result->state, true);
