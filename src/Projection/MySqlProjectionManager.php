@@ -134,6 +134,10 @@ EOT;
         if ($statement->errorCode() !== '00000') {
             throw Exception\RuntimeException::fromStatementErrorInfo($statement->errorInfo());
         }
+
+        if (0 === $statement->rowCount()) {
+            throw ProjectionNotFound::withName($name);
+        }
     }
 
     public function resetProjection(string $name): void
@@ -155,6 +159,10 @@ EOT;
         if ($statement->errorCode() !== '00000') {
             throw Exception\RuntimeException::fromStatementErrorInfo($statement->errorInfo());
         }
+
+        if (0 === $statement->rowCount()) {
+            throw ProjectionNotFound::withName($name);
+        }
     }
 
     public function stopProjection(string $name): void
@@ -175,6 +183,10 @@ EOT;
 
         if ($statement->errorCode() !== '00000') {
             throw Exception\RuntimeException::fromStatementErrorInfo($statement->errorInfo());
+        }
+
+        if (0 === $statement->rowCount()) {
+            throw ProjectionNotFound::withName($name);
         }
     }
 
