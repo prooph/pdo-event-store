@@ -1,7 +1,14 @@
 # Change Log
 
-## [1.3.1](https://github.com/prooph/pdo-event-store/tree/v1.3.1)
+## [v1.3.2](https://github.com/prooph/pdo-event-store/tree/v1.3.2)
 
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.3.1...v1.3.2)
+
+**Implemented enhancements:**
+
+- make use of projection not found exception [\#94](https://github.com/prooph/pdo-event-store/pull/94) ([prolic](https://github.com/prolic))
+
+## [v1.3.1](https://github.com/prooph/pdo-event-store/tree/v1.3.1) (2017-06-22)
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.3.0...v1.3.1)
 
 **Implemented enhancements:**
