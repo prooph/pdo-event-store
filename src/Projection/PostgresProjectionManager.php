@@ -17,6 +17,7 @@ use PDOException;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Exception\OutOfRangeException;
+use Prooph\EventStore\Exception\ProjectionNotFound;
 use Prooph\EventStore\Pdo\Exception;
 use Prooph\EventStore\Pdo\PostgresEventStore;
 use Prooph\EventStore\Projection\ProjectionManager;
@@ -313,7 +314,7 @@ SQL;
         $result = $statement->fetch();
 
         if (false === $result) {
-            throw new Exception\RuntimeException('A projection with name "' . $name . '" could not be found.');
+            throw ProjectionNotFound::withName($name);
         }
 
         return ProjectionStatus::byValue($result->status);
@@ -342,7 +343,7 @@ SQL;
         $result = $statement->fetch();
 
         if (false === $result) {
-            throw new Exception\RuntimeException('A projection with name "' . $name . '" could not be found.');
+            throw ProjectionNotFound::withName($name);
         }
 
         return json_decode($result->position, true);
@@ -371,7 +372,7 @@ SQL;
         $result = $statement->fetch();
 
         if (false === $result) {
-            throw new Exception\RuntimeException('A projection with name "' . $name . '" could not be found.');
+            throw ProjectionNotFound::withName($name);
         }
 
         return json_decode($result->state, true);
