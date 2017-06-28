@@ -452,6 +452,7 @@ EOT;
 
                 if (0 === $this->eventCounter) {
                     usleep($this->sleep);
+                    $this->updateLock();
                 } else {
                     $this->persist();
                 }
@@ -684,6 +685,37 @@ EOT;
         }
 
         $this->status = ProjectionStatus::RUNNING();
+    }
+
+    private function updateLock(): void
+    {
+        $now = new DateTimeImmutable('now', new DateTimeZone('UTC'));
+        $nowString = $now->format('Y-m-d\TH:i:s.u');
+        $lockUntilString = $now->modify('+' . (string) $this->lockTimeoutMs . ' ms')->format('Y-m-d\TH:i:s.u');
+
+        $sql = <<<EOT
+UPDATE $this->projectionsTable SET locked_until = ?, status = ? WHERE name = ?;
+EOT;
+
+        $statement = $this->connection->prepare($sql);
+        try {
+            $statement->execute([$lockUntilString, ProjectionStatus::RUNNING()->getValue(), $this->name, $nowString]);
+        } catch (PDOException $exception) {
+            // ignore and check error code
+        }
+
+        if ($statement->rowCount() !== 1) {
+            if ($statement->errorCode() !== '00000') {
+                $errorCode = $statement->errorCode();
+                $errorInfo = $statement->errorInfo()[2];
+
+                throw new Exception\RuntimeException(
+                    "Error $errorCode. Maybe the projection table is not setup?\nError-Info: $errorInfo"
+                );
+            }
+
+            throw new Exception\RuntimeException('Unknown error occurred');
+        }
     }
 
     private function releaseLock(): void
