@@ -746,12 +746,12 @@ EOT;
         $lockUntilString = $now->modify('+' . (string) $this->lockTimeoutMs . ' ms')->format('Y-m-d\TH:i:s.u');
 
         $sql = <<<EOT
-UPDATE $this->projectionsTable SET locked_until = ?, status = ? WHERE name = ?;
+UPDATE $this->projectionsTable SET locked_until = ? WHERE name = ?;
 EOT;
 
         $statement = $this->connection->prepare($sql);
         try {
-            $statement->execute([$lockUntilString, ProjectionStatus::RUNNING()->getValue(), $this->name, $nowString]);
+            $statement->execute([$lockUntilString, $this->name]);
         } catch (PDOException $exception) {
             // ignore and check error code
         }
