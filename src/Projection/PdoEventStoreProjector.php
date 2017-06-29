@@ -170,7 +170,7 @@ final class PdoEventStoreProjector implements Projector
         $this->persistBlockSize = $persistBlockSize;
         $this->sleep = $sleep;
         $this->status = ProjectionStatus::IDLE();
-        $this->triggerPcntlSignalDispatch = extension_loaded('pcntl') && $triggerPcntlSignalDispatch;
+        $this->triggerPcntlSignalDispatch = $triggerPcntlSignalDispatch && extension_loaded('pcntl');
 
         while ($eventStore instanceof EventStoreDecorator) {
             $eventStore = $eventStore->getInnerEventStore();
