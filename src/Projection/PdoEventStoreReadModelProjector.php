@@ -35,6 +35,10 @@ use Prooph\EventStore\StreamName;
 
 final class PdoEventStoreReadModelProjector implements ReadModelProjector
 {
+    const OPTION_PCNTL_DISPATCH = 'trigger_pcntl_dispatch';
+
+    const DEFAULT_PCNTL_DISPATCH = false;
+
     /**
      * @var EventStore
      */
@@ -126,6 +130,11 @@ final class PdoEventStoreReadModelProjector implements ReadModelProjector
     private $sleep;
 
     /**
+     * @var bool
+     */
+    private $triggerPcntlSignalDispatch;
+
+    /**
      * @var array|null
      */
     private $query;
@@ -139,7 +148,8 @@ final class PdoEventStoreReadModelProjector implements ReadModelProjector
         string $projectionsTable,
         int $lockTimeoutMs,
         int $persistBlockSize,
-        int $sleep
+        int $sleep,
+        bool $triggerPcntlSignalDispatch = false
     ) {
         $this->eventStore = $eventStore;
         $this->connection = $connection;
@@ -151,6 +161,7 @@ final class PdoEventStoreReadModelProjector implements ReadModelProjector
         $this->persistBlockSize = $persistBlockSize;
         $this->sleep = $sleep;
         $this->status = ProjectionStatus::IDLE();
+        $this->triggerPcntlSignalDispatch = extension_loaded('pcntl') && $triggerPcntlSignalDispatch;
 
         while ($eventStore instanceof EventStoreDecorator) {
             $eventStore = $eventStore->getInnerEventStore();
@@ -457,6 +468,8 @@ EOT;
                 }
 
                 $this->eventCounter = 0;
+
+                $this->triggerPcntlSignalDispatch();
 
                 switch ($this->fetchRemoteStatus()) {
                     case ProjectionStatus::STOPPING():
@@ -806,5 +819,12 @@ EOT;
         }
 
         $this->streamPositions = array_merge($streamPositions, $this->streamPositions);
+    }
+
+    private function triggerPcntlSignalDispatch(): void
+    {
+        if ($this->triggerPcntlSignalDispatch) {
+            pcntl_signal_dispatch();
+        }
     }
 }
