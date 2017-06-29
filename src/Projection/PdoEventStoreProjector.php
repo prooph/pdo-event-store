@@ -38,6 +38,10 @@ use Prooph\EventStore\Util\ArrayCache;
 
 final class PdoEventStoreProjector implements Projector
 {
+    public const OPTION_PCNTL_DISPATCH = 'trigger_pcntl_dispatch';
+
+    public const DEFAULT_PCNTL_DISPATCH = false;
+
     private const UNIQUE_VIOLATION_ERROR_CODES = [
         'pgsql' => '23505',
         'mysql' => '23000',

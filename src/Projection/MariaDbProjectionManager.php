@@ -88,7 +88,7 @@ final class MariaDbProjectionManager implements ProjectionManager
             $options[PdoEventStoreProjector::OPTION_CACHE_SIZE] ?? PdoEventStoreProjector::DEFAULT_CACHE_SIZE,
             $options[PdoEventStoreProjector::OPTION_PERSIST_BLOCK_SIZE] ?? PdoEventStoreProjector::DEFAULT_PERSIST_BLOCK_SIZE,
             $options[PdoEventStoreProjector::OPTION_SLEEP] ?? PdoEventStoreProjector::DEFAULT_SLEEP,
-            $options[PdoEventStoreReadModelProjector::OPTION_PCNTL_DISPATCH] ?? PdoEventStoreReadModelProjector::DEFAULT_PCNTL_DISPATCH
+            $options[PdoEventStoreProjector::OPTION_PCNTL_DISPATCH] ?? PdoEventStoreProjector::DEFAULT_PCNTL_DISPATCH
         );
     }
 

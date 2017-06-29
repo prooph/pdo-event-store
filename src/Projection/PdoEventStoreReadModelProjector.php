@@ -35,9 +35,9 @@ use Prooph\EventStore\StreamName;
 
 final class PdoEventStoreReadModelProjector implements ReadModelProjector
 {
-    const OPTION_PCNTL_DISPATCH = 'trigger_pcntl_dispatch';
+    public const OPTION_PCNTL_DISPATCH = 'trigger_pcntl_dispatch';
 
-    const DEFAULT_PCNTL_DISPATCH = false;
+    public const DEFAULT_PCNTL_DISPATCH = false;
 
     /**
      * @var EventStore
