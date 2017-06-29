@@ -1,7 +1,14 @@
 # Change Log
 
-## [v1.3.2](https://github.com/prooph/pdo-event-store/tree/v1.3.2)
+## [v1.3.3](https://github.com/prooph/pdo-event-store/tree/v1.3.3)
 
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.3.2...v1.3.3)
+
+**Fixed bugs:**
+
+- update lock after sleep [\#95](https://github.com/prooph/pdo-event-store/pull/95) ([prolic](https://github.com/prolic))
+
+## [v1.3.2](https://github.com/prooph/pdo-event-store/tree/v1.3.2) (2017-06-24)
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.3.1...v1.3.2)
 
 **Implemented enhancements:**
