@@ -174,6 +174,10 @@ abstract class PdoEventStoreProjectorTest extends AbstractEventStoreProjectorTes
      */
     public function it_dispatches_pcntl_signals_when_enabled(): void
     {
+        if (!extension_loaded('pcntl')) {
+            $this->markTestSkipped('The PCNTL extension is not available.');
+        }
+
         $this->prepareEventStream('user-123');
         $this->connection->exec('DROP TABLE projections;');
 
