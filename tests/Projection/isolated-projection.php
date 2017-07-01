@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\EventStore\Pdo\MySqlEventStore;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSimpleStreamStrategy;
@@ -26,7 +28,7 @@ $projectionManager = new MySqlProjectionManager(
 $projection = $projectionManager->createProjection(
     'test_projection',
     [
-        PdoEventStoreProjector::OPTION_PCNTL_DISPATCH => true
+        PdoEventStoreProjector::OPTION_PCNTL_DISPATCH => true,
     ]
 );
 pcntl_signal(SIGQUIT, function () use ($projection) {

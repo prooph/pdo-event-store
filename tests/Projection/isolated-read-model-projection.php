@@ -1,16 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\EventStore\Pdo\MySqlEventStore;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSimpleStreamStrategy;
 use Prooph\EventStore\Pdo\Projection\MySqlProjectionManager;
 use Prooph\EventStore\Pdo\Projection\PdoEventStoreProjector;
+use Prooph\EventStore\Projection\ReadModel;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Pdo\TestUtil;
 
 require __DIR__ . '/../../vendor/autoload.php';
 
-$readModel = new class() implements \Prooph\EventStore\Projection\ReadModel {
+$readModel = new class() implements ReadModel {
     public function init(): void
     {
     }
@@ -54,7 +57,7 @@ $projection = $projectionManager->createReadModelProjection(
     'test_projection',
     $readModel,
     [
-        PdoEventStoreProjector::OPTION_PCNTL_DISPATCH => true
+        PdoEventStoreProjector::OPTION_PCNTL_DISPATCH => true,
     ]
 );
 pcntl_signal(SIGQUIT, function () use ($projection) {

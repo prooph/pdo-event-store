@@ -174,14 +174,13 @@ abstract class PdoEventStoreProjectorTest extends AbstractEventStoreProjectorTes
      */
     public function it_dispatches_pcntl_signals_when_enabled(): void
     {
-        if (!extension_loaded('pcntl')) {
+        if (! extension_loaded('pcntl')) {
             $this->markTestSkipped('The PCNTL extension is not available.');
+
+            return;
         }
 
-        $this->prepareEventStream('user-123');
-        $this->connection->exec('DROP TABLE projections;');
-
-        $command = 'php ' . realpath(__DIR__) . '/isolated-projection.php';
+        $command = 'exec php ' . realpath(__DIR__) . '/isolated-projection.php';
         $descriptorSpec = [
             0 => ['pipe', 'r'],
             1 => ['pipe', 'w'],
@@ -193,9 +192,9 @@ abstract class PdoEventStoreProjectorTest extends AbstractEventStoreProjectorTes
          */
         $projectionProcess = proc_open($command, $descriptorSpec, $pipes);
         $processDetails = proc_get_status($projectionProcess);
-        sleep(2);
+        sleep(1);
         posix_kill($processDetails['pid'], SIGQUIT);
-        sleep(2);
+        sleep(1);
 
         $processDetails = proc_get_status($projectionProcess);
         $this->assertEquals(
