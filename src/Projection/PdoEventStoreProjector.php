@@ -160,6 +160,10 @@ final class PdoEventStoreProjector implements Projector
         int $sleep,
         bool $triggerPcntlSignalDispatch = false
     ) {
+        if ($triggerPcntlSignalDispatch && ! extension_loaded('pcntl')) {
+            throw Exception\ExtensionNotLoadedException::withName('pcntl');
+        }
+
         $this->eventStore = $eventStore;
         $this->connection = $connection;
         $this->name = $name;
@@ -170,7 +174,7 @@ final class PdoEventStoreProjector implements Projector
         $this->persistBlockSize = $persistBlockSize;
         $this->sleep = $sleep;
         $this->status = ProjectionStatus::IDLE();
-        $this->triggerPcntlSignalDispatch = $triggerPcntlSignalDispatch && extension_loaded('pcntl');
+        $this->triggerPcntlSignalDispatch = $triggerPcntlSignalDispatch;
 
         while ($eventStore instanceof EventStoreDecorator) {
             $eventStore = $eventStore->getInnerEventStore();
@@ -505,7 +509,9 @@ EOT;
 
                 $this->eventCounter = 0;
 
-                $this->triggerPcntlSignalDispatch();
+                if ($this->triggerPcntlSignalDispatch) {
+                    pcntl_signal_dispatch();
+                }
 
                 switch ($this->fetchRemoteStatus()) {
                     case ProjectionStatus::STOPPING():
@@ -865,12 +871,5 @@ EOT;
         }
 
         $this->streamPositions = array_merge($streamPositions, $this->streamPositions);
-    }
-
-    private function triggerPcntlSignalDispatch(): void
-    {
-        if ($this->triggerPcntlSignalDispatch) {
-            pcntl_signal_dispatch();
-        }
     }
 }
