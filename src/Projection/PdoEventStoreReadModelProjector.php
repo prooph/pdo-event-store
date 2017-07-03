@@ -126,6 +126,11 @@ final class PdoEventStoreReadModelProjector implements ReadModelProjector
     private $sleep;
 
     /**
+     * @var bool
+     */
+    private $triggerPcntlSignalDispatch;
+
+    /**
      * @var array|null
      */
     private $query;
@@ -139,8 +144,13 @@ final class PdoEventStoreReadModelProjector implements ReadModelProjector
         string $projectionsTable,
         int $lockTimeoutMs,
         int $persistBlockSize,
-        int $sleep
+        int $sleep,
+        bool $triggerPcntlSignalDispatch = false
     ) {
+        if ($triggerPcntlSignalDispatch && ! extension_loaded('pcntl')) {
+            throw Exception\ExtensionNotLoadedException::withName('pcntl');
+        }
+
         $this->eventStore = $eventStore;
         $this->connection = $connection;
         $this->name = $name;
@@ -151,6 +161,7 @@ final class PdoEventStoreReadModelProjector implements ReadModelProjector
         $this->persistBlockSize = $persistBlockSize;
         $this->sleep = $sleep;
         $this->status = ProjectionStatus::IDLE();
+        $this->triggerPcntlSignalDispatch = $triggerPcntlSignalDispatch;
 
         while ($eventStore instanceof EventStoreDecorator) {
             $eventStore = $eventStore->getInnerEventStore();
@@ -458,6 +469,10 @@ EOT;
                 }
 
                 $this->eventCounter = 0;
+
+                if ($this->triggerPcntlSignalDispatch) {
+                    pcntl_signal_dispatch();
+                }
 
                 switch ($this->fetchRemoteStatus()) {
                     case ProjectionStatus::STOPPING():
