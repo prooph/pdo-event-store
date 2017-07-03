@@ -1,7 +1,14 @@
 # Change Log
 
-## [v1.3.3](https://github.com/prooph/pdo-event-store/tree/v1.3.3)
+## [v1.4.0](https://github.com/prooph/pdo-event-store/tree/v1.4.0)
 
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.3.3...v1.4.0)
+
+**Implemented enhancements:**
+
+- Optionally trigger pcntl\_signal\_dispatch [\#96](https://github.com/prooph/pdo-event-store/pull/96) ([fritz-gerneth](https://github.com/fritz-gerneth))
+
+## [v1.3.3](https://github.com/prooph/pdo-event-store/tree/v1.3.3) (2017-06-29)
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.3.2...v1.3.3)
 
 **Fixed bugs:**
