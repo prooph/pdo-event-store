@@ -1,7 +1,20 @@
 # Change Log
 
-## [v1.4.0](https://github.com/prooph/pdo-event-store/tree/v1.4.0)
+## [v1.4.1](https://github.com/prooph/pdo-event-store/tree/v1.4.1)
 
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.4.0...v1.4.1)
+
+**Implemented enhancements:**
+
+- Replace real\_stream\_name LIKE ? with category = ? IN projectors and queries [\#97](https://github.com/prooph/pdo-event-store/issues/97)
+- optimize fromCategories event store queries [\#100](https://github.com/prooph/pdo-event-store/pull/100) ([prolic](https://github.com/prolic))
+
+**Fixed bugs:**
+
+- \[Projections\] ERROR:  value too long for type character\(26\) [\#98](https://github.com/prooph/pdo-event-store/issues/98)
+- fix lock until string [\#99](https://github.com/prooph/pdo-event-store/pull/99) ([prolic](https://github.com/prolic))
+
+## [v1.4.0](https://github.com/prooph/pdo-event-store/tree/v1.4.0) (2017-07-03)
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.3.3...v1.4.0)
 
 **Implemented enhancements:**
