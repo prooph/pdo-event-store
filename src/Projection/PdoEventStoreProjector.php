@@ -758,7 +758,6 @@ EOT;
     private function updateLock(): void
     {
         $now = new DateTimeImmutable('now', new DateTimeZone('UTC'));
-        $nowString = $now->format('Y-m-d\TH:i:s.u');
 
         $lockUntilString = $this->createLockUntilString($now);
 
