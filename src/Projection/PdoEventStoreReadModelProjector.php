@@ -673,7 +673,8 @@ EOT;
     {
         $now = new DateTimeImmutable('now', new DateTimeZone('UTC'));
         $nowString = $now->format('Y-m-d\TH:i:s.u');
-        $lockUntilString = $now->modify('+' . (string) $this->lockTimeoutMs . ' ms')->format('Y-m-d\TH:i:s.u');
+
+        $lockUntilString = $this->createLockUntilString($now);
 
         $sql = <<<EOT
 UPDATE $this->projectionsTable SET locked_until = ?, status = ? WHERE name = ? AND (locked_until IS NULL OR locked_until < ?);
@@ -705,8 +706,8 @@ EOT;
     private function updateLock(): void
     {
         $now = new DateTimeImmutable('now', new DateTimeZone('UTC'));
-        $nowString = $now->format('Y-m-d\TH:i:s.u');
-        $lockUntilString = $now->modify('+' . (string) $this->lockTimeoutMs . ' ms')->format('Y-m-d\TH:i:s.u');
+
+        $lockUntilString = $this->createLockUntilString($now);
 
         $sql = <<<EOT
 UPDATE $this->projectionsTable SET locked_until = ? WHERE name = ?;
@@ -758,7 +759,8 @@ EOT;
         $this->readModel->persist();
 
         $now = new DateTimeImmutable('now', new DateTimeZone('UTC'));
-        $lockUntilString = $now->modify('+' . (string) $this->lockTimeoutMs . ' ms')->format('Y-m-d\TH:i:s.u');
+
+        $lockUntilString = $this->createLockUntilString($now);
 
         $sql = <<<EOT
 UPDATE $this->projectionsTable SET position = ?, state = ?, locked_until = ? 
@@ -853,5 +855,20 @@ EOT;
         }
 
         $this->streamPositions = array_merge($streamPositions, $this->streamPositions);
+    }
+
+    private function createLockUntilString(DateTimeImmutable $from): string
+    {
+        $micros = (string) ((int) $from->format('u') + ($this->lockTimeoutMs * 1000));
+
+        $secs = substr($micros, 0, -6);
+
+        if ('' === $secs) {
+            $secs = 0;
+        }
+
+        $resultMicros = substr($micros, -6);
+
+        return $from->modify('+' . $secs .' seconds')->format('Y-m-d\TH:i:s') . '.' . $resultMicros;
     }
 }
