@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace Prooph\EventStore\Pdo\Projection;
 
 use ArrayIterator;
-use CachingIterator;
 use Closure;
 use DateTimeImmutable;
 use DateTimeZone;
@@ -861,25 +860,15 @@ EOT;
         }
 
         if (isset($this->query['categories'])) {
-            $it = new CachingIterator(new ArrayIterator($this->query['categories']), CachingIterator::FULL_CACHE);
-
-            $where = 'WHERE ';
-            $params = [];
-
-            foreach ($it as $name) {
-                $where .= 'real_stream_name LIKE ?';
-                if ($it->hasNext()) {
-                    $where .= ' OR ';
-                }
-                $params[] = $name . '-%';
-            }
+            $rowPlaces = implode(', ', array_fill(0, count($this->query['categories']), '?'));
 
             $sql = <<<EOT
-SELECT real_stream_name FROM $this->eventStreamsTable $where;
+SELECT real_stream_name FROM $this->eventStreamsTable WHERE category IN ($rowPlaces);
 EOT;
             $statement = $this->connection->prepare($sql);
+
             try {
-                $statement->execute($params);
+                $statement->execute($this->query['categories']);
             } catch (PDOException $exception) {
                 // ignore and check error code
             }
