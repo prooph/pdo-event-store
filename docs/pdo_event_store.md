@@ -97,3 +97,14 @@ You need to setup the database table yourself when using this strategy. An examp
 When you query the event streams a lot, it might be a good idea to create your own stream strategy, so you can add
 custom indexes to your database tables. When using with the MetadataMatcher, take care that you add the metadata
 matches in the right order, so they can match your indexes.
+
+### Disable transaction handling
+
+You can configure the event store to disable transaction handling completely. In order to do this, set the last parameter
+in the constructor to true (or configure your interop config factory accordingly, key is `disable_transaction_handling`).
+
+Enabling this feature will disable all transaction handling and you have to take care yourself to start, commit and rollback
+transactions.
+
+Note: This could lead to problems using the event store, if you did not manage to handle the transaction handling accordingly.
+This is your problem and we will not provide any support for problems you encounter while doing so.

@@ -55,6 +55,7 @@ final class MySqlEventStoreFactory extends AbstractEventStoreFactory
             'wrap_action_event_emitter' => true,
             'metadata_enrichers' => [],
             'plugins' => [],
+            'disable_transaction_handling' => false,
         ];
     }
 }
