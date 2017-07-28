@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace ProophTest\EventStore\Pdo;
 
 use ArrayIterator;
+use PDO;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Metadata\MetadataMatcher;
@@ -145,5 +146,31 @@ final class MariaDbEventStoreTest extends AbstractPdoEventStoreTest
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_type', 'user');
 
         $this->eventStore->appendTo(new StreamName('Prooph\Model\User'), new ArrayIterator([$streamEvent]));
+    }
+
+    public function it_ignores_transaction_handling_if_flag_is_enabled(): void
+    {
+        $connection = $this->prophesize(PDO::class);
+        $connection->beginTransaction()->shouldNotBeCalled();
+        $connection->commit()->shouldNotBeCalled();
+        $connection->rollback()->shouldNotBeCalled();
+
+        $eventStore = new MariaDbEventStore(new FQCNMessageFactory(), $connection->reveal(), new MariaDbAggregateStreamStrategy());
+
+        $streamEvent = UserCreated::with(
+            ['name' => 'Max Mustermann', 'email' => 'contact@prooph.de'],
+            1
+        );
+
+        $stream = new Stream(new StreamName('Prooph\Model\User'), new ArrayIterator([$streamEvent]));
+
+        $eventStore->create($stream);
+
+        $streamEvent = UsernameChanged::with(
+            ['name' => 'John Doe'],
+            1
+        );
+
+        $eventStore->appendTo(new StreamName('Prooph\Model\User'), new ArrayIterator([$streamEvent]));
     }
 }

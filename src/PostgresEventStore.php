@@ -60,6 +60,11 @@ final class PostgresEventStore implements TransactionalEventStore
     private $eventStreamsTable;
 
     /**
+     * @var bool
+     */
+    private $disableTransactionHandling;
+
+    /**
      * @throws ExtensionNotLoaded
      */
     public function __construct(
@@ -67,7 +72,8 @@ final class PostgresEventStore implements TransactionalEventStore
         PDO $connection,
         PersistenceStrategy $persistenceStrategy,
         int $loadBatchSize = 10000,
-        string $eventStreamsTable = 'event_streams'
+        string $eventStreamsTable = 'event_streams',
+        bool $disableTransactionHandling = false
     ) {
         if (! extension_loaded('pdo_pgsql')) {
             throw ExtensionNotLoaded::with('pdo_pgsql');
@@ -80,6 +86,7 @@ final class PostgresEventStore implements TransactionalEventStore
         $this->persistenceStrategy = $persistenceStrategy;
         $this->loadBatchSize = $loadBatchSize;
         $this->eventStreamsTable = $eventStreamsTable;
+        $this->disableTransactionHandling = $disableTransactionHandling;
     }
 
     public function fetchStreamMetadata(StreamName $streamName): array
@@ -189,6 +196,7 @@ EOT;
 
         $countEntries = iterator_count($streamEvents);
         $columnNames = $this->persistenceStrategy->columnNames();
+
         $tableName = $this->persistenceStrategy->generateTableName($streamName);
 
         $rowPlaces = '(' . implode(', ', array_fill(0, count($columnNames), '?')) . ')';
@@ -373,6 +381,10 @@ EOT;
 
     public function beginTransaction(): void
     {
+        if ($this->disableTransactionHandling) {
+            return;
+        }
+
         try {
             $this->connection->beginTransaction();
         } catch (PDOException $exception) {
@@ -382,6 +394,10 @@ EOT;
 
     public function commit(): void
     {
+        if ($this->disableTransactionHandling) {
+            return;
+        }
+
         try {
             $this->connection->commit();
         } catch (PDOException $exception) {
@@ -391,6 +407,10 @@ EOT;
 
     public function rollback(): void
     {
+        if ($this->disableTransactionHandling) {
+            return;
+        }
+
         try {
             $this->connection->rollBack();
         } catch (PDOException $exception) {
@@ -747,6 +767,10 @@ EOT;
             $statement->execute([$streamName->toString()]);
         } catch (PDOException $exception) {
             // ignore and check error code
+        }
+
+        if ($statement->errorCode() !== '00000') {
+            throw RuntimeException::fromStatementErrorInfo($statement->errorInfo());
         }
 
         if (1 !== $statement->rowCount()) {

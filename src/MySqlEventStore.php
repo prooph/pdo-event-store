@@ -63,6 +63,11 @@ final class MySqlEventStore implements EventStore
     private $duringCreate = false;
 
     /**
+     * @var bool
+     */
+    private $disableTransactionHandling;
+
+    /**
      * @throws ExtensionNotLoaded
      */
     public function __construct(
@@ -70,7 +75,8 @@ final class MySqlEventStore implements EventStore
         PDO $connection,
         PersistenceStrategy $persistenceStrategy,
         int $loadBatchSize = 10000,
-        string $eventStreamsTable = 'event_streams'
+        string $eventStreamsTable = 'event_streams',
+        bool $disableTransactionHandling = false
     ) {
         if (! extension_loaded('pdo_mysql')) {
             throw ExtensionNotLoaded::with('pdo_mysql');
@@ -83,6 +89,7 @@ final class MySqlEventStore implements EventStore
         $this->persistenceStrategy = $persistenceStrategy;
         $this->loadBatchSize = $loadBatchSize;
         $this->eventStreamsTable = $eventStreamsTable;
+        $this->disableTransactionHandling = $disableTransactionHandling;
     }
 
     public function fetchStreamMetadata(StreamName $streamName): array
@@ -179,19 +186,26 @@ EOT;
             throw $exception;
         }
 
-        $this->connection->beginTransaction();
-        $this->duringCreate = true;
+        if (! $this->disableTransactionHandling) {
+            $this->connection->beginTransaction();
+            $this->duringCreate = true;
+        }
 
         try {
             $this->appendTo($streamName, $stream->streamEvents());
         } catch (\Throwable $e) {
-            $this->connection->rollBack();
-            $this->duringCreate = false;
+            if (! $this->disableTransactionHandling) {
+                $this->connection->rollBack();
+                $this->duringCreate = false;
+            }
+
             throw $e;
         }
 
-        $this->connection->commit();
-        $this->duringCreate = false;
+        if (! $this->disableTransactionHandling) {
+            $this->connection->commit();
+            $this->duringCreate = false;
+        }
     }
 
     public function appendTo(StreamName $streamName, Iterator $streamEvents): void
@@ -212,7 +226,7 @@ EOT;
 
         $sql = 'INSERT INTO ' . $tableName . ' (' . implode(', ', $columnNames) . ') VALUES ' . $allPlaces;
 
-        if (! $this->connection->inTransaction()) {
+        if (! $this->disableTransactionHandling && ! $this->connection->inTransaction()) {
             $this->connection->beginTransaction();
         }
 
@@ -224,7 +238,7 @@ EOT;
         }
 
         if ($statement->errorInfo()[0] === '42S02') {
-            if ($this->connection->inTransaction() && ! $this->duringCreate) {
+            if (! $this->disableTransactionHandling && $this->connection->inTransaction() && ! $this->duringCreate) {
                 $this->connection->rollBack();
             }
 
@@ -232,7 +246,7 @@ EOT;
         }
 
         if ($statement->errorCode() === '23000') {
-            if ($this->connection->inTransaction() && ! $this->duringCreate) {
+            if (! $this->disableTransactionHandling && $this->connection->inTransaction() && ! $this->duringCreate) {
                 $this->connection->rollBack();
             }
 
@@ -240,7 +254,7 @@ EOT;
         }
 
         if ($statement->errorCode() !== '00000') {
-            if ($this->connection->inTransaction() && ! $this->duringCreate) {
+            if (! $this->disableTransactionHandling && $this->connection->inTransaction() && ! $this->duringCreate) {
                 $this->connection->rollBack();
             }
 
@@ -253,7 +267,7 @@ EOT;
             );
         }
 
-        if ($this->connection->inTransaction() && ! $this->duringCreate) {
+        if (! $this->disableTransactionHandling && $this->connection->inTransaction() && ! $this->duringCreate) {
             $this->connection->commit();
         }
     }
@@ -403,14 +417,14 @@ EOT;
 
     public function delete(StreamName $streamName): void
     {
-        if (! $this->connection->inTransaction()) {
+        if (! $this->disableTransactionHandling && ! $this->connection->inTransaction()) {
             $this->connection->beginTransaction();
         }
 
         try {
             $this->removeStreamFromStreamsTable($streamName);
         } catch (StreamNotFound $exception) {
-            if ($this->connection->inTransaction()) {
+            if (! $this->disableTransactionHandling && $this->connection->inTransaction()) {
                 $this->connection->rollBack();
             }
 
@@ -434,7 +448,7 @@ EOT;
             throw RuntimeException::fromStatementErrorInfo($statement->errorInfo());
         }
 
-        if ($this->connection->inTransaction()) {
+        if (! $this->disableTransactionHandling && $this->connection->inTransaction()) {
             $this->connection->commit();
         }
     }

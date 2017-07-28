@@ -149,4 +149,20 @@ final class PostgresEventStoreTest extends AbstractPdoEventStoreTest
 
         $this->eventStore->appendTo(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
     }
+
+    public function it_ignores_transaction_handling_if_flag_is_enabled(): void
+    {
+        $connection = $this->prophesize(PDO::class);
+        $connection->beginTransaction()->shouldNotBeCalled();
+        $connection->commit()->shouldNotBeCalled();
+        $connection->rollback()->shouldNotBeCalled();
+
+        $eventStore = new PostgresEventStore(new FQCNMessageFactory(), $connection->reveal(), new PostgresAggregateStreamStrategy());
+
+        $eventStore->beginTransaction();
+        $eventStore->commit();
+
+        $eventStore->beginTransaction();
+        $eventStore->rollback();
+    }
 }
