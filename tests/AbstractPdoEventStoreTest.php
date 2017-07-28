@@ -23,12 +23,10 @@ use Prooph\EventStore\Metadata\Operator;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
-use Prooph\EventStore\TransactionalEventStore;
 use ProophTest\EventStore\AbstractEventStoreTest;
 use ProophTest\EventStore\Mock\TestDomainEvent;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
-use Prophecy\Prophecy\ObjectProphecy;
 use Ramsey\Uuid\Uuid;
 
 abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
