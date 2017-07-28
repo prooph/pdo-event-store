@@ -15,6 +15,7 @@ namespace ProophTest\EventStore\Pdo;
 use ArrayIterator;
 use PDO;
 use Prooph\Common\Messaging\Message;
+use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Metadata\FieldType;
 use Prooph\EventStore\Metadata\MetadataMatcher;
@@ -22,10 +23,12 @@ use Prooph\EventStore\Metadata\Operator;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
+use Prooph\EventStore\TransactionalEventStore;
 use ProophTest\EventStore\AbstractEventStoreTest;
 use ProophTest\EventStore\Mock\TestDomainEvent;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
+use Prophecy\Prophecy\ObjectProphecy;
 use Ramsey\Uuid\Uuid;
 
 abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
