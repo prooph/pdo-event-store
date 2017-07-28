@@ -148,7 +148,7 @@ final class MariaDbEventStoreTest extends AbstractPdoEventStoreTest
         $this->eventStore->appendTo(new StreamName('Prooph\Model\User'), new ArrayIterator([$streamEvent]));
     }
 
-    public function it_ignores_transaction_handling_if_flag_is_enables(): void
+    public function it_ignores_transaction_handling_if_flag_is_enabled(): void
     {
         $connection = $this->prophesize(PDO::class);
         $connection->beginTransaction()->shouldNotBeCalled();
