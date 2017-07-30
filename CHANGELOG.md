@@ -1,7 +1,15 @@
 # Change Log
 
-## [v1.4.1](https://github.com/prooph/pdo-event-store/tree/v1.4.1)
+## [v1.5.0](https://github.com/prooph/pdo-event-store/tree/v1.5.0)
 
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.4.1...v1.5.0)
+
+**Implemented enhancements:**
+
+- Flag / Method to turn off transaction handling [\#102](https://github.com/prooph/pdo-event-store/issues/102)
+- Disable transaction handling [\#101](https://github.com/prooph/pdo-event-store/pull/101) ([prolic](https://github.com/prolic))
+
+## [v1.4.1](https://github.com/prooph/pdo-event-store/tree/v1.4.1) (2017-07-10)
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.4.0...v1.4.1)
 
 **Implemented enhancements:**
