@@ -25,11 +25,6 @@ use Prooph\EventStore\Pdo\Exception\RuntimeException;
 final class PdoStreamIterator implements Iterator
 {
     /**
-     * @var PDO
-     */
-    private $connection;
-
-    /**
      * @var PDOStatement
      */
     private $statement;
@@ -80,7 +75,6 @@ final class PdoStreamIterator implements Iterator
     private $forward;
 
     public function __construct(
-        PDO $connection,
         PDOStatement $statement,
         MessageFactory $messageFactory,
         int $batchSize,
@@ -88,7 +82,6 @@ final class PdoStreamIterator implements Iterator
         ?int $count,
         bool $forward
     ) {
-        $this->connection = $connection;
         $this->statement = $statement;
         $this->messageFactory = $messageFactory;
         $this->batchSize = $batchSize;
