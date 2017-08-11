@@ -284,7 +284,6 @@ EOT;
         }
 
         return new PdoStreamIterator(
-            $this->connection,
             $statement,
             $this->messageFactory,
             $this->loadBatchSize,
@@ -348,7 +347,6 @@ EOT;
         }
 
         return new PdoStreamIterator(
-            $this->connection,
             $statement,
             $this->messageFactory,
             $this->loadBatchSize,
