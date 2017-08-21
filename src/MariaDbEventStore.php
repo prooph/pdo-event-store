@@ -17,7 +17,6 @@ use Iterator;
 use PDO;
 use PDOException;
 use Prooph\Common\Messaging\MessageFactory;
-use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Exception\StreamExistsAlready;
 use Prooph\EventStore\Exception\StreamNotFound;
@@ -30,7 +29,7 @@ use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use Prooph\EventStore\Util\Assertion;
 
-final class MariaDbEventStore implements EventStore
+final class MariaDbEventStore implements PdoEventStore
 {
     /**
      * @var MessageFactory

@@ -23,9 +23,7 @@ use Prooph\EventStore\EventStore;
 use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Exception;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
-use Prooph\EventStore\Pdo\MariaDbEventStore;
-use Prooph\EventStore\Pdo\MySqlEventStore;
-use Prooph\EventStore\Pdo\PostgresEventStore;
+use Prooph\EventStore\Pdo\PdoEventStore;
 use Prooph\EventStore\Projection\ProjectionStatus;
 use Prooph\EventStore\Projection\ReadModel;
 use Prooph\EventStore\Projection\ReadModelProjector;
@@ -165,10 +163,7 @@ final class PdoEventStoreReadModelProjector implements ReadModelProjector
             $eventStore = $eventStore->getInnerEventStore();
         }
 
-        if (! $eventStore instanceof MariaDbEventStore
-            && ! $eventStore instanceof MySqlEventStore
-            && ! $eventStore instanceof PostgresEventStore
-        ) {
+        if (! $eventStore instanceof PdoEventStore) {
             throw new Exception\InvalidArgumentException('Unknown event store instance given');
         }
     }
