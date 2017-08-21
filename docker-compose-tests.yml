@@ -8,6 +8,8 @@ services:
       - postgres:postgres
       - mariadb:mariadb
       - mysql:mysql
+    environment:
+      - COMPOSER_ALLOW_SUPERUSER=1
 
   postgres:
     image: postgres:alpine
