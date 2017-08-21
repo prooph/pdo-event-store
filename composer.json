@@ -65,6 +65,11 @@
         "cs-fix": "php-cs-fixer fix -v --diff",
         "test-postgres": "DB_HOST=postgres vendor/bin/phpunit -c phpunit.xml.postgres",
         "test-mariadb": "DB_HOST=mariadb vendor/bin/phpunit -c phpunit.xml.mariadb",
-        "test-mysql": "DB_HOST=mysql vendor/bin/phpunit -c phpunit.xml.mysql"
+        "test-mysql": "DB_HOST=mysql vendor/bin/phpunit -c phpunit.xml.mysql",
+        "test-all": [
+            "@test-postgres",
+            "@test-mariadb",
+            "@test-mysql"
+        ]
     }
 }

@@ -32,7 +32,7 @@ use Prooph\EventStore\StreamName;
 use Prooph\EventStore\TransactionalEventStore;
 use Prooph\EventStore\Util\Assertion;
 
-final class PostgresEventStore implements TransactionalEventStore
+final class PostgresEventStore implements PdoEventStore, TransactionalEventStore
 {
     /**
      * @var MessageFactory
