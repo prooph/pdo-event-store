@@ -97,6 +97,7 @@ abstract class PdoEventStoreQueryTest extends AbstractEventStoreQueryTest
     public function it_throws_exception_when_invalid_wrapped_event_store_instance_passed(): void
     {
         $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown event store instance given');
 
         $eventStore = $this->prophesize(EventStore::class);
         $wrappedEventStore = $this->prophesize(EventStoreDecorator::class);
@@ -116,6 +117,7 @@ abstract class PdoEventStoreQueryTest extends AbstractEventStoreQueryTest
     public function it_throws_exception_when_unknown_event_store_instance_passed(): void
     {
         $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown event store instance given');
 
         $eventStore = $this->prophesize(EventStore::class);
         $connection = $this->prophesize(PDO::class);
