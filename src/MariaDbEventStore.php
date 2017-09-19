@@ -711,7 +711,7 @@ SQL;
 
             $value = (array) $value;
             foreach ($value as $k => $v) {
-                $values[$parameters[$k]] = addslashes($v);
+                $values[$parameters[$k]] = is_string($v) ? addslashes($v) : $v;
             }
         }
 
