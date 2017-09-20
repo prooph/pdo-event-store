@@ -1,7 +1,27 @@
 # Change Log
 
-## [v1.5.0](https://github.com/prooph/pdo-event-store/tree/v1.5.0)
+## [v1.5.1](https://github.com/prooph/pdo-event-store/tree/v1.5.1)
 
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.5.0...v1.5.1)
+
+**Implemented enhancements:**
+
+- PdoEventStore Interface [\#105](https://github.com/prooph/pdo-event-store/pull/105) ([oqq](https://github.com/oqq))
+
+**Fixed bugs:**
+
+- Aggregate root not found in MariaDb [\#106](https://github.com/prooph/pdo-event-store/issues/106)
+- Fix mariadb [\#107](https://github.com/prooph/pdo-event-store/pull/107) ([prolic](https://github.com/prolic))
+
+**Closed issues:**
+
+- Connection preprty never used in PdoStreamIterator [\#103](https://github.com/prooph/pdo-event-store/issues/103)
+
+**Merged pull requests:**
+
+- remove connection property from stream iterator [\#104](https://github.com/prooph/pdo-event-store/pull/104) ([prolic](https://github.com/prolic))
+
+## [v1.5.0](https://github.com/prooph/pdo-event-store/tree/v1.5.0) (2017-07-30)
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.4.1...v1.5.0)
 
 **Implemented enhancements:**
