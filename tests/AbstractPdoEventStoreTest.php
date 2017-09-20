@@ -465,6 +465,27 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
 
     /**
      * @test
+     * issue: https://github.com/prooph/pdo-event-store/issues/106
+     */
+    public function it_doesnt_double_escape_metadata(): void
+    {
+        $event = UserCreated::with(['name' => 'John'], 1);
+        $event = $event->withAddedMetadata('_aggregate_type', 'Prooph\Model\User');
+
+        $streamName = new StreamName('Prooph\Model\User');
+        $stream = new Stream($streamName, new ArrayIterator([$event]));
+
+        $this->eventStore->create($stream);
+
+        $metadataMatcher = new MetadataMatcher();
+        $metadataMatcher = $metadataMatcher->withMetadataMatch('_aggregate_type', Operator::EQUALS(), 'Prooph\Model\User');
+        $streamEvents = $this->eventStore->load($streamName, 0, 10, $metadataMatcher);
+
+        $this->assertCount(1, $streamEvents);
+    }
+
+    /**
+     * @test
      */
     public function it_does_not_use_json_force_object_for_stream_metadata_and_event_payload_and_metadata(): void
     {
