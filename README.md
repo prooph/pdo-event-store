@@ -31,6 +31,11 @@ If you want to use the projections, run additionally the scripts `scripts/mariad
 (for MariaDB), `scripts/mysql/02_projections_table.sql` (for MySQL) or
 `scripts/postgres/02_projections_table.sql` (for Postgres) on your server.
 
+Introduction
+------------
+
+[Video](https://www.youtube.com/watch?v=QhpDIqYQzg0)
+
 Tests
 -----
 If you want to run the unit tests locally you need a runnging MySql server listening on port `3306` 
@@ -63,3 +68,19 @@ and a running Postgres server listening on port `5432`. Both should contain an e
 ### Postgres
 
 `$ docker-compose -f docker-compose-tests.yml run --rm composer run-script test-postgres --timeout 0`
+
+## Support
+
+- Ask questions on [prooph-users](https://groups.google.com/forum/?hl=de#!forum/prooph) mailing list.
+- File issues at [https://github.com/prooph/event-store/issues](https://github.com/prooph/event-store/issues).
+- Say hello in the [prooph gitter](https://gitter.im/prooph/improoph) chat.
+
+## Contribute
+
+Please feel free to fork and extend existing or add new plugins and send a pull request with your changes!
+To establish a consistent code quality, please provide unit tests for all your changes and may adapt the documentation.
+
+## License
+
+Released under the [New BSD License](LICENSE).
+
