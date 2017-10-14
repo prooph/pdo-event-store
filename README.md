@@ -34,7 +34,7 @@ If you want to use the projections, run additionally the scripts `scripts/mariad
 Introduction
 ------------
 
-[Video](https://www.youtube.com/watch?v=QhpDIqYQzg0)
+[![Prooph Event Store v7](https://img.youtube.com/vi/QhpDIqYQzg0/0.jpg)](https://www.youtube.com/watch?v=QhpDIqYQzg0)
 
 Tests
 -----

@@ -1,7 +1,7 @@
-# Prooph PDO Event Store
+# Variants
 
 The PDO Event Store is an implementation of [prooph/event-store](https://github.com/prooph/event-store) that supports
-MySQL as well as PostgreSQL.
+MySQL and MariaDB as well as PostgreSQL.
 
 For a better understanding, we recommend to read the event-store docs, first.
 

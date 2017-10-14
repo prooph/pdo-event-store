@@ -1,10 +1,12 @@
 {
-  "title": "Prooph EventStore",
+  "title": "PDO Event Store",
   "content": [
-    {"intro": "../README.md"},
-    {"event_store": "pdo_event_store.md"},
+    {"intro": "introduction.md"},
+    {"variants": "variants.md"},
     {"interop_factories": "interop_factories.md"}
   ],
+  "tocDepth": 1,
+  "numbering": false,
   "target": "./html",
-  "template": "../vendor/tobiju/bookdown-bootswatch-templates/templates/main.php"
+  "template": "../vendor/prooph/bookdown-template/templates/main.php"
 }
