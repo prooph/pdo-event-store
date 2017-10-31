@@ -18,6 +18,7 @@ use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
+use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresAggregateStreamStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresSingleStreamStrategy;
 use Prooph\EventStore\Pdo\PostgresEventStore;
@@ -164,5 +165,36 @@ final class PostgresEventStoreTest extends AbstractPdoEventStoreTest
 
         $eventStore->beginTransaction();
         $eventStore->rollback();
+    }
+
+    /**
+     * @test
+     */
+    public function it_removes_stream_if_stream_table_hasnt_been_created(): void
+    {
+        $strategy = $this->createMock(PersistenceStrategy::class);
+        $strategy->method('createSchema')->willReturn([
+<<<SQL
+DO $$
+BEGIN
+    RAISE EXCEPTION '';
+END $$;
+SQL
+        ]);
+        $strategy->method('generateTableName')->willReturn('_non_existing_table');
+
+        $eventStore = new PostgresEventStore(
+            new FQCNMessageFactory(),
+            $this->connection,
+            $strategy
+        );
+        $stream = new Stream(new StreamName('Prooph\Model\User'), new \ArrayIterator());
+
+        try {
+            $eventStore->create($stream);
+        } catch (RuntimeException $e) {
+        }
+
+        $this->assertFalse($eventStore->hasStream($stream->streamName()));
     }
 }
