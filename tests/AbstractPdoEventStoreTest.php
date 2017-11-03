@@ -20,6 +20,7 @@ use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Metadata\FieldType;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;
+use Prooph\EventStore\Pdo\Exception\JsonException;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
@@ -482,6 +483,31 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
         $streamEvents = $this->eventStore->load($streamName, 0, 10, $metadataMatcher);
 
         $this->assertCount(1, $streamEvents);
+    }
+
+    /**
+     * @test
+     * issue: https://github.com/prooph/pdo-event-store/issues/110
+     */
+    public function it_handles_invalid_json(): void
+    {
+        $this->expectException(JsonException::class);
+
+        $event = UserCreated::with(['name' => ['John', 'Jane']], 1);
+        $event = $event->withAddedMetadata('key', 'value');
+
+        $streamName = new StreamName('Prooph\Model\User');
+        $stream = new Stream($streamName, new ArrayIterator([$event]), ['some' => ['metadata', 'as', 'well']]);
+
+        $this->eventStore->create($stream);
+
+        // TODO: Make json somehow invalid to trigger exception.
+
+        $metadataMatcher = new MetadataMatcher();
+        $metadataMatcher = $metadataMatcher->withMetadataMatch(
+            'event_id', Operator::EQUALS(), $event->uuid()->toString(), FieldType::MESSAGE_PROPERTY()
+        );
+        $this->eventStore->load($streamName, 1, null, $metadataMatcher);
     }
 
     /**
