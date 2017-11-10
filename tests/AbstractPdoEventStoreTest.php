@@ -493,7 +493,7 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
     {
         $this->expectException(JsonException::class);
 
-        $event = UserCreated::with(['name' => ['John', 'Jane']], 1);
+        $event = UserCreated::with(['name' => ['John', 'ßnow']], 1);
         $event = $event->withAddedMetadata('key', 'value');
 
         $streamName = new StreamName('Prooph\Model\User');
@@ -501,13 +501,16 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
 
         $this->eventStore->create($stream);
 
-        // TODO: Make json somehow invalid to trigger exception.
+        // Trigger an error when using an umlaut in the payload.
+        $this->connection->query('SET NAMES latin1');
 
         $metadataMatcher = new MetadataMatcher();
         $metadataMatcher = $metadataMatcher->withMetadataMatch(
             'event_id', Operator::EQUALS(), $event->uuid()->toString(), FieldType::MESSAGE_PROPERTY()
         );
-        $this->eventStore->load($streamName, 1, null, $metadataMatcher);
+
+        $streamEvents = $this->eventStore->load($streamName, 1, null, $metadataMatcher);
+        $streamEvents->current(); // Trigger PdoStreamIterator.
     }
 
     /**
