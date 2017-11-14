@@ -16,8 +16,10 @@ use ArrayIterator;
 use PDO;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\EventStore\Exception\ConcurrencyException;
+use Prooph\EventStore\Metadata\FieldType;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;
+use Prooph\EventStore\Pdo\Exception\JsonException;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\MySqlEventStore;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlAggregateStreamStrategy;
@@ -172,5 +174,33 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
         );
 
         $eventStore->appendTo(new StreamName('Prooph\Model\User'), new ArrayIterator([$streamEvent]));
+    }
+
+    /**
+     * @test
+     * issue: https://github.com/prooph/pdo-event-store/issues/110
+     */
+    public function it_handles_invalid_json(): void
+    {
+        $this->expectException(JsonException::class);
+
+        $event = UserCreated::with(['name' => ['John', 'ßnow']], 1);
+        $event = $event->withAddedMetadata('key', 'value');
+
+        $streamName = new StreamName('Prooph\Model\User');
+        $stream = new Stream($streamName, new ArrayIterator([$event]), ['some' => ['metadata', 'as', 'well']]);
+
+        $this->eventStore->create($stream);
+
+        // Trigger an error when using an umlaut in the payload.
+        $this->connection->query('SET NAMES latin1');
+
+        $metadataMatcher = new MetadataMatcher();
+        $metadataMatcher = $metadataMatcher->withMetadataMatch(
+            'event_id', Operator::EQUALS(), $event->uuid()->toString(), FieldType::MESSAGE_PROPERTY()
+        );
+
+        $streamEvents = $this->eventStore->load($streamName, 1, null, $metadataMatcher);
+        $streamEvents->current(); // Trigger PdoStreamIterator.
     }
 }
