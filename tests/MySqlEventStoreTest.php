@@ -22,6 +22,7 @@ use Prooph\EventStore\Metadata\Operator;
 use Prooph\EventStore\Pdo\Exception\JsonException;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\MySqlEventStore;
+use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlAggregateStreamStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSingleStreamStrategy;
 use Prooph\EventStore\Stream;
@@ -174,6 +175,30 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
         );
 
         $eventStore->appendTo(new StreamName('Prooph\Model\User'), new ArrayIterator([$streamEvent]));
+    }
+
+    /**
+     * @test
+     */
+    public function it_removes_stream_if_stream_table_hasnt_been_created(): void
+    {
+        $strategy = $this->createMock(PersistenceStrategy::class);
+        $strategy->method('createSchema')->willReturn(["SIGNAL SQLSTATE '45000';"]);
+        $strategy->method('generateTableName')->willReturn('_non_existing_table');
+
+        $eventStore = new MysqlEventStore(
+            new FQCNMessageFactory(),
+            $this->connection,
+            $strategy
+        );
+        $stream = new Stream(new StreamName('Prooph\Model\User'), new ArrayIterator());
+
+        try {
+            $eventStore->create($stream);
+        } catch (RuntimeException $e) {
+        }
+
+        $this->assertFalse($eventStore->hasStream($stream->streamName()));
     }
 
     /**

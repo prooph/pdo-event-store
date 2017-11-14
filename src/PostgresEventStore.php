@@ -177,7 +177,7 @@ EOT;
             $tableName = $this->persistenceStrategy->generateTableName($streamName);
             $this->createSchemaFor($tableName);
         } catch (RuntimeException $exception) {
-            $this->connection->exec("DROP TABLE $tableName;");
+            $this->connection->exec("DROP TABLE IF EXISTS $tableName;");
             $this->removeStreamFromStreamsTable($streamName);
 
             throw $exception;
@@ -428,7 +428,7 @@ EOT;
         try {
             $result = $callable($this);
             $this->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->rollback();
             throw $e;
         }
