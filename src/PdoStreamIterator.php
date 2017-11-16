@@ -188,11 +188,11 @@ final class PdoStreamIterator implements Iterator
      */
     public function key()
     {
-        if (-1 === $this->currentKey) {
+        if (null === $this->currentItem) {
             return false;
         }
 
-        return $this->currentKey;
+        return $this->currentItem->no;
     }
 
     /**
