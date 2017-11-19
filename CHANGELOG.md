@@ -1,7 +1,29 @@
 # Change Log
 
-## [v1.5.1](https://github.com/prooph/pdo-event-store/tree/v1.5.1)
+## [v1.5.2](https://github.com/prooph/pdo-event-store/tree/v1.5.2)
 
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.5.1...v1.5.2)
+
+**Implemented enhancements:**
+
+- PdoStreamIterator should check json\_last\_error after json\_decode [\#110](https://github.com/prooph/pdo-event-store/issues/110)
+- Drop stream table only if it exists [\#108](https://github.com/prooph/pdo-event-store/pull/108) ([sergeyfedotov](https://github.com/sergeyfedotov))
+
+**Fixed bugs:**
+
+- Catch Throwable in transactional\(\) [\#111](https://github.com/prooph/pdo-event-store/pull/111) ([jiripudil](https://github.com/jiripudil))
+
+**Closed issues:**
+
+- Usage of PDO::rowCount\(\) with SELECT statements [\#113](https://github.com/prooph/pdo-event-store/issues/113)
+- Add StorageStrategy Benchmarks [\#67](https://github.com/prooph/pdo-event-store/issues/67)
+
+**Merged pull requests:**
+
+- PdoStreamIterator should check json\_last\_error after json\_decode [\#112](https://github.com/prooph/pdo-event-store/pull/112) ([denniskoenig](https://github.com/denniskoenig))
+- Restructure docs [\#109](https://github.com/prooph/pdo-event-store/pull/109) ([codeliner](https://github.com/codeliner))
+
+## [v1.5.1](https://github.com/prooph/pdo-event-store/tree/v1.5.1) (2017-09-20)
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.5.0...v1.5.1)
 
 **Implemented enhancements:**
