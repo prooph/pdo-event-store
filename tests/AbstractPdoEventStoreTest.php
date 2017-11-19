@@ -15,7 +15,6 @@ namespace ProophTest\EventStore\Pdo;
 use ArrayIterator;
 use PDO;
 use Prooph\Common\Messaging\Message;
-use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Metadata\FieldType;
 use Prooph\EventStore\Metadata\MetadataMatcher;

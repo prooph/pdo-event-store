@@ -20,6 +20,7 @@ use PDOException;
 use PDOStatement;
 use Prooph\Common\Messaging\Message;
 use Prooph\Common\Messaging\MessageFactory;
+use Prooph\EventStore\Pdo\Exception\JsonException;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 
 final class PdoStreamIterator implements Iterator
@@ -120,10 +121,19 @@ final class PdoStreamIterator implements Iterator
             $metadata['_position'] = $this->currentItem->no;
         }
 
+        $payload = json_decode($this->currentItem->payload, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw JsonException::whileDecode(
+                json_last_error_msg(),
+                json_last_error(),
+                $this->currentItem->payload
+            );
+        }
+
         return $this->messageFactory->createMessageFromArray($this->currentItem->event_name, [
             'uuid' => $this->currentItem->event_id,
             'created_at' => $createdAt,
-            'payload' => json_decode($this->currentItem->payload, true),
+            'payload' => $payload,
             'metadata' => $metadata,
         ]);
     }
