@@ -81,6 +81,9 @@ final class PostgresEventStore implements PdoEventStore, TransactionalEventStore
 
         Assertion::min($loadBatchSize, 1);
 
+        $this->setAttribute(PDO::ATTR_STATEMENT_CLASS, ['Doctrine\DBAL\Driver\PDOStatement', []]);
+        $this->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
         $this->messageFactory = $messageFactory;
         $this->connection = $connection;
         $this->persistenceStrategy = $persistenceStrategy;
@@ -100,11 +103,7 @@ EOT;
         try {
             $statement->execute(['streamName' => $streamName->toString()]);
         } catch (PDOException $exception) {
-            // ignore and check error code
-        }
-
-        if ($statement->errorCode() !== '00000') {
-            throw RuntimeException::fromStatementErrorInfo($statement->errorInfo());
+            throw RuntimeException::fromPDOException($exception);
         }
 
         $stream = $statement->fetch(PDO::FETCH_OBJ);
@@ -133,11 +132,7 @@ EOT;
                 'metadata' => json_encode($newMetadata),
             ]);
         } catch (PDOException $exception) {
-            // ignore and check error code
-        }
-
-        if ($statement->errorCode() !== '00000') {
-            throw RuntimeException::fromStatementErrorInfo($statement->errorInfo());
+            throw RuntimeException::fromPDOException($exception);
         }
 
         if (1 !== $statement->rowCount()) {
@@ -157,11 +152,7 @@ EOT;
         try {
             $statement->execute(['streamName' => $streamName->toString()]);
         } catch (PDOException $exception) {
-            // ignore and check error code
-        }
-
-        if ($statement->errorCode() !== '00000') {
-            throw RuntimeException::fromStatementErrorInfo($statement->errorInfo());
+            throw RuntimeException::fromPDOException($exception);
         }
 
         return 1 === $statement->fetchColumn();
@@ -209,15 +200,17 @@ EOT;
         try {
             $statement->execute($data);
         } catch (PDOException $exception) {
-            // ignore and check error code
-        }
+            if ($exception->getCode() === '42P01') {
+                // TODO: Add previous exception.
+                throw StreamNotFound::with($streamName);
+            }
 
-        if ($statement->errorInfo()[0] === '42P01') {
-            throw StreamNotFound::with($streamName);
-        }
+            if (in_array($exception->getCode(), ['23000', '23505'], true)) {
+                // TODO: Add previous exception.
+                throw new ConcurrencyException();
+            }
 
-        if (in_array($statement->errorCode(), ['23000', '23505'], true)) {
-            throw new ConcurrencyException();
+            throw RuntimeException::fromPDOException($exception);
         }
     }
 
@@ -268,14 +261,12 @@ EOT;
         try {
             $statement->execute();
         } catch (PDOException $exception) {
-            // ignore and check error code
-        }
+            if ($exception->getCode() === '42703') {
+                // TODO: Add previous exception.
+                throw new \UnexpectedValueException('Unknown field given in metadata matcher');
+            }
 
-        if ($statement->errorCode() === '42703') {
-            throw new \UnexpectedValueException('Unknown field given in metadata matcher');
-        }
-
-        if ($statement->errorCode() !== '00000') {
+            // TODO: Add previous exception.
             throw StreamNotFound::with($streamName);
         }
 
@@ -335,10 +326,7 @@ EOT;
         try {
             $statement->execute();
         } catch (PDOException $exception) {
-            // ignore and check error code
-        }
-
-        if ($statement->errorCode() !== '00000') {
+            // TODO: Add previous exception.
             throw StreamNotFound::with($streamName);
         }
 
@@ -369,11 +357,7 @@ EOT;
         try {
             $statement->execute();
         } catch (PDOException $exception) {
-            // ignore and check error code
-        }
-
-        if ($statement->errorCode() !== '00000') {
-            throw RuntimeException::fromStatementErrorInfo($statement->errorInfo());
+            throw RuntimeException::fromPDOException($exception);
         }
     }
 
@@ -386,6 +370,7 @@ EOT;
         try {
             $this->connection->beginTransaction();
         } catch (PDOException $exception) {
+            // TODO: Add previous exception.
             throw new TransactionAlreadyStarted();
         }
     }
@@ -399,6 +384,7 @@ EOT;
         try {
             $this->connection->commit();
         } catch (PDOException $exception) {
+            // TODO: Add previous exception.
             throw new TransactionNotStarted();
         }
     }
@@ -412,6 +398,7 @@ EOT;
         try {
             $this->connection->rollBack();
         } catch (PDOException $exception) {
+            // TODO: Add previous exception.
             throw new TransactionNotStarted();
         }
     }
@@ -467,13 +454,10 @@ SQL;
         try {
             $statement->execute($values);
         } catch (PDOException $exception) {
-            // ignore and check error code
-        }
+            $errorCode = $exception->getCode();
+            $errorInfo = $exception->getMessage();
 
-        if ($statement->errorCode() !== '00000') {
-            $errorCode = $statement->errorCode();
-            $errorInfo = $statement->errorInfo()[2];
-
+            // TODO: Add previous exception.
             throw new RuntimeException(
                 "Error $errorCode. Maybe the event streams table is not setup?\nError-Info: $errorInfo"
             );
@@ -515,15 +499,16 @@ SQL;
         try {
             $statement->execute($values);
         } catch (PDOException $exception) {
-            // ignore and check error code
-        }
+            if ($exception->getCode() === '2201B') {
+                // TODO: Add previous exception.
+                throw new Exception\InvalidArgumentException('Invalid regex pattern given');
+            }
 
-        if ($statement->errorCode() === '2201B') {
-            throw new Exception\InvalidArgumentException('Invalid regex pattern given');
-        } elseif ($statement->errorCode() !== '00000') {
-            $errorCode = $statement->errorCode();
-            $errorInfo = $statement->errorInfo()[2];
+            $errorCode = $exception->getCode();
+            $errorInfo = $exception->getMessage();
 
+            // TODO: Add previous exception.
+            // TODO: Also this code is duplicated, needs refactoring.
             throw new RuntimeException(
                 "Error $errorCode. Maybe the event streams table is not setup?\nError-Info: $errorInfo"
             );
@@ -564,13 +549,11 @@ SQL;
         try {
             $statement->execute($values);
         } catch (PDOException $exception) {
-            // ignore and check error code
-        }
+            $errorCode = $exception->getCode();
+            $errorInfo = $exception->getMessage();
 
-        if ($statement->errorCode() !== '00000') {
-            $errorCode = $statement->errorCode();
-            $errorInfo = $statement->errorInfo()[2];
-
+            // TODO: Add previous exception.
+            // TODO: Also this code is duplicated, needs refactoring.
             throw new RuntimeException(
                 "Error $errorCode. Maybe the event streams table is not setup?\nError-Info: $errorInfo"
             );
@@ -606,15 +589,16 @@ SQL;
         try {
             $statement->execute($values);
         } catch (PDOException $exception) {
-            // ignore and check error code
-        }
+            if ($exception->getCode() === '2201B') {
+                // TODO: Add previous exception.
+                throw new Exception\InvalidArgumentException('Invalid regex pattern given');
+            }
 
-        if ($statement->errorCode() === '2201B') {
-            throw new Exception\InvalidArgumentException('Invalid regex pattern given');
-        } elseif ($statement->errorCode() !== '00000') {
-            $errorCode = $statement->errorCode();
-            $errorInfo = $statement->errorInfo()[2];
+            $errorCode = $exception->getCode();
+            $errorInfo = $exception->getMessage();
 
+            // TODO: Add previous exception.
+            // TODO: Also this code is duplicated, needs refactoring.
             throw new RuntimeException(
                 "Error $errorCode. Maybe the event streams table is not setup?\nError-Info: $errorInfo"
             );
@@ -730,24 +714,23 @@ EOT;
 
         $statement = $this->connection->prepare($sql);
         try {
-            $result = $statement->execute([
+            $statement->execute([
                 ':realStreamName' => $realStreamName,
                 ':streamName' => $streamName,
                 ':metadata' => $metadata,
                 ':category' => $category,
             ]);
         } catch (PDOException $exception) {
-            $result = false;
-        }
-
-        if (! $result) {
-            if (in_array($statement->errorCode(), ['23000', '23505'], true)) {
+            if (in_array($exception->getCode(), ['23000', '23505'], true)) {
+                // TODO: Add previous exception.
                 throw StreamExistsAlready::with($stream->streamName());
             }
 
-            $errorCode = $statement->errorCode();
-            $errorInfo = $statement->errorInfo()[2];
+            $errorCode = $exception->getCode();
+            $errorInfo = $exception->getMessage();
 
+            // TODO: Add previous exception.
+            // TODO: Also this code is duplicated, needs refactoring.
             throw new RuntimeException(
                 "Error $errorCode. Maybe the event streams table is not setup?\nError-Info: $errorInfo"
             );
@@ -764,11 +747,7 @@ EOT;
         try {
             $statement->execute([$streamName->toString()]);
         } catch (PDOException $exception) {
-            // ignore and check error code
-        }
-
-        if ($statement->errorCode() !== '00000') {
-            throw RuntimeException::fromStatementErrorInfo($statement->errorInfo());
+            throw RuntimeException::fromPDOException($exception);
         }
 
         if (1 !== $statement->rowCount()) {
@@ -783,12 +762,10 @@ EOT;
         foreach ($schema as $command) {
             $statement = $this->connection->prepare($command);
             try {
-                $result = $statement->execute();
+                $statement->execute();
             } catch (PDOException $exception) {
-                $result = false;
-            }
-
-            if (! $result) {
+                // TODO: Add previous exception.
+                // TODO: Needs refactoring.
                 throw new RuntimeException('Error during createSchemaFor: ' . implode('; ', $statement->errorInfo()));
             }
         }
