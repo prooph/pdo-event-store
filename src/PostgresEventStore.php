@@ -219,6 +219,10 @@ EOT;
         if (in_array($statement->errorCode(), ['23000', '23505'], true)) {
             throw new ConcurrencyException();
         }
+
+        if ($statement->errorCode() !== '00000') {
+            throw RuntimeException::fromStatementErrorInfo($statement->errorInfo());
+        }
     }
 
     public function load(
