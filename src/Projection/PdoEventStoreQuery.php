@@ -274,9 +274,9 @@ final class PdoEventStoreQuery implements Query
         $this->currentStreamName = $streamName;
         $handler = $this->handler;
 
-        foreach ($events as $event) {
+        foreach ($events as $key => $event) {
             /* @var Message $event */
-            $this->streamPositions[$streamName]++;
+            $this->streamPositions[$streamName] = $key;
 
             $result = $handler($this->state, $event);
 
@@ -294,9 +294,9 @@ final class PdoEventStoreQuery implements Query
     {
         $this->currentStreamName = $streamName;
 
-        foreach ($events as $event) {
+        foreach ($events as $key => $event) {
             /* @var Message $event */
-            $this->streamPositions[$streamName]++;
+            $this->streamPositions[$streamName] = $key;
 
             if (! isset($this->handlers[$event->messageName()])) {
                 continue;
