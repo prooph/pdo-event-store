@@ -1,7 +1,28 @@
 # Change Log
 
-## [v1.5.2](https://github.com/prooph/pdo-event-store/tree/v1.5.2)
+## [v1.6.0](https://github.com/prooph/pdo-event-store/tree/v1.6.0)
 
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.5.2...v1.6.0)
+
+**Implemented enhancements:**
+
+- Use JSON\_UNQUOTE instead of unquoting operator [\#121](https://github.com/prooph/pdo-event-store/pull/121) ([sbacelic](https://github.com/sbacelic))
+- test php 7.2 on travis [\#119](https://github.com/prooph/pdo-event-store/pull/119) ([prolic](https://github.com/prolic))
+
+**Fixed bugs:**
+
+- bump mariadb requirements to 10.2.11 [\#120](https://github.com/prooph/pdo-event-store/pull/120) ([prolic](https://github.com/prolic))
+
+**Closed issues:**
+
+- Mariadb eventstore returning "null" aggregate on new mariadb server 10.2.11 [\#116](https://github.com/prooph/pdo-event-store/issues/116)
+- Wrong position in projections table [\#114](https://github.com/prooph/pdo-event-store/issues/114)
+
+**Merged pull requests:**
+
+- Fix silently ignored errors in PostgresEventStore [\#118](https://github.com/prooph/pdo-event-store/pull/118) ([enumag](https://github.com/enumag))
+
+## [v1.5.2](https://github.com/prooph/pdo-event-store/tree/v1.5.2) (2017-11-19)
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.5.1...v1.5.2)
 
 **Implemented enhancements:**
@@ -20,6 +41,7 @@
 
 **Merged pull requests:**
 
+- Fixes position in projections [\#115](https://github.com/prooph/pdo-event-store/pull/115) ([Adapik](https://github.com/Adapik))
 - PdoStreamIterator should check json\_last\_error after json\_decode [\#112](https://github.com/prooph/pdo-event-store/pull/112) ([denniskoenig](https://github.com/denniskoenig))
 - Restructure docs [\#109](https://github.com/prooph/pdo-event-store/pull/109) ([codeliner](https://github.com/codeliner))
 
