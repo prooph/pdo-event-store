@@ -699,7 +699,7 @@ SQL;
                     continue;
                 }
 
-                $where[] = "metadata->>\"$.$field\" $operatorString $parameterString $operatorStringEnd";
+                $where[] = "JSON_UNQUOTE(metadata->\"$.$field\") $operatorString $parameterString $operatorStringEnd";
             } else {
                 if (is_bool($value)) {
                     $where[] = "$field $operatorString " . var_export($value, true) . ' ' . $operatorStringEnd;
