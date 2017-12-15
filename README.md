@@ -12,7 +12,7 @@ Requirements
 - PHP >= 7.1
 - PDO_MySQL Extension or PDO_PGSQL Extension
 
-For MariaDB you need server vesion >= 10.2.11.
+For MariaDB you need server version >= 10.2.11.
 
 For MySQL you need server version >= 5.7.9.
 
