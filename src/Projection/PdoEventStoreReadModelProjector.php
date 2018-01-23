@@ -703,12 +703,18 @@ EOT;
         $lockUntilString = $this->createLockUntilString($now);
 
         $sql = <<<EOT
-UPDATE $this->projectionsTable SET locked_until = ? WHERE name = ?;
+UPDATE $this->projectionsTable SET locked_until = ?, position = ? WHERE name = ?;
 EOT;
 
         $statement = $this->connection->prepare($sql);
         try {
-            $statement->execute([$lockUntilString, $this->name]);
+            $statement->execute(
+                [
+                    $lockUntilString,
+                    json_encode($this->streamPositions),
+                    $this->name,
+                ]
+            );
         } catch (PDOException $exception) {
             // ignore and check error code
         }
