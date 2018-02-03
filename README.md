@@ -75,6 +75,9 @@ Additional note:
 When using Postgres, the event_id has to be a valid uuid, so be careful when using a custom MetadataMatcher, as the
 event-store could throw an exception when passing a non-valid uuid (f.e. "foo") as uuid.
 
+The migration is strongly recommended, but not required. It's fully backward-compatible. The change on Postgres is
+only a microoptimization, the change on MariaDB prevents errors, when the stored json gets too big.
+
 Introduction
 ------------
 
