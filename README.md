@@ -35,6 +35,49 @@ If you want to use the projections, run additionally the scripts `scripts/mariad
 (for MariaDB), `scripts/mysql/02_projections_table.sql` (for MySQL) or
 `scripts/postgres/02_projections_table.sql` (for Postgres) on your server.
 
+Upgrade from 1.6 to 1.7
+-----------------------
+
+Starting from v1.7 the pdo-event-store uses optimized table schemas.
+The upgrade can be done in background with a script optimizing that process.
+A downtime for the database should not be needed.
+In order to upgrade your existing database, you have to execute:
+
+- MariaDB
+
+```
+ALTER TABLE `event_streams` MODIFY `metadata` LONGTEXT NOT NULL;
+ALTER TABLE `projections` MODIFY `position` LONGTEXT;
+ALTER TABLE `projections` MODIFY `state` LONGTEXT;
+```
+
+Then for all event-streams (`SELECT stream_name FROM event_streams`)
+
+```
+ALTER TABLE <stream_name> MODIFY `payload` LONGTEXT NOT NULL;
+ALTER TABLE <stream_name> MODIFY `metadata` LONGTEXT NOT NULL,
+```
+
+- MySQL
+
+nothing to upgrade
+
+- Postgres
+
+For all event-streams (`SELECT stream_name FROM event_streams`)
+
+```
+ALTER TABLE <stream_name> MODIFY event_id UUID NOT NULL;
+```
+
+Additional note:
+
+When using Postgres, the event_id has to be a valid uuid, so be careful when using a custom MetadataMatcher, as the
+event-store could throw an exception when passing a non-valid uuid (f.e. "foo") as uuid.
+
+The migration is strongly recommended, but not required. It's fully backward-compatible. The change on Postgres is
+only a microoptimization, the change on MariaDB prevents errors, when the stored json gets too big.
+
 Introduction
 ------------
 

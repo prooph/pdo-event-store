@@ -1,8 +1,8 @@
 <?php
 /**
  * This file is part of the prooph/pdo-event-store.
- * (c) 2016-2017 prooph software GmbH <contact@prooph.de>
- * (c) 2016-2017 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
+ * (c) 2016-2018 prooph software GmbH <contact@prooph.de>
+ * (c) 2016-2018 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -29,8 +29,8 @@ CREATE TABLE `$tableName` (
     `no` BIGINT(20) NOT NULL AUTO_INCREMENT,
     `event_id` CHAR(36) COLLATE utf8_bin NOT NULL,
     `event_name` VARCHAR(100) COLLATE utf8_bin NOT NULL,
-    `payload` TEXT NOT NULL,
-    `metadata` TEXT NOT NULL,
+    `payload` LONGTEXT NOT NULL,
+    `metadata` LONGTEXT NOT NULL,
     `created_at` DATETIME(6) NOT NULL,
     CHECK (`payload` IS NOT NULL AND JSON_VALID(`payload`)),
     CHECK (`metadata` IS NOT NULL AND JSON_VALID(`metadata`)),
