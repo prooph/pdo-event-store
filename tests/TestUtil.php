@@ -45,7 +45,20 @@ abstract class TestUtil
             $dsn .= 'dbname=' . $connectionParams['dbname'] . $separator;
             $dsn .= self::getCharsetValue($connectionParams['charset'], $connectionParams['driver']) . $separator;
             $dsn = rtrim($dsn);
-            self::$connection = new PDO($dsn, $connectionParams['user'], $connectionParams['password'], $connectionParams['options']);
+
+            $retries = 10; // keep trying for 10 seconds, should be enough
+            while (null === self::$connection && $retries > 0) {
+                try {
+                    self::$connection = new PDO($dsn, $connectionParams['user'], $connectionParams['password'], $connectionParams['options']);
+                } catch (\PDOException $e) {
+                    if (2002 !== $e->getCode()) {
+                        throw $e;
+                    }
+
+                    $retries--;
+                    sleep(1);
+                }
+            }
         }
 
         try {
