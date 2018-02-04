@@ -37,7 +37,8 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
 
     protected function tearDown(): void
     {
-        switch (TestUtil::getDatabaseVendor()) {
+        $vendor = TestUtil::getDatabaseVendor();
+        switch ($vendor) {
             case 'postgres':
                 $statement = $this->connection->prepare('SELECT table_name FROM information_schema.tables WHERE table_schema = \'public\';');
                 break;
@@ -49,12 +50,12 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
         $tables = $statement->fetchAll(PDO::FETCH_COLUMN);
 
         foreach ($tables as $table) {
-            switch (TestUtil::getDatabaseVendor()) {
-                case 'mysql':
-                    $this->connection->exec(sprintf('DROP TABLE `%s`;', $table));
+            switch ($vendor) {
+                case 'postgres':
+                    $this->connection->exec(sprintf('DROP TABLE "%s";', $table));
                     break;
                 default:
-                    $this->connection->exec(sprintf('DROP TABLE "%s";', $table));
+                    $this->connection->exec(sprintf('DROP TABLE `%s`;', $table));
             }
         }
     }
