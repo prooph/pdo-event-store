@@ -50,11 +50,7 @@ final class PostgresEventStoreTest extends AbstractPdoEventStoreTest
         $this->connection = TestUtil::getConnection();
         TestUtil::initDefaultDatabaseTables($this->connection);
 
-        $this->eventStore = new PostgresEventStore(
-            new FQCNMessageFactory(),
-            $this->connection,
-            new PostgresAggregateStreamStrategy()
-        );
+        $this->setupEventStoreWith(new PostgresAggregateStreamStrategy());
     }
 
     /**
@@ -66,8 +62,7 @@ final class PostgresEventStoreTest extends AbstractPdoEventStoreTest
         $this->expectExceptionMessage('Error during createSchemaFor');
 
         $streamName = new StreamName('foo');
-        $strategy = new PostgresAggregateStreamStrategy();
-        $schema = $strategy->createSchema($strategy->generateTableName($streamName));
+        $schema = $this->persistenceStrategy->createSchema($this->persistenceStrategy->generateTableName($streamName));
 
         foreach ($schema as $command) {
             $statement = $this->connection->prepare($command);
@@ -82,12 +77,7 @@ final class PostgresEventStoreTest extends AbstractPdoEventStoreTest
      */
     public function it_loads_correctly_using_single_stream_per_aggregate_type_strategy(): void
     {
-        $this->eventStore = new PostgresEventStore(
-            new FQCNMessageFactory(),
-            $this->connection,
-            new PostgresSingleStreamStrategy(),
-            5
-        );
+        $this->setupEventStoreWith(new PostgresSingleStreamStrategy(), 5);
 
         $streamName = new StreamName('Prooph\Model\User');
 
@@ -118,11 +108,7 @@ final class PostgresEventStoreTest extends AbstractPdoEventStoreTest
     {
         $this->expectException(ConcurrencyException::class);
 
-        $this->eventStore = new PostgresEventStore(
-            new FQCNMessageFactory(),
-            $this->connection,
-            new PostgresSingleStreamStrategy()
-        );
+        $this->setupEventStoreWith(new PostgresSingleStreamStrategy());
 
         $streamEvent = UserCreated::with(
             ['name' => 'Max Mustermann', 'email' => 'contact@prooph.de'],
@@ -183,18 +169,15 @@ SQL
         ]);
         $strategy->method('generateTableName')->willReturn('_non_existing_table');
 
-        $eventStore = new PostgresEventStore(
-            new FQCNMessageFactory(),
-            $this->connection,
-            $strategy
-        );
+        $this->setupEventStoreWith($strategy);
+
         $stream = new Stream(new StreamName('Prooph\Model\User'), new \ArrayIterator());
 
         try {
-            $eventStore->create($stream);
+            $this->eventStore->create($stream);
         } catch (RuntimeException $e) {
         }
 
-        $this->assertFalse($eventStore->hasStream($stream->streamName()));
+        $this->assertFalse($this->eventStore->hasStream($stream->streamName()));
     }
 }
