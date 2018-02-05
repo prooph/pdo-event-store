@@ -14,12 +14,17 @@ namespace ProophTest\EventStore\Pdo;
 
 use ArrayIterator;
 use PDO;
+use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Metadata\FieldType;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
+use Prooph\EventStore\Pdo\MariaDbEventStore;
+use Prooph\EventStore\Pdo\MySqlEventStore;
+use Prooph\EventStore\Pdo\PersistenceStrategy;
+use Prooph\EventStore\Pdo\PostgresEventStore;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\AbstractEventStoreTest;
@@ -34,6 +39,39 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
      * @var PDO
      */
     protected $connection;
+
+    /**
+     * @var PersistenceStrategy
+     */
+    protected $persistenceStrategy;
+
+    protected function setupEventStoreWith(
+        PersistenceStrategy $persistenceStrategy, int $loadBatchSize = 10000,
+        string $eventStreamsTable = 'event_streams',
+        bool $disableTransactionHandling = false): void
+    {
+        $this->persistenceStrategy = $persistenceStrategy;
+
+        switch (TestUtil::getDatabaseVendor()) {
+            case 'mariadb':
+                $class = MariaDbEventStore::class;
+                break;
+            case 'mysql':
+                $class = MySqlEventStore::class;
+                break;
+            case 'postgres':
+                $class = PostgresEventStore::class;
+                break;
+        }
+        $this->eventStore = new $class(
+            new FQCNMessageFactory(),
+            $this->connection,
+            $persistenceStrategy,
+            $loadBatchSize,
+            $eventStreamsTable,
+            $disableTransactionHandling
+        );
+    }
 
     protected function tearDown(): void
     {
