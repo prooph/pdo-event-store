@@ -116,6 +116,16 @@ abstract class TestUtil
         $connection->exec(file_get_contents(__DIR__.'/../scripts/' . $vendor . '/02_projections_table.sql'));
     }
 
+    public static function initCustomDatabaseTables(PDO $connection): void
+    {
+        $vendor = self::getDatabaseVendor();
+
+        $connection->exec('DROP TABLE IF EXISTS event_streams');
+        $connection->exec(file_get_contents(__DIR__.'/Assets/scripts/' . $vendor . '/01_event_streams_table.sql'));
+        $connection->exec('DROP TABLE IF EXISTS projections');
+        $connection->exec(file_get_contents(__DIR__.'/Assets/scripts/' . $vendor . '/02_projections_table.sql'));
+    }
+
     private static function hasRequiredConnectionParams(): bool
     {
         $env = getenv();

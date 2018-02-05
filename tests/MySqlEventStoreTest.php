@@ -34,7 +34,7 @@ use Ramsey\Uuid\Uuid;
 /**
  * @group mysql
  */
-final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
+class MySqlEventStoreTest extends AbstractPdoEventStoreTest
 {
     /**
      * @var MySqlEventStore
