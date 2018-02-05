@@ -1,8 +1,8 @@
 <?php
 /**
  * This file is part of the prooph/pdo-event-store.
- * (c) 2016-2017 prooph software GmbH <contact@prooph.de>
- * (c) 2016-2017 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
+ * (c) 2016-2018 prooph software GmbH <contact@prooph.de>
+ * (c) 2016-2018 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -92,7 +92,7 @@ final class PostgresEventStore implements PdoEventStore, TransactionalEventStore
     public function fetchStreamMetadata(StreamName $streamName): array
     {
         $sql = <<<EOT
-SELECT metadata FROM $this->eventStreamsTable
+SELECT metadata FROM "$this->eventStreamsTable"
 WHERE real_stream_name = :streamName; 
 EOT;
 
@@ -121,7 +121,7 @@ EOT;
         $eventStreamsTable = $this->eventStreamsTable;
 
         $sql = <<<EOT
-UPDATE $eventStreamsTable
+UPDATE "$eventStreamsTable"
 SET metadata = :metadata
 WHERE real_stream_name = :streamName; 
 EOT;
@@ -148,7 +148,7 @@ EOT;
     public function hasStream(StreamName $streamName): bool
     {
         $sql = <<<EOT
-SELECT COUNT(1) FROM $this->eventStreamsTable
+SELECT COUNT(1) FROM "$this->eventStreamsTable"
 WHERE real_stream_name = :streamName;
 EOT;
 
@@ -177,7 +177,7 @@ EOT;
             $tableName = $this->persistenceStrategy->generateTableName($streamName);
             $this->createSchemaFor($tableName);
         } catch (RuntimeException $exception) {
-            $this->connection->exec("DROP TABLE IF EXISTS $tableName;");
+            $this->connection->exec('DROP TABLE IF EXISTS "$tableName";');
             $this->removeStreamFromStreamsTable($streamName);
 
             throw $exception;
@@ -202,7 +202,7 @@ EOT;
         $rowPlaces = '(' . implode(', ', array_fill(0, count($columnNames), '?')) . ')';
         $allPlaces = implode(', ', array_fill(0, $countEntries, $rowPlaces));
 
-        $sql = 'INSERT INTO ' . $tableName . ' (' . implode(', ', $columnNames) . ') VALUES ' . $allPlaces;
+        $sql = 'INSERT INTO "' . $tableName . '" (' . implode(', ', $columnNames) . ') VALUES ' . $allPlaces;
 
         $statement = $this->connection->prepare($sql);
 
@@ -233,8 +233,7 @@ EOT;
     ): Iterator {
         $tableName = $this->persistenceStrategy->generateTableName($streamName);
 
-        $query = "SELECT stream_name FROM $this->eventStreamsTable WHERE stream_name = ?";
-
+        $query = "SELECT stream_name FROM \"$this->eventStreamsTable\" WHERE stream_name = ?";
         $statement = $this->connection->prepare($query);
         $statement->execute([$tableName]);
 
@@ -253,7 +252,7 @@ EOT;
         }
 
         $query = <<<EOT
-SELECT * FROM $tableName
+SELECT * FROM "$tableName"
 $whereCondition
 ORDER BY no ASC
 LIMIT :limit;
@@ -320,7 +319,7 @@ EOT;
         $tableName = $this->persistenceStrategy->generateTableName($streamName);
 
         $query = <<<EOT
-SELECT * FROM $tableName
+SELECT * FROM "$tableName"
 $whereCondition
 ORDER BY no DESC
 LIMIT :limit;
@@ -366,7 +365,7 @@ EOT;
 
         $encodedStreamName = $this->persistenceStrategy->generateTableName($streamName);
         $deleteEventStreamSql = <<<EOT
-DROP TABLE IF EXISTS $encodedStreamName;
+DROP TABLE IF EXISTS "$encodedStreamName";
 EOT;
 
         $statement = $this->connection->prepare($deleteEventStreamSql);
@@ -460,7 +459,7 @@ EOT;
         }
 
         $query = <<<SQL
-SELECT real_stream_name FROM $this->eventStreamsTable
+SELECT real_stream_name FROM "$this->eventStreamsTable"
 $whereCondition
 ORDER BY real_stream_name ASC
 LIMIT $limit OFFSET $offset
@@ -508,7 +507,7 @@ SQL;
         $whereCondition = 'WHERE ' . implode(' AND ', $where);
 
         $query = <<<SQL
-SELECT real_stream_name FROM $this->eventStreamsTable
+SELECT real_stream_name FROM "$this->eventStreamsTable"
 $whereCondition
 ORDER BY real_stream_name ASC
 LIMIT $limit OFFSET $offset
@@ -556,7 +555,7 @@ SQL;
         }
 
         $query = <<<SQL
-SELECT category FROM $this->eventStreamsTable
+SELECT category FROM "$this->eventStreamsTable"
 $whereCondition
 GROUP BY category
 ORDER BY category ASC
@@ -598,7 +597,7 @@ SQL;
         $whereCondition = 'WHERE category ~ :filter AND category IS NOT NULL';
 
         $query = <<<SQL
-SELECT category FROM $this->eventStreamsTable
+SELECT category FROM "$this->eventStreamsTable"
 $whereCondition
 GROUP BY category
 ORDER BY category ASC
@@ -728,7 +727,7 @@ SQL;
         $metadata = json_encode($stream->metadata());
 
         $sql = <<<EOT
-INSERT INTO $this->eventStreamsTable (real_stream_name, stream_name, metadata, category)
+INSERT INTO "$this->eventStreamsTable" (real_stream_name, stream_name, metadata, category)
 VALUES (:realStreamName, :streamName, :metadata, :category);
 EOT;
 
@@ -761,7 +760,7 @@ EOT;
     private function removeStreamFromStreamsTable(StreamName $streamName): void
     {
         $deleteEventStreamTableEntrySql = <<<EOT
-DELETE FROM $this->eventStreamsTable WHERE real_stream_name = ?;
+DELETE FROM "$this->eventStreamsTable" WHERE real_stream_name = ?;
 EOT;
 
         $statement = $this->connection->prepare($deleteEventStreamTableEntrySql);
