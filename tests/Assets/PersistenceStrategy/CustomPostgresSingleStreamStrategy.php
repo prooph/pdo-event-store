@@ -1,8 +1,8 @@
 <?php
 /**
  * This file is part of the prooph/pdo-event-store.
- * (c) 2016-2017 prooph software GmbH <contact@prooph.de>
- * (c) 2016-2017 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
+ * (c) 2016-2018 prooph software GmbH <contact@prooph.de>
+ * (c) 2016-2018 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -13,11 +13,10 @@ declare(strict_types=1);
 namespace ProophTest\EventStore\Pdo\Assets\PersistenceStrategy;
 
 use Iterator;
-use Prooph\EventStore\Pdo\HasQueryHint;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\StreamName;
 
-final class MySqlSingleStreamStrategy implements PersistenceStrategy, HasQueryHint
+final class CustomPostgresSingleStreamStrategy implements PersistenceStrategy
 {
     /**
      * @param string $tableName
@@ -26,24 +25,36 @@ final class MySqlSingleStreamStrategy implements PersistenceStrategy, HasQueryHi
     public function createSchema(string $tableName): array
     {
         $statement = <<<EOT
-CREATE TABLE `$tableName` (
-    `no` BIGINT(20) NOT NULL AUTO_INCREMENT,
-    `event_id` CHAR(36) COLLATE utf8_bin NOT NULL,
-    `event_name` VARCHAR(100) COLLATE utf8_bin NOT NULL,
-    `payload` JSON NOT NULL,
-    `metadata` JSON NOT NULL,
-    `created_at` DATETIME(6) NOT NULL,
-    `aggregate_version` INT(11) UNSIGNED GENERATED ALWAYS AS (JSON_EXTRACT(metadata, '$._aggregate_version')) STORED NOT NULL,
-    `aggregate_id` CHAR(36) CHARACTER SET utf8 COLLATE utf8_bin GENERATED ALWAYS AS (JSON_UNQUOTE(JSON_EXTRACT(metadata, '$._aggregate_id'))) STORED NOT NULL,
-    `aggregate_type` VARCHAR(150) GENERATED ALWAYS AS (JSON_UNQUOTE(JSON_EXTRACT(metadata, '$._aggregate_type'))) STORED NOT NULL,
-    PRIMARY KEY (`no`),
-    UNIQUE KEY `ix_event_id` (`event_id`),
-    UNIQUE KEY `ix_unique_event` (`aggregate_type`, `aggregate_id`, `aggregate_version`),
-    KEY `ix_query_aggregate` (`aggregate_type`,`aggregate_id`,`no`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+CREATE TABLE "$tableName" (
+    no BIGSERIAL,
+    event_id CHAR(36) NOT NULL,
+    event_name VARCHAR(100) NOT NULL,
+    payload JSON NOT NULL,
+    metadata JSONB NOT NULL,
+    created_at TIMESTAMP(6) NOT NULL,
+    PRIMARY KEY (no),
+    CONSTRAINT aggregate_version_not_null CHECK ((metadata->>'_aggregate_version') IS NOT NULL),
+    CONSTRAINT aggregate_type_not_null CHECK ((metadata->>'_aggregate_type') IS NOT NULL),
+    CONSTRAINT aggregate_id_not_null CHECK ((metadata->>'_aggregate_id') IS NOT NULL),
+    UNIQUE (event_id)
+);
 EOT;
 
-        return [$statement];
+        $index1 = <<<EOT
+CREATE UNIQUE INDEX ON "$tableName"
+((metadata->>'_aggregate_type'), (metadata->>'_aggregate_id'), (metadata->>'_aggregate_version'));
+EOT;
+
+        $index2 = <<<EOT
+CREATE INDEX ON "$tableName"
+((metadata->>'_aggregate_type'), (metadata->>'_aggregate_id'), no);
+EOT;
+
+        return [
+            $statement,
+            $index1,
+            $index2,
+        ];
     }
 
     public function columnNames(): array
@@ -75,10 +86,5 @@ EOT;
     public function generateTableName(StreamName $streamName): string
     {
         return 'events-' . $streamName->toString();
-    }
-
-    public function indexName(): string
-    {
-        return 'ix_query_aggregate';
     }
 }
