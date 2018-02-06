@@ -110,20 +110,42 @@ abstract class TestUtil
     {
         $vendor = self::getDatabaseVendor();
 
-        $connection->exec('DROP TABLE IF EXISTS event_streams');
-        $connection->exec(file_get_contents(__DIR__.'/../scripts/' . $vendor . '/01_event_streams_table.sql'));
-        $connection->exec('DROP TABLE IF EXISTS projections');
-        $connection->exec(file_get_contents(__DIR__.'/../scripts/' . $vendor . '/02_projections_table.sql'));
+        $connection->exec(file_get_contents(__DIR__ . '/../scripts/' . $vendor . '/01_event_streams_table.sql'));
+        $connection->exec(file_get_contents(__DIR__ . '/../scripts/' . $vendor . '/02_projections_table.sql'));
     }
 
     public static function initCustomDatabaseTables(PDO $connection): void
     {
         $vendor = self::getDatabaseVendor();
 
-        $connection->exec('DROP TABLE IF EXISTS event_streams');
-        $connection->exec(file_get_contents(__DIR__.'/Assets/scripts/' . $vendor . '/01_event_streams_table.sql'));
-        $connection->exec('DROP TABLE IF EXISTS projections');
-        $connection->exec(file_get_contents(__DIR__.'/Assets/scripts/' . $vendor . '/02_projections_table.sql'));
+        $connection->exec(file_get_contents(__DIR__ . '/Assets/scripts/' . $vendor . '/01_event_streams_table.sql'));
+        $connection->exec(file_get_contents(__DIR__ . '/Assets/scripts/' . $vendor . '/02_projections_table.sql'));
+    }
+
+    public static function tearDownDatabase(): void
+    {
+        $connection = self::getConnection();
+        $vendor = self::getDatabaseVendor();
+        switch ($vendor) {
+            case 'postgres':
+                $statement = $connection->prepare('SELECT table_name FROM information_schema.tables WHERE table_schema = \'public\';');
+                break;
+            default:
+                $statement = $connection->prepare('SHOW TABLES');
+        }
+
+        $statement->execute();
+        $tables = $statement->fetchAll(PDO::FETCH_COLUMN);
+
+        foreach ($tables as $table) {
+            switch ($vendor) {
+                case 'postgres':
+                    $connection->exec(sprintf('DROP TABLE "%s";', $table));
+                    break;
+                default:
+                    $connection->exec(sprintf('DROP TABLE `%s`;', $table));
+            }
+        }
     }
 
     private static function hasRequiredConnectionParams(): bool

@@ -75,27 +75,7 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
 
     protected function tearDown(): void
     {
-        $vendor = TestUtil::getDatabaseVendor();
-        switch ($vendor) {
-            case 'postgres':
-                $statement = $this->connection->prepare('SELECT table_name FROM information_schema.tables WHERE table_schema = \'public\';');
-                break;
-            default:
-                $statement = $this->connection->prepare('SHOW TABLES');
-        }
-
-        $statement->execute();
-        $tables = $statement->fetchAll(PDO::FETCH_COLUMN);
-
-        foreach ($tables as $table) {
-            switch ($vendor) {
-                case 'postgres':
-                    $this->connection->exec(sprintf('DROP TABLE "%s";', $table));
-                    break;
-                default:
-                    $this->connection->exec(sprintf('DROP TABLE `%s`;', $table));
-            }
-        }
+        TestUtil::tearDownDatabase();
     }
 
     /**
