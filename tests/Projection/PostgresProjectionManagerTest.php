@@ -59,7 +59,7 @@ class PostgresProjectionManagerTest extends AbstractProjectionManagerTest
             $this->connection,
             new PostgresAggregateStreamStrategy()
         );
-        $this->projectionManager = new PostgresProjectionManager($this->eventStore, $this->connection);
+        $this->projectionManager = new PostgresProjectionManager($this->eventStore, $this->connection, 'e_stream');
     }
 
     protected function tearDown(): void
