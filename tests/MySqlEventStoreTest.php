@@ -34,7 +34,7 @@ use Ramsey\Uuid\Uuid;
 /**
  * @group mysql
  */
-final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
+class MySqlEventStoreTest extends AbstractPdoEventStoreTest
 {
     /**
      * @var MySqlEventStore
@@ -50,11 +50,7 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
         $this->connection = TestUtil::getConnection();
         TestUtil::initDefaultDatabaseTables($this->connection);
 
-        $this->eventStore = new MySqlEventStore(
-            new FQCNMessageFactory(),
-            $this->connection,
-            new MySqlAggregateStreamStrategy()
-        );
+        $this->setupEventStoreWith(new MySqlAggregateStreamStrategy());
     }
 
     /**
@@ -66,15 +62,14 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
         $this->expectExceptionMessage('Error during createSchemaFor');
 
         $streamName = new StreamName('foo');
-        $strategy = new MySqlAggregateStreamStrategy();
-        $schema = $strategy->createSchema($strategy->generateTableName($streamName));
+        $schema = $this->persistenceStrategy->createSchema($this->persistenceStrategy->generateTableName($streamName));
 
         foreach ($schema as $command) {
             $statement = $this->connection->prepare($command);
             $statement->execute();
         }
 
-        $this->eventStore->create(new Stream($streamName, new ArrayIterator()));
+        $this->eventStore->create(new Stream($streamName, new \ArrayIterator()));
     }
 
     /**
@@ -82,12 +77,7 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
      */
     public function it_loads_correctly_using_single_stream_per_aggregate_type_strategy(): void
     {
-        $this->eventStore = new MySqlEventStore(
-            new FQCNMessageFactory(),
-            $this->connection,
-            new MySqlSingleStreamStrategy(),
-            5
-        );
+        $this->setupEventStoreWith(new MySqlSingleStreamStrategy(), 5);
 
         $streamName = new StreamName('Prooph\Model\User');
 
@@ -118,11 +108,7 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
     {
         $this->expectException(ConcurrencyException::class);
 
-        $this->eventStore = new MySqlEventStore(
-            new FQCNMessageFactory(),
-            $this->connection,
-            new MySqlSingleStreamStrategy()
-        );
+        $this->setupEventStoreWith(new MySqlSingleStreamStrategy());
 
         $streamEvent = UserCreated::with(
             ['name' => 'Max Mustermann', 'email' => 'contact@prooph.de'],
@@ -186,19 +172,16 @@ final class MySqlEventStoreTest extends AbstractPdoEventStoreTest
         $strategy->method('createSchema')->willReturn(["SIGNAL SQLSTATE '45000';"]);
         $strategy->method('generateTableName')->willReturn('_non_existing_table');
 
-        $eventStore = new MysqlEventStore(
-            new FQCNMessageFactory(),
-            $this->connection,
-            $strategy
-        );
+        $this->setupEventStoreWith($strategy);
+
         $stream = new Stream(new StreamName('Prooph\Model\User'), new ArrayIterator());
 
         try {
-            $eventStore->create($stream);
+            $this->eventStore->create($stream);
         } catch (RuntimeException $e) {
         }
 
-        $this->assertFalse($eventStore->hasStream($stream->streamName()));
+        $this->assertFalse($this->eventStore->hasStream($stream->streamName()));
     }
 
     /**

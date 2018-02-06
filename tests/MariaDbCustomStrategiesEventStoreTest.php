@@ -12,45 +12,43 @@ declare(strict_types=1);
 
 namespace ProophTest\EventStore\Pdo;
 
+use ArrayIterator;
 use PDO;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
+use Prooph\EventStore\Pdo\MariaDbEventStore;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
-use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresAggregateStreamStrategy;
-use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresSingleStreamStrategy;
-use Prooph\EventStore\Pdo\PostgresEventStore;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
-use ProophTest\EventStore\TransactionalEventStoreTestTrait;
+use ProophTest\EventStore\Pdo\Assets\PersistenceStrategy\CustomMariaDbAggregateStreamStrategy;
+use ProophTest\EventStore\Pdo\Assets\PersistenceStrategy\CustomMariaDbSingleStreamStrategy;
 use Ramsey\Uuid\Uuid;
 
 /**
- * @group postgres
+ * @group mariadb
  */
-class PostgresEventStoreTest extends AbstractPdoEventStoreTest
+final class MariaDbCustomStrategiesEventStoreTest extends MariaDbEventStoreTest
 {
-    use TransactionalEventStoreTestTrait;
-
     /**
-     * @var PostgresEventStore
+     * @var MariaDbEventStore
      */
     protected $eventStore;
 
     protected function setUp(): void
     {
-        if (TestUtil::getDatabaseDriver() !== 'pdo_pgsql') {
-            throw new \RuntimeException('Invalid database vendor');
+        if (TestUtil::getDatabaseDriver() !== 'pdo_mysql') {
+            throw new \RuntimeException('Invalid database driver');
         }
 
         $this->connection = TestUtil::getConnection();
         TestUtil::initDefaultDatabaseTables($this->connection);
 
-        $this->setupEventStoreWith(new PostgresAggregateStreamStrategy());
+        $this->setupEventStoreWith(new CustomMariaDbAggregateStreamStrategy());
     }
 
     /**
@@ -77,11 +75,11 @@ class PostgresEventStoreTest extends AbstractPdoEventStoreTest
      */
     public function it_loads_correctly_using_single_stream_per_aggregate_type_strategy(): void
     {
-        $this->setupEventStoreWith(new PostgresSingleStreamStrategy(), 5);
+        $this->setupEventStoreWith(new CustomMariaDbSingleStreamStrategy(), 5);
 
         $streamName = new StreamName('Prooph\Model\User');
 
-        $stream = new Stream($streamName, new \ArrayIterator($this->getMultipleTestEvents()));
+        $stream = new Stream($streamName, new ArrayIterator($this->getMultipleTestEvents()));
 
         $this->eventStore->create($stream);
 
@@ -108,7 +106,7 @@ class PostgresEventStoreTest extends AbstractPdoEventStoreTest
     {
         $this->expectException(ConcurrencyException::class);
 
-        $this->setupEventStoreWith(new PostgresSingleStreamStrategy());
+        $this->setupEventStoreWith(new CustomMariaDbSingleStreamStrategy());
 
         $streamEvent = UserCreated::with(
             ['name' => 'Max Mustermann', 'email' => 'contact@prooph.de'],
@@ -121,7 +119,7 @@ class PostgresEventStoreTest extends AbstractPdoEventStoreTest
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_id', $aggregateId);
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_type', 'user');
 
-        $stream = new Stream(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
+        $stream = new Stream(new StreamName('Prooph\Model\User'), new ArrayIterator([$streamEvent]));
 
         $this->eventStore->create($stream);
 
@@ -134,7 +132,7 @@ class PostgresEventStoreTest extends AbstractPdoEventStoreTest
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_id', $aggregateId);
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_type', 'user');
 
-        $this->eventStore->appendTo(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
+        $this->eventStore->appendTo(new StreamName('Prooph\Model\User'), new ArrayIterator([$streamEvent]));
     }
 
     public function it_ignores_transaction_handling_if_flag_is_enabled(): void
@@ -144,13 +142,23 @@ class PostgresEventStoreTest extends AbstractPdoEventStoreTest
         $connection->commit()->shouldNotBeCalled();
         $connection->rollback()->shouldNotBeCalled();
 
-        $eventStore = new PostgresEventStore(new FQCNMessageFactory(), $connection->reveal(), new PostgresAggregateStreamStrategy());
+        $eventStore = new MariaDbEventStore(new FQCNMessageFactory(), $connection->reveal(), new CustomMariaDbAggregateStreamStrategy());
 
-        $eventStore->beginTransaction();
-        $eventStore->commit();
+        $streamEvent = UserCreated::with(
+            ['name' => 'Max Mustermann', 'email' => 'contact@prooph.de'],
+            1
+        );
 
-        $eventStore->beginTransaction();
-        $eventStore->rollback();
+        $stream = new Stream(new StreamName('Prooph\Model\User'), new ArrayIterator([$streamEvent]));
+
+        $eventStore->create($stream);
+
+        $streamEvent = UsernameChanged::with(
+            ['name' => 'John Doe'],
+            1
+        );
+
+        $eventStore->appendTo(new StreamName('Prooph\Model\User'), new ArrayIterator([$streamEvent]));
     }
 
     /**
@@ -159,19 +167,12 @@ class PostgresEventStoreTest extends AbstractPdoEventStoreTest
     public function it_removes_stream_if_stream_table_hasnt_been_created(): void
     {
         $strategy = $this->createMock(PersistenceStrategy::class);
-        $strategy->method('createSchema')->willReturn([
-<<<SQL
-DO $$
-BEGIN
-    RAISE EXCEPTION '';
-END $$;
-SQL
-        ]);
+        $strategy->method('createSchema')->willReturn(["SIGNAL SQLSTATE '45000';"]);
         $strategy->method('generateTableName')->willReturn('_non_existing_table');
 
         $this->setupEventStoreWith($strategy);
 
-        $stream = new Stream(new StreamName('Prooph\Model\User'), new \ArrayIterator());
+        $stream = new Stream(new StreamName('Prooph\Model\User'), new ArrayIterator());
 
         try {
             $this->eventStore->create($stream);

@@ -13,29 +13,25 @@ declare(strict_types=1);
 namespace ProophTest\EventStore\Pdo;
 
 use ArrayIterator;
-use PDO;
-use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;
-use Prooph\EventStore\Pdo\Exception\RuntimeException;
-use Prooph\EventStore\Pdo\MariaDbEventStore;
-use Prooph\EventStore\Pdo\PersistenceStrategy;
-use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbAggregateStreamStrategy;
-use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbSingleStreamStrategy;
+use Prooph\EventStore\Pdo\MySqlEventStore;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
+use ProophTest\EventStore\Pdo\Assets\PersistenceStrategy\CustomMySqlAggregateStreamStrategy;
+use ProophTest\EventStore\Pdo\Assets\PersistenceStrategy\CustomMySqlSingleStreamStrategy;
 use Ramsey\Uuid\Uuid;
 
 /**
- * @group mariadb
+ * @group mysql
  */
-class MariaDbEventStoreTest extends AbstractPdoEventStoreTest
+final class MySqlCustomStrategiesEventStoreTest extends MySqlEventStoreTest
 {
     /**
-     * @var MariaDbEventStore
+     * @var MySqlEventStore
      */
     protected $eventStore;
 
@@ -46,28 +42,9 @@ class MariaDbEventStoreTest extends AbstractPdoEventStoreTest
         }
 
         $this->connection = TestUtil::getConnection();
-        TestUtil::initDefaultDatabaseTables($this->connection);
+        TestUtil::initCustomDatabaseTables($this->connection);
 
-        $this->setupEventStoreWith(new MariaDbAggregateStreamStrategy());
-    }
-
-    /**
-     * @test
-     */
-    public function it_cannot_create_new_stream_if_table_name_is_already_used(): void
-    {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Error during createSchemaFor');
-
-        $streamName = new StreamName('foo');
-        $schema = $this->persistenceStrategy->createSchema($this->persistenceStrategy->generateTableName($streamName));
-
-        foreach ($schema as $command) {
-            $statement = $this->connection->prepare($command);
-            $statement->execute();
-        }
-
-        $this->eventStore->create(new Stream($streamName, new \ArrayIterator()));
+        $this->setupEventStoreWith(new CustomMySqlAggregateStreamStrategy());
     }
 
     /**
@@ -75,7 +52,7 @@ class MariaDbEventStoreTest extends AbstractPdoEventStoreTest
      */
     public function it_loads_correctly_using_single_stream_per_aggregate_type_strategy(): void
     {
-        $this->setupEventStoreWith(new MariaDbSingleStreamStrategy(), 5);
+        $this->setupEventStoreWith(new CustomMySqlSingleStreamStrategy(), 5);
 
         $streamName = new StreamName('Prooph\Model\User');
 
@@ -106,7 +83,7 @@ class MariaDbEventStoreTest extends AbstractPdoEventStoreTest
     {
         $this->expectException(ConcurrencyException::class);
 
-        $this->setupEventStoreWith(new MariaDbSingleStreamStrategy());
+        $this->setupEventStoreWith(new CustomMySqlSingleStreamStrategy());
 
         $streamEvent = UserCreated::with(
             ['name' => 'Max Mustermann', 'email' => 'contact@prooph.de'],
@@ -133,52 +110,5 @@ class MariaDbEventStoreTest extends AbstractPdoEventStoreTest
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_type', 'user');
 
         $this->eventStore->appendTo(new StreamName('Prooph\Model\User'), new ArrayIterator([$streamEvent]));
-    }
-
-    public function it_ignores_transaction_handling_if_flag_is_enabled(): void
-    {
-        $connection = $this->prophesize(PDO::class);
-        $connection->beginTransaction()->shouldNotBeCalled();
-        $connection->commit()->shouldNotBeCalled();
-        $connection->rollback()->shouldNotBeCalled();
-
-        $eventStore = new MariaDbEventStore(new FQCNMessageFactory(), $connection->reveal(), new MariaDbAggregateStreamStrategy());
-
-        $streamEvent = UserCreated::with(
-            ['name' => 'Max Mustermann', 'email' => 'contact@prooph.de'],
-            1
-        );
-
-        $stream = new Stream(new StreamName('Prooph\Model\User'), new ArrayIterator([$streamEvent]));
-
-        $eventStore->create($stream);
-
-        $streamEvent = UsernameChanged::with(
-            ['name' => 'John Doe'],
-            1
-        );
-
-        $eventStore->appendTo(new StreamName('Prooph\Model\User'), new ArrayIterator([$streamEvent]));
-    }
-
-    /**
-     * @test
-     */
-    public function it_removes_stream_if_stream_table_hasnt_been_created(): void
-    {
-        $strategy = $this->createMock(PersistenceStrategy::class);
-        $strategy->method('createSchema')->willReturn(["SIGNAL SQLSTATE '45000';"]);
-        $strategy->method('generateTableName')->willReturn('_non_existing_table');
-
-        $this->setupEventStoreWith($strategy);
-
-        $stream = new Stream(new StreamName('Prooph\Model\User'), new ArrayIterator());
-
-        try {
-            $this->eventStore->create($stream);
-        } catch (RuntimeException $e) {
-        }
-
-        $this->assertFalse($this->eventStore->hasStream($stream->streamName()));
     }
 }

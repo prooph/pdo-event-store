@@ -14,12 +14,17 @@ namespace ProophTest\EventStore\Pdo;
 
 use ArrayIterator;
 use PDO;
+use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Metadata\FieldType;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
+use Prooph\EventStore\Pdo\MariaDbEventStore;
+use Prooph\EventStore\Pdo\MySqlEventStore;
+use Prooph\EventStore\Pdo\PersistenceStrategy;
+use Prooph\EventStore\Pdo\PostgresEventStore;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\AbstractEventStoreTest;
@@ -35,10 +40,62 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
      */
     protected $connection;
 
+    /**
+     * @var PersistenceStrategy
+     */
+    protected $persistenceStrategy;
+
+    protected function setupEventStoreWith(
+        PersistenceStrategy $persistenceStrategy, int $loadBatchSize = 10000,
+        string $eventStreamsTable = 'event_streams',
+        bool $disableTransactionHandling = false): void
+    {
+        $this->persistenceStrategy = $persistenceStrategy;
+
+        switch (TestUtil::getDatabaseVendor()) {
+            case 'mariadb':
+                $class = MariaDbEventStore::class;
+                break;
+            case 'mysql':
+                $class = MySqlEventStore::class;
+                break;
+            case 'postgres':
+                $class = PostgresEventStore::class;
+                break;
+        }
+        $this->eventStore = new $class(
+            new FQCNMessageFactory(),
+            $this->connection,
+            $persistenceStrategy,
+            $loadBatchSize,
+            $eventStreamsTable,
+            $disableTransactionHandling
+        );
+    }
+
     protected function tearDown(): void
     {
-        $this->connection->exec('DROP TABLE IF EXISTS event_streams;');
-        $this->connection->exec('DROP TABLE IF EXISTS _' . sha1('Prooph\Model\User'));
+        $vendor = TestUtil::getDatabaseVendor();
+        switch ($vendor) {
+            case 'postgres':
+                $statement = $this->connection->prepare('SELECT table_name FROM information_schema.tables WHERE table_schema = \'public\';');
+                break;
+            default:
+                $statement = $this->connection->prepare('SHOW TABLES');
+        }
+
+        $statement->execute();
+        $tables = $statement->fetchAll(PDO::FETCH_COLUMN);
+
+        foreach ($tables as $table) {
+            switch ($vendor) {
+                case 'postgres':
+                    $this->connection->exec(sprintf('DROP TABLE "%s";', $table));
+                    break;
+                default:
+                    $this->connection->exec(sprintf('DROP TABLE `%s`;', $table));
+            }
+        }
     }
 
     /**
@@ -507,7 +564,14 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
         // mariadb does not add spaces to json, while mysql and postgres do, so strip them
         $this->assertSame('{"some":["metadata","as","well"]}', str_replace(' ', '', $result['metadata']));
 
-        $statement = $this->connection->prepare('SELECT * FROM _' . sha1('Prooph\Model\User'));
+        switch (TestUtil::getDatabaseVendor()) {
+            case 'postgres':
+                $statement = $this->connection->prepare(sprintf('SELECT * FROM "%s"', $this->persistenceStrategy->generateTableName($streamName)));
+                break;
+            default:
+                $statement = $this->connection->prepare(sprintf('SELECT * FROM `%s`', $this->persistenceStrategy->generateTableName($streamName)));
+        }
+
         $statement->execute();
 
         $result = $statement->fetch(\PDO::FETCH_ASSOC);

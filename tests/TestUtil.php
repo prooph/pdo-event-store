@@ -45,7 +45,20 @@ abstract class TestUtil
             $dsn .= 'dbname=' . $connectionParams['dbname'] . $separator;
             $dsn .= self::getCharsetValue($connectionParams['charset'], $connectionParams['driver']) . $separator;
             $dsn = rtrim($dsn);
-            self::$connection = new PDO($dsn, $connectionParams['user'], $connectionParams['password'], $connectionParams['options']);
+
+            $retries = 10; // keep trying for 10 seconds, should be enough
+            while (null === self::$connection && $retries > 0) {
+                try {
+                    self::$connection = new PDO($dsn, $connectionParams['user'], $connectionParams['password'], $connectionParams['options']);
+                } catch (\PDOException $e) {
+                    if (2002 !== $e->getCode()) {
+                        throw $e;
+                    }
+
+                    $retries--;
+                    sleep(1);
+                }
+            }
         }
 
         try {
@@ -101,6 +114,16 @@ abstract class TestUtil
         $connection->exec(file_get_contents(__DIR__.'/../scripts/' . $vendor . '/01_event_streams_table.sql'));
         $connection->exec('DROP TABLE IF EXISTS projections');
         $connection->exec(file_get_contents(__DIR__.'/../scripts/' . $vendor . '/02_projections_table.sql'));
+    }
+
+    public static function initCustomDatabaseTables(PDO $connection): void
+    {
+        $vendor = self::getDatabaseVendor();
+
+        $connection->exec('DROP TABLE IF EXISTS event_streams');
+        $connection->exec(file_get_contents(__DIR__.'/Assets/scripts/' . $vendor . '/01_event_streams_table.sql'));
+        $connection->exec('DROP TABLE IF EXISTS projections');
+        $connection->exec(file_get_contents(__DIR__.'/Assets/scripts/' . $vendor . '/02_projections_table.sql'));
     }
 
     private static function hasRequiredConnectionParams(): bool

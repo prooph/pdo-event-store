@@ -10,13 +10,14 @@
 
 declare(strict_types=1);
 
-namespace Prooph\EventStore\Pdo\PersistenceStrategy;
+namespace ProophTest\EventStore\Pdo\Assets\PersistenceStrategy;
 
 use Iterator;
+use Prooph\EventStore\Pdo\Exception;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\StreamName;
 
-final class PostgresSimpleStreamStrategy implements PersistenceStrategy
+final class CustomPostgresAggregateStreamStrategy implements PersistenceStrategy
 {
     /**
      * @param string $tableName
@@ -27,7 +28,7 @@ final class PostgresSimpleStreamStrategy implements PersistenceStrategy
         $statement = <<<EOT
 CREATE TABLE "$tableName" (
     no BIGSERIAL,
-    event_id UUID NOT NULL,
+    event_id CHAR(36) NOT NULL,
     event_name VARCHAR(100) NOT NULL,
     payload JSON NOT NULL,
     metadata JSONB NOT NULL,
@@ -39,12 +40,14 @@ EOT;
 
         return [
             $statement,
+            "CREATE UNIQUE INDEX on \"$tableName\" ((metadata->>'_aggregate_version'));",
         ];
     }
 
     public function columnNames(): array
     {
         return [
+            'no',
             'event_id',
             'event_name',
             'payload',
@@ -58,6 +61,11 @@ EOT;
         $data = [];
 
         foreach ($streamEvents as $event) {
+            if (! isset($event->metadata()['_aggregate_version'])) {
+                throw new Exception\RuntimeException('_aggregate_version is missing in metadata');
+            }
+
+            $data[] = $event->metadata()['_aggregate_version'];
             $data[] = $event->uuid()->toString();
             $data[] = $event->messageName();
             $data[] = json_encode($event->payload());
@@ -70,6 +78,6 @@ EOT;
 
     public function generateTableName(StreamName $streamName): string
     {
-        return '_' . sha1($streamName->toString());
+        return 'events-' . $streamName->toString();
     }
 }

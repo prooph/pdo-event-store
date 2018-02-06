@@ -19,20 +19,20 @@ use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
-use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresAggregateStreamStrategy;
-use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresSingleStreamStrategy;
 use Prooph\EventStore\Pdo\PostgresEventStore;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
+use ProophTest\EventStore\Pdo\Assets\PersistenceStrategy\CustomPostgresAggregateStreamStrategy;
+use ProophTest\EventStore\Pdo\Assets\PersistenceStrategy\CustomPostgresSingleStreamStrategy;
 use ProophTest\EventStore\TransactionalEventStoreTestTrait;
 use Ramsey\Uuid\Uuid;
 
 /**
  * @group postgres
  */
-class PostgresEventStoreTest extends AbstractPdoEventStoreTest
+final class PostgresCustomStrategiesEventStoreTest extends PostgresEventStoreTest
 {
     use TransactionalEventStoreTestTrait;
 
@@ -50,7 +50,7 @@ class PostgresEventStoreTest extends AbstractPdoEventStoreTest
         $this->connection = TestUtil::getConnection();
         TestUtil::initDefaultDatabaseTables($this->connection);
 
-        $this->setupEventStoreWith(new PostgresAggregateStreamStrategy());
+        $this->setupEventStoreWith(new CustomPostgresAggregateStreamStrategy());
     }
 
     /**
@@ -77,7 +77,7 @@ class PostgresEventStoreTest extends AbstractPdoEventStoreTest
      */
     public function it_loads_correctly_using_single_stream_per_aggregate_type_strategy(): void
     {
-        $this->setupEventStoreWith(new PostgresSingleStreamStrategy(), 5);
+        $this->setupEventStoreWith(new CustomPostgresSingleStreamStrategy(), 5);
 
         $streamName = new StreamName('Prooph\Model\User');
 
@@ -108,7 +108,7 @@ class PostgresEventStoreTest extends AbstractPdoEventStoreTest
     {
         $this->expectException(ConcurrencyException::class);
 
-        $this->setupEventStoreWith(new PostgresSingleStreamStrategy());
+        $this->setupEventStoreWith(new CustomPostgresSingleStreamStrategy());
 
         $streamEvent = UserCreated::with(
             ['name' => 'Max Mustermann', 'email' => 'contact@prooph.de'],
@@ -144,7 +144,7 @@ class PostgresEventStoreTest extends AbstractPdoEventStoreTest
         $connection->commit()->shouldNotBeCalled();
         $connection->rollback()->shouldNotBeCalled();
 
-        $eventStore = new PostgresEventStore(new FQCNMessageFactory(), $connection->reveal(), new PostgresAggregateStreamStrategy());
+        $eventStore = new PostgresEventStore(new FQCNMessageFactory(), $connection->reveal(), new CustomPostgresAggregateStreamStrategy());
 
         $eventStore->beginTransaction();
         $eventStore->commit();

@@ -10,13 +10,14 @@
 
 declare(strict_types=1);
 
-namespace Prooph\EventStore\Pdo\PersistenceStrategy;
+namespace ProophTest\EventStore\Pdo\Assets\PersistenceStrategy;
 
 use Iterator;
+use Prooph\EventStore\Pdo\HasQueryHint;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\StreamName;
 
-final class PostgresSimpleStreamStrategy implements PersistenceStrategy
+final class CustomMySqlSingleStreamStrategy implements PersistenceStrategy, HasQueryHint
 {
     /**
      * @param string $tableName
@@ -25,21 +26,24 @@ final class PostgresSimpleStreamStrategy implements PersistenceStrategy
     public function createSchema(string $tableName): array
     {
         $statement = <<<EOT
-CREATE TABLE "$tableName" (
-    no BIGSERIAL,
-    event_id UUID NOT NULL,
-    event_name VARCHAR(100) NOT NULL,
-    payload JSON NOT NULL,
-    metadata JSONB NOT NULL,
-    created_at TIMESTAMP(6) NOT NULL,
-    PRIMARY KEY (no),
-    UNIQUE (event_id)
-);
+CREATE TABLE `$tableName` (
+    `no` BIGINT(20) NOT NULL AUTO_INCREMENT,
+    `event_id` CHAR(36) COLLATE utf8_bin NOT NULL,
+    `event_name` VARCHAR(100) COLLATE utf8_bin NOT NULL,
+    `payload` JSON NOT NULL,
+    `metadata` JSON NOT NULL,
+    `created_at` DATETIME(6) NOT NULL,
+    `aggregate_version` INT(11) UNSIGNED GENERATED ALWAYS AS (JSON_EXTRACT(metadata, '$._aggregate_version')) STORED NOT NULL,
+    `aggregate_id` CHAR(36) CHARACTER SET utf8 COLLATE utf8_bin GENERATED ALWAYS AS (JSON_UNQUOTE(JSON_EXTRACT(metadata, '$._aggregate_id'))) STORED NOT NULL,
+    `aggregate_type` VARCHAR(150) GENERATED ALWAYS AS (JSON_UNQUOTE(JSON_EXTRACT(metadata, '$._aggregate_type'))) STORED NOT NULL,
+    PRIMARY KEY (`no`),
+    UNIQUE KEY `ix_event_id` (`event_id`),
+    UNIQUE KEY `ix_unique_event` (`aggregate_type`, `aggregate_id`, `aggregate_version`),
+    KEY `ix_query_aggregate` (`aggregate_type`,`aggregate_id`,`no`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 EOT;
 
-        return [
-            $statement,
-        ];
+        return [$statement];
     }
 
     public function columnNames(): array
@@ -70,6 +74,11 @@ EOT;
 
     public function generateTableName(StreamName $streamName): string
     {
-        return '_' . sha1($streamName->toString());
+        return 'events-' . $streamName->toString();
+    }
+
+    public function indexName(): string
+    {
+        return 'ix_query_aggregate';
     }
 }

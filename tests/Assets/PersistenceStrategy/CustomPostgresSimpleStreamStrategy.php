@@ -10,13 +10,13 @@
 
 declare(strict_types=1);
 
-namespace Prooph\EventStore\Pdo\PersistenceStrategy;
+namespace ProophTest\EventStore\Pdo\Assets\PersistenceStrategy;
 
 use Iterator;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\StreamName;
 
-final class PostgresSimpleStreamStrategy implements PersistenceStrategy
+final class CustomPostgresSimpleStreamStrategy implements PersistenceStrategy
 {
     /**
      * @param string $tableName
@@ -27,7 +27,7 @@ final class PostgresSimpleStreamStrategy implements PersistenceStrategy
         $statement = <<<EOT
 CREATE TABLE "$tableName" (
     no BIGSERIAL,
-    event_id UUID NOT NULL,
+    event_id CHAR(36) NOT NULL,
     event_name VARCHAR(100) NOT NULL,
     payload JSON NOT NULL,
     metadata JSONB NOT NULL,
@@ -70,6 +70,6 @@ EOT;
 
     public function generateTableName(StreamName $streamName): string
     {
-        return '_' . sha1($streamName->toString());
+        return 'events-' . $streamName->toString();
     }
 }

@@ -26,7 +26,7 @@ final class PostgresAggregateStreamStrategy implements PersistenceStrategy
     public function createSchema(string $tableName): array
     {
         $statement = <<<EOT
-CREATE TABLE $tableName (
+CREATE TABLE "$tableName" (
     no BIGSERIAL,
     event_id UUID NOT NULL,
     event_name VARCHAR(100) NOT NULL,
@@ -40,7 +40,7 @@ EOT;
 
         return [
             $statement,
-            "CREATE UNIQUE INDEX on $tableName ((metadata->>'_aggregate_version'));",
+            "CREATE UNIQUE INDEX on \"$tableName\" ((metadata->>'_aggregate_version'));",
         ];
     }
 
