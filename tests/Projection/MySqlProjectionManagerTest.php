@@ -63,8 +63,7 @@ class MySqlProjectionManagerTest extends AbstractProjectionManagerTest
 
     protected function tearDown(): void
     {
-        $this->connection->exec('DROP TABLE IF EXISTS event_streams;');
-        $this->connection->exec('DROP TABLE IF EXISTS projections;');
+        TestUtil::tearDownDatabase();
     }
 
     /**
