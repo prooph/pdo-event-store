@@ -82,7 +82,7 @@ class MariaDbProjectionManagerCustomTablesTest extends AbstractProjectionManager
 
         $eventStore = $this->prophesize(EventStore::class);
 
-        new MariaDbProjectionManager($eventStore->reveal(), $this->connection, 'events/streams','events/projections');
+        new MariaDbProjectionManager($eventStore->reveal(), $this->connection, 'events/streams', 'events/projections');
     }
 
     /**
@@ -96,7 +96,7 @@ class MariaDbProjectionManagerCustomTablesTest extends AbstractProjectionManager
         $wrappedEventStore = $this->prophesize(EventStoreDecorator::class);
         $wrappedEventStore->getInnerEventStore()->willReturn($eventStore->reveal())->shouldBeCalled();
 
-        new MariaDbProjectionManager($wrappedEventStore->reveal(), $this->connection, 'events/streams','events/projections');
+        new MariaDbProjectionManager($wrappedEventStore->reveal(), $this->connection, 'events/streams', 'events/projections');
     }
 
     /**
