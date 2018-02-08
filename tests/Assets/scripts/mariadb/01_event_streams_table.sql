@@ -1,4 +1,4 @@
-CREATE TABLE `event_streams` (
+CREATE TABLE `estreams` (
   `no` BIGINT(20) NOT NULL AUTO_INCREMENT,
   `real_stream_name` VARCHAR(150) NOT NULL,
   `stream_name` CHAR(41) NOT NULL,

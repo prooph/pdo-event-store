@@ -1,4 +1,4 @@
-CREATE TABLE `projections` (
+CREATE TABLE `eprojections` (
   `no` BIGINT(20) NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(150) NOT NULL,
   `position` TEXT,

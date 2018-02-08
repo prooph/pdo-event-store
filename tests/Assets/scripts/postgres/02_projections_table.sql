@@ -1,4 +1,4 @@
-CREATE TABLE projections (
+CREATE TABLE eprojections (
   no BIGSERIAL,
   name VARCHAR(150) NOT NULL,
   position JSONB,
