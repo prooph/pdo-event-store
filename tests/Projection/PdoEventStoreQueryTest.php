@@ -97,7 +97,6 @@ abstract class PdoEventStoreQueryTest extends AbstractEventStoreQueryTest
         new PdoEventStoreQuery(
             $wrappedEventStore->reveal(),
             $this->connection,
-            'test_projection',
             'event_streams'
         );
     }
