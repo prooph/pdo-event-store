@@ -59,14 +59,14 @@ class PostgresProjectionManagerCustomTablesTest extends AbstractProjectionManage
             $this->connection,
             new PostgresAggregateStreamStrategy(),
             10000,
-            'estreams'
+            'events/streams'
 
         );
         $this->projectionManager = new PostgresProjectionManager(
             $this->eventStore,
             $this->connection,
-            'estreams',
-            'eprojections'
+            'events/streams',
+            'events/projection'
         );
     }
 
@@ -108,7 +108,7 @@ class PostgresProjectionManagerCustomTablesTest extends AbstractProjectionManage
     {
         $this->expectException(RuntimeException::class);
 
-        $this->connection->exec('DROP TABLE eprojections;');
+        $this->connection->exec('DROP TABLE "events/projection";');
         $this->projectionManager->fetchProjectionNames(null, 200, 0);
     }
 
@@ -130,7 +130,7 @@ class PostgresProjectionManagerCustomTablesTest extends AbstractProjectionManage
     {
         $this->expectException(RuntimeException::class);
 
-        $this->connection->exec('DROP TABLE eprojections;');
+        $this->connection->exec('DROP TABLE "events/projection";');
         $this->projectionManager->fetchProjectionNamesRegex('^foo', 200, 0);
     }
 }

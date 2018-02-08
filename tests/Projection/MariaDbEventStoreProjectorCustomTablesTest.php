@@ -38,14 +38,14 @@ class MariaDbEventStoreProjectorCustomTablesTest extends PdoEventStoreProjectorC
             $this->connection,
             new MariaDbSimpleStreamStrategy(),
             10000,
-            'estreams'
+            'events/streams'
         );
 
         $this->projectionManager = new MariaDbProjectionManager(
             $this->eventStore,
             $this->connection,
-            'estreams',
-            'eprojections'
+            'events/streams',
+            'events/projection'
         );
     }
 
@@ -55,11 +55,11 @@ class MariaDbEventStoreProjectorCustomTablesTest extends PdoEventStoreProjectorC
     public function it_handles_missing_projection_table(): void
     {
         $this->expectException(\Prooph\EventStore\Pdo\Exception\RuntimeException::class);
-        $this->expectExceptionMessage("Error 42S02. Maybe the projection table is not setup?\nError-Info: Table 'event_store_tests.eprojections' doesn't exist");
+        $this->expectExceptionMessage("Error 42S02. Maybe the projection table is not setup?\nError-Info: Table '`event_store_tests.events/projection`' doesn't exist");
 
         $this->prepareEventStream('user-123');
 
-        $this->connection->exec('DROP TABLE eprojections;');
+        $this->connection->exec('DROP TABLE `events/projection`;');
 
         $projection = $this->projectionManager->createProjection('test_projection');
 

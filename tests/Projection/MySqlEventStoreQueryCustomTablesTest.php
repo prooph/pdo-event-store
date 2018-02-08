@@ -39,14 +39,14 @@ class MySqlEventStoreQueryCustomTablesTest extends PdoEventStoreQueryCustomTable
             $this->connection,
             new MySqlSimpleStreamStrategy(),
             10000,
-            'estreams'
+            'events/streams'
         );
 
         $this->projectionManager = new MySqlProjectionManager(
             $this->eventStore,
             $this->connection,
-            'estreams',
-            'eprojections'
+            'events/streams',
+            'events/projection'
         );
     }
 }

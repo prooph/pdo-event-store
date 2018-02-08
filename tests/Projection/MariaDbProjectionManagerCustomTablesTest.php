@@ -58,9 +58,14 @@ class MariaDbProjectionManagerCustomTablesTest extends AbstractProjectionManager
             $this->connection,
             new MariaDbAggregateStreamStrategy(),
             10000,
-            'estreams'
+            'events/streams'
         );
-        $this->projectionManager = new MariaDbProjectionManager($this->eventStore, $this->connection, 'estreams', 'eprojections');
+        $this->projectionManager = new MariaDbProjectionManager(
+            $this->eventStore,
+            $this->connection,
+            'events/streams',
+            'events/projection'
+        );
     }
 
     protected function tearDown(): void
@@ -101,7 +106,7 @@ class MariaDbProjectionManagerCustomTablesTest extends AbstractProjectionManager
     {
         $this->expectException(RuntimeException::class);
 
-        $this->connection->exec('DROP TABLE eprojections;');
+        $this->connection->exec('DROP TABLE `events/projection`;');
         $this->projectionManager->fetchProjectionNames(null, 200, 0);
     }
 
@@ -112,7 +117,7 @@ class MariaDbProjectionManagerCustomTablesTest extends AbstractProjectionManager
     {
         $this->expectException(RuntimeException::class);
 
-        $this->connection->exec('DROP TABLE eprojections;');
+        $this->connection->exec('DROP TABLE `events/projection`;');
         $this->projectionManager->fetchProjectionNamesRegex('^foo', 200, 0);
     }
 }

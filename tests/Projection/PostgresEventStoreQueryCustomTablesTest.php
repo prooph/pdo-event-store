@@ -38,15 +38,15 @@ class PostgresEventStoreQueryCustomTablesTest extends PdoEventStoreQueryCustomTa
             TestUtil::getConnection(),
             new PostgresSimpleStreamStrategy(),
             10000,
-            'estreams'
+            'events/streams'
 
         );
 
         $this->projectionManager = new PostgresProjectionManager(
             $this->eventStore,
             $this->connection,
-            'estreams',
-            'eprojections'
+            'events/streams',
+            'events/projection'
         );
     }
 }

@@ -97,7 +97,7 @@ abstract class PdoEventStoreQueryCustomTablesTest extends AbstractEventStoreQuer
         new PdoEventStoreQuery(
             $wrappedEventStore->reveal(),
             $this->connection,
-            'estreams'
+            'events/streams'
         );
     }
 
@@ -112,6 +112,6 @@ abstract class PdoEventStoreQueryCustomTablesTest extends AbstractEventStoreQuer
         $eventStore = $this->prophesize(EventStore::class);
         $connection = $this->prophesize(PDO::class);
 
-        new PdoEventStoreQuery($eventStore->reveal(), $connection->reveal(), 'event_streams');
+        new PdoEventStoreQuery($eventStore->reveal(), $connection->reveal(), 'events/streams');
     }
 }

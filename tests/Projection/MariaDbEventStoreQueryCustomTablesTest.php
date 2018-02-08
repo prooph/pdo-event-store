@@ -37,14 +37,14 @@ class MariaDbEventStoreQueryCustomTablesTest extends PdoEventStoreQueryCustomTab
             $this->connection,
             new MariaDbSimpleStreamStrategy(),
             10000,
-            'estreams'
+            'events/streams'
         );
 
         $this->projectionManager = new MariaDbProjectionManager(
             $this->eventStore,
             $this->connection,
-            'estreams',
-            'eprojections'
+            'events/streams',
+            'events/projection'
         );
     }
 }

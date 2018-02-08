@@ -1,4 +1,4 @@
-CREATE TABLE estreams (
+CREATE TABLE "events/streams" (
   no BIGSERIAL,
   real_stream_name VARCHAR(150) NOT NULL,
   stream_name CHAR(41) NOT NULL,
@@ -7,4 +7,4 @@ CREATE TABLE estreams (
   PRIMARY KEY (no),
   UNIQUE (stream_name)
 );
-CREATE INDEX on estreams (category);
+CREATE INDEX on "events/streams" (category);
