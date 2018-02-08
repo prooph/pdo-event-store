@@ -28,7 +28,7 @@ use ProophTest\EventStore\Projection\AbstractProjectionManagerTest;
 /**
  * @group postgres
  */
-class PostgresProjectionManagerTest extends AbstractProjectionManagerTest
+class PostgresProjectionManagerCustomTablesTest extends AbstractProjectionManagerTest
 {
     /**
      * @var PostgresProjectionManager
@@ -52,14 +52,22 @@ class PostgresProjectionManagerTest extends AbstractProjectionManagerTest
         }
 
         $this->connection = TestUtil::getConnection();
-        TestUtil::initDefaultDatabaseTables($this->connection);
+        TestUtil::initCustomDatabaseTables($this->connection);
 
         $this->eventStore = new PostgresEventStore(
             new FQCNMessageFactory(),
             $this->connection,
-            new PostgresAggregateStreamStrategy()
+            new PostgresAggregateStreamStrategy(),
+            10000,
+            'estreams'
+
         );
-        $this->projectionManager = new PostgresProjectionManager($this->eventStore, $this->connection);
+        $this->projectionManager = new PostgresProjectionManager(
+            $this->eventStore,
+            $this->connection,
+            'estreams',
+            'eprojections'
+        );
     }
 
     protected function tearDown(): void
@@ -100,7 +108,7 @@ class PostgresProjectionManagerTest extends AbstractProjectionManagerTest
     {
         $this->expectException(RuntimeException::class);
 
-        $this->connection->exec('DROP TABLE projections;');
+        $this->connection->exec('DROP TABLE eprojections;');
         $this->projectionManager->fetchProjectionNames(null, 200, 0);
     }
 
@@ -122,7 +130,7 @@ class PostgresProjectionManagerTest extends AbstractProjectionManagerTest
     {
         $this->expectException(RuntimeException::class);
 
-        $this->connection->exec('DROP TABLE projections;');
+        $this->connection->exec('DROP TABLE eprojections;');
         $this->projectionManager->fetchProjectionNamesRegex('^foo', 200, 0);
     }
 }

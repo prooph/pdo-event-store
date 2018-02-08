@@ -22,7 +22,7 @@ use ProophTest\EventStore\Pdo\TestUtil;
 /**
  * @group postgres
  */
-class PostgresEventStoreQueryTest extends PdoEventStoreQueryTest
+class PostgresEventStoreQueryCustomTablesTest extends PdoEventStoreQueryCustomTablesTest
 {
     protected function setUp(): void
     {
@@ -31,17 +31,22 @@ class PostgresEventStoreQueryTest extends PdoEventStoreQueryTest
         }
 
         $this->connection = TestUtil::getConnection();
-        TestUtil::initDefaultDatabaseTables($this->connection);
+        TestUtil::initCustomDatabaseTables($this->connection);
 
         $this->eventStore = new PostgresEventStore(
             new FQCNMessageFactory(),
             TestUtil::getConnection(),
-            new PostgresSimpleStreamStrategy()
+            new PostgresSimpleStreamStrategy(),
+            10000,
+            'estreams'
+
         );
 
         $this->projectionManager = new PostgresProjectionManager(
             $this->eventStore,
-            $this->connection
+            $this->connection,
+            'estreams',
+            'eprojections'
         );
     }
 }

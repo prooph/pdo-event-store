@@ -23,7 +23,7 @@ use ProophTest\EventStore\Pdo\TestUtil;
 /**
  * @group postgres
  */
-class PostgresEventStoreReadModelProjectorTest extends PdoEventStoreReadModelProjectorTest
+class PostgresEventStoreReadModelProjectorCustomTablesTest extends PdoEventStoreReadModelProjectorCustomTablesTest
 {
     protected function setUp(): void
     {
@@ -32,17 +32,22 @@ class PostgresEventStoreReadModelProjectorTest extends PdoEventStoreReadModelPro
         }
 
         $this->connection = TestUtil::getConnection();
-        TestUtil::initDefaultDatabaseTables($this->connection);
+        TestUtil::initCustomDatabaseTables($this->connection);
 
         $this->eventStore = new PostgresEventStore(
             new FQCNMessageFactory(),
             TestUtil::getConnection(),
-            new PostgresSimpleStreamStrategy()
+            new PostgresSimpleStreamStrategy(),
+            10000,
+            'estreams'
+
         );
 
         $this->projectionManager = new PostgresProjectionManager(
             $this->eventStore,
-            $this->connection
+            $this->connection,
+            'estreams',
+            'eprojections'
         );
     }
 
@@ -52,11 +57,11 @@ class PostgresEventStoreReadModelProjectorTest extends PdoEventStoreReadModelPro
     public function it_handles_missing_projection_table(): void
     {
         $this->expectException(\Prooph\EventStore\Pdo\Exception\RuntimeException::class);
-        $this->expectExceptionMessage("Error 42P01. Maybe the projection table is not setup?\nError-Info: ERROR:  relation \"projections\" does not exist\nLINE 1: SELECT status FROM projections WHERE name = $1 LIMIT 1;");
+        $this->expectExceptionMessage("Error 42P01. Maybe the projection table is not setup?\nError-Info: ERROR:  relation \"eprojections\" does not exist\nLINE 1: SELECT status FROM eprojections WHERE name = $1 LIMIT 1;");
 
         $this->prepareEventStream('user-123');
 
-        $this->connection->exec('DROP TABLE projections;');
+        $this->connection->exec('DROP TABLE eprojections;');
 
         $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 
