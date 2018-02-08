@@ -1,8 +1,8 @@
 CREATE TABLE `eprojections` (
   `no` BIGINT(20) NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(150) NOT NULL,
-  `position` TEXT,
-  `state` TEXT,
+  `position` LONGTEXT,
+  `state` LONGTEXT,
   `status` VARCHAR(28) NOT NULL,
   `locked_until` CHAR(26),
   CHECK (`position` IS NULL OR JSON_VALID(`position`)),

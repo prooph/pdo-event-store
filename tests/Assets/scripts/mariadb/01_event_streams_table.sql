@@ -2,7 +2,7 @@ CREATE TABLE `estreams` (
   `no` BIGINT(20) NOT NULL AUTO_INCREMENT,
   `real_stream_name` VARCHAR(150) NOT NULL,
   `stream_name` CHAR(41) NOT NULL,
-  `metadata` TEXT NOT NULL,
+  `metadata` LONGTEXT NOT NULL,
   `category` VARCHAR(150),
   CHECK (`metadata` IS NOT NULL OR JSON_VALID(`metadata`)),
   PRIMARY KEY (`no`),
