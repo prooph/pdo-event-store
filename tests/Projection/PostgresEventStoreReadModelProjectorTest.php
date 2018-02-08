@@ -52,7 +52,7 @@ class PostgresEventStoreReadModelProjectorTest extends PdoEventStoreReadModelPro
     public function it_handles_missing_projection_table(): void
     {
         $this->expectException(\Prooph\EventStore\Pdo\Exception\RuntimeException::class);
-        $this->expectExceptionMessage("Error 42P01. Maybe the projection table is not setup?\nError-Info: ERROR:  relation \"projections\" does not exist\nLINE 1: SELECT status FROM projections WHERE name = $1 LIMIT 1;");
+        $this->expectExceptionMessage("Error 42P01. Maybe the projection table is not setup?\nError-Info: ERROR:  relation \"projections\" does not exist\nLINE 1: SELECT status FROM");
 
         $this->prepareEventStream('user-123');
 
