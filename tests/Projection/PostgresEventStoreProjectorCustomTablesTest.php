@@ -45,7 +45,7 @@ class PostgresEventStoreProjectorCustomTablesTest extends PdoEventStoreProjector
             $this->eventStore,
             $this->connection,
             'events/streams',
-            'eprojections'
+            'events/projections'
         );
     }
 
@@ -55,11 +55,11 @@ class PostgresEventStoreProjectorCustomTablesTest extends PdoEventStoreProjector
     public function it_handles_missing_projection_table(): void
     {
         $this->expectException(\Prooph\EventStore\Pdo\Exception\RuntimeException::class);
-        $this->expectExceptionMessage("Error 42P01. Maybe the projection table is not setup?\nError-Info: ERROR:  relation \"events/projection\" does not exist\nLINE 1: SELECT status FROM \"events/projection\" WHERE name = $1 LIMIT 1;");
+        $this->expectExceptionMessage("Error 42P01. Maybe the projection table is not setup?\nError-Info: ERROR:  relation \"events/projections\" does not exist\nLINE 1: SELECT status FROM \"events/projections\" WHERE name = $1 LIMIT 1;");
 
         $this->prepareEventStream('user-123');
 
-        $this->connection->exec('DROP TABLE eprojections;');
+        $this->connection->exec('DROP TABLE "events/projections";');
 
         $projection = $this->projectionManager->createProjection('test_projection');
 

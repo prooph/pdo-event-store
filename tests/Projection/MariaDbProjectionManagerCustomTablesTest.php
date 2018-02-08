@@ -64,7 +64,7 @@ class MariaDbProjectionManagerCustomTablesTest extends AbstractProjectionManager
             $this->eventStore,
             $this->connection,
             'events/streams',
-            'events/projection'
+            'events/projections'
         );
     }
 
@@ -82,7 +82,7 @@ class MariaDbProjectionManagerCustomTablesTest extends AbstractProjectionManager
 
         $eventStore = $this->prophesize(EventStore::class);
 
-        new MariaDbProjectionManager($eventStore->reveal(), $this->connection);
+        new MariaDbProjectionManager($eventStore->reveal(), $this->connection, 'events/streams','events/projections');
     }
 
     /**
@@ -96,7 +96,7 @@ class MariaDbProjectionManagerCustomTablesTest extends AbstractProjectionManager
         $wrappedEventStore = $this->prophesize(EventStoreDecorator::class);
         $wrappedEventStore->getInnerEventStore()->willReturn($eventStore->reveal())->shouldBeCalled();
 
-        new MariaDbProjectionManager($wrappedEventStore->reveal(), $this->connection);
+        new MariaDbProjectionManager($wrappedEventStore->reveal(), $this->connection, 'events/streams','events/projections');
     }
 
     /**
@@ -106,7 +106,7 @@ class MariaDbProjectionManagerCustomTablesTest extends AbstractProjectionManager
     {
         $this->expectException(RuntimeException::class);
 
-        $this->connection->exec('DROP TABLE `events/projection`;');
+        $this->connection->exec('DROP TABLE `events/projections`;');
         $this->projectionManager->fetchProjectionNames(null, 200, 0);
     }
 
@@ -117,7 +117,7 @@ class MariaDbProjectionManagerCustomTablesTest extends AbstractProjectionManager
     {
         $this->expectException(RuntimeException::class);
 
-        $this->connection->exec('DROP TABLE `events/projection`;');
+        $this->connection->exec('DROP TABLE `events/projections`;');
         $this->projectionManager->fetchProjectionNamesRegex('^foo', 200, 0);
     }
 }

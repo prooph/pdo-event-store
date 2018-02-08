@@ -44,7 +44,7 @@ class MariaDbEventStoreQueryCustomTablesTest extends PdoEventStoreQueryCustomTab
             $this->eventStore,
             $this->connection,
             'events/streams',
-            'events/projection'
+            'events/projections'
         );
     }
 }

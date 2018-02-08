@@ -65,7 +65,7 @@ class MySqlProjectionManagerCustomTablesTest extends AbstractProjectionManagerTe
             $this->eventStore,
             $this->connection,
             'events/streams',
-            'events/projection'
+            'events/projections'
         );
     }
 
@@ -107,7 +107,7 @@ class MySqlProjectionManagerCustomTablesTest extends AbstractProjectionManagerTe
     {
         $this->expectException(RuntimeException::class);
 
-        $this->connection->exec('DROP TABLE `events/projection`;');
+        $this->connection->exec('DROP TABLE `events/projections`;');
         $this->projectionManager->fetchProjectionNames(null, 200, 0);
     }
 
@@ -118,7 +118,7 @@ class MySqlProjectionManagerCustomTablesTest extends AbstractProjectionManagerTe
     {
         $this->expectException(RuntimeException::class);
 
-        $this->connection->exec('DROP TABLE `events/projection`;');
+        $this->connection->exec('DROP TABLE `events/projections`;');
         $this->projectionManager->fetchProjectionNamesRegex('^foo', 200, 0);
     }
 }

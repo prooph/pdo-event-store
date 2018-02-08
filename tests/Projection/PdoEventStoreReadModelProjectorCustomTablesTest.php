@@ -153,7 +153,7 @@ abstract class PdoEventStoreReadModelProjectorCustomTablesTest extends AbstractE
             'test_projection',
             new ReadModelMock(),
             'events/streams',
-            'eprojections',
+            'events/projections',
             1,
             1,
             1
@@ -178,7 +178,7 @@ abstract class PdoEventStoreReadModelProjectorCustomTablesTest extends AbstractE
             'test_projection',
             $readModel->reveal(),
             'events/streams',
-            'eprojections',
+            'events/projections',
             10,
             10,
             10

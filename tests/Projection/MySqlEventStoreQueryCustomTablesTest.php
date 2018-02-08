@@ -46,7 +46,7 @@ class MySqlEventStoreQueryCustomTablesTest extends PdoEventStoreQueryCustomTable
             $this->eventStore,
             $this->connection,
             'events/streams',
-            'events/projection'
+            'events/projections'
         );
     }
 }
