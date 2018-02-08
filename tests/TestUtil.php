@@ -61,6 +61,11 @@ abstract class TestUtil
             }
         }
 
+        if (! self::$connection) {
+            print "db connection could not be established. aborting...\n";
+            exit(1);
+        }
+
         try {
             self::$connection->rollBack();
         } catch (\PDOException $e) {
