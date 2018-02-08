@@ -161,7 +161,7 @@ abstract class TestUtil
             $env['DB'],
             $env['DB_DRIVER'],
             $env['DB_USERNAME'],
-            $env['DB_PASSWORD'],
+            // $env['DB_PASSWORD'], // an empty string, which does not survive open_proc
             $env['DB_HOST'],
             $env['DB_NAME'],
             $env['DB_PORT'],
@@ -174,7 +174,7 @@ abstract class TestUtil
         return [
             'driver' => getenv('DB_DRIVER'),
             'user' => getenv('DB_USERNAME'),
-            'password' => getenv('DB_PASSWORD'),
+            'password' => false !== getenv('DB_PASSWORD') ? getenv('DB_PASSWORD') : '',
             'host' => getenv('DB_HOST'),
             'dbname' => getenv('DB_NAME'),
             'port' => getenv('DB_PORT'),

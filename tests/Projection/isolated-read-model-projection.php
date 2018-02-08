@@ -49,7 +49,6 @@ $readModel = new class() implements ReadModel {
 };
 
 $connection = TestUtil::getConnection();
-TestUtil::initDefaultDatabaseTables($connection);
 
 $eventStore = new MySqlEventStore(
     new FQCNMessageFactory(),
