@@ -131,6 +131,11 @@ final class PdoEventStoreReadModelProjector implements ReadModelProjector
      */
     private $query;
 
+    /**
+     * @var string
+     */
+    private $vendor;
+
     public function __construct(
         EventStore $eventStore,
         PDO $connection,
@@ -158,7 +163,7 @@ final class PdoEventStoreReadModelProjector implements ReadModelProjector
         $this->sleep = $sleep;
         $this->status = ProjectionStatus::IDLE();
         $this->triggerPcntlSignalDispatch = $triggerPcntlSignalDispatch;
-
+        $this->vendor = $this->connection->getAttribute(PDO::ATTR_DRIVER_NAME);
         while ($eventStore instanceof EventStoreDecorator) {
             $eventStore = $eventStore->getInnerEventStore();
         }
@@ -296,8 +301,9 @@ final class PdoEventStoreReadModelProjector implements ReadModelProjector
             }
         }
 
+        $projectionsTable = $this->quoteTableName($this->projectionsTable);
         $sql = <<<EOT
-UPDATE $this->projectionsTable SET position = ?, state = ?, status = ?
+UPDATE $projectionsTable SET position = ?, state = ?, status = ?
 WHERE name = ?
 EOT;
 
@@ -322,10 +328,11 @@ EOT;
     {
         $this->isStopped = true;
 
+        $projectionsTable = $this->quoteTableName($this->projectionsTable);
         $stopProjectionSql = <<<EOT
-UPDATE $this->projectionsTable SET status = ? WHERE name = ?;
+UPDATE $projectionsTable SET status = ? WHERE name = ?;
 EOT;
-        $statement = $this->connection->prepare($stopProjectionSql);
+        $statement         = $this->connection->prepare($stopProjectionSql);
         try {
             $statement->execute([ProjectionStatus::IDLE()->getValue(), $this->name]);
         } catch (PDOException $exception) {
@@ -356,10 +363,11 @@ EOT;
 
     public function delete(bool $deleteProjection): void
     {
+        $projectionsTable     = $this->quoteTableName($this->projectionsTable);
         $deleteProjectionSql = <<<EOT
-DELETE FROM $this->projectionsTable WHERE name = ?;
+DELETE FROM $projectionsTable WHERE name = ?;
 EOT;
-        $statement = $this->connection->prepare($deleteProjectionSql);
+        $statement           = $this->connection->prepare($deleteProjectionSql);
         try {
             $statement->execute([$this->name]);
         } catch (PDOException $exception) {
@@ -493,10 +501,10 @@ EOT;
 
     private function fetchRemoteStatus(): ProjectionStatus
     {
+        $projectionsTable = $this->quoteTableName($this->projectionsTable);
         $sql = <<<EOT
-SELECT status FROM $this->projectionsTable WHERE name = ? LIMIT 1;
+SELECT status FROM $projectionsTable WHERE name = ? LIMIT 1;
 EOT;
-
         $statement = $this->connection->prepare($sql);
         try {
             $statement->execute([$this->name]);
@@ -525,7 +533,7 @@ EOT;
     private function handleStreamWithSingleHandler(string $streamName, Iterator $events): void
     {
         $this->currentStreamName = $streamName;
-        $handler = $this->handler;
+        $handler                 = $this->handler;
 
         foreach ($events as $key => $event) {
             /* @var Message $event */
@@ -564,7 +572,7 @@ EOT;
             $this->eventCounter++;
 
             $handler = $this->handlers[$event->messageName()];
-            $result = $handler($this->state, $event);
+            $result  = $handler($this->state, $event);
 
             if (is_array($result)) {
                 $this->state = $result;
@@ -583,7 +591,8 @@ EOT;
 
     private function createHandlerContext(?string &$streamName)
     {
-        return new class($this, $streamName) {
+        return new class($this, $streamName)
+        {
             /**
              * @var ReadModelProjector
              */
@@ -596,7 +605,7 @@ EOT;
 
             public function __construct(ReadModelProjector $projector, ?string &$streamName)
             {
-                $this->projector = $projector;
+                $this->projector  = $projector;
                 $this->streamName = &$streamName;
             }
 
@@ -619,8 +628,9 @@ EOT;
 
     private function load(): void
     {
-        $sql = <<<EOT
-SELECT position, state FROM $this->projectionsTable WHERE name = ? ORDER BY no DESC LIMIT 1;
+        $projectionsTable = $this->quoteTableName($this->projectionsTable);
+        $sql             = <<<EOT
+SELECT position, state FROM $projectionsTable WHERE name = ? ORDER BY no DESC LIMIT 1;
 EOT;
 
         $statement = $this->connection->prepare($sql);
@@ -637,7 +647,7 @@ EOT;
         $result = $statement->fetch(PDO::FETCH_OBJ);
 
         $this->streamPositions = array_merge($this->streamPositions, json_decode($result->position, true));
-        $state = json_decode($result->state, true);
+        $state                 = json_decode($result->state, true);
 
         if (! empty($state)) {
             $this->state = $state;
@@ -646,8 +656,9 @@ EOT;
 
     private function createProjection(): void
     {
-        $sql = <<<EOT
-INSERT INTO $this->projectionsTable (name, position, state, status, locked_until)
+        $projectionsTable = $this->quoteTableName($this->projectionsTable);
+        $sql             = <<<EOT
+INSERT INTO $projectionsTable (name, position, state, status, locked_until)
 VALUES (?, '{}', '{}', ?, NULL);
 EOT;
 
@@ -664,13 +675,14 @@ EOT;
      */
     private function acquireLock(): void
     {
-        $now = new DateTimeImmutable('now', new DateTimeZone('UTC'));
+        $now       = new DateTimeImmutable('now', new DateTimeZone('UTC'));
         $nowString = $now->format('Y-m-d\TH:i:s.u');
 
         $lockUntilString = $this->createLockUntilString($now);
 
-        $sql = <<<EOT
-UPDATE $this->projectionsTable SET locked_until = ?, status = ? WHERE name = ? AND (locked_until IS NULL OR locked_until < ?);
+        $projectionsTable = $this->quoteTableName($this->projectionsTable);
+        $sql             = <<<EOT
+UPDATE $projectionsTable SET locked_until = ?, status = ? WHERE name = ? AND (locked_until IS NULL OR locked_until < ?);
 EOT;
 
         $statement = $this->connection->prepare($sql);
@@ -699,11 +711,11 @@ EOT;
     private function updateLock(): void
     {
         $now = new DateTimeImmutable('now', new DateTimeZone('UTC'));
-
         $lockUntilString = $this->createLockUntilString($now);
 
-        $sql = <<<EOT
-UPDATE $this->projectionsTable SET locked_until = ?, position = ? WHERE name = ?;
+        $projectionsTable = $this->quoteTableName($this->projectionsTable);
+        $sql             = <<<EOT
+UPDATE $projectionsTable SET locked_until = ?, position = ? WHERE name = ?;
 EOT;
 
         $statement = $this->connection->prepare($sql);
@@ -735,8 +747,9 @@ EOT;
 
     private function releaseLock(): void
     {
-        $sql = <<<EOT
-UPDATE $this->projectionsTable SET locked_until = NULL, status = ? WHERE name = ?;
+        $projectionsTable = $this->quoteTableName($this->projectionsTable);
+        $sql             = <<<EOT
+UPDATE $projectionsTable SET locked_until = NULL, status = ? WHERE name = ?;
 EOT;
 
         $statement = $this->connection->prepare($sql);
@@ -761,8 +774,9 @@ EOT;
 
         $lockUntilString = $this->createLockUntilString($now);
 
-        $sql = <<<EOT
-UPDATE $this->projectionsTable SET position = ?, state = ?, locked_until = ? 
+        $projectionsTable = $this->quoteTableName($this->projectionsTable);
+        $sql             = <<<EOT
+UPDATE $projectionsTable SET position = ?, state = ?, locked_until = ? 
 WHERE name = ?
 EOT;
 
@@ -788,10 +802,11 @@ EOT;
         $streamPositions = [];
 
         if (isset($this->query['all'])) {
-            $sql = <<<EOT
-SELECT real_stream_name FROM $this->eventStreamsTable WHERE real_stream_name NOT LIKE '$%';
+            $eventStreamsTable = $this->quoteTableName($this->eventStreamsTable);
+            $sql             = <<<EOT
+SELECT real_stream_name FROM $eventStreamsTable WHERE real_stream_name NOT LIKE '$%';
 EOT;
-            $statement = $this->connection->prepare($sql);
+            $statement       = $this->connection->prepare($sql);
             try {
                 $statement->execute();
             } catch (PDOException $exception) {
@@ -814,10 +829,11 @@ EOT;
         if (isset($this->query['categories'])) {
             $rowPlaces = implode(', ', array_fill(0, count($this->query['categories']), '?'));
 
-            $sql = <<<EOT
-SELECT real_stream_name FROM $this->eventStreamsTable WHERE category IN ($rowPlaces);
+            $eventStreamsTable = $this->quoteTableName($this->eventStreamsTable);
+            $sql               = <<<EOT
+SELECT real_stream_name FROM $eventStreamsTable WHERE category IN ($rowPlaces);
 EOT;
-            $statement = $this->connection->prepare($sql);
+            $statement         = $this->connection->prepare($sql);
 
             try {
                 $statement->execute($this->query['categories']);
@@ -858,6 +874,17 @@ EOT;
 
         $resultMicros = substr($micros, -6);
 
-        return $from->modify('+' . $secs .' seconds')->format('Y-m-d\TH:i:s') . '.' . $resultMicros;
+        return $from->modify('+' . $secs . ' seconds')->format('Y-m-d\TH:i:s') . '.' . $resultMicros;
+    }
+
+    private function quoteTableName(string $tableName): string
+    {
+        switch ($this->vendor) {
+            case 'pgsql':
+                return '"'.$tableName.'"';
+                break;
+            default:
+                return "`$tableName`";
+        }
     }
 }

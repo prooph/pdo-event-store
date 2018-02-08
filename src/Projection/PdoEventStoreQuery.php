@@ -82,11 +82,17 @@ final class PdoEventStoreQuery implements Query
      */
     private $query;
 
+    /**
+     * @var string
+     */
+    private $vendor;
+
     public function __construct(EventStore $eventStore, PDO $connection, string $eventStreamsTable)
     {
         $this->eventStore = $eventStore;
         $this->connection = $connection;
         $this->eventStreamsTable = $eventStreamsTable;
+        $this->vendor = $this->connection->getAttribute(PDO::ATTR_DRIVER_NAME);
 
         while ($eventStore instanceof EventStoreDecorator) {
             $eventStore = $eventStore->getInnerEventStore();
@@ -351,8 +357,9 @@ final class PdoEventStoreQuery implements Query
         $streamPositions = [];
 
         if (isset($this->query['all'])) {
+            $eventStreamsTable = $this->quoteTableName($this->eventStreamsTable);
             $sql = <<<EOT
-SELECT real_stream_name FROM $this->eventStreamsTable WHERE real_stream_name NOT LIKE '$%';
+SELECT real_stream_name FROM $eventStreamsTable WHERE real_stream_name NOT LIKE '$%';
 EOT;
             $statement = $this->connection->prepare($sql);
             try {
@@ -377,8 +384,9 @@ EOT;
         if (isset($this->query['categories'])) {
             $rowPlaces = implode(', ', array_fill(0, count($this->query['categories']), '?'));
 
+            $eventStreamsTable = $this->quoteTableName($this->eventStreamsTable);
             $sql = <<<EOT
-SELECT real_stream_name FROM $this->eventStreamsTable WHERE category IN ($rowPlaces);
+SELECT real_stream_name FROM $eventStreamsTable WHERE category IN ($rowPlaces);
 EOT;
             $statement = $this->connection->prepare($sql);
 
@@ -407,5 +415,16 @@ EOT;
         }
 
         $this->streamPositions = array_merge($streamPositions, $this->streamPositions);
+    }
+
+    private function quoteTableName(string $tableName): string
+    {
+        switch ($this->vendor) {
+            case 'pgsql':
+                return '"'.$tableName.'"';
+                break;
+            default:
+                return "`$tableName`";
+        }
     }
 }
