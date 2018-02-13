@@ -12,17 +12,17 @@ declare(strict_types=1);
 
 namespace ProophTest\EventStore\Pdo\Projection;
 
+use PDO;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresSimpleStreamStrategy;
 use Prooph\EventStore\Pdo\PostgresEventStore;
 use Prooph\EventStore\Pdo\Projection\PostgresProjectionManager;
-use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Pdo\TestUtil;
 
 /**
  * @group postgres
  */
-class PostgresEventStoreProjectorTest extends PdoEventStoreProjectorTest
+class PostgresEventStoreQueryCustomTablesTest extends PdoEventStoreQueryCustomTablesTest
 {
     protected function setUp(): void
     {
@@ -31,43 +31,22 @@ class PostgresEventStoreProjectorTest extends PdoEventStoreProjectorTest
         }
 
         $this->connection = TestUtil::getConnection();
-        TestUtil::initDefaultDatabaseTables($this->connection);
+        TestUtil::initCustomDatabaseTables($this->connection);
 
         $this->eventStore = new PostgresEventStore(
             new FQCNMessageFactory(),
             TestUtil::getConnection(),
-            new PostgresSimpleStreamStrategy()
+            new PostgresSimpleStreamStrategy(),
+            10000,
+            'events/streams'
+
         );
 
         $this->projectionManager = new PostgresProjectionManager(
             $this->eventStore,
-            $this->connection
+            $this->connection,
+            'events/streams',
+            'events/projections'
         );
-    }
-
-    /**
-     * @test
-     */
-    public function it_handles_missing_projection_table(): void
-    {
-        $this->expectException(\Prooph\EventStore\Pdo\Exception\RuntimeException::class);
-        $this->expectExceptionMessage("Error 42P01. Maybe the projection table is not setup?\nError-Info: ERROR:  relation \"projections\" does not exist\nLINE 1: SELECT status FROM \"projections\" WHERE name = $1 LIMIT 1;");
-
-        $this->prepareEventStream('user-123');
-
-        $this->connection->exec('DROP TABLE projections;');
-
-        $projection = $this->projectionManager->createProjection('test_projection');
-
-        $projection
-            ->fromStream('user-123')
-            ->when([
-                UserCreated::class => function (array $state, UserCreated $event): array {
-                    $this->stop();
-
-                    return $state;
-                },
-            ])
-            ->run();
     }
 }

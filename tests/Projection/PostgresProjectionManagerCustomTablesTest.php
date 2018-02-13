@@ -18,24 +18,25 @@ use Prooph\EventStore\EventStore;
 use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Pdo\Exception\InvalidArgumentException;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
-use Prooph\EventStore\Pdo\MariaDbEventStore;
-use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbAggregateStreamStrategy;
-use Prooph\EventStore\Pdo\Projection\MariaDbProjectionManager;
+use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresAggregateStreamStrategy;
+use Prooph\EventStore\Pdo\PostgresEventStore;
+use Prooph\EventStore\Pdo\Projection\PostgresProjectionManager;
+use Prooph\EventStore\Projection\InMemoryProjectionManager;
 use ProophTest\EventStore\Pdo\TestUtil;
 use ProophTest\EventStore\Projection\AbstractProjectionManagerTest;
 
 /**
- * @group mariadb
+ * @group postgres
  */
-class MariaDbProjectionManagerTest extends AbstractProjectionManagerTest
+class PostgresProjectionManagerCustomTablesTest extends AbstractProjectionManagerTest
 {
     /**
-     * @var MariaDbProjectionManager
+     * @var PostgresProjectionManager
      */
     protected $projectionManager;
 
     /**
-     * @var MariaDbEventStore
+     * @var PostgresEventStore
      */
     private $eventStore;
 
@@ -46,19 +47,27 @@ class MariaDbProjectionManagerTest extends AbstractProjectionManagerTest
 
     protected function setUp(): void
     {
-        if (TestUtil::getDatabaseDriver() !== 'pdo_mysql') {
-            throw new \RuntimeException('Invalid database driver');
+        if (TestUtil::getDatabaseDriver() !== 'pdo_pgsql') {
+            throw new \RuntimeException('Invalid database vendor');
         }
 
         $this->connection = TestUtil::getConnection();
-        TestUtil::initDefaultDatabaseTables($this->connection);
+        TestUtil::initCustomDatabaseTables($this->connection);
 
-        $this->eventStore = new MariaDbEventStore(
+        $this->eventStore = new PostgresEventStore(
             new FQCNMessageFactory(),
             $this->connection,
-            new MariaDbAggregateStreamStrategy()
+            new PostgresAggregateStreamStrategy(),
+            10000,
+            'events/streams'
+
         );
-        $this->projectionManager = new MariaDbProjectionManager($this->eventStore, $this->connection);
+        $this->projectionManager = new PostgresProjectionManager(
+            $this->eventStore,
+            $this->connection,
+            'events/streams',
+            'events/projections'
+        );
     }
 
     protected function tearDown(): void
@@ -75,7 +84,7 @@ class MariaDbProjectionManagerTest extends AbstractProjectionManagerTest
 
         $eventStore = $this->prophesize(EventStore::class);
 
-        new MariaDbProjectionManager($eventStore->reveal(), $this->connection);
+        new InMemoryProjectionManager($eventStore->reveal());
     }
 
     /**
@@ -89,7 +98,7 @@ class MariaDbProjectionManagerTest extends AbstractProjectionManagerTest
         $wrappedEventStore = $this->prophesize(EventStoreDecorator::class);
         $wrappedEventStore->getInnerEventStore()->willReturn($eventStore->reveal())->shouldBeCalled();
 
-        new MariaDbProjectionManager($wrappedEventStore->reveal(), $this->connection);
+        new PostgresProjectionManager($wrappedEventStore->reveal(), $this->connection);
     }
 
     /**
@@ -99,8 +108,19 @@ class MariaDbProjectionManagerTest extends AbstractProjectionManagerTest
     {
         $this->expectException(RuntimeException::class);
 
-        $this->connection->exec('DROP TABLE projections;');
+        $this->connection->exec('DROP TABLE "events/projections";');
         $this->projectionManager->fetchProjectionNames(null, 200, 0);
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_fetching_projection_names_using_invalid_regex(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid regex pattern given');
+
+        $this->projectionManager->fetchProjectionNamesRegex('invalid)', 10, 0);
     }
 
     /**
@@ -110,7 +130,7 @@ class MariaDbProjectionManagerTest extends AbstractProjectionManagerTest
     {
         $this->expectException(RuntimeException::class);
 
-        $this->connection->exec('DROP TABLE projections;');
+        $this->connection->exec('DROP TABLE "events/projections";');
         $this->projectionManager->fetchProjectionNamesRegex('^foo', 200, 0);
     }
 }

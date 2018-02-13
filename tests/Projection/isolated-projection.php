@@ -21,7 +21,6 @@ use ProophTest\EventStore\Pdo\TestUtil;
 require __DIR__ . '/../../vendor/autoload.php';
 
 $connection = TestUtil::getConnection();
-TestUtil::initDefaultDatabaseTables($connection);
 
 $eventStore = new MySqlEventStore(
     new FQCNMessageFactory(),

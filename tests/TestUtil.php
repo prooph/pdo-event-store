@@ -61,6 +61,11 @@ abstract class TestUtil
             }
         }
 
+        if (! self::$connection) {
+            print "db connection could not be established. aborting...\n";
+            exit(1);
+        }
+
         try {
             self::$connection->rollBack();
         } catch (\PDOException $e) {
@@ -110,20 +115,44 @@ abstract class TestUtil
     {
         $vendor = self::getDatabaseVendor();
 
-        $connection->exec('DROP TABLE IF EXISTS event_streams');
-        $connection->exec(file_get_contents(__DIR__.'/../scripts/' . $vendor . '/01_event_streams_table.sql'));
-        $connection->exec('DROP TABLE IF EXISTS projections');
-        $connection->exec(file_get_contents(__DIR__.'/../scripts/' . $vendor . '/02_projections_table.sql'));
+        $connection->exec(file_get_contents(__DIR__ . '/../scripts/' . $vendor . '/01_event_streams_table.sql'));
+        $connection->exec(file_get_contents(__DIR__ . '/../scripts/' . $vendor . '/02_projections_table.sql'));
     }
 
     public static function initCustomDatabaseTables(PDO $connection): void
     {
         $vendor = self::getDatabaseVendor();
 
-        $connection->exec('DROP TABLE IF EXISTS event_streams');
-        $connection->exec(file_get_contents(__DIR__.'/Assets/scripts/' . $vendor . '/01_event_streams_table.sql'));
-        $connection->exec('DROP TABLE IF EXISTS projections');
-        $connection->exec(file_get_contents(__DIR__.'/Assets/scripts/' . $vendor . '/02_projections_table.sql'));
+        $connection->exec(file_get_contents(__DIR__ . '/Assets/scripts/' . $vendor . '/01_event_streams_table.sql'));
+        $connection->exec(file_get_contents(__DIR__ . '/Assets/scripts/' . $vendor . '/02_projections_table.sql'));
+    }
+
+    public static function tearDownDatabase(): void
+    {
+        $connection = self::getConnection();
+        $vendor = self::getDatabaseVendor();
+        switch ($vendor) {
+            case 'postgres':
+                $statement = $connection->prepare('SELECT table_name FROM information_schema.tables WHERE table_schema = \'public\';');
+                break;
+            default:
+                $statement = $connection->prepare('SHOW TABLES');
+                break;
+        }
+
+        $statement->execute();
+        $tables = $statement->fetchAll(PDO::FETCH_COLUMN);
+
+        foreach ($tables as $table) {
+            switch ($vendor) {
+                case 'postgres':
+                    $connection->exec(sprintf('DROP TABLE "%s";', $table));
+                    break;
+                default:
+                    $connection->exec(sprintf('DROP TABLE `%s`;', $table));
+                    break;
+            }
+        }
     }
 
     private static function hasRequiredConnectionParams(): bool
@@ -134,7 +163,6 @@ abstract class TestUtil
             $env['DB'],
             $env['DB_DRIVER'],
             $env['DB_USERNAME'],
-            $env['DB_PASSWORD'],
             $env['DB_HOST'],
             $env['DB_NAME'],
             $env['DB_PORT'],
@@ -147,7 +175,7 @@ abstract class TestUtil
         return [
             'driver' => getenv('DB_DRIVER'),
             'user' => getenv('DB_USERNAME'),
-            'password' => getenv('DB_PASSWORD'),
+            'password' => false !== getenv('DB_PASSWORD') ? getenv('DB_PASSWORD') : '',
             'host' => getenv('DB_HOST'),
             'dbname' => getenv('DB_NAME'),
             'port' => getenv('DB_PORT'),

@@ -16,14 +16,13 @@ use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresSimpleStreamStrategy;
 use Prooph\EventStore\Pdo\PostgresEventStore;
 use Prooph\EventStore\Pdo\Projection\PostgresProjectionManager;
-use ProophTest\EventStore\Mock\ReadModelMock;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Pdo\TestUtil;
 
 /**
  * @group postgres
  */
-class PostgresEventStoreReadModelProjectorTest extends PdoEventStoreReadModelProjectorTest
+class PostgresEventStoreProjectorCustomTablesTest extends PdoEventStoreProjectorCustomTablesTest
 {
     protected function setUp(): void
     {
@@ -32,17 +31,21 @@ class PostgresEventStoreReadModelProjectorTest extends PdoEventStoreReadModelPro
         }
 
         $this->connection = TestUtil::getConnection();
-        TestUtil::initDefaultDatabaseTables($this->connection);
+        TestUtil::initCustomDatabaseTables($this->connection);
 
         $this->eventStore = new PostgresEventStore(
             new FQCNMessageFactory(),
             TestUtil::getConnection(),
-            new PostgresSimpleStreamStrategy()
+            new PostgresSimpleStreamStrategy(),
+            10000,
+            'events/streams'
         );
 
         $this->projectionManager = new PostgresProjectionManager(
             $this->eventStore,
-            $this->connection
+            $this->connection,
+            'events/streams',
+            'events/projections'
         );
     }
 
@@ -52,13 +55,13 @@ class PostgresEventStoreReadModelProjectorTest extends PdoEventStoreReadModelPro
     public function it_handles_missing_projection_table(): void
     {
         $this->expectException(\Prooph\EventStore\Pdo\Exception\RuntimeException::class);
-        $this->expectExceptionMessage("Error 42P01. Maybe the projection table is not setup?\nError-Info: ERROR:  relation \"projections\" does not exist\nLINE 1: SELECT status FROM");
+        $this->expectExceptionMessage("Error 42P01. Maybe the projection table is not setup?\nError-Info: ERROR:  relation \"events/projections\" does not exist\nLINE 1: SELECT status FROM");
 
         $this->prepareEventStream('user-123');
 
-        $this->connection->exec('DROP TABLE projections;');
+        $this->connection->exec('DROP TABLE "events/projections";');
 
-        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
+        $projection = $this->projectionManager->createProjection('test_projection');
 
         $projection
             ->fromStream('user-123')

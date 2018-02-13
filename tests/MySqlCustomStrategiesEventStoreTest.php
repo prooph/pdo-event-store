@@ -42,7 +42,7 @@ final class MySqlCustomStrategiesEventStoreTest extends MySqlEventStoreTest
         }
 
         $this->connection = TestUtil::getConnection();
-        TestUtil::initCustomDatabaseTables($this->connection);
+        TestUtil::initDefaultDatabaseTables($this->connection);
 
         $this->setupEventStoreWith(new CustomMySqlAggregateStreamStrategy());
     }
