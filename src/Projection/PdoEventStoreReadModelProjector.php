@@ -881,7 +881,6 @@ EOT;
         switch ($this->vendor) {
             case 'pgsql':
                 return '"'.$tableName.'"';
-                break;
             default:
                 return "`$tableName`";
         }

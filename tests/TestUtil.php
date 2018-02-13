@@ -137,6 +137,7 @@ abstract class TestUtil
                 break;
             default:
                 $statement = $connection->prepare('SHOW TABLES');
+                break;
         }
 
         $statement->execute();
@@ -149,6 +150,7 @@ abstract class TestUtil
                     break;
                 default:
                     $connection->exec(sprintf('DROP TABLE `%s`;', $table));
+                    break;
             }
         }
     }
@@ -161,7 +163,6 @@ abstract class TestUtil
             $env['DB'],
             $env['DB_DRIVER'],
             $env['DB_USERNAME'],
-            // $env['DB_PASSWORD'], // an empty string, which does not survive open_proc
             $env['DB_HOST'],
             $env['DB_NAME'],
             $env['DB_PORT'],
