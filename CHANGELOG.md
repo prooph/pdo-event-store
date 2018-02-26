@@ -1,7 +1,38 @@
 # Change Log
 
-## [v1.6.0](https://github.com/prooph/pdo-event-store/tree/v1.6.0)
+## [v1.7.1](https://github.com/prooph/pdo-event-store/tree/v1.7.1)
 
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.7.0...v1.7.1)
+
+**Fixed bugs:**
+
+- Quote tablenames projections [\#132](https://github.com/prooph/pdo-event-store/pull/132) ([basz](https://github.com/basz))
+
+**Closed issues:**
+
+- problem with json\_decode when payload contains special character \(MySQL\) [\#133](https://github.com/prooph/pdo-event-store/issues/133)
+- Missing backticks on table names declarations \(mysql\) [\#128](https://github.com/prooph/pdo-event-store/issues/128)
+:
+## [v1.7.0](https://github.com/prooph/pdo-event-store/tree/v1.7.0) (2018-02-06)
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.6.0...v1.7.0)
+
+**Implemented enhancements:**
+
+- upgrade table schemas [\#124](https://github.com/prooph/pdo-event-store/pull/124) ([prolic](https://github.com/prolic))
+
+**Fixed bugs:**
+
+- Always update the projections position [\#125](https://github.com/prooph/pdo-event-store/issues/125)
+- Update schemas [\#122](https://github.com/prooph/pdo-event-store/issues/122)
+- Quote tablenames [\#130](https://github.com/prooph/pdo-event-store/pull/130) ([basz](https://github.com/basz))
+- Always update the projections position [\#126](https://github.com/prooph/pdo-event-store/pull/126) ([hvanoch](https://github.com/hvanoch))
+- upgrade table schemas [\#124](https://github.com/prooph/pdo-event-store/pull/124) ([prolic](https://github.com/prolic))
+
+**Closed issues:**
+
+- Ability to replace the DateTimeImmutable class on mocked datetime [\#123](https://github.com/prooph/pdo-event-store/issues/123)
+
+## [v1.6.0](https://github.com/prooph/pdo-event-store/tree/v1.6.0) (2017-12-15)
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.5.2...v1.6.0)
 
 **Implemented enhancements:**
