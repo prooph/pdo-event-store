@@ -70,6 +70,8 @@ everyone likes (especially DB admins).
 
 All needed database tables will be created automatically for you.
 
+Note: For event-store projections the aggregate stream strategy is not that important anymore, consider using [ 	CategoryStreamProjectionRunner](https://github.com/prooph/standard-projections/blob/master/src/CategoryStreamProjectionRunner.php) from the [standard-projections]((https://github.com/prooph/standard-projections) repository.
+
 ### SingleStreamStrategy
 
 This stream strategy should be used together with event-sourcing, if you want to store all events of an aggregate type into a single stream, for example
