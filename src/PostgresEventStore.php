@@ -233,13 +233,6 @@ EOT;
     ): Iterator {
         $tableName = $this->persistenceStrategy->generateTableName($streamName);
 
-        $query = "SELECT stream_name FROM \"$this->eventStreamsTable\" WHERE stream_name = ?";
-        $statement = $this->connection->prepare($query);
-        $statement->execute([$tableName]);
-
-        if ($statement->rowCount() === 0) {
-            throw StreamNotFound::with($streamName);
-        }
         [$where, $values] = $this->createWhereClause($metadataMatcher);
         $where[] = 'no >= :fromNumber';
 
