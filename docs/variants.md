@@ -71,11 +71,7 @@ everyone likes (especially DB admins).
 All needed database tables will be created automatically for you.
 
 Note: For event-store projections the aggregate stream strategy is not that performant anymore, consider using [CategoryStreamProjectionRunner](https://github.com/prooph/standard-projections/blob/master/src/CategoryStreamProjectionRunner.php) from the [standard-projections]((https://github.com/prooph/standard-projections) repository.
-But even than, the projections would be slow, because the projector would need to check all streams for new events, let's take this example:
-- Each check is an SQL query, well let's say each check takes 1ms.
-- When you have 1000 aggregates, you have 1000 streams so it takes 1 second to check all of them.
-- Then your database grows to 1,000,000 aggregates so it takes 16.6 minutes to check all the streams. Which means some of your events can take up to 16 minutes to be projected (depending on where in the loop the projector is when the event is added to ES). That's already quite slow.
-- Then your database grows again to 100,000,000 aggregates and your projection time gets to ~27 hours. And that is not even counting the time spent to actually project each event.
+But even than, the projections would be slow, because the projector needs to check all the streams one-by-one for any new events. Because of this speed of finding and projecting any new events depends on the number of streams which means it would rapidly decrease as you add more data to your event store.
 
 You could however drastically improve the projections, if you would add a category stream projection as event-store-plugin. (This doesn't exist, yet)
 
