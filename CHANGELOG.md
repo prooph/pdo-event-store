@@ -1,7 +1,18 @@
 # Change Log
 
-## [v1.7.1](https://github.com/prooph/pdo-event-store/tree/v1.7.1)
+## [v1.7.2](https://github.com/prooph/pdo-event-store/tree/v1.7.2)
 
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.7.1...v1.7.2)
+
+**Fixed bugs:**
+
+- fix OPTION\_LOCK\_TIMEOUT\_MS in PostgresProjectionManager [\#135](https://github.com/prooph/pdo-event-store/pull/135) ([prolic](https://github.com/prolic))
+
+**Merged pull requests:**
+
+- update docs [\#136](https://github.com/prooph/pdo-event-store/pull/136) ([prolic](https://github.com/prolic))
+
+## [v1.7.1](https://github.com/prooph/pdo-event-store/tree/v1.7.1) (2018-02-26)
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.7.0...v1.7.1)
 
 **Fixed bugs:**
@@ -12,7 +23,7 @@
 
 - problem with json\_decode when payload contains special character \(MySQL\) [\#133](https://github.com/prooph/pdo-event-store/issues/133)
 - Missing backticks on table names declarations \(mysql\) [\#128](https://github.com/prooph/pdo-event-store/issues/128)
-:
+
 ## [v1.7.0](https://github.com/prooph/pdo-event-store/tree/v1.7.0) (2018-02-06)
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.6.0...v1.7.0)
 
