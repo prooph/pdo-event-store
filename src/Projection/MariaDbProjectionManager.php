@@ -138,7 +138,23 @@ EOT;
         }
 
         if (0 === $statement->rowCount()) {
-            throw ProjectionNotFound::withName($name);
+            $sql = <<<EOT
+SELECT * FROM `$this->projectionsTable` WHERE name = ? LIMIT 1;
+EOT;
+            $statement = $this->connection->prepare($sql);
+            try {
+                $statement->execute([$name]);
+            } catch (PDOException $exception) {
+                // ignore and check error code
+            }
+
+            if ($statement->errorCode() !== '00000') {
+                throw Exception\RuntimeException::fromStatementErrorInfo($statement->errorInfo());
+            }
+
+            if (0 === $statement->rowCount()) {
+                throw ProjectionNotFound::withName($name);
+            }
         }
     }
 
@@ -163,7 +179,23 @@ EOT;
         }
 
         if (0 === $statement->rowCount()) {
-            throw ProjectionNotFound::withName($name);
+            $sql = <<<EOT
+SELECT * FROM `$this->projectionsTable` WHERE name = ? LIMIT 1;
+EOT;
+            $statement = $this->connection->prepare($sql);
+            try {
+                $statement->execute([$name]);
+            } catch (PDOException $exception) {
+                // ignore and check error code
+            }
+
+            if ($statement->errorCode() !== '00000') {
+                throw Exception\RuntimeException::fromStatementErrorInfo($statement->errorInfo());
+            }
+
+            if (0 === $statement->rowCount()) {
+                throw ProjectionNotFound::withName($name);
+            }
         }
     }
 
@@ -188,7 +220,23 @@ EOT;
         }
 
         if (0 === $statement->rowCount()) {
-            throw ProjectionNotFound::withName($name);
+            $sql = <<<EOT
+SELECT * FROM `$this->projectionsTable` WHERE name = ? LIMIT 1;
+EOT;
+            $statement = $this->connection->prepare($sql);
+            try {
+                $statement->execute([$name]);
+            } catch (PDOException $exception) {
+                // ignore and check error code
+            }
+
+            if ($statement->errorCode() !== '00000') {
+                throw Exception\RuntimeException::fromStatementErrorInfo($statement->errorInfo());
+            }
+
+            if (0 === $statement->rowCount()) {
+                throw ProjectionNotFound::withName($name);
+            }
         }
     }
 
