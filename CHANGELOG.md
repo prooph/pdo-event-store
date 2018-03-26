@@ -1,7 +1,15 @@
 # Change Log
 
-## [v1.7.2](https://github.com/prooph/pdo-event-store/tree/v1.7.2)
+## [v1.7.3](https://github.com/prooph/pdo-event-store/tree/v1.7.3)
 
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.7.2...v1.7.3)
+
+**Fixed bugs:**
+
+- wrong ProjectionNotFound exception on resetProjection [\#138](https://github.com/prooph/pdo-event-store/issues/138)
+- fix multiple calls to reset/stop/delete projection [\#140](https://github.com/prooph/pdo-event-store/pull/140) ([prolic](https://github.com/prolic))
+
+## [v1.7.2](https://github.com/prooph/pdo-event-store/tree/v1.7.2) (2018-03-14)
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.7.1...v1.7.2)
 
 **Fixed bugs:**
