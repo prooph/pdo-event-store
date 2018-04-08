@@ -141,6 +141,11 @@ final class PdoEventStoreReadModelProjector implements ReadModelProjector
      */
     private $vendor;
 
+    /**
+     * @var DateTimeImmutable
+     */
+    private $lastLockUpdate;
+
     public function __construct(
         EventStore $eventStore,
         PDO $connection,
@@ -712,11 +717,17 @@ EOT;
         }
 
         $this->status = ProjectionStatus::RUNNING();
+        $this->lastLockUpdate = $now;
     }
 
     private function updateLock(): void
     {
         $now = new DateTimeImmutable('now', new DateTimeZone('UTC'));
+
+        if (! $this->shouldUpdateLock($now)) {
+            return;
+        }
+
         $lockUntilString = $this->createLockUntilString($now);
 
         $projectionsTable = $this->quoteTableName($this->projectionsTable);
@@ -749,6 +760,8 @@ EOT;
 
             throw new Exception\RuntimeException('Unknown error occurred');
         }
+
+        $this->lastLockUpdate = $now;
     }
 
     private function releaseLock(): void
@@ -881,6 +894,17 @@ EOT;
         $resultMicros = substr($micros, -6);
 
         return $from->modify('+' . $secs . ' seconds')->format('Y-m-d\TH:i:s') . '.' . $resultMicros;
+    }
+
+    private function shouldUpdateLock(DateTimeImmutable $now): bool
+    {
+        if ($this->lastLockUpdate === null || $this->updateLockThreshold === 0) {
+            return true;
+        }
+
+        $threshold = ((int) $this->lastLockUpdate->format('u') + ($this->updateLockThreshold * 1000));
+
+        return $threshold <= (int) $now->format('u');
     }
 
     private function quoteTableName(string $tableName): string
