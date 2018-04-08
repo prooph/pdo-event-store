@@ -109,7 +109,7 @@ final class PostgresProjectionManager implements ProjectionManager
             $options[PdoEventStoreReadModelProjector::OPTION_PERSIST_BLOCK_SIZE] ?? PdoEventStoreReadModelProjector::DEFAULT_PERSIST_BLOCK_SIZE,
             $options[PdoEventStoreReadModelProjector::OPTION_SLEEP] ?? PdoEventStoreReadModelProjector::DEFAULT_SLEEP,
             $options[PdoEventStoreReadModelProjector::OPTION_PCNTL_DISPATCH] ?? PdoEventStoreReadModelProjector::DEFAULT_PCNTL_DISPATCH,
-            $options[PdoEventStoreProjector::OPTION_UPDATE_LOCK_THRESHOLD] ?? PdoEventStoreProjector::DEFAULT_UPDATE_LOCK_THRESHOLD
+            $options[PdoEventStoreReadModelProjector::OPTION_UPDATE_LOCK_THRESHOLD] ?? PdoEventStoreReadModelProjector::DEFAULT_UPDATE_LOCK_THRESHOLD
         );
     }
 
