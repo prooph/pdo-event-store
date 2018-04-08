@@ -815,6 +815,8 @@ EOT;
 
             throw new Exception\RuntimeException('Unknown error occurred');
         }
+
+        $this->lastLockUpdate = $now;
     }
 
     private function releaseLock(): void
