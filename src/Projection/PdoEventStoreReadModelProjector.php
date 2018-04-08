@@ -127,6 +127,11 @@ final class PdoEventStoreReadModelProjector implements ReadModelProjector
     private $triggerPcntlSignalDispatch;
 
     /**
+     * @var int
+     */
+    private $updateLockThreshold;
+
+    /**
      * @var array|null
      */
     private $query;
@@ -146,7 +151,8 @@ final class PdoEventStoreReadModelProjector implements ReadModelProjector
         int $lockTimeoutMs,
         int $persistBlockSize,
         int $sleep,
-        bool $triggerPcntlSignalDispatch = false
+        bool $triggerPcntlSignalDispatch = false,
+        int $updateLockThreshold = 0
     ) {
         if ($triggerPcntlSignalDispatch && ! extension_loaded('pcntl')) {
             throw Exception\ExtensionNotLoadedException::withName('pcntl');
@@ -163,6 +169,7 @@ final class PdoEventStoreReadModelProjector implements ReadModelProjector
         $this->sleep = $sleep;
         $this->status = ProjectionStatus::IDLE();
         $this->triggerPcntlSignalDispatch = $triggerPcntlSignalDispatch;
+        $this->updateLockThreshold = $updateLockThreshold;
         $this->vendor = $this->connection->getAttribute(PDO::ATTR_DRIVER_NAME);
         while ($eventStore instanceof EventStoreDecorator) {
             $eventStore = $eventStore->getInnerEventStore();
