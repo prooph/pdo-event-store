@@ -195,4 +195,61 @@ abstract class PdoEventStoreProjectorTest extends AbstractEventStoreProjectorTes
             $processDetails['exitcode']
         );
     }
+
+    /**
+     * @test
+     */
+    public function it_respects_update_lock_threshold(): void
+    {
+        if (! extension_loaded('pcntl')) {
+            $this->markTestSkipped('The PCNTL extension is not available.');
+
+            return;
+        }
+
+        $this->prepareEventStream('user-123');
+
+        $command = 'exec php ' . realpath(__DIR__) . '/isolated-projection.php';
+        $descriptorSpec = [
+            0 => ['pipe', 'r'],
+            1 => ['pipe', 'w'],
+            2 => ['pipe', 'w'],
+        ];
+
+        /**
+         * Created process inherits env variables from this process.
+         * Script returns with non-standard code SIGUSR1 from the handler and -1 else
+         */
+        $projectionProcess = proc_open($command, $descriptorSpec, $pipes);
+
+        usleep(100000);
+
+        $lockedUntil = TestUtil::getProjectionLockedUntilFromDefaultProjectionsTable($this->connection, 'test_projection');
+
+        $this->assertNotNull($lockedUntil);
+
+        //Update lock threshold is set to 500 ms
+        usleep(200000);
+
+        $notUpdatedLockedUntil = TestUtil::getProjectionLockedUntilFromDefaultProjectionsTable($this->connection, 'test_projection');
+
+        $this->assertEquals($lockedUntil, $notUpdatedLockedUntil);
+
+        usleep(500000);
+
+        $processDetails = proc_get_status($projectionProcess);
+
+        $updatedLockedUntil = TestUtil::getProjectionLockedUntilFromDefaultProjectionsTable($this->connection, 'test_projection');
+
+        $this->assertGreaterThan($lockedUntil, $updatedLockedUntil);
+
+        posix_kill($processDetails['pid'], SIGQUIT);
+
+        sleep(1);
+
+        $processDetails = proc_get_status($projectionProcess);
+        $this->assertFalse(
+            $processDetails['running']
+        );
+    }
 }

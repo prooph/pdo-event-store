@@ -36,6 +36,7 @@ $projection = $projectionManager->createProjection(
     'test_projection',
     [
         PdoEventStoreProjector::OPTION_PCNTL_DISPATCH => true,
+        PdoEventStoreProjector::OPTION_UPDATE_LOCK_THRESHOLD => 500,
     ]
 );
 pcntl_signal(SIGQUIT, function () use ($projection) {

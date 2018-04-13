@@ -955,9 +955,14 @@ EOT;
             return true;
         }
 
-        $threshold = ((int) $this->lastLockUpdate->format('u') + ($this->updateLockThreshold * 1000));
+        //Create a 0 interval
+        $updateLockThreshold = new \DateInterval('PT0S');
+        //and manually add split seconds
+        $updateLockThreshold->f = $this->updateLockThreshold / 1000;
 
-        return $threshold <= (int) $now->format('u');
+        $threshold = $this->lastLockUpdate->add($updateLockThreshold);
+
+        return $threshold <= $now;
     }
 
     private function quoteTableName(string $tableName): string
