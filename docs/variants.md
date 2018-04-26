@@ -9,7 +9,7 @@ For a better understanding, we recommend to read the event-store docs, first.
 
 The PostgresEventStore has a better performance (at least with default database configuration) and implements the
 `TransactionalEventStore` interface. If you need maximum performance or transaction support, we recommend to use the
-PostgresEventStore over the MariaDb-/MySqlEventStore.
+PostgresEventStore instead of the MariaDb-/MySqlEventStore.
 
 ## Event streams / projections table
 
