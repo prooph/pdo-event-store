@@ -222,7 +222,7 @@ abstract class PdoEventStoreProjectorTest extends AbstractEventStoreProjectorTes
          */
         $projectionProcess = proc_open($command, $descriptorSpec, $pipes);
 
-        usleep(100000);
+        sleep(2);
 
         $lockedUntil = TestUtil::getProjectionLockedUntilFromDefaultProjectionsTable($this->connection, 'test_projection');
 
