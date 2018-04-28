@@ -180,6 +180,16 @@ abstract class TestUtil
         return null;
     }
 
+    public static function subMilliseconds(\DateTimeImmutable $time, int $ms): \DateTimeImmutable
+    {
+        //Create a 0 interval
+        $interval = new \DateInterval('PT0S');
+        //and manually add split seconds
+        $interval->f = $ms / 1000;
+
+        return $time->sub($interval);
+    }
+
     private static function hasRequiredConnectionParams(): bool
     {
         $env = getenv();

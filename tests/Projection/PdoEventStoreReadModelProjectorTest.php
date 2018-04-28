@@ -258,7 +258,7 @@ abstract class PdoEventStoreReadModelProjectorTest extends AbstractEventStoreRea
 
         $this->assertEquals($lockedUntil, $notUpdatedLockedUntil);
 
-        //Now should definitely see an updated lock
+        //Now we should definitely see an updated lock
         usleep(800000);
 
         $updatedLockedUntil = TestUtil::getProjectionLockedUntilFromDefaultProjectionsTable($this->connection, 'test_projection');
@@ -274,5 +274,99 @@ abstract class PdoEventStoreReadModelProjectorTest extends AbstractEventStoreRea
             SIGUSR1,
             $processDetails['exitcode']
         );
+    }
+
+    /**
+     * @test
+     */
+    public function it_should_update_lock_if_projection_is_not_locked()
+    {
+        $projectorRef = new \ReflectionClass(PdoEventStoreReadModelProjector::class);
+
+        $shouldUpdateLock = new \ReflectionMethod(PdoEventStoreReadModelProjector::class, 'shouldUpdateLock');
+
+        $shouldUpdateLock->setAccessible(true);
+
+        $projector = $projectorRef->newInstanceWithoutConstructor();
+
+        $this->assertTrue($shouldUpdateLock->invoke($projector, new \DateTimeImmutable('now', new \DateTimeZone('UTC'))));
+    }
+
+    /**
+     * @test
+     */
+    public function it_should_update_lock_if_update_lock_threshold_is_set_to_0()
+    {
+        $projectorRef = new \ReflectionClass(PdoEventStoreReadModelProjector::class);
+
+        $shouldUpdateLock = new \ReflectionMethod(PdoEventStoreReadModelProjector::class, 'shouldUpdateLock');
+
+        $shouldUpdateLock->setAccessible(true);
+
+        $projector = $projectorRef->newInstanceWithoutConstructor();
+
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+
+        $lastLockUpdateProp = $projectorRef->getProperty('lastLockUpdate');
+        $lastLockUpdateProp->setAccessible(true);
+        $lastLockUpdateProp->setValue($projector, $now);
+
+        $updateLockThresholdProp = $projectorRef->getProperty('updateLockThreshold');
+        $updateLockThresholdProp->setAccessible(true);
+        $updateLockThresholdProp->setValue($projector, 0);
+
+        $this->assertTrue($shouldUpdateLock->invoke($projector, $now));
+    }
+
+    /**
+     * @test
+     */
+    public function it_should_update_lock_if_now_is_greater_than_last_lock_update_plus_threshold()
+    {
+        $projectorRef = new \ReflectionClass(PdoEventStoreReadModelProjector::class);
+
+        $shouldUpdateLock = new \ReflectionMethod(PdoEventStoreReadModelProjector::class, 'shouldUpdateLock');
+
+        $shouldUpdateLock->setAccessible(true);
+
+        $projector = $projectorRef->newInstanceWithoutConstructor();
+
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+
+        $lastLockUpdateProp = $projectorRef->getProperty('lastLockUpdate');
+        $lastLockUpdateProp->setAccessible(true);
+        $lastLockUpdateProp->setValue($projector, TestUtil::subMilliseconds($now, 800));
+
+        $updateLockThresholdProp = $projectorRef->getProperty('updateLockThreshold');
+        $updateLockThresholdProp->setAccessible(true);
+        $updateLockThresholdProp->setValue($projector, 500);
+
+        $this->assertTrue($shouldUpdateLock->invoke($projector, $now));
+    }
+
+    /**
+     * @test
+     */
+    public function it_should_not_update_lock_if_now_is_lower_than_last_lock_update_plus_threshold()
+    {
+        $projectorRef = new \ReflectionClass(PdoEventStoreReadModelProjector::class);
+
+        $shouldUpdateLock = new \ReflectionMethod(PdoEventStoreReadModelProjector::class, 'shouldUpdateLock');
+
+        $shouldUpdateLock->setAccessible(true);
+
+        $projector = $projectorRef->newInstanceWithoutConstructor();
+
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+
+        $lastLockUpdateProp = $projectorRef->getProperty('lastLockUpdate');
+        $lastLockUpdateProp->setAccessible(true);
+        $lastLockUpdateProp->setValue($projector, TestUtil::subMilliseconds($now, 300));
+
+        $updateLockThresholdProp = $projectorRef->getProperty('updateLockThreshold');
+        $updateLockThresholdProp->setAccessible(true);
+        $updateLockThresholdProp->setValue($projector, 500);
+
+        $this->assertFalse($shouldUpdateLock->invoke($projector, $now));
     }
 }
