@@ -9,7 +9,7 @@ For a better understanding, we recommend to read the event-store docs, first.
 
 The PostgresEventStore has a better performance (at least with default database configuration) and implements the
 `TransactionalEventStore` interface. If you need maximum performance or transaction support, we recommend to use the
-PostgresEventStore over the MariaDb-/MySqlEventStore.
+PostgresEventStore instead of the MariaDb-/MySqlEventStore.
 
 ## Event streams / projections table
 
@@ -22,7 +22,7 @@ available, and what their current state / stream positition / status is.
 ## Load batch size
 
 When reading from an event streams with multiple aggregates (especially when using projections), you could end of with
-millions of events loaded in memory. Therefor the pdo-event-store will load events only in batches of 1000 by default.
+millions of events loaded in memory. Therefor the pdo-event-store will load events only in batches of 10000 by default.
 You can change to value to something higher to achieve even more performance with higher memory usage, or decrease it
 to reduce memory usage even more, with the drawback of having a not as good performance.
 
