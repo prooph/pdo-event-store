@@ -245,21 +245,21 @@ abstract class PdoEventStoreReadModelProjectorTest extends AbstractEventStoreRea
         $projectionProcess = proc_open($command, $descriptorSpec, $pipes);
         $processDetails = proc_get_status($projectionProcess);
 
-        sleep(2);
+        sleep(1);
 
         $lockedUntil = TestUtil::getProjectionLockedUntilFromDefaultProjectionsTable($this->connection, 'test_projection');
 
         $this->assertNotNull($lockedUntil);
 
-        //Update lock threshold is set to 500 ms
-        usleep(200000);
+        //Update lock threshold is set to 2000 ms
+        usleep(500000);
 
         $notUpdatedLockedUntil = TestUtil::getProjectionLockedUntilFromDefaultProjectionsTable($this->connection, 'test_projection');
 
         $this->assertEquals($lockedUntil, $notUpdatedLockedUntil);
 
         //Now we should definitely see an updated lock
-        usleep(800000);
+        sleep(2);
 
         $updatedLockedUntil = TestUtil::getProjectionLockedUntilFromDefaultProjectionsTable($this->connection, 'test_projection');
 

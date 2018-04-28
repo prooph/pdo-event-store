@@ -65,7 +65,8 @@ $projection = $projectionManager->createReadModelProjection(
     $readModel,
     [
         PdoEventStoreReadModelProjector::OPTION_PCNTL_DISPATCH => true,
-        PdoEventStoreReadModelProjector::OPTION_UPDATE_LOCK_THRESHOLD => 500,
+        PdoEventStoreReadModelProjector::OPTION_LOCK_TIMEOUT_MS => 3000,
+        PdoEventStoreReadModelProjector::OPTION_UPDATE_LOCK_THRESHOLD => 2000,
     ]
 );
 pcntl_signal(SIGQUIT, function () use ($projection) {
