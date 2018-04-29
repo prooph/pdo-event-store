@@ -1,7 +1,18 @@
 # Change Log
 
-## [v1.7.3](https://github.com/prooph/pdo-event-store/tree/v1.7.3)
+## [v1.8.0](https://github.com/prooph/pdo-event-store/tree/v1.8.0)
 
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.7.3...v1.8.0)
+
+**Implemented enhancements:**
+
+- Add projection option:  update lock threshold [\#141](https://github.com/prooph/pdo-event-store/pull/141) ([codeliner](https://github.com/codeliner))
+
+**Merged pull requests:**
+
+- Update variants.md [\#143](https://github.com/prooph/pdo-event-store/pull/143) ([Orkin](https://github.com/Orkin))
+
+## [v1.7.3](https://github.com/prooph/pdo-event-store/tree/v1.7.3) (2018-03-26)
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.7.2...v1.7.3)
 
 **Fixed bugs:**
