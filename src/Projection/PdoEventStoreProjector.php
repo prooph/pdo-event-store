@@ -136,6 +136,11 @@ final class PdoEventStoreProjector implements Projector
     private $triggerPcntlSignalDispatch;
 
     /**
+     * @var int
+     */
+    private $updateLockThreshold;
+
+    /**
      * @var array|null
      */
     private $query;
@@ -150,6 +155,11 @@ final class PdoEventStoreProjector implements Projector
      */
     private $vendor;
 
+    /**
+     * @var DateTimeImmutable
+     */
+    private $lastLockUpdate;
+
     public function __construct(
         EventStore $eventStore,
         PDO $connection,
@@ -160,7 +170,8 @@ final class PdoEventStoreProjector implements Projector
         int $cacheSize,
         int $persistBlockSize,
         int $sleep,
-        bool $triggerPcntlSignalDispatch = false
+        bool $triggerPcntlSignalDispatch = false,
+        int $updateLockThreshold = 0
     ) {
         if ($triggerPcntlSignalDispatch && ! extension_loaded('pcntl')) {
             throw Exception\ExtensionNotLoadedException::withName('pcntl');
@@ -177,6 +188,7 @@ final class PdoEventStoreProjector implements Projector
         $this->sleep = $sleep;
         $this->status = ProjectionStatus::IDLE();
         $this->triggerPcntlSignalDispatch = $triggerPcntlSignalDispatch;
+        $this->updateLockThreshold = $updateLockThreshold;
         $this->vendor = $this->connection->getAttribute(PDO::ATTR_DRIVER_NAME);
 
         while ($eventStore instanceof EventStoreDecorator) {
@@ -760,11 +772,16 @@ EOT;
         }
 
         $this->status = ProjectionStatus::RUNNING();
+        $this->lastLockUpdate = $now;
     }
 
     private function updateLock(): void
     {
         $now = new DateTimeImmutable('now', new DateTimeZone('UTC'));
+
+        if (! $this->shouldUpdateLock($now)) {
+            return;
+        }
 
         $lockUntilString = $this->createLockUntilString($now);
 
@@ -798,6 +815,8 @@ EOT;
 
             throw new Exception\RuntimeException('Unknown error occurred');
         }
+
+        $this->lastLockUpdate = $now;
     }
 
     private function releaseLock(): void
@@ -928,6 +947,22 @@ EOT;
         $resultMicros = substr($micros, -6);
 
         return $from->modify('+' . $secs .' seconds')->format('Y-m-d\TH:i:s') . '.' . $resultMicros;
+    }
+
+    private function shouldUpdateLock(DateTimeImmutable $now): bool
+    {
+        if ($this->lastLockUpdate === null || $this->updateLockThreshold === 0) {
+            return true;
+        }
+
+        //Create a 0 interval
+        $updateLockThreshold = new \DateInterval('PT0S');
+        //and manually add split seconds
+        $updateLockThreshold->f = $this->updateLockThreshold / 1000;
+
+        $threshold = $this->lastLockUpdate->add($updateLockThreshold);
+
+        return $threshold <= $now;
     }
 
     private function quoteTableName(string $tableName): string

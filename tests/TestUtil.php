@@ -155,6 +155,41 @@ abstract class TestUtil
         }
     }
 
+    public static function getProjectionLockedUntilFromDefaultProjectionsTable(PDO $connection, string $projectionName): ?\DateTimeImmutable
+    {
+        $vendor = self::getDatabaseVendor();
+
+        $projectionsTable = '`projections`';
+
+        if ($vendor === 'postgres') {
+            $projectionsTable = '"projections"';
+        }
+
+        $sql = "SELECT locked_until FROM $projectionsTable WHERE name = ?";
+
+        $statement = $connection->prepare($sql);
+
+        $statement->execute([$projectionName]);
+
+        $lockedUntil = $statement->fetchColumn();
+
+        if ($lockedUntil) {
+            return \DateTimeImmutable::createFromFormat('Y-m-d\TH:i:s.u', $lockedUntil, new \DateTimeZone('UTC'));
+        }
+
+        return null;
+    }
+
+    public static function subMilliseconds(\DateTimeImmutable $time, int $ms): \DateTimeImmutable
+    {
+        //Create a 0 interval
+        $interval = new \DateInterval('PT0S');
+        //and manually add split seconds
+        $interval->f = $ms / 1000;
+
+        return $time->sub($interval);
+    }
+
     private static function hasRequiredConnectionParams(): bool
     {
         $env = getenv();

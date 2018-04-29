@@ -14,7 +14,7 @@ use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\EventStore\Pdo\MySqlEventStore;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSimpleStreamStrategy;
 use Prooph\EventStore\Pdo\Projection\MySqlProjectionManager;
-use Prooph\EventStore\Pdo\Projection\PdoEventStoreProjector;
+use Prooph\EventStore\Pdo\Projection\PdoEventStoreReadModelProjector;
 use Prooph\EventStore\Projection\ReadModel;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Pdo\TestUtil;
@@ -64,7 +64,9 @@ $projection = $projectionManager->createReadModelProjection(
     'test_projection',
     $readModel,
     [
-        PdoEventStoreProjector::OPTION_PCNTL_DISPATCH => true,
+        PdoEventStoreReadModelProjector::OPTION_PCNTL_DISPATCH => true,
+        PdoEventStoreReadModelProjector::OPTION_LOCK_TIMEOUT_MS => 3000,
+        PdoEventStoreReadModelProjector::OPTION_UPDATE_LOCK_THRESHOLD => 2000,
     ]
 );
 pcntl_signal(SIGQUIT, function () use ($projection) {
