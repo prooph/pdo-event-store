@@ -87,12 +87,18 @@ final class PdoEventStoreQuery implements Query
      */
     private $vendor;
 
-    public function __construct(EventStore $eventStore, PDO $connection, string $eventStreamsTable)
+    /**
+     * @var bool
+     */
+    private $triggerPcntlSignalDispatch;
+
+    public function __construct(EventStore $eventStore, PDO $connection, string $eventStreamsTable, bool $triggerPcntlSignalDispatch = false)
     {
         $this->eventStore = $eventStore;
         $this->connection = $connection;
         $this->eventStreamsTable = $eventStreamsTable;
         $this->vendor = $this->connection->getAttribute(PDO::ATTR_DRIVER_NAME);
+        $this->triggerPcntlSignalDispatch = $triggerPcntlSignalDispatch;
 
         while ($eventStore instanceof EventStoreDecorator) {
             $eventStore = $eventStore->getInnerEventStore();
@@ -272,6 +278,9 @@ final class PdoEventStoreQuery implements Query
             if ($this->isStopped) {
                 break;
             }
+            if ($this->triggerPcntlSignalDispatch) {
+                pcntl_signal_dispatch();
+            }
         }
     }
 
@@ -281,6 +290,9 @@ final class PdoEventStoreQuery implements Query
         $handler = $this->handler;
 
         foreach ($events as $key => $event) {
+            if ($this->triggerPcntlSignalDispatch) {
+                pcntl_signal_dispatch();
+            }
             /* @var Message $event */
             $this->streamPositions[$streamName] = $key;
 
@@ -301,6 +313,9 @@ final class PdoEventStoreQuery implements Query
         $this->currentStreamName = $streamName;
 
         foreach ($events as $key => $event) {
+            if ($this->triggerPcntlSignalDispatch) {
+                pcntl_signal_dispatch();
+            }
             /* @var Message $event */
             $this->streamPositions[$streamName] = $key;
 

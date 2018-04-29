@@ -385,6 +385,7 @@ EOT;
 
     public function stop(): void
     {
+        $this->persist();
         $this->isStopped = true;
 
         $projectionsTable = $this->quoteTableName($this->projectionsTable);
@@ -591,6 +592,9 @@ EOT;
         $handler = $this->handler;
 
         foreach ($events as $key => $event) {
+            if ($this->triggerPcntlSignalDispatch) {
+                pcntl_signal_dispatch();
+            }
             /* @var Message $event */
             $this->streamPositions[$streamName] = $key;
             $this->eventCounter++;
@@ -617,6 +621,9 @@ EOT;
         $this->currentStreamName = $streamName;
 
         foreach ($events as $key => $event) {
+            if ($this->triggerPcntlSignalDispatch) {
+                pcntl_signal_dispatch();
+            }
             /* @var Message $event */
             $this->streamPositions[$streamName] = $key;
 

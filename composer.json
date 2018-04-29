@@ -18,11 +18,12 @@
     "prefer-stable": true,
     "require": {
         "php": "^7.1",
-        "prooph/event-store": "^7.3.4"
+        "prooph/event-store": "^7.3.6"
     },
     "require-dev": {
         "sandrokeil/interop-config": "^2.0.1",
-        "phpunit/phpunit": "^6.0",
+        "phpunit/php-invoker": "^2.0",
+        "phpunit/phpunit": "^7.1.4",
         "phpspec/prophecy": "^1.7",
         "prooph/php-cs-fixer-config": "^0.2.1",
         "prooph/bookdown-template": "^0.2.3",
