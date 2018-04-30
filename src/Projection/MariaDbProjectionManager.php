@@ -69,9 +69,13 @@ final class MariaDbProjectionManager implements ProjectionManager
         }
     }
 
-    public function createQuery(): Query
+    public function createQuery(array $options = []): Query
     {
-        return new PdoEventStoreQuery($this->eventStore, $this->connection, $this->eventStreamsTable);
+        return new PdoEventStoreQuery(
+            $this->eventStore,
+            $this->connection,
+            $this->eventStreamsTable,
+            $options[Query::OPTION_PCNTL_DISPATCH] ?? Query::DEFAULT_PCNTL_DISPATCH);
     }
 
     public function createProjection(
