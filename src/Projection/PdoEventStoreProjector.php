@@ -962,10 +962,12 @@ EOT;
             return true;
         }
 
-        //Create a 0 interval
-        $updateLockThreshold = new \DateInterval('PT0S');
+        $intervalSeconds = floor($this->updateLockThreshold / 1000);
+
+        //Create an interval based on seconds
+        $updateLockThreshold = new \DateInterval("PT{$intervalSeconds}S");
         //and manually add split seconds
-        $updateLockThreshold->f = $this->updateLockThreshold / 1000;
+        $updateLockThreshold->f = ($this->updateLockThreshold % 1000) / 1000;
 
         $threshold = $this->lastLockUpdate->add($updateLockThreshold);
 
