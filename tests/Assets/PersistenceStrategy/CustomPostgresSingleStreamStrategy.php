@@ -72,7 +72,7 @@ EOT;
     {
         return [];
     }
-    
+
     public function prepareData(Iterator $streamEvents): array
     {
         $data = [];

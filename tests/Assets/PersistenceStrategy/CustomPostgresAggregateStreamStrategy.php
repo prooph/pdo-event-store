@@ -56,7 +56,6 @@ EOT;
         ];
     }
 
-
     public function indexedColumns(): array
     {
         return [];

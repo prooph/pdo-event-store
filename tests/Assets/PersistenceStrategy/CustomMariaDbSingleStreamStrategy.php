@@ -64,7 +64,7 @@ EOT;
         return [
             'aggregate_id',
             'aggregate_type',
-            'aggregate_version'
+            'aggregate_version',
         ];
     }
 

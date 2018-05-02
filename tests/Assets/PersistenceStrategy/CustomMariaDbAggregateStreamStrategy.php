@@ -64,10 +64,9 @@ EOT;
         return [
             'aggregate_id',
             'aggregate_type',
-            'aggregate_version'
+            'aggregate_version',
         ];
     }
-
 
     public function prepareData(Iterator $streamEvents): array
     {

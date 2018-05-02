@@ -80,7 +80,7 @@ EOT;
     public function indexedColumns(): array
     {
         return [
-            'aggregate_version'
+            'aggregate_version',
         ];
     }
 
