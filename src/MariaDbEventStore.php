@@ -31,12 +31,6 @@ use Prooph\EventStore\Util\Assertion;
 
 final class MariaDbEventStore implements PdoEventStore
 {
-    const columnsMap = [
-        '_aggregate_id' => 'aggregate_id',
-        '_aggregate_type' => 'aggregate_type',
-        '_aggregate_version' => 'aggregate_version'
-    ];
-
     /**
      * @var MessageFactory
      */
@@ -816,8 +810,10 @@ EOT;
 
     private function convertToColumn(array &$match): void
     {
-        if (in_array($match['field'], array_keys(self::columnsMap))) {
-            $match['field'] = self::columnsMap[$match['field']];
+        $indexedColumns = $this->persistenceStrategy->indexedColumns();
+        $field = substr($match['field'], 1);
+        if (in_array($field, $indexedColumns)) {
+            $match['field'] = $field;
             $match['fieldType'] = FieldType::MESSAGE_PROPERTY();
         }
     }

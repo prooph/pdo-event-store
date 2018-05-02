@@ -34,6 +34,8 @@ CREATE TABLE `$tableName` (
     `metadata` TEXT NOT NULL,
     `created_at` DATETIME(6) NOT NULL,
     `aggregate_version` INT(11) UNSIGNED GENERATED ALWAYS AS (JSON_EXTRACT(metadata, '$._aggregate_version')) STORED,
+    `aggregate_id` CHAR(36) GENERATED ALWAYS AS (JSON_UNQUOTE(JSON_EXTRACT(metadata, '$._aggregate_id'))) STORED,
+    `aggregate_type` VARCHAR(150) GENERATED ALWAYS AS (JSON_UNQUOTE(JSON_EXTRACT(metadata, '$._aggregate_type'))) STORED,
     CHECK (`payload` IS NOT NULL AND JSON_VALID(`payload`)),
     CHECK (`metadata` IS NOT NULL AND JSON_VALID(`metadata`)),
     PRIMARY KEY (`no`),
@@ -56,6 +58,16 @@ EOT;
             'created_at',
         ];
     }
+
+    public function indexedColumns(): array
+    {
+        return [
+            'aggregate_id',
+            'aggregate_type',
+            'aggregate_version'
+        ];
+    }
+
 
     public function prepareData(Iterator $streamEvents): array
     {

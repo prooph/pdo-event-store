@@ -28,4 +28,6 @@ interface PersistenceStrategy
     public function prepareData(Iterator $streamEvents): array;
 
     public function generateTableName(StreamName $streamName): string;
+
+    public function indexedColumns(): array;
 }

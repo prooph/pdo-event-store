@@ -59,6 +59,15 @@ EOT;
         ];
     }
 
+    public function indexedColumns(): array
+    {
+        return [
+            'aggregate_id',
+            'aggragate_type',
+            'aggregate_version'
+        ];
+    }
+
     public function prepareData(Iterator $streamEvents): array
     {
         $data = [];

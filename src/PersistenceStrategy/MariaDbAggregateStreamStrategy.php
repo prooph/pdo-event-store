@@ -77,6 +77,13 @@ EOT;
         return $data;
     }
 
+    public function indexedColumns(): array
+    {
+        return [
+            'aggregate_version'
+        ];
+    }
+
     public function generateTableName(StreamName $streamName): string
     {
         return '_' . sha1($streamName->toString());
