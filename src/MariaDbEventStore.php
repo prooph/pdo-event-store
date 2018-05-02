@@ -31,6 +31,12 @@ use Prooph\EventStore\Util\Assertion;
 
 final class MariaDbEventStore implements PdoEventStore
 {
+    const columnsMap = [
+        '_aggregate_id' => 'aggregate_id',
+        '_aggregate_type' => 'aggregate_type',
+        '_aggregate_version' => 'aggregate_version'
+    ];
+
     /**
      * @var MessageFactory
      */
@@ -661,6 +667,7 @@ SQL;
         }
 
         foreach ($metadataMatcher->data() as $key => $match) {
+            $this->convertToColumn($match);
             /** @var FieldType $fieldType */
             $fieldType = $match['fieldType'];
             $field = $match['field'];
@@ -804,6 +811,14 @@ EOT;
             if (! $result) {
                 throw new RuntimeException('Error during createSchemaFor: ' . implode('; ', $statement->errorInfo()));
             }
+        }
+    }
+
+    private function convertToColumn(array &$match): void
+    {
+        if (in_array($match['field'], array_keys(self::columnsMap))) {
+            $match['field'] = self::columnsMap[$match['field']];
+            $match['fieldType'] = FieldType::MESSAGE_PROPERTY();
         }
     }
 }
