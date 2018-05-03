@@ -60,7 +60,7 @@ EOT;
         ];
     }
 
-    public function indexedMetadaColumns(): array
+    public function indexedMetadataFields(): array
     {
         return [
             'aggregate_id',

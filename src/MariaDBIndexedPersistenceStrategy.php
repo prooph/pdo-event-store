@@ -21,5 +21,5 @@ interface MariaDBIndexedPersistenceStrategy
      *
      * @example ['aggregate_id', 'aggregate_type', 'aggregate_version']
      */
-    public function indexedMetadaColumns(): array;
+    public function indexedMetadataFields(): array;
 }
