@@ -78,7 +78,7 @@ EOT;
         return $data;
     }
 
-    public function indexedColumns(): array
+    public function indexedMetadaColumns(): array
     {
         return [
             'aggregate_version',

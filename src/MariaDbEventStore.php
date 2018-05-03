@@ -815,7 +815,7 @@ EOT;
     private function convertToColumn(array &$match): void
     {
         if ($this->persistenceStrategy instanceof MariaDBIndexedPersistenceStrategy) {
-            $indexedColumns = $this->persistenceStrategy->indexedColumns();
+            $indexedColumns = $this->persistenceStrategy->indexedMetadaColumns();
             $field = substr($match['field'], 1);
             if (in_array($field, $indexedColumns)) {
                 $match['field'] = $field;
