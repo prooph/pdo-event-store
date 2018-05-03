@@ -14,10 +14,11 @@ namespace Prooph\EventStore\Pdo\PersistenceStrategy;
 
 use Iterator;
 use Prooph\EventStore\Pdo\HasQueryHint;
+use Prooph\EventStore\Pdo\MariaDBIndexedPersistenceStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\StreamName;
 
-final class MariaDbSingleStreamStrategy implements PersistenceStrategy, HasQueryHint
+final class MariaDbSingleStreamStrategy implements PersistenceStrategy, HasQueryHint, MariaDBIndexedPersistenceStrategy
 {
     /**
      * @param string $tableName

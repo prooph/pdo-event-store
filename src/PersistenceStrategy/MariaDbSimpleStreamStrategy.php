@@ -13,10 +13,11 @@ declare(strict_types=1);
 namespace Prooph\EventStore\Pdo\PersistenceStrategy;
 
 use Iterator;
+use Prooph\EventStore\Pdo\MariaDBIndexedPersistenceStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\StreamName;
 
-final class MariaDbSimpleStreamStrategy implements PersistenceStrategy
+final class MariaDbSimpleStreamStrategy implements PersistenceStrategy, MariaDBIndexedPersistenceStrategy
 {
     /**
      * @param string $tableName
