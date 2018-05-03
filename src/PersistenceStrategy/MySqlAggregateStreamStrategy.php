@@ -54,11 +54,6 @@ EOT;
         ];
     }
 
-    public function indexedColumns(): array
-    {
-        return [];
-    }
-
     public function prepareData(Iterator $streamEvents): array
     {
         $data = [];

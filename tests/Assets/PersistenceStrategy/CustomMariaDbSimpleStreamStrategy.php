@@ -13,10 +13,11 @@ declare(strict_types=1);
 namespace ProophTest\EventStore\Pdo\Assets\PersistenceStrategy;
 
 use Iterator;
+use Prooph\EventStore\Pdo\MariaDBIndexedPersistenceStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\StreamName;
 
-final class CustomMariaDbSimpleStreamStrategy implements PersistenceStrategy
+final class CustomMariaDbSimpleStreamStrategy implements PersistenceStrategy, MariaDBIndexedPersistenceStrategy
 {
     /**
      * @param string $tableName
@@ -53,6 +54,9 @@ EOT;
         ];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function indexedColumns(): array
     {
         return [];

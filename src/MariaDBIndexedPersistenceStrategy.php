@@ -12,20 +12,14 @@ declare(strict_types=1);
 
 namespace Prooph\EventStore\Pdo;
 
-use Iterator;
-use Prooph\EventStore\StreamName;
-
-interface PersistenceStrategy
+interface MariaDBIndexedPersistenceStrategy
 {
     /**
-     * @param string $tableName
+     * Return an array of indexed columns to enable the use of indexes in MariaDB
+     *
      * @return string[]
+     *
+     * @example ['aggregate_id', 'aggregate_type', 'aggregate_version']
      */
-    public function createSchema(string $tableName): array;
-
-    public function columnNames(): array;
-
-    public function prepareData(Iterator $streamEvents): array;
-
-    public function generateTableName(StreamName $streamName): string;
+    public function indexedColumns(): array;
 }

@@ -808,13 +808,19 @@ EOT;
         }
     }
 
+    /**
+     * Convert metadata fields into indexed columns
+     * @example `_aggregate__id` => `aggregate_id`
+     */
     private function convertToColumn(array &$match): void
     {
-        $indexedColumns = $this->persistenceStrategy->indexedColumns();
-        $field = substr($match['field'], 1);
-        if (in_array($field, $indexedColumns)) {
-            $match['field'] = $field;
-            $match['fieldType'] = FieldType::MESSAGE_PROPERTY();
+        if ($this->persistenceStrategy instanceof MariaDBIndexedPersistenceStrategy) {
+            $indexedColumns = $this->persistenceStrategy->indexedColumns();
+            $field = substr($match['field'], 1);
+            if (in_array($field, $indexedColumns)) {
+                $match['field'] = $field;
+                $match['fieldType'] = FieldType::MESSAGE_PROPERTY();
+            }
         }
     }
 }
