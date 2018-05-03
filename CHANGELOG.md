@@ -1,7 +1,31 @@
 # Change Log
 
-## [v1.8.0](https://github.com/prooph/pdo-event-store/tree/v1.8.0)
+## [v1.8.2](https://github.com/prooph/pdo-event-store/tree/v1.8.2)
 
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.8.1...v1.8.2)
+
+**Fixed bugs:**
+
+- MariaDB does not use INDEX [\#147](https://github.com/prooph/pdo-event-store/issues/147)
+- Fix MariaDB indexed queries [\#149](https://github.com/prooph/pdo-event-store/pull/149) ([kochen](https://github.com/kochen))
+
+**Closed issues:**
+
+- OPTION\_UPDATE\_LOCK\_THRESHOLD does not work with values greater 1000  [\#146](https://github.com/prooph/pdo-event-store/issues/146)
+- Upgrade locking mechanism [\#145](https://github.com/prooph/pdo-event-store/issues/145)
+
+## [v1.8.1](https://github.com/prooph/pdo-event-store/tree/v1.8.1) (2018-04-30)
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.8.0...v1.8.1)
+
+**Implemented enhancements:**
+
+- Dispatch PCNTL signal after each event for immediately shutdown [\#144](https://github.com/prooph/pdo-event-store/pull/144) ([sandrokeil](https://github.com/sandrokeil))
+
+**Merged pull requests:**
+
+- Calculate seconds and initialize interval with it [\#148](https://github.com/prooph/pdo-event-store/pull/148) ([codeliner](https://github.com/codeliner))
+
+## [v1.8.0](https://github.com/prooph/pdo-event-store/tree/v1.8.0) (2018-04-29)
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.7.3...v1.8.0)
 
 **Implemented enhancements:**
