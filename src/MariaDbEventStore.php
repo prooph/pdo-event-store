@@ -661,6 +661,7 @@ SQL;
         }
 
         foreach ($metadataMatcher->data() as $key => $match) {
+            $this->convertToColumn($match);
             /** @var FieldType $fieldType */
             $fieldType = $match['fieldType'];
             $field = $match['field'];
@@ -803,6 +804,22 @@ EOT;
 
             if (! $result) {
                 throw new RuntimeException('Error during createSchemaFor: ' . implode('; ', $statement->errorInfo()));
+            }
+        }
+    }
+
+    /**
+     * Convert metadata fields into indexed columns
+     * @example `_aggregate__id` => `aggregate_id`
+     */
+    private function convertToColumn(array &$match): void
+    {
+        if ($this->persistenceStrategy instanceof MariaDBIndexedPersistenceStrategy) {
+            $indexedColumns = $this->persistenceStrategy->indexedMetadataFields();
+            $field = substr($match['field'], 1);
+            if (in_array($field, $indexedColumns)) {
+                $match['field'] = $field;
+                $match['fieldType'] = FieldType::MESSAGE_PROPERTY();
             }
         }
     }

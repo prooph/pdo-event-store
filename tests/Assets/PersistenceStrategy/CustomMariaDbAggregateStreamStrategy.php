@@ -14,10 +14,11 @@ namespace ProophTest\EventStore\Pdo\Assets\PersistenceStrategy;
 
 use Iterator;
 use Prooph\EventStore\Pdo\Exception;
+use Prooph\EventStore\Pdo\MariaDBIndexedPersistenceStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\StreamName;
 
-final class CustomMariaDbAggregateStreamStrategy implements PersistenceStrategy
+final class CustomMariaDbAggregateStreamStrategy implements PersistenceStrategy, MariaDBIndexedPersistenceStrategy
 {
     /**
      * @param string $tableName
@@ -34,6 +35,8 @@ CREATE TABLE `$tableName` (
     `metadata` TEXT NOT NULL,
     `created_at` DATETIME(6) NOT NULL,
     `aggregate_version` INT(11) UNSIGNED GENERATED ALWAYS AS (JSON_EXTRACT(metadata, '$._aggregate_version')) STORED,
+    `aggregate_id` CHAR(36) GENERATED ALWAYS AS (JSON_UNQUOTE(JSON_EXTRACT(metadata, '$._aggregate_id'))) STORED,
+    `aggregate_type` VARCHAR(150) GENERATED ALWAYS AS (JSON_UNQUOTE(JSON_EXTRACT(metadata, '$._aggregate_type'))) STORED,
     CHECK (`payload` IS NOT NULL AND JSON_VALID(`payload`)),
     CHECK (`metadata` IS NOT NULL AND JSON_VALID(`metadata`)),
     PRIMARY KEY (`no`),
@@ -54,6 +57,18 @@ EOT;
             'payload',
             'metadata',
             'created_at',
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function indexedMetadataFields(): array
+    {
+        return [
+            'aggregate_id',
+            'aggregate_type',
+            'aggregate_version',
         ];
     }
 

@@ -14,10 +14,11 @@ namespace Prooph\EventStore\Pdo\PersistenceStrategy;
 
 use Iterator;
 use Prooph\EventStore\Pdo\Exception;
+use Prooph\EventStore\Pdo\MariaDBIndexedPersistenceStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\StreamName;
 
-final class MariaDbAggregateStreamStrategy implements PersistenceStrategy
+final class MariaDbAggregateStreamStrategy implements PersistenceStrategy, MariaDBIndexedPersistenceStrategy
 {
     /**
      * @param string $tableName
@@ -75,6 +76,13 @@ EOT;
         }
 
         return $data;
+    }
+
+    public function indexedMetadataFields(): array
+    {
+        return [
+            'aggregate_version',
+        ];
     }
 
     public function generateTableName(StreamName $streamName): string

@@ -14,10 +14,11 @@ namespace ProophTest\EventStore\Pdo\Assets\PersistenceStrategy;
 
 use Iterator;
 use Prooph\EventStore\Pdo\HasQueryHint;
+use Prooph\EventStore\Pdo\MariaDBIndexedPersistenceStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\StreamName;
 
-final class CustomMariaDbSingleStreamStrategy implements PersistenceStrategy, HasQueryHint
+final class CustomMariaDbSingleStreamStrategy implements PersistenceStrategy, HasQueryHint, MariaDBIndexedPersistenceStrategy
 {
     /**
      * @param string $tableName
@@ -56,6 +57,18 @@ EOT;
             'payload',
             'metadata',
             'created_at',
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function indexedMetadataFields(): array
+    {
+        return [
+            'aggregate_id',
+            'aggregate_type',
+            'aggregate_version',
         ];
     }
 

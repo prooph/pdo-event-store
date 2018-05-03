@@ -103,6 +103,13 @@ When you query the event streams a lot, it might be a good idea to create your o
 custom indexes to your database tables. When using with the MetadataMatcher, take care that you add the metadata
 matches in the right order, so they can match your indexes.
 
+### MariaDB Indexes and Efficiency
+
+Unlike MySQL, MariaDB does not use indexed generated columns on the json document, leading to queries not using the 
+pre-created indexes and causing a performance drawback.
+To fix that, make sure that your `CustomMariaDBPersistencyStrategy` implements the newly introduced 
+[`MariaDBIndexedPersistenceStrategy`](https://github.com/prooph/pdo-event-store/blob/master/src/MariaDBIndexedPersistenceStrategy.php) 
+
 ### Disable transaction handling
 
 You can configure the event store to disable transaction handling completely. In order to do this, set the last parameter
