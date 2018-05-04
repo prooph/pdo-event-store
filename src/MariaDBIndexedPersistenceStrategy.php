@@ -17,8 +17,6 @@ interface MariaDBIndexedPersistenceStrategy
     /**
      * Return an array of indexed columns to enable the use of indexes in MariaDB
      *
-     * @return string[][]
-     *
      * @example
      *      [
      *          '_aggregate_id' => 'aggregate_id',
