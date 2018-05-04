@@ -1,7 +1,18 @@
 # Change Log
 
-## [v1.8.2](https://github.com/prooph/pdo-event-store/tree/v1.8.2)
+## [v1.8.3](https://github.com/prooph/pdo-event-store/tree/v1.8.3)
 
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.8.2...v1.8.3)
+
+**Closed issues:**
+
+- Key value mapping in indexedMetadataFields required [\#150](https://github.com/prooph/pdo-event-store/issues/150)
+
+**Merged pull requests:**
+
+- MariaDB index mapping [\#151](https://github.com/prooph/pdo-event-store/pull/151) ([kochen](https://github.com/kochen))
+
+## [v1.8.2](https://github.com/prooph/pdo-event-store/tree/v1.8.2) (2018-05-03)
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.8.1...v1.8.2)
 
 **Fixed bugs:**
