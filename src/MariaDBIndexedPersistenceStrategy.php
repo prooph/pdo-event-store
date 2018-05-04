@@ -17,9 +17,12 @@ interface MariaDBIndexedPersistenceStrategy
     /**
      * Return an array of indexed columns to enable the use of indexes in MariaDB
      *
-     * @return string[]
-     *
-     * @example ['aggregate_id', 'aggregate_type', 'aggregate_version']
+     * @example
+     *      [
+     *          '_aggregate_id' => 'aggregate_id',
+     *          '_aggregate_type' => 'aggregate_type',
+     *          '_aggregate_version' => 'aggregate_version',
+     *      ]
      */
     public function indexedMetadataFields(): array;
 }
