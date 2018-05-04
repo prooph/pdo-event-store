@@ -63,9 +63,9 @@ EOT;
     public function indexedMetadataFields(): array
     {
         return [
-            'aggregate_id',
-            'aggregate_type',
-            'aggregate_version',
+            '_aggregate_id' => 'aggregate_id',
+            '_aggregate_type' => 'aggregate_id',
+            '_aggregate_version' => 'aggregate_id',
         ];
     }
 

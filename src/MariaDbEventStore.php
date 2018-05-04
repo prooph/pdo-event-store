@@ -810,15 +810,17 @@ EOT;
 
     /**
      * Convert metadata fields into indexed columns
+     *
+     * @param string[]
+     *
      * @example `_aggregate__id` => `aggregate_id`
      */
     private function convertToColumn(array &$match): void
     {
         if ($this->persistenceStrategy instanceof MariaDBIndexedPersistenceStrategy) {
             $indexedColumns = $this->persistenceStrategy->indexedMetadataFields();
-            $field = substr($match['field'], 1);
-            if (in_array($field, $indexedColumns)) {
-                $match['field'] = $field;
+            if (in_array($match['field'], array_keys($indexedColumns))) {
+                $match['field'] = $indexedColumns[$match['field']];
                 $match['fieldType'] = FieldType::MESSAGE_PROPERTY();
             }
         }

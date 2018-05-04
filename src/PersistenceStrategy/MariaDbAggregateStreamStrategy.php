@@ -81,7 +81,7 @@ EOT;
     public function indexedMetadataFields(): array
     {
         return [
-            'aggregate_version',
+            '_aggregate_version' => 'aggregate_version',
         ];
     }
 
