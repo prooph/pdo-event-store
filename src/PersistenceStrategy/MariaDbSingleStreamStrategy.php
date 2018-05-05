@@ -64,8 +64,8 @@ EOT;
     {
         return [
             '_aggregate_id' => 'aggregate_id',
-            '_aggregate_type' => 'aggregate_id',
-            '_aggregate_version' => 'aggregate_id',
+            '_aggregate_type' => 'aggregate_type',
+            '_aggregate_version' => 'aggregate_version',
         ];
     }
 
