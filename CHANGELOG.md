@@ -1,7 +1,14 @@
 # Change Log
 
-## [v1.8.3](https://github.com/prooph/pdo-event-store/tree/v1.8.3)
+## [v1.8.4](https://github.com/prooph/pdo-event-store/tree/v1.8.4)
 
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.8.3...v1.8.4)
+
+**Fixed bugs:**
+
+- Fix index metadata in MariaDb single stream strategy [\#152](https://github.com/prooph/pdo-event-store/pull/152) ([stepiiik](https://github.com/stepiiik))
+
+## [v1.8.3](https://github.com/prooph/pdo-event-store/tree/v1.8.3) (2018-05-04)
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.8.2...v1.8.3)
 
 **Closed issues:**
