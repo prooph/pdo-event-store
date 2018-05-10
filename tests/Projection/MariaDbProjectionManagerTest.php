@@ -19,7 +19,7 @@ use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Pdo\Exception\InvalidArgumentException;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\MariaDbEventStore;
-use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbAggregateStreamStrategy;
+use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\Pdo\Projection\MariaDbProjectionManager;
 use ProophTest\EventStore\Pdo\TestUtil;
 use ProophTest\EventStore\Projection\AbstractProjectionManagerTest;
@@ -53,10 +53,12 @@ class MariaDbProjectionManagerTest extends AbstractProjectionManagerTest
         $this->connection = TestUtil::getConnection();
         TestUtil::initDefaultDatabaseTables($this->connection);
 
+        $persistenceStrategy = $this->prophesize(PersistenceStrategy::class)->reveal();
+
         $this->eventStore = new MariaDbEventStore(
             new FQCNMessageFactory(),
             $this->connection,
-            new MariaDbAggregateStreamStrategy()
+            $persistenceStrategy
         );
         $this->projectionManager = new MariaDbProjectionManager($this->eventStore, $this->connection);
     }

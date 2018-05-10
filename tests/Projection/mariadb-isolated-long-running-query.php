@@ -11,6 +11,7 @@
 declare(strict_types=1);
 
 use Prooph\Common\Messaging\FQCNMessageFactory;
+use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\Pdo\MariaDbEventStore;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbSimpleStreamStrategy;
 use Prooph\EventStore\Pdo\Projection\MariaDbProjectionManager;
@@ -27,7 +28,7 @@ $connection = TestUtil::getConnection();
 $eventStore = new MariaDbEventStore(
     new FQCNMessageFactory(),
     $connection,
-    new MariaDbSimpleStreamStrategy()
+    new MariaDbSimpleStreamStrategy(new NoOpMessageConverter())
 );
 $events = [];
 
