@@ -13,12 +13,23 @@ declare(strict_types=1);
 namespace Prooph\EventStore\Pdo\PersistenceStrategy;
 
 use Iterator;
+use Prooph\Common\Messaging\MessageConverter;
 use Prooph\EventStore\Pdo\HasQueryHint;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\StreamName;
 
 final class MySqlSingleStreamStrategy implements PersistenceStrategy, HasQueryHint
 {
+    /**
+     * @var MessageConverter
+     */
+    private $messageConverter;
+
+    public function __construct(MessageConverter $messageConverter)
+    {
+        $this->messageConverter = $messageConverter;
+    }
+
     /**
      * @param string $tableName
      * @return string[]
@@ -62,11 +73,13 @@ EOT;
         $data = [];
 
         foreach ($streamEvents as $event) {
-            $data[] = $event->uuid()->toString();
-            $data[] = $event->messageName();
-            $data[] = json_encode($event->payload());
-            $data[] = json_encode($event->metadata());
-            $data[] = $event->createdAt()->format('Y-m-d\TH:i:s.u');
+            $eventData = $this->messageConverter->convertToArray($event);
+
+            $data[] = $eventData['uuid'];
+            $data[] = $eventData['message_name'];
+            $data[] = json_encode($eventData['payload']);
+            $data[] = json_encode($eventData['metadata']);
+            $data[] = $eventData['created_at']->format('Y-m-d\TH:i:s.u');
         }
 
         return $data;
