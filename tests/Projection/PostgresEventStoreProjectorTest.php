@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace ProophTest\EventStore\Pdo\Projection;
 
 use Prooph\Common\Messaging\FQCNMessageFactory;
+use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresSimpleStreamStrategy;
 use Prooph\EventStore\Pdo\PostgresEventStore;
 use Prooph\EventStore\Pdo\Projection\PostgresProjectionManager;
@@ -36,7 +37,7 @@ class PostgresEventStoreProjectorTest extends PdoEventStoreProjectorTest
         $this->eventStore = new PostgresEventStore(
             new FQCNMessageFactory(),
             TestUtil::getConnection(),
-            new PostgresSimpleStreamStrategy()
+            new PostgresSimpleStreamStrategy(new NoOpMessageConverter())
         );
 
         $this->projectionManager = new PostgresProjectionManager(

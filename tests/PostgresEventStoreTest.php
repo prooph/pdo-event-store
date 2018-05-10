@@ -14,6 +14,7 @@ namespace ProophTest\EventStore\Pdo;
 
 use PDO;
 use Prooph\Common\Messaging\FQCNMessageFactory;
+use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;
@@ -50,7 +51,7 @@ class PostgresEventStoreTest extends AbstractPdoEventStoreTest
         $this->connection = TestUtil::getConnection();
         TestUtil::initDefaultDatabaseTables($this->connection);
 
-        $this->setupEventStoreWith(new PostgresAggregateStreamStrategy());
+        $this->setupEventStoreWith(new PostgresAggregateStreamStrategy(new NoOpMessageConverter()));
     }
 
     /**
@@ -77,7 +78,7 @@ class PostgresEventStoreTest extends AbstractPdoEventStoreTest
      */
     public function it_loads_correctly_using_single_stream_per_aggregate_type_strategy(): void
     {
-        $this->setupEventStoreWith(new PostgresSingleStreamStrategy(), 5);
+        $this->setupEventStoreWith(new PostgresSingleStreamStrategy(new NoOpMessageConverter()), 5);
 
         $streamName = new StreamName('Prooph\Model\User');
 
@@ -108,7 +109,7 @@ class PostgresEventStoreTest extends AbstractPdoEventStoreTest
     {
         $this->expectException(ConcurrencyException::class);
 
-        $this->setupEventStoreWith(new PostgresSingleStreamStrategy());
+        $this->setupEventStoreWith(new PostgresSingleStreamStrategy(new NoOpMessageConverter()));
 
         $streamEvent = UserCreated::with(
             ['name' => 'Max Mustermann', 'email' => 'contact@prooph.de'],
@@ -144,7 +145,7 @@ class PostgresEventStoreTest extends AbstractPdoEventStoreTest
         $connection->commit()->shouldNotBeCalled();
         $connection->rollback()->shouldNotBeCalled();
 
-        $eventStore = new PostgresEventStore(new FQCNMessageFactory(), $connection->reveal(), new PostgresAggregateStreamStrategy());
+        $eventStore = new PostgresEventStore(new FQCNMessageFactory(), $connection->reveal(), new PostgresAggregateStreamStrategy(new NoOpMessageConverter()));
 
         $eventStore->beginTransaction();
         $eventStore->commit();
