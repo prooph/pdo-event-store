@@ -14,6 +14,7 @@ namespace Prooph\EventStore\Pdo\PersistenceStrategy;
 
 use Iterator;
 use Prooph\Common\Messaging\MessageConverter;
+use Prooph\EventStore\Pdo\CompatibilityMessageConverter;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\StreamName;
 
@@ -24,9 +25,9 @@ final class MariaDbSimpleStreamStrategy implements PersistenceStrategy
      */
     private $messageConverter;
 
-    public function __construct(MessageConverter $messageConverter)
+    public function __construct(?MessageConverter $messageConverter = null)
     {
-        $this->messageConverter = $messageConverter;
+        $this->messageConverter = $messageConverter ?? new CompatibilityMessageConverter();
     }
 
     /**

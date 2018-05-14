@@ -14,6 +14,7 @@ namespace Prooph\EventStore\Pdo\PersistenceStrategy;
 
 use Iterator;
 use Prooph\Common\Messaging\MessageConverter;
+use Prooph\EventStore\Pdo\CompatibilityMessageConverter;
 use Prooph\EventStore\Pdo\HasQueryHint;
 use Prooph\EventStore\Pdo\MariaDBIndexedPersistenceStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
@@ -26,9 +27,9 @@ final class MariaDbSingleStreamStrategy implements PersistenceStrategy, HasQuery
      */
     private $messageConverter;
 
-    public function __construct(MessageConverter $messageConverter)
+    public function __construct(?MessageConverter $messageConverter = null)
     {
-        $this->messageConverter = $messageConverter;
+        $this->messageConverter = $messageConverter ?? new CompatibilityMessageConverter();
     }
 
     /**
