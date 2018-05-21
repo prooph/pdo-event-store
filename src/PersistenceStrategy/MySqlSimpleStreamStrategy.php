@@ -27,14 +27,14 @@ final class MySqlSimpleStreamStrategy implements PersistenceStrategy
         $statement = <<<EOT
 CREATE TABLE `$tableName` (
     `no` BIGINT(20) NOT NULL AUTO_INCREMENT,
-    `event_id` CHAR(36) COLLATE utf8_bin NOT NULL,
-    `event_name` VARCHAR(100) COLLATE utf8_bin NOT NULL,
+    `event_id` CHAR(36) COLLATE utf8mb4_bin NOT NULL,
+    `event_name` VARCHAR(100) COLLATE utf8mb4_bin NOT NULL,
     `payload` JSON NOT NULL,
     `metadata` JSON NOT NULL,
     `created_at` DATETIME(6) NOT NULL,
     PRIMARY KEY (`no`),
     UNIQUE KEY `ix_event_id` (`event_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 EOT;
 
         return [$statement];
