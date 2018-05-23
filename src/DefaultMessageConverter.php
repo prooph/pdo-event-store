@@ -15,10 +15,7 @@ namespace Prooph\EventStore\Pdo;
 use Prooph\Common\Messaging\Message;
 use Prooph\Common\Messaging\MessageConverter;
 
-/**
- * @deprecated This class is used for backwards compatibility. It's recommended to use a different MessageConverter implementation such as \Prooph\Common\Messaging\NoOpMessageConverter.
- */
-class CompatibilityMessageConverter implements MessageConverter
+class DefaultMessageConverter implements MessageConverter
 {
     public function convertToArray(Message $message): array
     {

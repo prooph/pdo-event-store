@@ -14,7 +14,7 @@ namespace Prooph\EventStore\Pdo\PersistenceStrategy;
 
 use Iterator;
 use Prooph\Common\Messaging\MessageConverter;
-use Prooph\EventStore\Pdo\CompatibilityMessageConverter;
+use Prooph\EventStore\Pdo\DefaultMessageConverter;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\StreamName;
 
@@ -27,7 +27,7 @@ final class MySqlSimpleStreamStrategy implements PersistenceStrategy
 
     public function __construct(?MessageConverter $messageConverter = null)
     {
-        $this->messageConverter = $messageConverter ?? new CompatibilityMessageConverter();
+        $this->messageConverter = $messageConverter ?? new DefaultMessageConverter();
     }
 
     /**

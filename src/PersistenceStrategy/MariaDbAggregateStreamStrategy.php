@@ -14,7 +14,7 @@ namespace Prooph\EventStore\Pdo\PersistenceStrategy;
 
 use Iterator;
 use Prooph\Common\Messaging\MessageConverter;
-use Prooph\EventStore\Pdo\CompatibilityMessageConverter;
+use Prooph\EventStore\Pdo\DefaultMessageConverter;
 use Prooph\EventStore\Pdo\Exception;
 use Prooph\EventStore\Pdo\MariaDBIndexedPersistenceStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
@@ -29,7 +29,7 @@ final class MariaDbAggregateStreamStrategy implements PersistenceStrategy, Maria
 
     public function __construct(?MessageConverter $messageConverter = null)
     {
-        $this->messageConverter = $messageConverter ?? new CompatibilityMessageConverter();
+        $this->messageConverter = $messageConverter ?? new DefaultMessageConverter();
     }
 
     /**
