@@ -24,7 +24,7 @@ use ProophTest\EventStore\Mock\UsernameChanged;
 use ProophTest\EventStore\Pdo\TestUtil;
 use ProophTest\EventStore\Projection\AbstractEventStoreQueryTest;
 
-abstract class PdoEventStoreQueryCustomTablesTest extends AbstractEventStoreQueryTest
+abstract class PdoEventStoreQueryCustomSchemaTest extends AbstractEventStoreQueryTest
 {
     /**
      * @var ProjectionManager
@@ -46,12 +46,22 @@ abstract class PdoEventStoreQueryCustomTablesTest extends AbstractEventStoreQuer
         TestUtil::tearDownDatabase();
     }
 
+    protected function eventStreamsTable(): string 
+    {
+        return 'custom.event_streams';
+    }
+
+    protected function projectionsTable(): string
+    {
+        return 'custom.event_projections';
+    }
+
     /**
      * @test
      */
     public function it_updates_state_using_when_and_persists_with_block_size(): void
     {
-        $this->prepareEventStream('user-123');
+        $this->prepareEventStream('custom.user-123');
 
         $testCase = $this;
 
@@ -61,13 +71,13 @@ abstract class PdoEventStoreQueryCustomTablesTest extends AbstractEventStoreQuer
             ->fromAll()
             ->when([
                 UserCreated::class => function ($state, Message $event) use ($testCase): array {
-                    $testCase->assertEquals('user-123', $this->streamName());
+                    $testCase->assertEquals('custom.user-123', $this->streamName());
                     $state['name'] = $event->payload()['name'];
 
                     return $state;
                 },
                 UsernameChanged::class => function ($state, Message $event) use ($testCase): array {
-                    $testCase->assertEquals('user-123', $this->streamName());
+                    $testCase->assertEquals('custom.user-123', $this->streamName());
                     $state['name'] = $event->payload()['name'];
 
                     if ($event->payload()['name'] === 'Sascha') {
@@ -113,15 +123,5 @@ abstract class PdoEventStoreQueryCustomTablesTest extends AbstractEventStoreQuer
         $connection = $this->prophesize(PDO::class);
 
         new PdoEventStoreQuery($eventStore->reveal(), $connection->reveal(), $this->eventStreamsTable());
-    }
-
-    protected function eventStreamsTable(): string 
-    {
-        return 'events/streams';
-    }
-
-    protected function projectionsTable(): string
-    {
-        return 'events/projections';
     }
 }

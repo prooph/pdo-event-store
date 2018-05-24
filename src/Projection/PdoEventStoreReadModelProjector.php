@@ -24,6 +24,7 @@ use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Exception;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\PdoEventStore;
+use Prooph\EventStore\Pdo\Util\PostgresHelper;
 use Prooph\EventStore\Projection\ProjectionStatus;
 use Prooph\EventStore\Projection\ReadModel;
 use Prooph\EventStore\Projection\ReadModelProjector;
@@ -31,6 +32,10 @@ use Prooph\EventStore\StreamName;
 
 final class PdoEventStoreReadModelProjector implements ReadModelProjector
 {
+    use PostgresHelper {
+        quoteIdent as pgQuoteIdent;
+        extractSchema as pgExtractSchema;
+    }
     /**
      * @var EventStore
      */
@@ -925,7 +930,7 @@ EOT;
     {
         switch ($this->vendor) {
             case 'pgsql':
-                return '"'.$tableName.'"';
+                return $this->pgQuoteIdent($tableName);
             default:
                 return "`$tableName`";
         }
