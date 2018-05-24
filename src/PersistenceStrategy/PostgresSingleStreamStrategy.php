@@ -15,17 +15,22 @@ namespace Prooph\EventStore\Pdo\PersistenceStrategy;
 use Iterator;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\StreamName;
+use Prooph\EventStore\Pdo\Util\PostgresHelper;
 
 final class PostgresSingleStreamStrategy implements PersistenceStrategy
 {
+    use PostgresHelper;
+
     /**
      * @param string $tableName
      * @return string[]
      */
     public function createSchema(string $tableName): array
     {
+        $tableName = $this->quoteIdent($tableName);
+
         $statement = <<<EOT
-CREATE TABLE "$tableName" (
+CREATE TABLE $tableName (
     no BIGSERIAL,
     event_id UUID NOT NULL,
     event_name VARCHAR(100) NOT NULL,
@@ -41,12 +46,12 @@ CREATE TABLE "$tableName" (
 EOT;
 
         $index1 = <<<EOT
-CREATE UNIQUE INDEX ON "$tableName"
+CREATE UNIQUE INDEX ON $tableName
 ((metadata->>'_aggregate_type'), (metadata->>'_aggregate_id'), (metadata->>'_aggregate_version'));
 EOT;
 
         $index2 = <<<EOT
-CREATE INDEX ON "$tableName"
+CREATE INDEX ON $tableName
 ((metadata->>'_aggregate_type'), (metadata->>'_aggregate_id'), no);
 EOT;
 
@@ -85,6 +90,9 @@ EOT;
 
     public function generateTableName(StreamName $streamName): string
     {
-        return '_' . sha1($streamName->toString());
+        return implode('.', array_filter([
+            $this->extractSchema($streamName->toString()),
+            '_' . sha1($streamName->toString()),
+        ]));
     }
 }

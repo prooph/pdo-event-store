@@ -127,6 +127,14 @@ abstract class TestUtil
         $connection->exec(file_get_contents(__DIR__ . '/Assets/scripts/' . $vendor . '/02_projections_table.sql'));
     }
 
+    public static function initCustomSchemaDatabaseTables(PDO $connection): void
+    {
+        $vendor = self::getDatabaseVendor();
+
+        $connection->exec(file_get_contents(__DIR__ . '/Assets/scripts/' . $vendor . '/01_custom_event_streams_table.sql'));
+        $connection->exec(file_get_contents(__DIR__ . '/Assets/scripts/' . $vendor . '/02_custom_projections_table.sql'));
+    }
+
     public static function tearDownDatabase(): void
     {
         $connection = self::getConnection();
@@ -153,6 +161,8 @@ abstract class TestUtil
                     break;
             }
         }
+
+        $connection->exec('DROP SCHEMA IF EXISTS custom CASCADE');
     }
 
     public static function getProjectionLockedUntilFromDefaultProjectionsTable(PDO $connection, string $projectionName): ?\DateTimeImmutable

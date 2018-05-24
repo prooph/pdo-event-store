@@ -25,6 +25,7 @@ use Prooph\EventStore\Pdo\MariaDbEventStore;
 use Prooph\EventStore\Pdo\MySqlEventStore;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\Pdo\PostgresEventStore;
+use Prooph\EventStore\Pdo\Util\PostgresHelper;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\AbstractEventStoreTest;
@@ -35,6 +36,8 @@ use Ramsey\Uuid\Uuid;
 
 abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
 {
+    use PostgresHelper;
+
     /**
      * @var PDO
      */
@@ -78,6 +81,11 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
         TestUtil::tearDownDatabase();
     }
 
+    protected function eventStreamsTable(): string 
+    {
+        return 'event_streams';
+    }
+
     /**
      * @test
      */
@@ -86,7 +94,7 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Maybe the event streams table is not setup?');
 
-        $this->connection->exec('DROP TABLE event_streams;');
+        $this->connection->exec("DROP TABLE {$this->quoteIdent($this->eventStreamsTable())};");
 
         $this->eventStore->create($this->getTestStream());
     }
@@ -152,7 +160,7 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
     {
         $this->expectException(RuntimeException::class);
 
-        $this->connection->exec('DROP TABLE event_streams;');
+        $this->connection->exec("DROP TABLE {$this->quoteIdent($this->eventStreamsTable())};");
         $this->eventStore->fetchStreamNames(null, null, 200, 0);
     }
 
@@ -163,7 +171,7 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
     {
         $this->expectException(RuntimeException::class);
 
-        $this->connection->exec('DROP TABLE event_streams;');
+        $this->connection->exec("DROP TABLE {$this->quoteIdent($this->eventStreamsTable())};");
         $this->eventStore->fetchStreamNamesRegex('^foo', null, 200, 0);
     }
 
@@ -174,7 +182,7 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
     {
         $this->expectException(RuntimeException::class);
 
-        $this->connection->exec('DROP TABLE event_streams;');
+        $this->connection->exec("DROP TABLE {$this->quoteIdent($this->eventStreamsTable())};");
         $this->eventStore->fetchCategoryNames(null, 200, 0);
     }
 
@@ -185,7 +193,7 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
     {
         $this->expectException(RuntimeException::class);
 
-        $this->connection->exec('DROP TABLE event_streams;');
+        $this->connection->exec("DROP TABLE {$this->quoteIdent($this->eventStreamsTable())};");
         $this->eventStore->fetchCategoryNamesRegex('^foo', 200, 0);
     }
 
@@ -536,7 +544,7 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
 
         $this->eventStore->create($stream);
 
-        $statement = $this->connection->prepare('SELECT * FROM event_streams');
+        $statement = $this->connection->prepare("SELECT * FROM {$this->quoteIdent($this->eventStreamsTable())}");
         $statement->execute();
 
         $result = $statement->fetch(\PDO::FETCH_ASSOC);
@@ -546,7 +554,7 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
 
         switch (TestUtil::getDatabaseVendor()) {
             case 'postgres':
-                $statement = $this->connection->prepare(sprintf('SELECT * FROM "%s"', $this->persistenceStrategy->generateTableName($streamName)));
+                $statement = $this->connection->prepare(sprintf('SELECT * FROM %s', $this->quoteIdent($this->persistenceStrategy->generateTableName($streamName))));
                 break;
             default:
                 $statement = $this->connection->prepare(sprintf('SELECT * FROM `%s`', $this->persistenceStrategy->generateTableName($streamName)));
