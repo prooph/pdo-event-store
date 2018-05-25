@@ -27,11 +27,11 @@ use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;
 use Prooph\EventStore\Pdo\Exception\ExtensionNotLoaded;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
+use Prooph\EventStore\Pdo\Util\PostgresHelper;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use Prooph\EventStore\TransactionalEventStore;
 use Prooph\EventStore\Util\Assertion;
-use Prooph\EventStore\Pdo\Util\PostgresHelper;
 
 final class PostgresEventStore implements PdoEventStore, TransactionalEventStore
 {

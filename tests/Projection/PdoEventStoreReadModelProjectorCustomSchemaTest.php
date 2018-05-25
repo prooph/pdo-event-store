@@ -51,7 +51,7 @@ abstract class PdoEventStoreReadModelProjectorCustomSchemaTest extends AbstractE
         TestUtil::tearDownDatabase();
     }
 
-    protected function eventStreamsTable(): string 
+    protected function eventStreamsTable(): string
     {
         return 'custom.event_streams';
     }

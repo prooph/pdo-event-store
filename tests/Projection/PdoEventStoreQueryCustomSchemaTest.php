@@ -46,7 +46,7 @@ abstract class PdoEventStoreQueryCustomSchemaTest extends AbstractEventStoreQuer
         TestUtil::tearDownDatabase();
     }
 
-    protected function eventStreamsTable(): string 
+    protected function eventStreamsTable(): string
     {
         return 'custom.event_streams';
     }

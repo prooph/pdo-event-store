@@ -15,8 +15,8 @@ namespace Prooph\EventStore\Pdo\PersistenceStrategy;
 use Iterator;
 use Prooph\EventStore\Pdo\Exception;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
-use Prooph\EventStore\StreamName;
 use Prooph\EventStore\Pdo\Util\PostgresHelper;
+use Prooph\EventStore\StreamName;
 
 final class PostgresAggregateStreamStrategy implements PersistenceStrategy
 {

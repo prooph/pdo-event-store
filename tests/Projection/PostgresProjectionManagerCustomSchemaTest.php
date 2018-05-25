@@ -72,7 +72,7 @@ class PostgresProjectionManagerCustomSchemaTest extends AbstractProjectionManage
         );
     }
 
-    protected function eventStreamsTable(): string 
+    protected function eventStreamsTable(): string
     {
         return 'custom.event_streams';
     }

@@ -84,7 +84,7 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
         TestUtil::tearDownDatabase();
     }
 
-    protected function eventStreamsTable(): string 
+    protected function eventStreamsTable(): string
     {
         return 'event_streams';
     }

@@ -1,9 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Prooph\EventStore\Pdo\Util;
 
-trait PostgresHelper {
+trait PostgresHelper
+{
     /**
      * @param string $tableName
      * @return string
