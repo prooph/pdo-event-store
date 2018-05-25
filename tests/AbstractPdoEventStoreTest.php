@@ -36,7 +36,10 @@ use Ramsey\Uuid\Uuid;
 
 abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
 {
-    use PostgresHelper;
+    use PostgresHelper {
+        quoteIdent as pgQuoteIdent;
+        extractSchema as pgExtractSchema;
+    }
 
     /**
      * @var PDO
@@ -86,6 +89,16 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
         return 'event_streams';
     }
 
+    protected function quoteTableName(string $tableName): string
+    {
+        switch (TestUtil::getDatabaseVendor()) {
+            case 'pgsql':
+                return $this->pgQuoteIdent($tableName);
+            default:
+                return "`$tableName`";
+        }
+    }
+
     /**
      * @test
      */
@@ -94,7 +107,7 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Maybe the event streams table is not setup?');
 
-        $this->connection->exec("DROP TABLE {$this->quoteIdent($this->eventStreamsTable())};");
+        $this->connection->exec("DROP TABLE {$this->quoteTableName($this->eventStreamsTable())};");
 
         $this->eventStore->create($this->getTestStream());
     }
@@ -160,7 +173,7 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
     {
         $this->expectException(RuntimeException::class);
 
-        $this->connection->exec("DROP TABLE {$this->quoteIdent($this->eventStreamsTable())};");
+        $this->connection->exec("DROP TABLE {$this->quoteTableName($this->eventStreamsTable())};");
         $this->eventStore->fetchStreamNames(null, null, 200, 0);
     }
 
@@ -171,7 +184,7 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
     {
         $this->expectException(RuntimeException::class);
 
-        $this->connection->exec("DROP TABLE {$this->quoteIdent($this->eventStreamsTable())};");
+        $this->connection->exec("DROP TABLE {$this->quoteTableName($this->eventStreamsTable())};");
         $this->eventStore->fetchStreamNamesRegex('^foo', null, 200, 0);
     }
 
@@ -182,7 +195,7 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
     {
         $this->expectException(RuntimeException::class);
 
-        $this->connection->exec("DROP TABLE {$this->quoteIdent($this->eventStreamsTable())};");
+        $this->connection->exec("DROP TABLE {$this->quoteTableName($this->eventStreamsTable())};");
         $this->eventStore->fetchCategoryNames(null, 200, 0);
     }
 
@@ -193,7 +206,7 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
     {
         $this->expectException(RuntimeException::class);
 
-        $this->connection->exec("DROP TABLE {$this->quoteIdent($this->eventStreamsTable())};");
+        $this->connection->exec("DROP TABLE {$this->quoteTableName($this->eventStreamsTable())};");
         $this->eventStore->fetchCategoryNamesRegex('^foo', 200, 0);
     }
 
@@ -544,7 +557,7 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
 
         $this->eventStore->create($stream);
 
-        $statement = $this->connection->prepare("SELECT * FROM {$this->quoteIdent($this->eventStreamsTable())}");
+        $statement = $this->connection->prepare("SELECT * FROM {$this->quoteTableName($this->eventStreamsTable())}");
         $statement->execute();
 
         $result = $statement->fetch(\PDO::FETCH_ASSOC);
@@ -554,10 +567,10 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
 
         switch (TestUtil::getDatabaseVendor()) {
             case 'postgres':
-                $statement = $this->connection->prepare(sprintf('SELECT * FROM %s', $this->quoteIdent($this->persistenceStrategy->generateTableName($streamName))));
+                $statement = $this->connection->prepare(sprintf('SELECT * FROM %s', $this->quoteTableName($this->persistenceStrategy->generateTableName($streamName))));
                 break;
             default:
-                $statement = $this->connection->prepare(sprintf('SELECT * FROM `%s`', $this->persistenceStrategy->generateTableName($streamName)));
+                $statement = $this->connection->prepare(sprintf('SELECT * FROM %s', $this->quoteTableName($this->persistenceStrategy->generateTableName($streamName))));
         }
 
         $statement->execute();
