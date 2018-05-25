@@ -142,6 +142,7 @@ abstract class TestUtil
         switch ($vendor) {
             case 'postgres':
                 $statement = $connection->prepare('SELECT table_name FROM information_schema.tables WHERE table_schema = \'public\';');
+                $connection->exec('DROP SCHEMA IF EXISTS custom CASCADE');
                 break;
             default:
                 $statement = $connection->prepare('SHOW TABLES');
@@ -155,7 +156,6 @@ abstract class TestUtil
             switch ($vendor) {
                 case 'postgres':
                     $connection->exec(sprintf('DROP TABLE "%s";', $table));
-                    $connection->exec('DROP SCHEMA IF EXISTS custom CASCADE');
                     break;
                 default:
                     $connection->exec(sprintf('DROP TABLE `%s`;', $table));
