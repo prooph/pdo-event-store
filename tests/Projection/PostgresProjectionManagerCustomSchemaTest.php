@@ -74,12 +74,12 @@ class PostgresProjectionManagerCustomSchemaTest extends AbstractProjectionManage
 
     protected function eventStreamsTable(): string
     {
-        return 'custom.event_streams';
+        return 'prooph.event_streams';
     }
 
     protected function projectionsTable(): string
     {
-        return 'custom.event_projections';
+        return 'prooph.event_projections';
     }
 
     protected function tearDown(): void

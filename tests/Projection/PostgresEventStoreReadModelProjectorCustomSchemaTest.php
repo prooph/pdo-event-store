@@ -62,14 +62,14 @@ class PostgresEventStoreReadModelProjectorCustomSchemaTest extends PdoEventStore
         $this->expectException(\Prooph\EventStore\Pdo\Exception\RuntimeException::class);
         $this->expectExceptionMessage("Error 42P01. Maybe the projection table is not setup?\nError-Info: ERROR:  relation \"{$this->projectionsTable()}\" does not exist\nLINE 1: SELECT status FROM");
 
-        $this->prepareEventStream('custom.user-123');
+        $this->prepareEventStream('prooph.user-123');
 
         $this->connection->exec("DROP TABLE {$this->quoteIdent($this->projectionsTable())};");
 
         $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 
         $projection
-            ->fromStream('custom.user-123')
+            ->fromStream('prooph.user-123')
             ->when([
                 UserCreated::class => function (array $state, UserCreated $event): array {
                     $this->stop();

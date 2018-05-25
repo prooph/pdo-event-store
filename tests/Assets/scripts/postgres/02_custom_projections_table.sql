@@ -1,6 +1,6 @@
-CREATE SCHEMA IF NOT EXISTS custom;
+CREATE SCHEMA IF NOT EXISTS prooph;
 
-CREATE TABLE custom.event_projections (
+CREATE TABLE prooph.event_projections (
   no BIGSERIAL,
   name VARCHAR(150) NOT NULL,
   position JSONB,

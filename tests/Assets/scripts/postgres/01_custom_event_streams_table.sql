@@ -1,6 +1,6 @@
-CREATE SCHEMA IF NOT EXISTS custom;
+CREATE SCHEMA IF NOT EXISTS prooph;
 
-CREATE TABLE custom.event_streams (
+CREATE TABLE prooph.event_streams (
   no BIGSERIAL,
   real_stream_name VARCHAR(150) NOT NULL,
   stream_name CHAR(150) NOT NULL,
@@ -9,4 +9,4 @@ CREATE TABLE custom.event_streams (
   PRIMARY KEY (no),
   UNIQUE (stream_name)
 );
-CREATE INDEX on custom.event_streams (category);
+CREATE INDEX on prooph.event_streams (category);

@@ -53,12 +53,12 @@ abstract class PdoEventStoreReadModelProjectorCustomSchemaTest extends AbstractE
 
     protected function eventStreamsTable(): string
     {
-        return 'custom.event_streams';
+        return 'prooph.event_streams';
     }
 
     protected function projectionsTable(): string
     {
-        return 'custom.event_projections';
+        return 'prooph.event_projections';
     }
 
     protected function prepareEventStream(string $name): void
@@ -84,7 +84,7 @@ abstract class PdoEventStoreReadModelProjectorCustomSchemaTest extends AbstractE
      */
     public function it_updates_read_model_using_when_and_loads_and_continues_again(): void
     {
-        $this->prepareEventStream('custom.user-123');
+        $this->prepareEventStream('prooph.user-123');
 
         $readModel = new ReadModelMock();
 
@@ -118,7 +118,7 @@ abstract class PdoEventStoreReadModelProjectorCustomSchemaTest extends AbstractE
             'name' => 'Oliver',
         ], 100);
 
-        $this->eventStore->appendTo(new StreamName('custom.user-123'), new ArrayIterator($events));
+        $this->eventStore->appendTo(new StreamName('prooph.user-123'), new ArrayIterator($events));
 
         $projection = $this->projectionManager->createReadModelProjection('test_projection', $readModel);
 

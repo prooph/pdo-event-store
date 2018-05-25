@@ -48,12 +48,12 @@ abstract class PdoEventStoreQueryCustomSchemaTest extends AbstractEventStoreQuer
 
     protected function eventStreamsTable(): string
     {
-        return 'custom.event_streams';
+        return 'prooph.event_streams';
     }
 
     protected function projectionsTable(): string
     {
-        return 'custom.event_projections';
+        return 'prooph.event_projections';
     }
 
     /**
@@ -61,7 +61,7 @@ abstract class PdoEventStoreQueryCustomSchemaTest extends AbstractEventStoreQuer
      */
     public function it_updates_state_using_when_and_persists_with_block_size(): void
     {
-        $this->prepareEventStream('custom.user-123');
+        $this->prepareEventStream('prooph.user-123');
 
         $testCase = $this;
 
@@ -71,13 +71,13 @@ abstract class PdoEventStoreQueryCustomSchemaTest extends AbstractEventStoreQuer
             ->fromAll()
             ->when([
                 UserCreated::class => function ($state, Message $event) use ($testCase): array {
-                    $testCase->assertEquals('custom.user-123', $this->streamName());
+                    $testCase->assertEquals('prooph.user-123', $this->streamName());
                     $state['name'] = $event->payload()['name'];
 
                     return $state;
                 },
                 UsernameChanged::class => function ($state, Message $event) use ($testCase): array {
-                    $testCase->assertEquals('custom.user-123', $this->streamName());
+                    $testCase->assertEquals('prooph.user-123', $this->streamName());
                     $state['name'] = $event->payload()['name'];
 
                     if ($event->payload()['name'] === 'Sascha') {

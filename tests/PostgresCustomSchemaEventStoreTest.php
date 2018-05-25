@@ -55,7 +55,7 @@ class PostgresCustomSchemaEventStoreTest extends AbstractPdoEventStoreTest
 
     protected function eventStreamsTable(): string
     {
-        return 'custom.event_streams';
+        return 'prooph.event_streams';
     }
 
     /**
@@ -66,7 +66,7 @@ class PostgresCustomSchemaEventStoreTest extends AbstractPdoEventStoreTest
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Error during createSchemaFor');
 
-        $streamName = new StreamName('custom.foo');
+        $streamName = new StreamName('prooph.foo');
         $schema = $this->persistenceStrategy->createSchema($this->persistenceStrategy->generateTableName($streamName));
 
         foreach ($schema as $command) {
@@ -84,7 +84,7 @@ class PostgresCustomSchemaEventStoreTest extends AbstractPdoEventStoreTest
     {
         $this->setupEventStoreWith(new PostgresSingleStreamStrategy(), 5, $this->eventStreamsTable());
 
-        $streamName = new StreamName('custom.Prooph\Model\User');
+        $streamName = new StreamName('prooph.Prooph\Model\User');
 
         $stream = new Stream($streamName, new \ArrayIterator($this->getMultipleTestEvents()));
 
@@ -126,7 +126,7 @@ class PostgresCustomSchemaEventStoreTest extends AbstractPdoEventStoreTest
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_id', $aggregateId);
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_type', 'user');
 
-        $stream = new Stream(new StreamName('custom.Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
+        $stream = new Stream(new StreamName('prooph.Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
 
         $this->eventStore->create($stream);
 
@@ -139,7 +139,7 @@ class PostgresCustomSchemaEventStoreTest extends AbstractPdoEventStoreTest
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_id', $aggregateId);
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_type', 'user');
 
-        $this->eventStore->appendTo(new StreamName('custom.Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
+        $this->eventStore->appendTo(new StreamName('prooph.Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
     }
 
     public function it_ignores_transaction_handling_if_flag_is_enabled(): void
@@ -176,7 +176,7 @@ SQL
 
         $this->setupEventStoreWith($strategy, 10000, $this->eventStreamsTable());
 
-        $stream = new Stream(new StreamName('custom.Prooph\Model\User'), new \ArrayIterator());
+        $stream = new Stream(new StreamName('prooph.Prooph\Model\User'), new \ArrayIterator());
 
         try {
             $this->eventStore->create($stream);
