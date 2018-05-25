@@ -92,7 +92,7 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
     protected function quoteTableName(string $tableName): string
     {
         switch (TestUtil::getDatabaseVendor()) {
-            case 'pgsql':
+            case 'postgres':
                 return $this->pgQuoteIdent($tableName);
             default:
                 return "`$tableName`";

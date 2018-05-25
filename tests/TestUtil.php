@@ -155,14 +155,13 @@ abstract class TestUtil
             switch ($vendor) {
                 case 'postgres':
                     $connection->exec(sprintf('DROP TABLE "%s";', $table));
+                    $connection->exec('DROP SCHEMA IF EXISTS custom CASCADE');
                     break;
                 default:
                     $connection->exec(sprintf('DROP TABLE `%s`;', $table));
                     break;
             }
         }
-
-        $connection->exec('DROP SCHEMA IF EXISTS custom CASCADE');
     }
 
     public static function getProjectionLockedUntilFromDefaultProjectionsTable(PDO $connection, string $projectionName): ?\DateTimeImmutable
