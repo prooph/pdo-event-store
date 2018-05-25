@@ -1,35 +1,50 @@
 <?php
+/**
+ * This file is part of the prooph/pdo-event-store.
+ * (c) 2016-2018 prooph software GmbH <contact@prooph.de>
+ * (c) 2016-2018 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 declare(strict_types=1);
 
 namespace Prooph\EventStore\Pdo\Util;
 
+/**
+ * PostgreSQL helper to work with fully qualified table name.
+ */
 trait PostgresHelper
 {
     /**
-     * @param string $tableName
+     * @param string $ident
      * @return string
      */
-    private function quoteIdent(string $tableName): string
+    private function quoteIdent(string $ident): string
     {
-        return array_reduce(explode('.', $tableName), function ($result, $part) {
-            return implode('.', array_filter([
-                $result,
-                '"' . trim($part, '" ') . '"',
-            ]));
-        }, '');
+        $parts = array_filter($this->splitIdent($ident));
+        $parts = array_map(function ($ident) {
+            return '"' . trim($ident, '" ') . '"';
+        }, $parts);
+
+        return implode('.', $parts);
     }
 
     /**
-     * @param string $identifier
-     * @return string|null
+     * Splits fully qualified table name by first dot.
+     * @param string $ident
+     * @return string[]
      */
-    private function extractSchema(string $identifier): ?string
+    private function splitIdent(string $ident): array
     {
-        $parts = array_map(function ($part) {
-            return trim($part, '" ');
-        }, explode('.', $identifier));
+        if (false === ($pos = strpos($ident, '.'))) {
+            return ['', $ident];
+        }
 
-        return count($parts) === 2 ? $parts[0] : null;
+        $schema = substr($ident, 0, $pos);
+        $ident = substr($ident, $pos + 1);
+
+        return [$schema, $ident];
     }
 }

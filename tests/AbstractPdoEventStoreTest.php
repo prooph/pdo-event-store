@@ -38,7 +38,7 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
 {
     use PostgresHelper {
         quoteIdent as pgQuoteIdent;
-        extractSchema as pgExtractSchema;
+        splitIdent as pgSplitIdent;
     }
 
     /**

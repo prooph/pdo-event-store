@@ -30,7 +30,7 @@ final class PdoEventStoreQuery implements Query
 {
     use PostgresHelper {
         quoteIdent as pgQuoteIdent;
-        extractSchema as pgExtractSchema;
+        splitIdent as pgSplitIdent;
     }
     /**
      * @var EventStore

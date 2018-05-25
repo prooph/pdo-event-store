@@ -75,8 +75,10 @@ EOT;
 
     public function generateTableName(StreamName $streamName): string
     {
+        [$schema] = $this->splitIdent($streamName->toString());
+
         return implode('.', array_filter([
-            $this->extractSchema($streamName->toString()),
+            $schema,
             '_' . sha1($streamName->toString()),
         ]));
     }

@@ -34,7 +34,7 @@ final class PdoEventStoreReadModelProjector implements ReadModelProjector
 {
     use PostgresHelper {
         quoteIdent as pgQuoteIdent;
-        extractSchema as pgExtractSchema;
+        splitIdent as pgSplitIdent;
     }
     /**
      * @var EventStore

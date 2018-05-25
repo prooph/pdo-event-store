@@ -38,7 +38,7 @@ final class PdoEventStoreProjector implements Projector
 {
     use PostgresHelper {
         quoteIdent as pgQuoteIdent;
-        extractSchema as pgExtractSchema;
+        splitIdent as pgSplitIdent;
     }
 
     private const UNIQUE_VIOLATION_ERROR_CODES = [
