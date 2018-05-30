@@ -18,7 +18,7 @@ use Prooph\EventStore\EventStore;
 use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Pdo\Exception\InvalidArgumentException;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
-use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresAggregateStreamStrategy;
+use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\Pdo\PostgresEventStore;
 use Prooph\EventStore\Pdo\Projection\PostgresProjectionManager;
 use Prooph\EventStore\Projection\InMemoryProjectionManager;
@@ -54,10 +54,12 @@ class PostgresProjectionManagerTest extends AbstractProjectionManagerTest
         $this->connection = TestUtil::getConnection();
         TestUtil::initDefaultDatabaseTables($this->connection);
 
+        $persistenceStrategy = $this->prophesize(PersistenceStrategy::class)->reveal();
+
         $this->eventStore = new PostgresEventStore(
             new FQCNMessageFactory(),
             $this->connection,
-            new PostgresAggregateStreamStrategy()
+            $persistenceStrategy
         );
         $this->projectionManager = new PostgresProjectionManager($this->eventStore, $this->connection);
     }

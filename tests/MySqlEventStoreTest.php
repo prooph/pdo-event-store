@@ -15,6 +15,7 @@ namespace ProophTest\EventStore\Pdo;
 use ArrayIterator;
 use PDO;
 use Prooph\Common\Messaging\FQCNMessageFactory;
+use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Metadata\FieldType;
 use Prooph\EventStore\Metadata\MetadataMatcher;
@@ -50,7 +51,7 @@ class MySqlEventStoreTest extends AbstractPdoEventStoreTest
         $this->connection = TestUtil::getConnection();
         TestUtil::initDefaultDatabaseTables($this->connection);
 
-        $this->setupEventStoreWith(new MySqlAggregateStreamStrategy());
+        $this->setupEventStoreWith(new MySqlAggregateStreamStrategy(new NoOpMessageConverter()));
     }
 
     /**
@@ -77,7 +78,7 @@ class MySqlEventStoreTest extends AbstractPdoEventStoreTest
      */
     public function it_loads_correctly_using_single_stream_per_aggregate_type_strategy(): void
     {
-        $this->setupEventStoreWith(new MySqlSingleStreamStrategy(), 5);
+        $this->setupEventStoreWith(new MySqlSingleStreamStrategy(new NoOpMessageConverter()), 5);
 
         $streamName = new StreamName('Prooph\Model\User');
 
@@ -108,7 +109,7 @@ class MySqlEventStoreTest extends AbstractPdoEventStoreTest
     {
         $this->expectException(ConcurrencyException::class);
 
-        $this->setupEventStoreWith(new MySqlSingleStreamStrategy());
+        $this->setupEventStoreWith(new MySqlSingleStreamStrategy(new NoOpMessageConverter()));
 
         $streamEvent = UserCreated::with(
             ['name' => 'Max Mustermann', 'email' => 'contact@prooph.de'],
@@ -144,7 +145,7 @@ class MySqlEventStoreTest extends AbstractPdoEventStoreTest
         $connection->commit()->shouldNotBeCalled();
         $connection->rollback()->shouldNotBeCalled();
 
-        $eventStore = new MySqlEventStore(new FQCNMessageFactory(), $connection->reveal(), new MySqlAggregateStreamStrategy());
+        $eventStore = new MySqlEventStore(new FQCNMessageFactory(), $connection->reveal(), new MySqlAggregateStreamStrategy(new NoOpMessageConverter()));
 
         $streamEvent = UserCreated::with(
             ['name' => 'Max Mustermann', 'email' => 'contact@prooph.de'],

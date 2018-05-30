@@ -11,6 +11,7 @@
 declare(strict_types=1);
 
 use Prooph\Common\Messaging\FQCNMessageFactory;
+use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\Pdo\MySqlEventStore;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSimpleStreamStrategy;
 use Prooph\EventStore\Pdo\Projection\MySqlProjectionManager;
@@ -53,7 +54,7 @@ $connection = TestUtil::getConnection();
 $eventStore = new MySqlEventStore(
     new FQCNMessageFactory(),
     $connection,
-    new MySqlSimpleStreamStrategy()
+    new MySqlSimpleStreamStrategy(new NoOpMessageConverter())
 );
 
 $projectionManager = new MySqlProjectionManager(

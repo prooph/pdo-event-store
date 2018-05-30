@@ -11,6 +11,7 @@
 declare(strict_types=1);
 
 use Prooph\Common\Messaging\FQCNMessageFactory;
+use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresSimpleStreamStrategy;
 use Prooph\EventStore\Pdo\PostgresEventStore;
 use Prooph\EventStore\Pdo\Projection\PostgresProjectionManager;
@@ -27,7 +28,7 @@ $connection = TestUtil::getConnection();
 $eventStore = new PostgresEventStore(
     new FQCNMessageFactory(),
     $connection,
-    new PostgresSimpleStreamStrategy()
+    new PostgresSimpleStreamStrategy(new NoOpMessageConverter())
 );
 $events = [];
 

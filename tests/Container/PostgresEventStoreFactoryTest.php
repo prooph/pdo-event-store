@@ -49,7 +49,7 @@ final class PostgresEventStoreFactoryTest extends TestCase
         $container->get('config')->willReturn($config)->shouldBeCalled();
         $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
-        $container->get(PersistenceStrategy\PostgresAggregateStreamStrategy::class)->willReturn(new PersistenceStrategy\PostgresAggregateStreamStrategy())->shouldBeCalled();
+        $container->get(PersistenceStrategy\PostgresAggregateStreamStrategy::class)->willReturn($this->prophesize(PersistenceStrategy::class))->shouldBeCalled();
 
         $factory = new PostgresEventStoreFactory();
         $eventStore = $factory($container->reveal());
@@ -74,7 +74,7 @@ final class PostgresEventStoreFactoryTest extends TestCase
         $container->get('config')->willReturn($config)->shouldBeCalled();
         $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
-        $container->get(PersistenceStrategy\PostgresAggregateStreamStrategy::class)->willReturn(new PersistenceStrategy\PostgresAggregateStreamStrategy())->shouldBeCalled();
+        $container->get(PersistenceStrategy\PostgresAggregateStreamStrategy::class)->willReturn($this->prophesize(PersistenceStrategy::class))->shouldBeCalled();
 
         $eventStoreName = 'custom';
         $eventStore = PostgresEventStoreFactory::$eventStoreName($container->reveal());
@@ -100,7 +100,7 @@ final class PostgresEventStoreFactoryTest extends TestCase
         $container->get('config')->willReturn($config)->shouldBeCalled();
         $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
-        $container->get(PersistenceStrategy\PostgresAggregateStreamStrategy::class)->willReturn(new PersistenceStrategy\PostgresAggregateStreamStrategy())->shouldBeCalled();
+        $container->get(PersistenceStrategy\PostgresAggregateStreamStrategy::class)->willReturn($this->prophesize(PersistenceStrategy::class))->shouldBeCalled();
 
         $featureMock = $this->getMockForAbstractClass(Plugin::class);
         $featureMock->expects($this->once())->method('attachToEventStore');
@@ -134,7 +134,7 @@ final class PostgresEventStoreFactoryTest extends TestCase
         $container->get('config')->willReturn($config)->shouldBeCalled();
         $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
-        $container->get(PersistenceStrategy\PostgresAggregateStreamStrategy::class)->willReturn(new PersistenceStrategy\PostgresAggregateStreamStrategy())->shouldBeCalled();
+        $container->get(PersistenceStrategy\PostgresAggregateStreamStrategy::class)->willReturn($this->prophesize(PersistenceStrategy::class))->shouldBeCalled();
 
         $container->get('plugin')->willReturn('notAValidPlugin');
 
@@ -163,7 +163,7 @@ final class PostgresEventStoreFactoryTest extends TestCase
         $container->get('config')->willReturn($config);
         $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
-        $container->get(PersistenceStrategy\PostgresAggregateStreamStrategy::class)->willReturn(new PersistenceStrategy\PostgresAggregateStreamStrategy())->shouldBeCalled();
+        $container->get(PersistenceStrategy\PostgresAggregateStreamStrategy::class)->willReturn($this->prophesize(PersistenceStrategy::class))->shouldBeCalled();
 
         $container->get('metadata_enricher1')->willReturn($metadataEnricher1->reveal());
         $container->get('metadata_enricher2')->willReturn($metadataEnricher2->reveal());
@@ -195,7 +195,7 @@ final class PostgresEventStoreFactoryTest extends TestCase
         $container->get('config')->willReturn($config);
         $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
-        $container->get(PersistenceStrategy\PostgresAggregateStreamStrategy::class)->willReturn(new PersistenceStrategy\PostgresAggregateStreamStrategy())->shouldBeCalled();
+        $container->get(PersistenceStrategy\PostgresAggregateStreamStrategy::class)->willReturn($this->prophesize(PersistenceStrategy::class))->shouldBeCalled();
 
         $container->get('foobar')->willReturn('foobar');
 

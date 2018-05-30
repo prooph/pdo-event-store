@@ -15,6 +15,7 @@ namespace ProophTest\EventStore\Pdo;
 use ArrayIterator;
 use PDO;
 use Prooph\Common\Messaging\FQCNMessageFactory;
+use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;
@@ -48,7 +49,7 @@ class MariaDbEventStoreTest extends AbstractPdoEventStoreTest
         $this->connection = TestUtil::getConnection();
         TestUtil::initDefaultDatabaseTables($this->connection);
 
-        $this->setupEventStoreWith(new MariaDbAggregateStreamStrategy());
+        $this->setupEventStoreWith(new MariaDbAggregateStreamStrategy(new NoOpMessageConverter()));
     }
 
     /**
@@ -75,7 +76,7 @@ class MariaDbEventStoreTest extends AbstractPdoEventStoreTest
      */
     public function it_loads_correctly_using_single_stream_per_aggregate_type_strategy(): void
     {
-        $this->setupEventStoreWith(new MariaDbSingleStreamStrategy(), 5);
+        $this->setupEventStoreWith(new MariaDbSingleStreamStrategy(new NoOpMessageConverter()), 5);
 
         $streamName = new StreamName('Prooph\Model\User');
 
@@ -106,7 +107,7 @@ class MariaDbEventStoreTest extends AbstractPdoEventStoreTest
     {
         $this->expectException(ConcurrencyException::class);
 
-        $this->setupEventStoreWith(new MariaDbSingleStreamStrategy());
+        $this->setupEventStoreWith(new MariaDbSingleStreamStrategy(new NoOpMessageConverter()));
 
         $streamEvent = UserCreated::with(
             ['name' => 'Max Mustermann', 'email' => 'contact@prooph.de'],
@@ -142,7 +143,7 @@ class MariaDbEventStoreTest extends AbstractPdoEventStoreTest
         $connection->commit()->shouldNotBeCalled();
         $connection->rollback()->shouldNotBeCalled();
 
-        $eventStore = new MariaDbEventStore(new FQCNMessageFactory(), $connection->reveal(), new MariaDbAggregateStreamStrategy());
+        $eventStore = new MariaDbEventStore(new FQCNMessageFactory(), $connection->reveal(), new MariaDbAggregateStreamStrategy(new NoOpMessageConverter()));
 
         $streamEvent = UserCreated::with(
             ['name' => 'Max Mustermann', 'email' => 'contact@prooph.de'],
