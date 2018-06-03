@@ -75,11 +75,14 @@ EOT;
 
     public function generateTableName(StreamName $streamName): string
     {
-        [$schema] = $this->splitIdent($streamName->toString());
+        $streamName = $streamName->toString();
+        $table = '_' . sha1($streamName);
+        [$schema] = $this->splitIdent($streamName);
 
-        return implode('.', array_filter([
-            $schema,
-            '_' . sha1($streamName->toString()),
-        ]));
+        if ($schema) {
+            $schema . '.' . $table;
+        }
+
+        return $table;
     }
 }

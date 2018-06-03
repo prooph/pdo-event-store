@@ -23,12 +23,16 @@ trait PostgresHelper
      */
     private function quoteIdent(string $ident): string
     {
-        $parts = array_filter($this->splitIdent($ident));
-        $parts = array_map(function ($ident) {
-            return '"' . trim($ident, '" ') . '"';
-        }, $parts);
+        $pos = strpos($ident, '.');
 
-        return implode('.', $parts);
+        if (false === $pos) {
+            return '"' . $ident . '"';
+        }
+
+        $schema = substr($ident, 0, $pos);
+        $table = substr($ident, $pos + 1);
+
+        return '"' . $schema . '"."' . $table . '"';
     }
 
     /**
@@ -43,8 +47,8 @@ trait PostgresHelper
         }
 
         $schema = substr($ident, 0, $pos);
-        $ident = substr($ident, $pos + 1);
+        $table = substr($ident, $pos + 1);
 
-        return [$schema, $ident];
+        return [$schema, $table];
     }
 }
