@@ -77,9 +77,8 @@ EOT;
     {
         $streamName = $streamName->toString();
         $table = '_' . sha1($streamName);
-        [$schema] = $this->splitIdent($streamName);
 
-        if ($schema) {
+        if ($schema = $this->extractSchema($streamName)) {
             $table = $schema . '.' . $table;
         }
 

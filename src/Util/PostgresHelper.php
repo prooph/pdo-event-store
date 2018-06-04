@@ -36,19 +36,16 @@ trait PostgresHelper
     }
 
     /**
-     * Splits fully qualified table name by first dot.
+     * Extracts schema name as string before the first dot.
      * @param string $ident
-     * @return string[]
+     * @return string|null
      */
-    private function splitIdent(string $ident): array
+    private function extractSchema(string $ident): ?string
     {
         if (false === ($pos = strpos($ident, '.'))) {
-            return ['', $ident];
+            return null;
         }
 
-        $schema = substr($ident, 0, $pos);
-        $table = substr($ident, $pos + 1);
-
-        return [$schema, $table];
+        return substr($ident, 0, $pos);
     }
 }
