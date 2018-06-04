@@ -88,7 +88,7 @@ EOT;
         [$schema] = $this->splitIdent($streamName);
 
         if ($schema) {
-            $schema . '.' . $table;
+            $table = $schema . '.' . $table;
         }
 
         return $table;
