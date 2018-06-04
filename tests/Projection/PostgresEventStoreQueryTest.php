@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace ProophTest\EventStore\Pdo\Projection;
 
-use PDO;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresSimpleStreamStrategy;

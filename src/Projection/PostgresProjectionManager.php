@@ -20,6 +20,7 @@ use Prooph\EventStore\Exception\OutOfRangeException;
 use Prooph\EventStore\Exception\ProjectionNotFound;
 use Prooph\EventStore\Pdo\Exception;
 use Prooph\EventStore\Pdo\PostgresEventStore;
+use Prooph\EventStore\Pdo\Util\PostgresHelper;
 use Prooph\EventStore\Projection\ProjectionManager;
 use Prooph\EventStore\Projection\ProjectionStatus;
 use Prooph\EventStore\Projection\Projector;
@@ -29,6 +30,7 @@ use Prooph\EventStore\Projection\ReadModelProjector;
 
 final class PostgresProjectionManager implements ProjectionManager
 {
+    use PostgresHelper;
     /**
      * @var EventStore
      */
@@ -121,7 +123,7 @@ final class PostgresProjectionManager implements ProjectionManager
     public function deleteProjection(string $name, bool $deleteEmittedEvents): void
     {
         $sql = <<<EOT
-UPDATE "$this->projectionsTable" SET status = ? WHERE name = ?;
+UPDATE {$this->quoteIdent($this->projectionsTable)} SET status = ? WHERE name = ?;
 EOT;
 
         if ($deleteEmittedEvents) {
@@ -152,7 +154,7 @@ EOT;
     public function resetProjection(string $name): void
     {
         $sql = <<<EOT
-UPDATE "$this->projectionsTable" SET status = ? WHERE name = ?;
+UPDATE {$this->quoteIdent($this->projectionsTable)} SET status = ? WHERE name = ?;
 EOT;
 
         $statement = $this->connection->prepare($sql);
@@ -177,7 +179,7 @@ EOT;
     public function stopProjection(string $name): void
     {
         $sql = <<<EOT
-UPDATE "$this->projectionsTable" SET status = ? WHERE name = ?;
+UPDATE {$this->quoteIdent($this->projectionsTable)} SET status = ? WHERE name = ?;
 EOT;
 
         $statement = $this->connection->prepare($sql);
@@ -223,7 +225,7 @@ EOT;
         }
 
         $query = <<<SQL
-SELECT name FROM "$this->projectionsTable"
+SELECT name FROM {$this->quoteIdent($this->projectionsTable)}
 $whereCondition
 ORDER BY name ASC
 LIMIT $limit OFFSET $offset
@@ -275,7 +277,7 @@ SQL;
 
         $whereCondition = 'WHERE name ~ :filter';
         $query = <<<SQL
-SELECT name FROM "$this->projectionsTable"
+SELECT name FROM {$this->quoteIdent($this->projectionsTable)}
 $whereCondition
 ORDER BY name ASC
 LIMIT $limit OFFSET $offset
@@ -314,7 +316,7 @@ SQL;
     public function fetchProjectionStatus(string $name): ProjectionStatus
     {
         $query = <<<SQL
-SELECT status FROM "$this->projectionsTable"
+SELECT status FROM {$this->quoteIdent($this->projectionsTable)}
 WHERE name = ?
 LIMIT 1
 SQL;
@@ -343,7 +345,7 @@ SQL;
     public function fetchProjectionStreamPositions(string $name): array
     {
         $query = <<<SQL
-SELECT position FROM "$this->projectionsTable"
+SELECT position FROM {$this->quoteIdent($this->projectionsTable)}
 WHERE name = ?
 LIMIT 1
 SQL;
@@ -372,7 +374,7 @@ SQL;
     public function fetchProjectionState(string $name): array
     {
         $query = <<<SQL
-SELECT state FROM "$this->projectionsTable"
+SELECT state FROM {$this->quoteIdent($this->projectionsTable)}
 WHERE name = ?
 LIMIT 1
 SQL;

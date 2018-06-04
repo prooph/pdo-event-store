@@ -17,10 +17,13 @@ use Prooph\Common\Messaging\MessageConverter;
 use Prooph\EventStore\Pdo\DefaultMessageConverter;
 use Prooph\EventStore\Pdo\Exception;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
+use Prooph\EventStore\Pdo\Util\PostgresHelper;
 use Prooph\EventStore\StreamName;
 
 final class PostgresAggregateStreamStrategy implements PersistenceStrategy
 {
+    use PostgresHelper;
+
     /**
      * @var MessageConverter
      */
@@ -37,8 +40,10 @@ final class PostgresAggregateStreamStrategy implements PersistenceStrategy
      */
     public function createSchema(string $tableName): array
     {
+        $tableName = $this->quoteIdent($tableName);
+
         $statement = <<<EOT
-CREATE TABLE "$tableName" (
+CREATE TABLE $tableName (
     no BIGSERIAL,
     event_id UUID NOT NULL,
     event_name VARCHAR(100) NOT NULL,
@@ -52,7 +57,7 @@ EOT;
 
         return [
             $statement,
-            "CREATE UNIQUE INDEX on \"$tableName\" ((metadata->>'_aggregate_version'));",
+            "CREATE UNIQUE INDEX on $tableName ((metadata->>'_aggregate_version'));",
         ];
     }
 
@@ -92,6 +97,13 @@ EOT;
 
     public function generateTableName(StreamName $streamName): string
     {
-        return '_' . sha1($streamName->toString());
+        $streamName = $streamName->toString();
+        $table = '_' . sha1($streamName);
+
+        if ($schema = $this->extractSchema($streamName)) {
+            $table = $schema . '.' . $table;
+        }
+
+        return $table;
     }
 }

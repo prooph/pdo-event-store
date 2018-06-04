@@ -127,6 +127,14 @@ abstract class TestUtil
         $connection->exec(file_get_contents(__DIR__ . '/Assets/scripts/' . $vendor . '/02_projections_table.sql'));
     }
 
+    public static function initCustomSchemaDatabaseTables(PDO $connection): void
+    {
+        $vendor = self::getDatabaseVendor();
+
+        $connection->exec(file_get_contents(__DIR__ . '/Assets/scripts/' . $vendor . '/01_custom_event_streams_table.sql'));
+        $connection->exec(file_get_contents(__DIR__ . '/Assets/scripts/' . $vendor . '/02_custom_projections_table.sql'));
+    }
+
     public static function tearDownDatabase(): void
     {
         $connection = self::getConnection();
@@ -134,6 +142,7 @@ abstract class TestUtil
         switch ($vendor) {
             case 'postgres':
                 $statement = $connection->prepare('SELECT table_name FROM information_schema.tables WHERE table_schema = \'public\';');
+                $connection->exec('DROP SCHEMA IF EXISTS prooph CASCADE');
                 break;
             default:
                 $statement = $connection->prepare('SHOW TABLES');
