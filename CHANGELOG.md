@@ -1,7 +1,25 @@
 # Change Log
 
-## [v1.8.4](https://github.com/prooph/pdo-event-store/tree/v1.8.4)
+## [v1.9.0-BETA-1](https://github.com/prooph/pdo-event-store/tree/v1.9.0-BETA-1)
 
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.8.4...v1.9.0-BETA-1)
+
+**Implemented enhancements:**
+
+- Postgres event store with schema support [\#157](https://github.com/prooph/pdo-event-store/issues/157)
+- Pg schema support [\#159](https://github.com/prooph/pdo-event-store/pull/159) ([ghettovoice](https://github.com/ghettovoice))
+- Use MessageConverter in persistence strategies [\#153](https://github.com/prooph/pdo-event-store/pull/153) ([enumag](https://github.com/enumag))
+
+**Closed issues:**
+
+- Charset/collation on event stream tables [\#155](https://github.com/prooph/pdo-event-store/issues/155)
+
+**Merged pull requests:**
+
+- Change MariaDB tables to utf8mb4 [\#158](https://github.com/prooph/pdo-event-store/pull/158) ([darrylhein](https://github.com/darrylhein))
+- Change MySQL tables to utf8mb4 [\#156](https://github.com/prooph/pdo-event-store/pull/156) ([darrylhein](https://github.com/darrylhein))
+
+## [v1.8.4](https://github.com/prooph/pdo-event-store/tree/v1.8.4) (2018-05-06)
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.8.3...v1.8.4)
 
 **Fixed bugs:**
