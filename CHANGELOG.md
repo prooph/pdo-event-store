@@ -1,7 +1,20 @@
 # Change Log
 
-## [v1.9.0-BETA-1](https://github.com/prooph/pdo-event-store/tree/v1.9.0-BETA-1)
+## [v1.9.0-BETA-2](https://github.com/prooph/pdo-event-store/tree/v1.9.0-BETA-2)
 
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.9.0-BETA-1...v1.9.0-BETA-2)
+
+**Implemented enhancements:**
+
+- Add message to ConcurrencyException [\#163](https://github.com/prooph/pdo-event-store/pull/163) ([enumag](https://github.com/enumag))
+- Check if projection exists before creating it [\#162](https://github.com/prooph/pdo-event-store/pull/162) ([enumag](https://github.com/enumag))
+
+**Closed issues:**
+
+- Confusing ConcurrencyException [\#161](https://github.com/prooph/pdo-event-store/issues/161)
+- Ignored error in PdoEventStoreReadModelProjector [\#160](https://github.com/prooph/pdo-event-store/issues/160)
+
+## [v1.9.0-BETA-1](https://github.com/prooph/pdo-event-store/tree/v1.9.0-BETA-1) (2018-06-04)
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.8.4...v1.9.0-BETA-1)
 
 **Implemented enhancements:**
