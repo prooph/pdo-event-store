@@ -17,12 +17,12 @@ use Iterator;
 use PDO;
 use PDOException;
 use Prooph\Common\Messaging\MessageFactory;
-use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Exception\StreamExistsAlready;
 use Prooph\EventStore\Exception\StreamNotFound;
 use Prooph\EventStore\Metadata\FieldType;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;
+use Prooph\EventStore\Pdo\Exception\ConcurrencyExceptionFactory;
 use Prooph\EventStore\Pdo\Exception\ExtensionNotLoaded;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Stream;
@@ -249,7 +249,7 @@ EOT;
                 $this->connection->rollBack();
             }
 
-            throw new ConcurrencyException();
+            throw ConcurrencyExceptionFactory::fromStatementErrorInfo($statement->errorInfo());
         }
 
         if ($statement->errorCode() !== '00000') {

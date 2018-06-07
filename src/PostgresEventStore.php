@@ -17,7 +17,6 @@ use Iterator;
 use PDO;
 use PDOException;
 use Prooph\Common\Messaging\MessageFactory;
-use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Exception\StreamExistsAlready;
 use Prooph\EventStore\Exception\StreamNotFound;
 use Prooph\EventStore\Exception\TransactionAlreadyStarted;
@@ -25,6 +24,7 @@ use Prooph\EventStore\Exception\TransactionNotStarted;
 use Prooph\EventStore\Metadata\FieldType;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;
+use Prooph\EventStore\Pdo\Exception\ConcurrencyExceptionFactory;
 use Prooph\EventStore\Pdo\Exception\ExtensionNotLoaded;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\Util\PostgresHelper;
@@ -218,7 +218,7 @@ EOT;
         }
 
         if (in_array($statement->errorCode(), ['23000', '23505'], true)) {
-            throw new ConcurrencyException();
+            throw ConcurrencyExceptionFactory::fromStatementErrorInfo($statement->errorInfo());
         }
 
         if ($statement->errorCode() !== '00000') {
