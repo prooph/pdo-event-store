@@ -22,6 +22,7 @@ use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Exception;
+use Prooph\EventStore\Pdo\Exception\ProjectionNotCreatedException;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\PdoEventStore;
 use Prooph\EventStore\Pdo\Util\PostgresHelper;
@@ -716,7 +717,7 @@ EOT;
         }
 
         if ($statement->errorCode() !== '00000') {
-            throw RuntimeException::fromStatementErrorInfo($statement->errorInfo());
+            throw ProjectionNotCreatedException::with($this->name);
         }
     }
 
