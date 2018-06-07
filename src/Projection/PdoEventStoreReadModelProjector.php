@@ -22,6 +22,7 @@ use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Exception;
+use Prooph\EventStore\Pdo\Exception\ProjectionNotCreatedException;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\PdoEventStore;
 use Prooph\EventStore\Pdo\Util\PostgresHelper;
@@ -445,7 +446,10 @@ EOT;
                 break;
         }
 
-        $this->createProjection();
+        if (! $this->projectionExists()) {
+            $this->createProjection();
+        }
+
         $this->acquireLock();
 
         if (! $this->readModel->isInitialized()) {
@@ -677,6 +681,26 @@ EOT;
         }
     }
 
+    private function projectionExists(): bool
+    {
+        $projectionsTable = $this->quoteTableName($this->projectionsTable);
+        $sql = <<<EOT
+SELECT 1 FROM $projectionsTable WHERE name = ?;
+EOT;
+        $statement = $this->connection->prepare($sql);
+        try {
+            $statement->execute([$this->name]);
+        } catch (PDOException $exception) {
+            // ignore and check error code
+        }
+
+        if ($statement->errorCode() !== '00000') {
+            throw RuntimeException::fromStatementErrorInfo($statement->errorInfo());
+        }
+
+        return (bool) $statement->fetch(PDO::FETCH_NUM);
+    }
+
     private function createProjection(): void
     {
         $projectionsTable = $this->quoteTableName($this->projectionsTable);
@@ -689,7 +713,11 @@ EOT;
         try {
             $statement->execute([$this->name, $this->status->getValue()]);
         } catch (PDOException $exception) {
-            // we ignore any occurring error here (duplicate projection)
+            // ignore and check error code
+        }
+
+        if ($statement->errorCode() !== '00000') {
+            throw ProjectionNotCreatedException::with($this->name);
         }
     }
 

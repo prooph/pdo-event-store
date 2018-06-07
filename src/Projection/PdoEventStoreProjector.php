@@ -41,11 +41,6 @@ final class PdoEventStoreProjector implements Projector
         extractSchema as pgExtractSchema;
     }
 
-    private const UNIQUE_VIOLATION_ERROR_CODES = [
-        'pgsql' => '23505',
-        'mysql' => '23000',
-    ];
-
     /**
      * @var EventStore
      */
@@ -492,7 +487,10 @@ EOT;
                 break;
         }
 
-        $this->createProjection();
+        if (! $this->projectionExists()) {
+            $this->createProjection();
+        }
+
         $this->acquireLock();
 
         $this->prepareStreamPositions();
@@ -726,6 +724,26 @@ EOT;
         }
     }
 
+    private function projectionExists(): bool
+    {
+        $projectionsTable = $this->quoteTableName($this->projectionsTable);
+        $sql = <<<EOT
+SELECT 1 FROM $projectionsTable WHERE name = ?;
+EOT;
+        $statement = $this->connection->prepare($sql);
+        try {
+            $statement->execute([$this->name]);
+        } catch (PDOException $exception) {
+            // ignore and check error code
+        }
+
+        if ($statement->errorCode() !== '00000') {
+            throw RuntimeException::fromStatementErrorInfo($statement->errorInfo());
+        }
+
+        return (bool) $statement->fetch(PDO::FETCH_NUM);
+    }
+
     private function createProjection(): void
     {
         $projectionsTable = $this->quoteTableName($this->projectionsTable);
@@ -740,12 +758,9 @@ EOT;
         } catch (PDOException $exception) {
             // ignore and check error code
         }
+
         if ($statement->errorCode() !== '00000') {
-            // we ignore duplicate projection errors
-            $driver = $this->connection->getAttribute(PDO::ATTR_DRIVER_NAME);
-            if (! isset(self::UNIQUE_VIOLATION_ERROR_CODES[$driver]) || self::UNIQUE_VIOLATION_ERROR_CODES[$driver] !== $statement->errorCode()) {
-                throw ProjectionNotCreatedException::with($this->name);
-            }
+            throw ProjectionNotCreatedException::with($this->name);
         }
     }
 
