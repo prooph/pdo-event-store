@@ -1,5 +1,11 @@
 # Change Log
 
+## [v1.9.0](https://github.com/prooph/pdo-event-store/tree/v1.9.0)
+
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.9.0-BETA-1...v1.9.0)
+
+Same as v1.9.0-BETA2
+
 ## [v1.9.0-BETA-2](https://github.com/prooph/pdo-event-store/tree/v1.9.0-BETA-2)
 
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.9.0-BETA-1...v1.9.0-BETA-2)
