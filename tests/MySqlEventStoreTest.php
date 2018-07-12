@@ -105,6 +105,27 @@ class MySqlEventStoreTest extends AbstractPdoEventStoreTest
     /**
      * @test
      */
+    public function it_loads_correctly_using_single_stream(): void
+    {
+        $batchMaxSize = 2;
+        $this->setupEventStoreWith(new MySqlSingleStreamStrategy(new NoOpMessageConverter()), $batchMaxSize);
+
+        $streamName = new StreamName('Prooph\Model\User');
+
+        $stream = new Stream($streamName, new ArrayIterator($this->getMultipleTestEvents()));
+
+        $this->eventStore->create($stream);
+
+        $metadataMatcher = new MetadataMatcher();
+        $iterator = $this->eventStore->load($streamName, 1, 5, $metadataMatcher);
+        foreach ($iterator as $_) {
+            $this->assertLessThanOrEqual($batchMaxSize, $iterator->count());
+        }
+    }
+
+    /**
+     * @test
+     */
     public function it_fails_to_write_with_duplicate_version_and_mulitple_streams_per_aggregate_strategy(): void
     {
         $this->expectException(ConcurrencyException::class);
