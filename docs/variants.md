@@ -85,7 +85,7 @@ You can also store all stream of all aggregate types into a single stream, for e
 
 This stream strategy is slightly less performant then the aggregate stream strategy.
 
-You need to setup the database table yourself when using this strategy. An example script to do that can be [found here](https://github.com/prooph/proophessor-do/blob/master/scripts/create_event_stream.php).
+You need to setup the database table yourself when using this strategy. An example script to do that can be [found here](https://github.com/prooph/proophessor-do/blob/master/scripts/create_event_streams.php).
 
 ### SimpleStreamStrategy
 
@@ -95,7 +95,7 @@ at all, so having two events of the same aggregate with the same version will no
 This is very useful for projections, where you copy events from one stream to another (the resulting stream may need to use
 the simple stream strategy) or when you want to use the event-store outside the scope of event-sourcing.
 
-You need to setup the database table yourself when using this strategy. An example script to do that can be [found here](https://github.com/prooph/proophessor-do/blob/master/scripts/create_event_stream.php).
+You need to setup the database table yourself when using this strategy. An example script to do that can be [found here](https://github.com/prooph/proophessor-do/blob/master/scripts/create_event_streams.php).
 
 ### Using custom stream strategies
 
