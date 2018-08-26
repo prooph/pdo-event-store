@@ -612,6 +612,12 @@ EOT;
             if ($this->eventCounter === $this->persistBlockSize) {
                 $this->persist();
                 $this->eventCounter = 0;
+
+                $this->status = $this->fetchRemoteStatus();
+
+                if (! $this->status->is(ProjectionStatus::RUNNING()) && ! $this->status->is(ProjectionStatus::IDLE())) {
+                    $this->isStopped = true;
+                }
             }
 
             if ($this->isStopped) {
@@ -647,6 +653,12 @@ EOT;
             if ($this->eventCounter === $this->persistBlockSize) {
                 $this->persist();
                 $this->eventCounter = 0;
+
+                $this->status = $this->fetchRemoteStatus();
+
+                if (! $this->status->is(ProjectionStatus::RUNNING()) && ! $this->status->is(ProjectionStatus::IDLE())) {
+                    $this->isStopped = true;
+                }
             }
 
             if ($this->isStopped) {
