@@ -16,6 +16,6 @@ class ProjectionNotCreatedException extends RuntimeException
 {
     public static function with(string $projectionName): ProjectionNotCreatedException
     {
-        return new self(sprintf('Projection "%s" was not created', $projectionName));
+        return new self(\sprintf('Projection "%s" was not created', $projectionName));
     }
 }

@@ -69,7 +69,7 @@ abstract class PdoEventStoreReadModelProjectorCustomSchemaTest extends AbstractE
         ], 1);
         for ($i = 2; $i < 50; $i++) {
             $events[] = UsernameChanged::with([
-                'name' => uniqid('name_'),
+                'name' => \uniqid('name_'),
             ], $i);
         }
         $events[] = UsernameChanged::with([
@@ -111,7 +111,7 @@ abstract class PdoEventStoreReadModelProjectorCustomSchemaTest extends AbstractE
         $events = [];
         for ($i = 51; $i < 100; $i++) {
             $events[] = UsernameChanged::with([
-                'name' => uniqid('name_'),
+                'name' => \uniqid('name_'),
             ], $i);
         }
         $events[] = UsernameChanged::with([

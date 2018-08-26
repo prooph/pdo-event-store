@@ -70,7 +70,7 @@ $projection = $projectionManager->createReadModelProjection(
         PdoEventStoreReadModelProjector::OPTION_UPDATE_LOCK_THRESHOLD => 2000,
     ]
 );
-pcntl_signal(SIGQUIT, function () use ($projection) {
+\pcntl_signal(SIGQUIT, function () use ($projection) {
     $projection->stop();
     exit(SIGUSR1);
 });

@@ -33,8 +33,8 @@ abstract class AbstractPostgresPersistenceStrategyTest extends TestCase
      */
     public function it_generates_table_name_without_schema_from_stream_name_without_dot(): void
     {
-        $this->assertEquals('_' . sha1('foo'), $this->strategy->generateTableName(new StreamName('foo')));
-        $this->assertEquals('_' . sha1('Prooph\User'), $this->strategy->generateTableName(new StreamName('Prooph\User')));
+        $this->assertEquals('_' . \sha1('foo'), $this->strategy->generateTableName(new StreamName('foo')));
+        $this->assertEquals('_' . \sha1('Prooph\User'), $this->strategy->generateTableName(new StreamName('Prooph\User')));
     }
 
     /**
@@ -42,7 +42,7 @@ abstract class AbstractPostgresPersistenceStrategyTest extends TestCase
      */
     public function it_generates_table_name_with_custom_schema_from_stream_name_with_dot(): void
     {
-        $this->assertEquals('foo._' . sha1('foo.bar'), $this->strategy->generateTableName(new StreamName('foo.bar')));
-        $this->assertEquals('prooph._' . sha1('prooph.Prooph\User'), $this->strategy->generateTableName(new StreamName('prooph.Prooph\User')));
+        $this->assertEquals('foo._' . \sha1('foo.bar'), $this->strategy->generateTableName(new StreamName('foo.bar')));
+        $this->assertEquals('prooph._' . \sha1('prooph.Prooph\User'), $this->strategy->generateTableName(new StreamName('prooph.Prooph\User')));
     }
 }

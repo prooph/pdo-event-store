@@ -19,7 +19,7 @@ class RuntimeException extends EventStoreRuntimeException implements PdoEventSto
     public static function fromStatementErrorInfo(array $errorInfo): RuntimeException
     {
         return new self(
-            sprintf(
+            \sprintf(
                 "Error %s. \nError-Info: %s",
                 $errorInfo[0],
                 $errorInfo[2]

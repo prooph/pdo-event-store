@@ -124,7 +124,7 @@ final class PdoEventStoreQuery implements Query
 
         $result = $callback();
 
-        if (is_array($result)) {
+        if (\is_array($result)) {
             $this->state = $result;
         }
 
@@ -199,7 +199,7 @@ final class PdoEventStoreQuery implements Query
         }
 
         foreach ($handlers as $eventName => $handler) {
-            if (! is_string($eventName)) {
+            if (! \is_string($eventName)) {
                 throw new Exception\InvalidArgumentException('Invalid event name given, string expected');
             }
 
@@ -230,10 +230,10 @@ final class PdoEventStoreQuery implements Query
 
         $callback = $this->initCallback;
 
-        if (is_callable($callback)) {
+        if (\is_callable($callback)) {
             $result = $callback();
 
-            if (is_array($result)) {
+            if (\is_array($result)) {
                 $this->state = $result;
 
                 return;
@@ -284,7 +284,7 @@ final class PdoEventStoreQuery implements Query
                 break;
             }
             if ($this->triggerPcntlSignalDispatch) {
-                pcntl_signal_dispatch();
+                \pcntl_signal_dispatch();
             }
         }
     }
@@ -296,14 +296,14 @@ final class PdoEventStoreQuery implements Query
 
         foreach ($events as $key => $event) {
             if ($this->triggerPcntlSignalDispatch) {
-                pcntl_signal_dispatch();
+                \pcntl_signal_dispatch();
             }
             /* @var Message $event */
             $this->streamPositions[$streamName] = $key;
 
             $result = $handler($this->state, $event);
 
-            if (is_array($result)) {
+            if (\is_array($result)) {
                 $this->state = $result;
             }
 
@@ -319,7 +319,7 @@ final class PdoEventStoreQuery implements Query
 
         foreach ($events as $key => $event) {
             if ($this->triggerPcntlSignalDispatch) {
-                pcntl_signal_dispatch();
+                \pcntl_signal_dispatch();
             }
             /* @var Message $event */
             $this->streamPositions[$streamName] = $key;
@@ -331,7 +331,7 @@ final class PdoEventStoreQuery implements Query
             $handler = $this->handlers[$event->messageName()];
             $result = $handler($this->state, $event);
 
-            if (is_array($result)) {
+            if (\is_array($result)) {
                 $this->state = $result;
             }
 
@@ -396,13 +396,13 @@ EOT;
                 $streamPositions[$row->real_stream_name] = 0;
             }
 
-            $this->streamPositions = array_merge($streamPositions, $this->streamPositions);
+            $this->streamPositions = \array_merge($streamPositions, $this->streamPositions);
 
             return;
         }
 
         if (isset($this->query['categories'])) {
-            $rowPlaces = implode(', ', array_fill(0, count($this->query['categories']), '?'));
+            $rowPlaces = \implode(', ', \array_fill(0, \count($this->query['categories']), '?'));
 
             $eventStreamsTable = $this->quoteTableName($this->eventStreamsTable);
             $sql = <<<EOT
@@ -424,7 +424,7 @@ EOT;
                 $streamPositions[$row->real_stream_name] = 0;
             }
 
-            $this->streamPositions = array_merge($streamPositions, $this->streamPositions);
+            $this->streamPositions = \array_merge($streamPositions, $this->streamPositions);
 
             return;
         }
@@ -434,7 +434,7 @@ EOT;
             $streamPositions[$streamName] = 0;
         }
 
-        $this->streamPositions = array_merge($streamPositions, $this->streamPositions);
+        $this->streamPositions = \array_merge($streamPositions, $this->streamPositions);
     }
 
     private function quoteTableName(string $tableName): string

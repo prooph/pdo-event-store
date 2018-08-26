@@ -23,14 +23,14 @@ trait PostgresHelper
      */
     private function quoteIdent(string $ident): string
     {
-        $pos = strpos($ident, '.');
+        $pos = \strpos($ident, '.');
 
         if (false === $pos) {
             return '"' . $ident . '"';
         }
 
-        $schema = substr($ident, 0, $pos);
-        $table = substr($ident, $pos + 1);
+        $schema = \substr($ident, 0, $pos);
+        $table = \substr($ident, $pos + 1);
 
         return '"' . $schema . '"."' . $table . '"';
     }
@@ -42,10 +42,10 @@ trait PostgresHelper
      */
     private function extractSchema(string $ident): ?string
     {
-        if (false === ($pos = strpos($ident, '.'))) {
+        if (false === ($pos = \strpos($ident, '.'))) {
             return null;
         }
 
-        return substr($ident, 0, $pos);
+        return \substr($ident, 0, $pos);
     }
 }

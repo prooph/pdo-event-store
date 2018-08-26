@@ -105,7 +105,7 @@ final class PdoStreamIterator implements Iterator
 
         $createdAt = $this->currentItem->created_at;
 
-        if (strlen($createdAt) === 19) {
+        if (\strlen($createdAt) === 19) {
             $createdAt = $createdAt . '.000';
         }
 
@@ -115,17 +115,17 @@ final class PdoStreamIterator implements Iterator
             new DateTimeZone('UTC')
         );
 
-        $metadata = json_decode($this->currentItem->metadata, true);
+        $metadata = \json_decode($this->currentItem->metadata, true);
 
-        if (! array_key_exists('_position', $metadata)) {
+        if (! \array_key_exists('_position', $metadata)) {
             $metadata['_position'] = $this->currentItem->no;
         }
 
-        $payload = json_decode($this->currentItem->payload, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
+        $payload = \json_decode($this->currentItem->payload, true);
+        if (\json_last_error() !== JSON_ERROR_NONE) {
             throw JsonException::whileDecode(
-                json_last_error_msg(),
-                json_last_error(),
+                \json_last_error_msg(),
+                \json_last_error(),
                 $this->currentItem->payload
             );
         }

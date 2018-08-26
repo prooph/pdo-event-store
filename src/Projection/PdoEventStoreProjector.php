@@ -174,7 +174,7 @@ final class PdoEventStoreProjector implements Projector
         bool $triggerPcntlSignalDispatch = false,
         int $updateLockThreshold = 0
     ) {
-        if ($triggerPcntlSignalDispatch && ! extension_loaded('pcntl')) {
+        if ($triggerPcntlSignalDispatch && ! \extension_loaded('pcntl')) {
             throw Exception\ExtensionNotLoadedException::withName('pcntl');
         }
 
@@ -211,7 +211,7 @@ final class PdoEventStoreProjector implements Projector
 
         $result = $callback();
 
-        if (is_array($result)) {
+        if (\is_array($result)) {
             $this->state = $result;
         }
 
@@ -286,7 +286,7 @@ final class PdoEventStoreProjector implements Projector
         }
 
         foreach ($handlers as $eventName => $handler) {
-            if (! is_string($eventName)) {
+            if (! \is_string($eventName)) {
                 throw new Exception\InvalidArgumentException('Invalid event name given, string expected');
             }
 
@@ -347,10 +347,10 @@ final class PdoEventStoreProjector implements Projector
 
         $this->state = [];
 
-        if (is_callable($callback)) {
+        if (\is_callable($callback)) {
             $result = $callback();
 
-            if (is_array($result)) {
+            if (\is_array($result)) {
                 $this->state = $result;
             }
         }
@@ -364,8 +364,8 @@ EOT;
         $statement = $this->connection->prepare($sql);
         try {
             $statement->execute([
-                json_encode($this->streamPositions),
-                json_encode($this->state),
+                \json_encode($this->streamPositions),
+                \json_encode($this->state),
                 $this->status->getValue(),
                 $this->name,
             ]);
@@ -448,10 +448,10 @@ EOT;
 
         $this->state = [];
 
-        if (is_callable($callback)) {
+        if (\is_callable($callback)) {
             $result = $callback();
 
-            if (is_array($result)) {
+            if (\is_array($result)) {
                 $this->state = $result;
             }
         }
@@ -522,7 +522,7 @@ EOT;
                 }
 
                 if (0 === $this->eventCounter) {
-                    usleep($this->sleep);
+                    \usleep($this->sleep);
                     $this->updateLock();
                 } else {
                     $this->persist();
@@ -531,7 +531,7 @@ EOT;
                 $this->eventCounter = 0;
 
                 if ($this->triggerPcntlSignalDispatch) {
-                    pcntl_signal_dispatch();
+                    \pcntl_signal_dispatch();
                 }
 
                 switch ($this->fetchRemoteStatus()) {
@@ -597,7 +597,7 @@ EOT;
 
         foreach ($events as $key => $event) {
             if ($this->triggerPcntlSignalDispatch) {
-                pcntl_signal_dispatch();
+                \pcntl_signal_dispatch();
             }
             /* @var Message $event */
             $this->streamPositions[$streamName] = $key;
@@ -605,7 +605,7 @@ EOT;
 
             $result = $handler($this->state, $event);
 
-            if (is_array($result)) {
+            if (\is_array($result)) {
                 $this->state = $result;
             }
 
@@ -626,7 +626,7 @@ EOT;
 
         foreach ($events as $key => $event) {
             if ($this->triggerPcntlSignalDispatch) {
-                pcntl_signal_dispatch();
+                \pcntl_signal_dispatch();
             }
             /* @var Message $event */
             $this->streamPositions[$streamName] = $key;
@@ -640,7 +640,7 @@ EOT;
             $handler = $this->handlers[$event->messageName()];
             $result = $handler($this->state, $event);
 
-            if (is_array($result)) {
+            if (\is_array($result)) {
                 $this->state = $result;
             }
 
@@ -716,8 +716,8 @@ EOT;
 
         $result = $statement->fetch(PDO::FETCH_OBJ);
 
-        $this->streamPositions = array_merge($this->streamPositions, json_decode($result->position, true));
-        $state = json_decode($result->state, true);
+        $this->streamPositions = \array_merge($this->streamPositions, \json_decode($result->position, true));
+        $state = \json_decode($result->state, true);
 
         if (! empty($state)) {
             $this->state = $state;
@@ -823,7 +823,7 @@ EOT;
             $statement->execute(
                 [
                     $lockUntilString,
-                    json_encode($this->streamPositions),
+                    \json_encode($this->streamPositions),
                     $this->name,
                 ]
             );
@@ -883,8 +883,8 @@ EOT;
         $statement = $this->connection->prepare($sql);
         try {
             $statement->execute([
-                json_encode($this->streamPositions),
-                json_encode($this->state),
+                \json_encode($this->streamPositions),
+                \json_encode($this->state),
                 $lockUntilString,
                 $this->name,
             ]);
@@ -921,13 +921,13 @@ EOT;
                 $streamPositions[$row->real_stream_name] = 0;
             }
 
-            $this->streamPositions = array_merge($streamPositions, $this->streamPositions);
+            $this->streamPositions = \array_merge($streamPositions, $this->streamPositions);
 
             return;
         }
 
         if (isset($this->query['categories'])) {
-            $rowPlaces = implode(', ', array_fill(0, count($this->query['categories']), '?'));
+            $rowPlaces = \implode(', ', \array_fill(0, \count($this->query['categories']), '?'));
 
             $eventStreamsTable = $this->quoteTableName($this->eventStreamsTable);
             $sql = <<<EOT
@@ -949,7 +949,7 @@ EOT;
                 $streamPositions[$row->real_stream_name] = 0;
             }
 
-            $this->streamPositions = array_merge($streamPositions, $this->streamPositions);
+            $this->streamPositions = \array_merge($streamPositions, $this->streamPositions);
 
             return;
         }
@@ -959,20 +959,20 @@ EOT;
             $streamPositions[$streamName] = 0;
         }
 
-        $this->streamPositions = array_merge($streamPositions, $this->streamPositions);
+        $this->streamPositions = \array_merge($streamPositions, $this->streamPositions);
     }
 
     private function createLockUntilString(DateTimeImmutable $from): string
     {
         $micros = (string) ((int) $from->format('u') + ($this->lockTimeoutMs * 1000));
 
-        $secs = substr($micros, 0, -6);
+        $secs = \substr($micros, 0, -6);
 
         if ('' === $secs) {
             $secs = 0;
         }
 
-        $resultMicros = substr($micros, -6);
+        $resultMicros = \substr($micros, -6);
 
         return $from->modify('+' . $secs .' seconds')->format('Y-m-d\TH:i:s') . '.' . $resultMicros;
     }
@@ -983,7 +983,7 @@ EOT;
             return true;
         }
 
-        $intervalSeconds = floor($this->updateLockThreshold / 1000);
+        $intervalSeconds = \floor($this->updateLockThreshold / 1000);
 
         //Create an interval based on seconds
         $updateLockThreshold = new \DateInterval("PT{$intervalSeconds}S");

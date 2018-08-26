@@ -318,7 +318,7 @@ SQL;
             );
         }
 
-        if (empty($filter) || false === @preg_match("/$filter/", '')) {
+        if (empty($filter) || false === @\preg_match("/$filter/", '')) {
             throw new Exception\InvalidArgumentException('Invalid regex pattern given');
         }
 
@@ -418,7 +418,7 @@ SQL;
             throw ProjectionNotFound::withName($name);
         }
 
-        return json_decode($result->position, true);
+        return \json_decode($result->position, true);
     }
 
     public function fetchProjectionState(string $name): array
@@ -447,6 +447,6 @@ SQL;
             throw ProjectionNotFound::withName($name);
         }
 
-        return json_decode($result->state, true);
+        return \json_decode($result->state, true);
     }
 }
