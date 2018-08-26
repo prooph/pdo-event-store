@@ -40,7 +40,7 @@ class PdoConnectionFactoryTest extends TestCase
         $this->config = [
             'prooph' => [
                 'pdo_connection' => [
-                    'default' => array_merge(TestUtil::getConnectionParams(), ['schema' => $vendor]),
+                    'default' => \array_merge(TestUtil::getConnectionParams(), ['schema' => $vendor]),
                 ],
             ],
         ];

@@ -44,7 +44,7 @@ abstract class TestUtil
             $dsn .= 'port=' . $connectionParams['port'] . $separator;
             $dsn .= 'dbname=' . $connectionParams['dbname'] . $separator;
             $dsn .= self::getCharsetValue($connectionParams['charset'], $connectionParams['driver']) . $separator;
-            $dsn = rtrim($dsn);
+            $dsn = \rtrim($dsn);
 
             $retries = 10; // keep trying for 10 seconds, should be enough
             while (null === self::$connection && $retries > 0) {
@@ -56,7 +56,7 @@ abstract class TestUtil
                     }
 
                     $retries--;
-                    sleep(1);
+                    \sleep(1);
                 }
             }
         }
@@ -81,7 +81,7 @@ abstract class TestUtil
             throw new \RuntimeException('No connection params given');
         }
 
-        return getenv('DB_NAME');
+        return \getenv('DB_NAME');
     }
 
     public static function getDatabaseDriver(): string
@@ -90,7 +90,7 @@ abstract class TestUtil
             throw new \RuntimeException('No connection params given');
         }
 
-        return getenv('DB_DRIVER');
+        return \getenv('DB_DRIVER');
     }
 
     public static function getDatabaseVendor(): string
@@ -99,7 +99,7 @@ abstract class TestUtil
             throw new \RuntimeException('No connection params given');
         }
 
-        return explode('_', getenv('DB'))[0];
+        return \explode('_', \getenv('DB'))[0];
     }
 
     public static function getConnectionParams(): array
@@ -115,24 +115,24 @@ abstract class TestUtil
     {
         $vendor = self::getDatabaseVendor();
 
-        $connection->exec(file_get_contents(__DIR__ . '/../scripts/' . $vendor . '/01_event_streams_table.sql'));
-        $connection->exec(file_get_contents(__DIR__ . '/../scripts/' . $vendor . '/02_projections_table.sql'));
+        $connection->exec(\file_get_contents(__DIR__ . '/../scripts/' . $vendor . '/01_event_streams_table.sql'));
+        $connection->exec(\file_get_contents(__DIR__ . '/../scripts/' . $vendor . '/02_projections_table.sql'));
     }
 
     public static function initCustomDatabaseTables(PDO $connection): void
     {
         $vendor = self::getDatabaseVendor();
 
-        $connection->exec(file_get_contents(__DIR__ . '/Assets/scripts/' . $vendor . '/01_event_streams_table.sql'));
-        $connection->exec(file_get_contents(__DIR__ . '/Assets/scripts/' . $vendor . '/02_projections_table.sql'));
+        $connection->exec(\file_get_contents(__DIR__ . '/Assets/scripts/' . $vendor . '/01_event_streams_table.sql'));
+        $connection->exec(\file_get_contents(__DIR__ . '/Assets/scripts/' . $vendor . '/02_projections_table.sql'));
     }
 
     public static function initCustomSchemaDatabaseTables(PDO $connection): void
     {
         $vendor = self::getDatabaseVendor();
 
-        $connection->exec(file_get_contents(__DIR__ . '/Assets/scripts/' . $vendor . '/01_custom_event_streams_table.sql'));
-        $connection->exec(file_get_contents(__DIR__ . '/Assets/scripts/' . $vendor . '/02_custom_projections_table.sql'));
+        $connection->exec(\file_get_contents(__DIR__ . '/Assets/scripts/' . $vendor . '/01_custom_event_streams_table.sql'));
+        $connection->exec(\file_get_contents(__DIR__ . '/Assets/scripts/' . $vendor . '/02_custom_projections_table.sql'));
     }
 
     public static function tearDownDatabase(): void
@@ -155,10 +155,10 @@ abstract class TestUtil
         foreach ($tables as $table) {
             switch ($vendor) {
                 case 'postgres':
-                    $connection->exec(sprintf('DROP TABLE "%s";', $table));
+                    $connection->exec(\sprintf('DROP TABLE "%s";', $table));
                     break;
                 default:
-                    $connection->exec(sprintf('DROP TABLE `%s`;', $table));
+                    $connection->exec(\sprintf('DROP TABLE `%s`;', $table));
                     break;
             }
         }
@@ -201,7 +201,7 @@ abstract class TestUtil
 
     private static function hasRequiredConnectionParams(): bool
     {
-        $env = getenv();
+        $env = \getenv();
 
         return isset(
             $env['DB'],
@@ -217,14 +217,14 @@ abstract class TestUtil
     private static function getSpecifiedConnectionParams(): array
     {
         return [
-            'driver' => getenv('DB_DRIVER'),
-            'user' => getenv('DB_USERNAME'),
-            'password' => false !== getenv('DB_PASSWORD') ? getenv('DB_PASSWORD') : '',
-            'host' => getenv('DB_HOST'),
-            'dbname' => getenv('DB_NAME'),
-            'port' => getenv('DB_PORT'),
-            'charset' => getenv('DB_CHARSET'),
-            'options' => [PDO::ATTR_ERRMODE => (int) getenv('DB_ATTR_ERRMODE')],
+            'driver' => \getenv('DB_DRIVER'),
+            'user' => \getenv('DB_USERNAME'),
+            'password' => false !== \getenv('DB_PASSWORD') ? \getenv('DB_PASSWORD') : '',
+            'host' => \getenv('DB_HOST'),
+            'dbname' => \getenv('DB_NAME'),
+            'port' => \getenv('DB_PORT'),
+            'charset' => \getenv('DB_CHARSET'),
+            'options' => [PDO::ATTR_ERRMODE => (int) \getenv('DB_ATTR_ERRMODE')],
         ];
     }
 

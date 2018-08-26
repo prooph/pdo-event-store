@@ -563,14 +563,14 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
         $result = $statement->fetch(\PDO::FETCH_ASSOC);
 
         // mariadb does not add spaces to json, while mysql and postgres do, so strip them
-        $this->assertSame('{"some":["metadata","as","well"]}', str_replace(' ', '', $result['metadata']));
+        $this->assertSame('{"some":["metadata","as","well"]}', \str_replace(' ', '', $result['metadata']));
 
         switch (TestUtil::getDatabaseVendor()) {
             case 'postgres':
-                $statement = $this->connection->prepare(sprintf('SELECT * FROM %s', $this->quoteTableName($this->persistenceStrategy->generateTableName($streamName))));
+                $statement = $this->connection->prepare(\sprintf('SELECT * FROM %s', $this->quoteTableName($this->persistenceStrategy->generateTableName($streamName))));
                 break;
             default:
-                $statement = $this->connection->prepare(sprintf('SELECT * FROM %s', $this->quoteTableName($this->persistenceStrategy->generateTableName($streamName))));
+                $statement = $this->connection->prepare(\sprintf('SELECT * FROM %s', $this->quoteTableName($this->persistenceStrategy->generateTableName($streamName))));
         }
 
         $statement->execute();
@@ -578,7 +578,7 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
         $result = $statement->fetch(\PDO::FETCH_ASSOC);
 
         // mariadb does not add spaces to json, while mysql and postgres do, so strip them
-        $this->assertSame('{"name":["John","Jane"]}', str_replace(' ', '', $result['payload']));
+        $this->assertSame('{"name":["John","Jane"]}', \str_replace(' ', '', $result['payload']));
     }
 
     /**
@@ -595,10 +595,10 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
         $events[] = $event->withAddedMetadata('_aggregate_id', 'two')->withAddedMetadata('_aggregate_type', 'user');
 
         for ($i = 2; $i < 100; $i++) {
-            $event = UsernameChanged::with(['name' => uniqid('name_')], $i);
+            $event = UsernameChanged::with(['name' => \uniqid('name_')], $i);
             $events[] = $event->withAddedMetadata('_aggregate_id', 'two')->withAddedMetadata('_aggregate_type', 'user');
 
-            $event = UsernameChanged::with(['name' => uniqid('name_')], $i);
+            $event = UsernameChanged::with(['name' => \uniqid('name_')], $i);
             $events[] = $event->withAddedMetadata('_aggregate_id', 'one')->withAddedMetadata('_aggregate_type', 'user');
         }
 

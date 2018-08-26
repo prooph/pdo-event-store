@@ -59,7 +59,7 @@ abstract class PdoEventStoreReadModelProjectorTest extends AbstractEventStoreRea
         ], 1);
         for ($i = 2; $i < 50; $i++) {
             $events[] = UsernameChanged::with([
-                'name' => uniqid('name_'),
+                'name' => \uniqid('name_'),
             ], $i);
         }
         $events[] = UsernameChanged::with([
@@ -101,7 +101,7 @@ abstract class PdoEventStoreReadModelProjectorTest extends AbstractEventStoreRea
         $events = [];
         for ($i = 51; $i < 100; $i++) {
             $events[] = UsernameChanged::with([
-                'name' => uniqid('name_'),
+                'name' => \uniqid('name_'),
             ], $i);
         }
         $events[] = UsernameChanged::with([
@@ -190,13 +190,13 @@ abstract class PdoEventStoreReadModelProjectorTest extends AbstractEventStoreRea
      */
     public function it_dispatches_pcntl_signals_when_enabled(): void
     {
-        if (! extension_loaded('pcntl')) {
+        if (! \extension_loaded('pcntl')) {
             $this->markTestSkipped('The PCNTL extension is not available.');
 
             return;
         }
 
-        $command = 'exec php ' . realpath(__DIR__) . '/isolated-read-model-projection.php';
+        $command = 'exec php ' . \realpath(__DIR__) . '/isolated-read-model-projection.php';
         $descriptorSpec = [
             0 => ['pipe', 'r'],
             1 => ['pipe', 'w'],
@@ -206,13 +206,13 @@ abstract class PdoEventStoreReadModelProjectorTest extends AbstractEventStoreRea
          * Created process inherits env variables from this process.
          * Script returns with non-standard code SIGUSR1 from the handler and -1 else
          */
-        $projectionProcess = proc_open($command, $descriptorSpec, $pipes);
-        $processDetails = proc_get_status($projectionProcess);
-        sleep(1);
-        posix_kill($processDetails['pid'], SIGQUIT);
-        sleep(1);
+        $projectionProcess = \proc_open($command, $descriptorSpec, $pipes);
+        $processDetails = \proc_get_status($projectionProcess);
+        \sleep(1);
+        \posix_kill($processDetails['pid'], SIGQUIT);
+        \sleep(1);
 
-        $processDetails = proc_get_status($projectionProcess);
+        $processDetails = \proc_get_status($projectionProcess);
         $this->assertEquals(
             SIGUSR1,
             $processDetails['exitcode']
@@ -224,7 +224,7 @@ abstract class PdoEventStoreReadModelProjectorTest extends AbstractEventStoreRea
      */
     public function it_respects_update_lock_threshold(): void
     {
-        if (! extension_loaded('pcntl')) {
+        if (! \extension_loaded('pcntl')) {
             $this->markTestSkipped('The PCNTL extension is not available.');
 
             return;
@@ -232,7 +232,7 @@ abstract class PdoEventStoreReadModelProjectorTest extends AbstractEventStoreRea
 
         $this->prepareEventStream('user-123');
 
-        $command = 'exec php ' . realpath(__DIR__) . '/isolated-read-model-projection.php';
+        $command = 'exec php ' . \realpath(__DIR__) . '/isolated-read-model-projection.php';
         $descriptorSpec = [
             0 => ['pipe', 'r'],
             1 => ['pipe', 'w'],
@@ -242,34 +242,34 @@ abstract class PdoEventStoreReadModelProjectorTest extends AbstractEventStoreRea
          * Created process inherits env variables from this process.
          * Script returns with non-standard code SIGUSR1 from the handler and -1 else
          */
-        $projectionProcess = proc_open($command, $descriptorSpec, $pipes);
-        $processDetails = proc_get_status($projectionProcess);
+        $projectionProcess = \proc_open($command, $descriptorSpec, $pipes);
+        $processDetails = \proc_get_status($projectionProcess);
 
-        sleep(1);
+        \sleep(1);
 
         $lockedUntil = TestUtil::getProjectionLockedUntilFromDefaultProjectionsTable($this->connection, 'test_projection');
 
         $this->assertNotNull($lockedUntil);
 
         //Update lock threshold is set to 2000 ms
-        usleep(500000);
+        \usleep(500000);
 
         $notUpdatedLockedUntil = TestUtil::getProjectionLockedUntilFromDefaultProjectionsTable($this->connection, 'test_projection');
 
         $this->assertEquals($lockedUntil, $notUpdatedLockedUntil);
 
         //Now we should definitely see an updated lock
-        sleep(2);
+        \sleep(2);
 
         $updatedLockedUntil = TestUtil::getProjectionLockedUntilFromDefaultProjectionsTable($this->connection, 'test_projection');
 
         $this->assertGreaterThan($lockedUntil, $updatedLockedUntil);
 
-        posix_kill($processDetails['pid'], SIGQUIT);
+        \posix_kill($processDetails['pid'], SIGQUIT);
 
-        sleep(1);
+        \sleep(1);
 
-        $processDetails = proc_get_status($projectionProcess);
+        $processDetails = \proc_get_status($projectionProcess);
         $this->assertEquals(
             SIGUSR1,
             $processDetails['exitcode']

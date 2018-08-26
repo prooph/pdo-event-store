@@ -58,8 +58,8 @@ EOT;
         foreach ($streamEvents as $event) {
             $data[] = $event->uuid()->toString();
             $data[] = $event->messageName();
-            $data[] = json_encode($event->payload());
-            $data[] = json_encode($event->metadata());
+            $data[] = \json_encode($event->payload());
+            $data[] = \json_encode($event->metadata());
             $data[] = $event->createdAt()->format('Y-m-d\TH:i:s.u');
         }
 

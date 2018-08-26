@@ -87,8 +87,8 @@ EOT;
             $data[] = $eventData['metadata']['_aggregate_version'];
             $data[] = $eventData['uuid'];
             $data[] = $eventData['message_name'];
-            $data[] = json_encode($eventData['payload']);
-            $data[] = json_encode($eventData['metadata']);
+            $data[] = \json_encode($eventData['payload']);
+            $data[] = \json_encode($eventData['metadata']);
             $data[] = $eventData['created_at']->format('Y-m-d\TH:i:s.u');
         }
 
@@ -98,7 +98,7 @@ EOT;
     public function generateTableName(StreamName $streamName): string
     {
         $streamName = $streamName->toString();
-        $table = '_' . sha1($streamName);
+        $table = '_' . \sha1($streamName);
 
         if ($schema = $this->extractSchema($streamName)) {
             $table = $schema . '.' . $table;

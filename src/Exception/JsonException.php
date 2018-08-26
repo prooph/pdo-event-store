@@ -19,7 +19,7 @@ class JsonException extends EventStoreRuntimeException implements PdoEventStoreE
     public static function whileDecode(string $msg, int $code, string $json): JsonException
     {
         return new self(
-            sprintf(
+            \sprintf(
                 "Error while decoding JSON. \nMessage: %s \nJSON: %s",
                 $msg,
                 $json

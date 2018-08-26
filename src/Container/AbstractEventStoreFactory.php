@@ -58,7 +58,7 @@ abstract class AbstractEventStoreFactory implements
     {
         if (! isset($arguments[0]) || ! $arguments[0] instanceof ContainerInterface) {
             throw new InvalidArgumentException(
-                sprintf('The first argument must be of type %s', ContainerInterface::class)
+                \sprintf('The first argument must be of type %s', ContainerInterface::class)
             );
         }
 
@@ -96,7 +96,7 @@ abstract class AbstractEventStoreFactory implements
             $plugin = $container->get($pluginAlias);
 
             if (! $plugin instanceof Plugin) {
-                throw ConfigurationException::configurationError(sprintf(
+                throw ConfigurationException::configurationError(\sprintf(
                     'Plugin %s does not implement the Plugin interface',
                     $pluginAlias
                 ));
@@ -111,7 +111,7 @@ abstract class AbstractEventStoreFactory implements
             $metadataEnricher = $container->get($metadataEnricherAlias);
 
             if (! $metadataEnricher instanceof MetadataEnricher) {
-                throw ConfigurationException::configurationError(sprintf(
+                throw ConfigurationException::configurationError(\sprintf(
                     'Metadata enricher %s does not implement the MetadataEnricher interface',
                     $metadataEnricherAlias
                 ));
@@ -120,7 +120,7 @@ abstract class AbstractEventStoreFactory implements
             $metadataEnrichers[] = $metadataEnricher;
         }
 
-        if (count($metadataEnrichers) > 0) {
+        if (\count($metadataEnrichers) > 0) {
             $plugin = new MetadataEnricherPlugin(
                 new MetadataEnricherAggregate($metadataEnrichers)
             );

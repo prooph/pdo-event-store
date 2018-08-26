@@ -78,7 +78,7 @@ final class PostgresEventStore implements PdoEventStore, TransactionalEventStore
         string $eventStreamsTable = 'event_streams',
         bool $disableTransactionHandling = false
     ) {
-        if (! extension_loaded('pdo_pgsql')) {
+        if (! \extension_loaded('pdo_pgsql')) {
             throw ExtensionNotLoaded::with('pdo_pgsql');
         }
 
@@ -116,7 +116,7 @@ EOT;
             throw StreamNotFound::with($streamName);
         }
 
-        return json_decode($stream->metadata, true);
+        return \json_decode($stream->metadata, true);
     }
 
     public function updateStreamMetadata(StreamName $streamName, array $newMetadata): void
@@ -131,7 +131,7 @@ EOT;
         try {
             $statement->execute([
                 'streamName' => $streamName->toString(),
-                'metadata' => json_encode($newMetadata),
+                'metadata' => \json_encode($newMetadata),
             ]);
         } catch (PDOException $exception) {
             // ignore and check error code
@@ -195,15 +195,15 @@ EOT;
             return;
         }
 
-        $countEntries = iterator_count($streamEvents);
+        $countEntries = \iterator_count($streamEvents);
         $columnNames = $this->persistenceStrategy->columnNames();
 
         $tableName = $this->persistenceStrategy->generateTableName($streamName);
 
-        $rowPlaces = '(' . implode(', ', array_fill(0, count($columnNames), '?')) . ')';
-        $allPlaces = implode(', ', array_fill(0, $countEntries, $rowPlaces));
+        $rowPlaces = '(' . \implode(', ', \array_fill(0, \count($columnNames), '?')) . ')';
+        $allPlaces = \implode(', ', \array_fill(0, $countEntries, $rowPlaces));
 
-        $sql = 'INSERT INTO ' . $this->quoteIdent($tableName) . ' (' . implode(', ', $columnNames) . ') VALUES ' . $allPlaces;
+        $sql = 'INSERT INTO ' . $this->quoteIdent($tableName) . ' (' . \implode(', ', $columnNames) . ') VALUES ' . $allPlaces;
 
         $statement = $this->connection->prepare($sql);
 
@@ -217,7 +217,7 @@ EOT;
             throw StreamNotFound::with($streamName);
         }
 
-        if (in_array($statement->errorCode(), ['23000', '23505'], true)) {
+        if (\in_array($statement->errorCode(), ['23000', '23505'], true)) {
             throw ConcurrencyExceptionFactory::fromStatementErrorInfo($statement->errorInfo());
         }
 
@@ -244,12 +244,12 @@ EOT;
         [$where, $values] = $this->createWhereClause($metadataMatcher);
         $where[] = 'no >= :fromNumber';
 
-        $whereCondition = 'WHERE ' . implode(' AND ', $where);
+        $whereCondition = 'WHERE ' . \implode(' AND ', $where);
 
         if (null === $count) {
             $limit = $this->loadBatchSize;
         } else {
-            $limit = min($count, $this->loadBatchSize);
+            $limit = \min($count, $this->loadBatchSize);
         }
 
         $query = <<<EOT
@@ -266,7 +266,7 @@ EOT;
         $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
 
         foreach ($values as $parameter => $value) {
-            $statement->bindValue($parameter, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+            $statement->bindValue($parameter, $value, \is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
         }
 
         try {
@@ -309,12 +309,12 @@ EOT;
         [$where, $values] = $this->createWhereClause($metadataMatcher);
         $where[] = 'no <= :fromNumber';
 
-        $whereCondition = 'WHERE ' . implode(' AND ', $where);
+        $whereCondition = 'WHERE ' . \implode(' AND ', $where);
 
         if (null === $count) {
             $limit = $this->loadBatchSize;
         } else {
-            $limit = min($count, $this->loadBatchSize);
+            $limit = \min($count, $this->loadBatchSize);
         }
 
         $tableName = $this->persistenceStrategy->generateTableName($streamName);
@@ -333,7 +333,7 @@ EOT;
         $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
 
         foreach ($values as $parameter => $value) {
-            $statement->bindValue($parameter, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+            $statement->bindValue($parameter, $value, \is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
         }
 
         try {
@@ -453,7 +453,7 @@ EOT;
             $values[':filter'] = $filter;
         }
 
-        $whereCondition = implode(' AND ', $where);
+        $whereCondition = \implode(' AND ', $where);
 
         if (! empty($whereCondition)) {
             $whereCondition = 'WHERE ' . $whereCondition;
@@ -505,7 +505,7 @@ SQL;
         $where[] = 'real_stream_name ~ :filter';
         $values[':filter'] = $filter;
 
-        $whereCondition = 'WHERE ' . implode(' AND ', $where);
+        $whereCondition = 'WHERE ' . \implode(' AND ', $where);
 
         $query = <<<SQL
 SELECT real_stream_name FROM {$this->quoteIdent($this->eventStreamsTable)}
@@ -656,7 +656,7 @@ SQL;
             $value = $match['value'];
             $parameters = [];
 
-            if (is_array($value)) {
+            if (\is_array($value)) {
                 foreach ($value as $k => &$v) {
                     $parameters[] = ':metadata_' . $key . '_' . $k;
                     $v = (string) $v;
@@ -665,7 +665,7 @@ SQL;
                 $parameters = [':metadata_' . $key];
             }
 
-            $parameterString = implode(', ', $parameters);
+            $parameterString = \implode(', ', $parameters);
 
             $operatorStringEnd = '';
 
@@ -682,18 +682,18 @@ SQL;
             }
 
             if ($fieldType->is(FieldType::METADATA())) {
-                if (is_bool($value)) {
-                    $where[] = "metadata->>'$field' $operatorString '" . var_export($value, true) . "' $operatorStringEnd";
+                if (\is_bool($value)) {
+                    $where[] = "metadata->>'$field' $operatorString '" . \var_export($value, true) . "' $operatorStringEnd";
                     continue;
                 }
-                if (is_int($value)) {
+                if (\is_int($value)) {
                     $where[] = "CAST(metadata->>'$field' AS INT) $operatorString $parameterString $operatorStringEnd";
                 } else {
                     $where[] = "metadata->>'$field' $operatorString $parameterString $operatorStringEnd";
                 }
             } else {
-                if (is_bool($value)) {
-                    $where[] = "$field $operatorString '" . var_export($value, true) . "' $operatorStringEnd";
+                if (\is_bool($value)) {
+                    $where[] = "$field $operatorString '" . \var_export($value, true) . "' $operatorStringEnd";
                     continue;
                 }
 
@@ -716,16 +716,16 @@ SQL;
     {
         $realStreamName = $stream->streamName()->toString();
 
-        $pos = strpos($realStreamName, '-');
+        $pos = \strpos($realStreamName, '-');
 
         if (false !== $pos && $pos > 0) {
-            $category = substr($realStreamName, 0, $pos);
+            $category = \substr($realStreamName, 0, $pos);
         } else {
             $category = null;
         }
 
         $streamName = $this->persistenceStrategy->generateTableName($stream->streamName());
-        $metadata = json_encode($stream->metadata());
+        $metadata = \json_encode($stream->metadata());
 
         $sql = <<<EOT
 INSERT INTO {$this->quoteIdent($this->eventStreamsTable)} (real_stream_name, stream_name, metadata, category)
@@ -745,7 +745,7 @@ EOT;
         }
 
         if (! $result) {
-            if (in_array($statement->errorCode(), ['23000', '23505'], true)) {
+            if (\in_array($statement->errorCode(), ['23000', '23505'], true)) {
                 throw StreamExistsAlready::with($stream->streamName());
             }
 
@@ -793,7 +793,7 @@ EOT;
             }
 
             if (! $result) {
-                throw new RuntimeException('Error during createSchemaFor: ' . implode('; ', $statement->errorInfo()));
+                throw new RuntimeException('Error during createSchemaFor: ' . \implode('; ', $statement->errorInfo()));
             }
         }
     }

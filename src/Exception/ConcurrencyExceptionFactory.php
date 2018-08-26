@@ -19,7 +19,7 @@ class ConcurrencyExceptionFactory
     public static function fromStatementErrorInfo(array $errorInfo): ConcurrencyException
     {
         return new ConcurrencyException(
-            sprintf(
+            \sprintf(
                 "Some of the aggregate IDs or event IDs have already been used in the same stream. The PDO error should contain more information:\nError %s.\nError-Info: %s",
                 $errorInfo[0],
                 $errorInfo[2]
