@@ -12,8 +12,6 @@ matrix:
         - DEPENDENCIES=""
         - DRIVER="pdo_mysql"
         - DB=mariadb_10.2
-      addons:
-          mariadb: '10.2.14'
     - php: 7.1
       dist: trusty
       sudo: true
@@ -21,8 +19,6 @@ matrix:
         - DEPENDENCIES="--prefer-lowest --prefer-stable"
         - DRIVER="pdo_mysql"
         - DB=mariadb_10.2
-      addons:
-          mariadb: '10.2.14'
     - php: 7.1
       dist: trusty
       sudo: true
@@ -31,8 +27,6 @@ matrix:
         - DRIVER="pdo_mysql"
         - DB=mariadb_10.2
         - DB_ATTR_ERRMODE=2 # \PDO::ERRMODE_EXCEPTION
-      addons:
-          mariadb: '10.2.14'
     - php: 7.1
       sudo: true
       env:
@@ -133,8 +127,6 @@ matrix:
         - DEPENDENCIES=""
         - DRIVER="pdo_mysql"
         - DB=mariadb_10.2
-      addons:
-          mariadb: '10.2.14'
     - php: 7.2
       dist: trusty
       sudo: true
@@ -142,8 +134,6 @@ matrix:
         - DEPENDENCIES="--prefer-lowest --prefer-stable"
         - DRIVER="pdo_mysql"
         - DB=mariadb_10.2
-      addons:
-          mariadb: '10.2.14'
     - php: 7.2
       dist: trusty
       sudo: true
@@ -152,8 +142,6 @@ matrix:
         - DRIVER="pdo_mysql"
         - DB=mariadb_10.2
         - DB_ATTR_ERRMODE=2 # \PDO::ERRMODE_EXCEPTION
-      addons:
-          mariadb: '10.2.14'
     - php: 7.2
       sudo: true
       env:
@@ -256,6 +244,7 @@ before_script:
   - mkdir -p "$HOME/.php-cs-fixer"
   - phpenv config-rm xdebug.ini
   - VENDOR=$(echo $DB | cut -d'_' -f 1)
+  - if [[ $DB == 'mariadb_10.2' ]]; then bash .travis.install-mariadb-10.2.14.sh; fi
   - if [[ $DB == 'mysql_5.7' ]]; then bash .travis.install-mysql-5.7.sh; fi
   - if [[ $DRIVER == 'pdo_mysql' ]]; then  mysql -e 'create database event_store_tests;'; fi
   - if [[ $DRIVER == 'pdo_pgsql' ]]; then psql -c 'create database event_store_tests;' -U postgres; fi
