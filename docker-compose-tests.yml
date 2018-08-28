@@ -24,7 +24,7 @@ services:
       - MYSQL_DATABASE=event_store_tests
 
   mysql:
-    image: mysql
+    image: mysql:5.7
     environment:
       - MYSQL_ROOT_PASSWORD=
       - MYSQL_ALLOW_EMPTY_PASSWORD=yes
