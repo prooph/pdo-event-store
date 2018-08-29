@@ -1,7 +1,7 @@
 version: '2'
 services:
   composer:
-    image: prooph/composer:7.1
+    image: prooph/composer:7.2
     volumes:
       - .:/app
     links:
@@ -17,14 +17,14 @@ services:
       - POSTGRES_DB=event_store_tests
 
   mariadb:
-    image: mariadb:10.2
+    image: mariadb:10.2.14
     environment:
       - MYSQL_ROOT_PASSWORD=
       - MYSQL_ALLOW_EMPTY_PASSWORD=yes
       - MYSQL_DATABASE=event_store_tests
 
   mysql:
-    image: mysql
+    image: mysql:5.7
     environment:
       - MYSQL_ROOT_PASSWORD=
       - MYSQL_ALLOW_EMPTY_PASSWORD=yes

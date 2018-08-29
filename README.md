@@ -109,21 +109,21 @@ and a running Postgres server listening on port `5432`. Both should contain an e
 
 ```bash
 docker-compose -f docker-compose-tests.yml run composer run-script test-mariadb --timeout 0; \
-docker stop proophpdoeventstore_mariadb_1 && docker rm proophpdoeventstore_mariadb_1
+docker stop prooph-pdo-event-store_mariadb_1 && docker rm prooph-pdo-event-store_mariadb_1
 ```
 
 ### MySql
 
 ```bash
 docker-compose -f docker-compose-tests.yml run composer run-script test-mysql --timeout 0; \
-docker stop proophpdoeventstore_mysql_1 && docker rm proophpdoeventstore_mysql_1
+docker stop prooph-pdo-event-store_mysql_1 && docker rm prooph-pdo-event-store_mysql_1
 ```
 
 ### Postgres
 
 ```bash
 docker-compose -f docker-compose-tests.yml run composer run-script test-postgres --timeout 0; \
-docker stop proophpdoeventstore_postgres_1 && docker rm proophpdoeventstore_postgres_1
+docker stop prooph-pdo-event-store_postgres_1 && docker rm prooph-pdo-event-store_postgres_1
 ```
 
 ## Support
