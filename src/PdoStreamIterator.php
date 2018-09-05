@@ -228,11 +228,6 @@ final class PdoStreamIterator implements Iterator
         }
     }
 
-    public function count(): int
-    {
-        return $this->statement->rowCount();
-    }
-
     private function buildStatement(int $fromNumber): PDOStatement
     {
         if (null === $this->count
