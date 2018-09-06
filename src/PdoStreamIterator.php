@@ -235,7 +235,7 @@ final class PdoStreamIterator implements Iterator
         ) {
             $limit = $this->batchSize;
         } else {
-            $limit = $this->count - ($this->batchSize * $this->batchPosition);
+            $limit = $this->count - ($this->batchSize * ($this->batchPosition + 1));
         }
 
         $this->statement->bindValue(':fromNumber', $fromNumber, PDO::PARAM_INT);

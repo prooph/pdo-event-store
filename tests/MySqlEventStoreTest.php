@@ -23,6 +23,7 @@ use Prooph\EventStore\Metadata\Operator;
 use Prooph\EventStore\Pdo\Exception\JsonException;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\MySqlEventStore;
+use Prooph\EventStore\Pdo\PdoStreamIterator;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlAggregateStreamStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSingleStreamStrategy;
@@ -100,6 +101,31 @@ class MySqlEventStoreTest extends AbstractPdoEventStoreTest
 
         $this->assertEquals('Sandro', $lastUser1Event->payload()['name']);
         $this->assertEquals('Bradley', $lastUser2Event->payload()['name']);
+    }
+
+    /**
+     * @test
+     */
+    public function it_loads_correctly_using_single_stream(): void
+    {
+        $batchMaxSize = 2;
+        $this->setupEventStoreWith(new MySqlSingleStreamStrategy(new NoOpMessageConverter()), $batchMaxSize);
+
+        $streamName = new StreamName('Prooph\Model\User');
+
+        $stream = new Stream($streamName, new ArrayIterator($this->getMultipleTestEvents()));
+
+        $this->eventStore->create($stream);
+
+        $metadataMatcher = new MetadataMatcher();
+        $iterator = $this->eventStore->load($streamName, 1, 5, $metadataMatcher);
+        $count = \Closure::bind(function () {
+            return $this->statement->rowCount();
+        }, $iterator, $iterator);
+
+        foreach ($iterator as $_) {
+            $this->assertLessThanOrEqual($batchMaxSize, $count());
+        }
     }
 
     /**
