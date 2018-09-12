@@ -296,7 +296,7 @@ EOT;
         }
 
         if (0 === $countStatement->fetchColumn()) {
-            return new EmptyIterator();
+            return new EmptyStreamIterator();
         }
 
         return new PdoStreamIterator(
