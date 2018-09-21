@@ -28,6 +28,34 @@ matrix:
         - DB=mariadb_10.2
         - DB_ATTR_ERRMODE=2 # \PDO::ERRMODE_EXCEPTION
     - php: 7.1
+      dist: trusty
+      sudo: true
+      env:
+        - DEPENDENCIES=""
+        - DRIVER="pdo_mysql"
+        - DB=mariadb_10.3
+      addons:
+        mariadb: '10.3'
+    - php: 7.1
+      dist: trusty
+      sudo: true
+      env:
+        - DEPENDENCIES="--prefer-lowest --prefer-stable"
+        - DRIVER="pdo_mysql"
+        - DB=mariadb_10.3
+      addons:
+        mariadb: '10.3'
+    - php: 7.1
+      dist: trusty
+      sudo: true
+      env:
+        - DEPENDENCIES=""
+        - DRIVER="pdo_mysql"
+        - DB=mariadb_10.3
+        - DB_ATTR_ERRMODE=2 # \PDO::ERRMODE_EXCEPTION
+      addons:
+        mariadb: '10.3'
+    - php: 7.1
       sudo: true
       env:
         - DEPENDENCIES=""
@@ -142,6 +170,34 @@ matrix:
         - DRIVER="pdo_mysql"
         - DB=mariadb_10.2
         - DB_ATTR_ERRMODE=2 # \PDO::ERRMODE_EXCEPTION
+    - php: 7.2
+      dist: trusty
+      sudo: true
+      env:
+        - DEPENDENCIES=""
+        - DRIVER="pdo_mysql"
+        - DB=mariadb_10.3
+      addons:
+        mariadb: '10.3'
+    - php: 7.2
+      dist: trusty
+      sudo: true
+      env:
+        - DEPENDENCIES="--prefer-lowest --prefer-stable"
+        - DRIVER="pdo_mysql"
+        - DB=mariadb_10.3
+      addons:
+        mariadb: '10.3'
+    - php: 7.2
+      dist: trusty
+      sudo: true
+      env:
+        - DEPENDENCIES=""
+        - DRIVER="pdo_mysql"
+        - DB=mariadb_10.3
+        - DB_ATTR_ERRMODE=2 # \PDO::ERRMODE_EXCEPTION
+      addons:
+        mariadb: '10.3'
     - php: 7.2
       sudo: true
       env:
