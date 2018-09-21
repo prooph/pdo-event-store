@@ -14,11 +14,17 @@
             "email": "saschaprolic@googlemail.com"
         }
     ],
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/basz/event-store.git"
+        }
+    ],
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
         "php": "^7.1",
-        "prooph/event-store": "^7.3.8"
+        "prooph/event-store": "dev-origin/feature/countable-stream-iterator as 7.3.9"
     },
     "require-dev": {
         "sandrokeil/interop-config": "^2.0.1",
