@@ -414,6 +414,7 @@ EOT;
 
         try {
             $selectStatement->execute();
+            $countStatement->execute();
         } catch (PDOException $exception) {
             // ignore and check error code
         }
