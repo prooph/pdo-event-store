@@ -696,7 +696,7 @@ SQL;
 
             if ($fieldType->is(FieldType::METADATA())) {
                 if (\is_bool($value)) {
-                    $where[] = "json_value(metadata, '$.$field') $operatorString '" . \var_export($value, true) . "' $operatorStringEnd";
+                    $where[] = "json_extract(metadata, '$.$field') $operatorString " . ($value ? 1 : 0) . " $operatorStringEnd";
                     continue;
                 }
 
