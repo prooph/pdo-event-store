@@ -119,13 +119,8 @@ class MySqlEventStoreTest extends AbstractPdoEventStoreTest
 
         $metadataMatcher = new MetadataMatcher();
         $iterator = $this->eventStore->load($streamName, 1, 5, $metadataMatcher);
-        $count = \Closure::bind(function () {
-            return $this->statement->rowCount();
-        }, $iterator, $iterator);
 
-        foreach ($iterator as $_) {
-            $this->assertLessThanOrEqual($batchMaxSize, $count());
-        }
+        $this->assertCount(5, $iterator);
     }
 
     /**
