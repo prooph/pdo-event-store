@@ -241,7 +241,9 @@ final class PdoStreamIterator implements StreamIterator
 
         try {
             if ($this->countStatement->execute()) {
-                return (int) $this->countStatement->fetchColumn();
+                $count = (int) $this->countStatement->fetchColumn();
+
+                return null === $this->count ? $count : min($count, $this->count);
             }
         } catch (PDOException $exception) {
             // ignore
