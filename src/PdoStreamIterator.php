@@ -12,10 +12,8 @@ declare(strict_types=1);
 
 namespace Prooph\EventStore\Pdo;
 
-use Countable;
 use DateTimeImmutable;
 use DateTimeZone;
-use Iterator;
 use PDO;
 use PDOException;
 use PDOStatement;
@@ -23,8 +21,9 @@ use Prooph\Common\Messaging\Message;
 use Prooph\Common\Messaging\MessageFactory;
 use Prooph\EventStore\Pdo\Exception\JsonException;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
+use Prooph\EventStore\StreamIterator\StreamIterator;
 
-final class PdoStreamIterator implements Iterator, Countable
+final class PdoStreamIterator implements StreamIterator
 {
     /**
      * @var PDOStatement
@@ -83,7 +82,7 @@ final class PdoStreamIterator implements Iterator, Countable
 
     public function __construct(
         PDOStatement $selectStatement,
-        PDOStatement $queryStatement,
+        PDOStatement $countStatement,
         MessageFactory $messageFactory,
         int $batchSize,
         int $fromNumber,
@@ -91,7 +90,7 @@ final class PdoStreamIterator implements Iterator, Countable
         bool $forward
     ) {
         $this->selectStatement = $selectStatement;
-        $this->queryStatement = $queryStatement;
+        $this->countStatement = $countStatement;
         $this->messageFactory = $messageFactory;
         $this->batchSize = $batchSize;
         $this->fromNumber = $fromNumber;
@@ -238,7 +237,7 @@ final class PdoStreamIterator implements Iterator, Countable
 
     public function count(): int
     {
-        $this->countStatement = $this->buildCountStatement($this->fromNumber);
+        $this->countStatement->bindValue(':fromNumber', $this->fromNumber, PDO::PARAM_INT);
 
         try {
             if ($this->countStatement->execute()) {
@@ -265,13 +264,5 @@ final class PdoStreamIterator implements Iterator, Countable
         $this->selectStatement->bindValue(':limit', $limit, PDO::PARAM_INT);
 
         return $this->selectStatement;
-    }
-
-    private function buildCountStatement(int $fromNumber): PDOStatement
-    {
-        $this->countStatement->bindValue(':fromNumber', $fromNumber, PDO::PARAM_INT);
-        $this->countStatement->bindValue(':limit', PHP_INT_MAX, PDO::PARAM_INT);
-
-        return $this->countStatement;
     }
 }
