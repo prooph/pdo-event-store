@@ -340,7 +340,9 @@ EOT;
             throw StreamNotFound::with($streamName);
         }
 
-        if (0 === (int) $countStatement->fetchColumn()) {
+        $counted = (int) $countStatement->fetchColumn();
+
+        if (0 === (null === $count ? $counted : \min($counted, $count))) {
             return new EmptyStreamIterator();
         }
 
@@ -423,7 +425,9 @@ EOT;
             throw StreamNotFound::with($streamName);
         }
 
-        if (0 === (int) $countStatement->fetchColumn()) {
+        $counted = (int) $countStatement->fetchColumn();
+
+        if (0 === (null === $count ? $counted : \min($counted, $count))) {
             return new EmptyStreamIterator();
         }
 
