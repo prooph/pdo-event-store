@@ -100,6 +100,42 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
         }
     }
 
+    public function dp_payload_is_exactly_the_same(): array
+    {
+        return [
+            [[]],
+            [['null' => null]],
+            [['an int' => 10]],
+            [['an int' => -10]],
+            [['a float' => -1.1]],
+            [['a float' => -1.0]],
+            [['a float' => -0.0]],
+            [['a float' => 0.0]],
+            [['a float' => 1.0]],
+            [['a float' => 1.1]],
+            [['a unicoded char' => "\u{1000}"]],
+        ];
+    }
+
+    /**
+     * @test
+     * @dataProvider dp_payload_is_stays_same_through_store
+     */
+    public function payload_is_exactly_the_same(array $payload): void
+    {
+        $event = TestDomainEvent::with($payload, 1);
+        $streamName = new StreamName('Prooph\Model\User');
+        $stream = new Stream($streamName, new ArrayIterator([$event]));
+        $this->eventStore->create($stream);
+
+        $eventStream = $this->eventStore->load($streamName);
+
+        /** @var TestDomainEvent $event */
+        foreach ($eventStream as $event) {
+            $this->assertSame($payload, $event->payload());
+        }
+    }
+
     /**
      * @test
      */
