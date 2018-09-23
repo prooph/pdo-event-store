@@ -99,7 +99,7 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
         }
     }
 
-    public function dp_payload_is_exactly_the_same(): array
+    public function dp_payload_stays_same_through_store(): array
     {
         return [
             [[]],
@@ -118,9 +118,9 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
 
     /**
      * @test
-     * @dataProvider dp_payload_is_stays_same_through_store
+     * @dataProvider dp_payload_stays_same_through_store
      */
-    public function payload_is_exactly_the_same(array $payload): void
+    public function payload_stays_same_through_store(array $payload): void
     {
         $event = TestDomainEvent::with($payload, 1);
         $streamName = new StreamName('Prooph\Model\User');
