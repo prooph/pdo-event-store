@@ -14,7 +14,6 @@ namespace Prooph\EventStore\Pdo;
 
 use DateTimeImmutable;
 use DateTimeZone;
-use Iterator;
 use PDO;
 use PDOException;
 use PDOStatement;
@@ -22,13 +21,19 @@ use Prooph\Common\Messaging\Message;
 use Prooph\Common\Messaging\MessageFactory;
 use Prooph\EventStore\Pdo\Exception\JsonException;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
+use Prooph\EventStore\StreamIterator\StreamIterator;
 
-final class PdoStreamIterator implements Iterator
+final class PdoStreamIterator implements StreamIterator
 {
     /**
      * @var PDOStatement
      */
-    private $statement;
+    private $selectStatement;
+
+    /**
+     * @var PDOStatement
+     */
+    private $countStatement;
 
     /**
      * @var MessageFactory
@@ -76,14 +81,16 @@ final class PdoStreamIterator implements Iterator
     private $forward;
 
     public function __construct(
-        PDOStatement $statement,
+        PDOStatement $selectStatement,
+        PDOStatement $countStatement,
         MessageFactory $messageFactory,
         int $batchSize,
         int $fromNumber,
         ?int $count,
         bool $forward
     ) {
-        $this->statement = $statement;
+        $this->selectStatement = $selectStatement;
+        $this->countStatement = $countStatement;
         $this->messageFactory = $messageFactory;
         $this->batchSize = $batchSize;
         $this->fromNumber = $fromNumber;
@@ -147,7 +154,7 @@ final class PdoStreamIterator implements Iterator
             return;
         }
 
-        $this->currentItem = $this->statement->fetch();
+        $this->currentItem = $this->selectStatement->fetch();
 
         if (false !== $this->currentItem) {
             $this->currentKey++;
@@ -159,20 +166,20 @@ final class PdoStreamIterator implements Iterator
             } else {
                 $from = $this->currentFromNumber - 1;
             }
-            $this->statement = $this->buildStatement($from);
+            $this->selectStatement = $this->buildSelectStatement($from);
             try {
-                $this->statement->execute();
+                $this->selectStatement->execute();
             } catch (PDOException $exception) {
                 // ignore and check error code
             }
 
-            if ($this->statement->errorCode() !== '00000') {
-                throw RuntimeException::fromStatementErrorInfo($this->statement->errorInfo());
+            if ($this->selectStatement->errorCode() !== '00000') {
+                throw RuntimeException::fromStatementErrorInfo($this->selectStatement->errorInfo());
             }
 
-            $this->statement->setFetchMode(PDO::FETCH_OBJ);
+            $this->selectStatement->setFetchMode(PDO::FETCH_OBJ);
 
-            $this->currentItem = $this->statement->fetch();
+            $this->currentItem = $this->selectStatement->fetch();
 
             if (false === $this->currentItem) {
                 $this->currentKey = -1;
@@ -209,15 +216,15 @@ final class PdoStreamIterator implements Iterator
         if ($this->currentKey !== 0) {
             $this->batchPosition = 0;
 
-            $this->statement = $this->buildStatement($this->fromNumber);
+            $this->selectStatement = $this->buildSelectStatement($this->fromNumber);
             try {
-                $this->statement->execute();
+                $this->selectStatement->execute();
             } catch (PDOException $exception) {
                 // ignore and check error code
             }
 
-            if ($this->statement->errorCode() !== '00000') {
-                throw RuntimeException::fromStatementErrorInfo($this->statement->errorInfo());
+            if ($this->selectStatement->errorCode() !== '00000') {
+                throw RuntimeException::fromStatementErrorInfo($this->selectStatement->errorInfo());
             }
 
             $this->currentItem = null;
@@ -228,7 +235,24 @@ final class PdoStreamIterator implements Iterator
         }
     }
 
-    private function buildStatement(int $fromNumber): PDOStatement
+    public function count(): int
+    {
+        $this->countStatement->bindValue(':fromNumber', $this->fromNumber, PDO::PARAM_INT);
+
+        try {
+            if ($this->countStatement->execute()) {
+                $count = (int) $this->countStatement->fetchColumn();
+
+                return null === $this->count ? $count : \min($count, $this->count);
+            }
+        } catch (PDOException $exception) {
+            // ignore
+        }
+
+        return 0;
+    }
+
+    private function buildSelectStatement(int $fromNumber): PDOStatement
     {
         if (null === $this->count
             || $this->count < ($this->batchSize * ($this->batchPosition + 1))
@@ -238,9 +262,9 @@ final class PdoStreamIterator implements Iterator
             $limit = $this->count - ($this->batchSize * ($this->batchPosition + 1));
         }
 
-        $this->statement->bindValue(':fromNumber', $fromNumber, PDO::PARAM_INT);
-        $this->statement->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $this->selectStatement->bindValue(':fromNumber', $fromNumber, PDO::PARAM_INT);
+        $this->selectStatement->bindValue(':limit', $limit, PDO::PARAM_INT);
 
-        return $this->statement;
+        return $this->selectStatement;
     }
 }

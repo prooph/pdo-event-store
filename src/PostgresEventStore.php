@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace Prooph\EventStore\Pdo;
 
-use EmptyIterator;
 use Iterator;
 use PDO;
 use PDOException;
@@ -29,6 +28,7 @@ use Prooph\EventStore\Pdo\Exception\ExtensionNotLoaded;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\Util\PostgresHelper;
 use Prooph\EventStore\Stream;
+use Prooph\EventStore\StreamIterator\EmptyStreamIterator;
 use Prooph\EventStore\StreamName;
 use Prooph\EventStore\TransactionalEventStore;
 use Prooph\EventStore\Util\Assertion;
@@ -234,11 +234,11 @@ EOT;
     ): Iterator {
         $tableName = $this->persistenceStrategy->generateTableName($streamName);
 
-        $query = "SELECT stream_name FROM {$this->quoteIdent($this->eventStreamsTable)} WHERE stream_name = ?";
-        $statement = $this->connection->prepare($query);
-        $statement->execute([$tableName]);
+        $selectQuery = "SELECT stream_name FROM {$this->quoteIdent($this->eventStreamsTable)} WHERE stream_name = ?";
+        $selectStatement = $this->connection->prepare($selectQuery);
+        $selectStatement->execute([$tableName]);
 
-        if ($statement->rowCount() === 0) {
+        if ($selectStatement->rowCount() === 0) {
             throw StreamNotFound::with($streamName);
         }
         [$where, $values] = $this->createWhereClause($metadataMatcher);
@@ -252,43 +252,57 @@ EOT;
             $limit = \min($count, $this->loadBatchSize);
         }
 
-        $query = <<<EOT
+        $selectQuery = <<<EOT
 SELECT * FROM {$this->quoteIdent($tableName)}
 $whereCondition
 ORDER BY no ASC
 LIMIT :limit;
 EOT;
 
-        $statement = $this->connection->prepare($query);
-        $statement->setFetchMode(PDO::FETCH_OBJ);
+        $countQuery = <<<EOT
+SELECT COUNT(*) FROM {$this->quoteIdent($tableName)}
+$whereCondition
+EOT;
+        $selectStatement = $this->connection->prepare($selectQuery);
+        $selectStatement->setFetchMode(PDO::FETCH_OBJ);
 
-        $statement->bindValue(':fromNumber', $fromNumber, PDO::PARAM_INT);
-        $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $selectStatement->bindValue(':fromNumber', $fromNumber, PDO::PARAM_INT);
+        $selectStatement->bindValue(':limit', $limit, PDO::PARAM_INT);
+
+        $countStatement = $this->connection->prepare($countQuery);
+        $countStatement->setFetchMode(PDO::FETCH_OBJ);
+
+        $countStatement->bindValue(':fromNumber', $fromNumber, PDO::PARAM_INT);
 
         foreach ($values as $parameter => $value) {
-            $statement->bindValue($parameter, $value, \is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+            $selectStatement->bindValue($parameter, $value, \is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+            $countStatement->bindValue($parameter, $value, \is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
         }
 
         try {
-            $statement->execute();
+            $selectStatement->execute();
+            $countStatement->execute();
         } catch (PDOException $exception) {
             // ignore and check error code
         }
 
-        if ($statement->errorCode() === '42703') {
+        if ($selectStatement->errorCode() === '42703') {
             throw new \UnexpectedValueException('Unknown field given in metadata matcher');
         }
 
-        if ($statement->errorCode() !== '00000') {
+        if ($selectStatement->errorCode() !== '00000') {
             throw StreamNotFound::with($streamName);
         }
 
-        if (0 === $statement->rowCount()) {
-            return new EmptyIterator();
+        $counted = (int) $countStatement->fetchColumn();
+
+        if (0 === (null === $count ? $counted : \min($counted, $count))) {
+            return new EmptyStreamIterator();
         }
 
         return new PdoStreamIterator(
-            $statement,
+            $selectStatement,
+            $countStatement,
             $this->messageFactory,
             $this->loadBatchSize,
             $fromNumber,
@@ -319,39 +333,54 @@ EOT;
 
         $tableName = $this->persistenceStrategy->generateTableName($streamName);
 
-        $query = <<<EOT
+        $selectQuery = <<<EOT
 SELECT * FROM {$this->quoteIdent($tableName)}
 $whereCondition
 ORDER BY no DESC
 LIMIT :limit;
 EOT;
 
-        $statement = $this->connection->prepare($query);
-        $statement->setFetchMode(PDO::FETCH_OBJ);
+        $countQuery = <<<EOT
+SELECT COUNT(*) FROM {$this->quoteIdent($tableName)}
+$whereCondition
+EOT;
 
-        $statement->bindValue(':fromNumber', $fromNumber, PDO::PARAM_INT);
-        $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $selectStatement = $this->connection->prepare($selectQuery);
+        $selectStatement->setFetchMode(PDO::FETCH_OBJ);
+
+        $selectStatement->bindValue(':fromNumber', $fromNumber, PDO::PARAM_INT);
+        $selectStatement->bindValue(':limit', $limit, PDO::PARAM_INT);
+
+        $countStatement = $this->connection->prepare($countQuery);
+        $countStatement->setFetchMode(PDO::FETCH_OBJ);
+
+        $countStatement->bindValue(':fromNumber', $fromNumber, PDO::PARAM_INT);
 
         foreach ($values as $parameter => $value) {
-            $statement->bindValue($parameter, $value, \is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+            $selectStatement->bindValue($parameter, $value, \is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+            $countStatement->bindValue($parameter, $value, \is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
         }
 
         try {
-            $statement->execute();
+            $selectStatement->execute();
+            $countStatement->execute();
         } catch (PDOException $exception) {
             // ignore and check error code
         }
 
-        if ($statement->errorCode() !== '00000') {
+        if ($selectStatement->errorCode() !== '00000') {
             throw StreamNotFound::with($streamName);
         }
 
-        if (0 === $statement->rowCount()) {
-            return new EmptyIterator();
+        $counted = (int) $countStatement->fetchColumn();
+
+        if (0 === (null === $count ? $counted : \min($counted, $count))) {
+            return new EmptyStreamIterator();
         }
 
         return new PdoStreamIterator(
-            $statement,
+            $selectStatement,
+            $countStatement,
             $this->messageFactory,
             $this->loadBatchSize,
             $fromNumber,
