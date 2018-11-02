@@ -20,6 +20,7 @@ use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Exception;
+use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\PdoEventStore;
 use Prooph\EventStore\Pdo\Util\PostgresHelper;
@@ -97,6 +98,11 @@ final class PdoEventStoreQuery implements Query
      */
     private $triggerPcntlSignalDispatch;
 
+    /**
+     * @var MetadataMatcher|null
+     */
+    private $metadataMatcher;
+
     public function __construct(EventStore $eventStore, PDO $connection, string $eventStreamsTable, bool $triggerPcntlSignalDispatch = false)
     {
         $this->eventStore = $eventStore;
@@ -133,13 +139,14 @@ final class PdoEventStoreQuery implements Query
         return $this;
     }
 
-    public function fromStream(string $streamName): Query
+    public function fromStream(string $streamName, MetadataMatcher $metadataMatcher = null): Query
     {
         if (null !== $this->query) {
             throw new Exception\RuntimeException('From was already called');
         }
 
         $this->query['streams'][] = $streamName;
+        $this->metadataMatcher = $metadataMatcher;
 
         return $this;
     }
@@ -268,7 +275,7 @@ final class PdoEventStoreQuery implements Query
 
         foreach ($this->streamPositions as $streamName => $position) {
             try {
-                $streamEvents = $this->eventStore->load(new StreamName($streamName), $position + 1);
+                $streamEvents = $this->eventStore->load(new StreamName($streamName), $position + 1, null, $this->metadataMatcher);
             } catch (Exception\StreamNotFound $e) {
                 // ignore
                 continue;
