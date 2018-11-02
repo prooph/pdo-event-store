@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the prooph/pdo-event-store.
  * (c) 2016-2018 prooph software GmbH <contact@prooph.de>
