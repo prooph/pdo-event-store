@@ -25,6 +25,7 @@ use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Exception;
+use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Pdo\Exception\ProjectionNotCreatedException;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\PdoEventStore;
@@ -162,6 +163,11 @@ final class PdoEventStoreProjector implements Projector
      */
     private $lastLockUpdate;
 
+    /**
+     * @var MetadataMatcher|null
+     */
+    private $metadataMatcher;
+
     public function __construct(
         EventStore $eventStore,
         PDO $connection,
@@ -221,13 +227,14 @@ final class PdoEventStoreProjector implements Projector
         return $this;
     }
 
-    public function fromStream(string $streamName): Projector
+    public function fromStream(string $streamName, MetadataMatcher $metadataMatcher = null): Projector
     {
         if (null !== $this->query) {
             throw new Exception\RuntimeException('From was already called');
         }
 
         $this->query['streams'][] = $streamName;
+        $this->metadataMatcher = $metadataMatcher;
 
         return $this;
     }
@@ -505,7 +512,7 @@ EOT;
             do {
                 foreach ($this->streamPositions as $streamName => $position) {
                     try {
-                        $streamEvents = $this->eventStore->load(new StreamName($streamName), $position + 1);
+                        $streamEvents = $this->eventStore->load(new StreamName($streamName), $position + 1, null, $this->metadataMatcher);
                     } catch (Exception\StreamNotFound $e) {
                         // ignore
                         continue;
