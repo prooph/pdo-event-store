@@ -108,7 +108,6 @@ class MariaDbEventStoreProjectorTest extends PdoEventStoreProjectorTest
         );
     }
 
-
     /**
      * @test
      */
@@ -129,14 +128,13 @@ EOT;
         $this->prepareEventStream('user');
         $projection = $this->projectionManager->createProjection('test_projection');
 
-        $count = 0;
         $projection
             ->fromStream('user')
             ->init(function () {
                 return ['count' => 0];
             })
             ->whenAny(
-                function (array $state, Message $event) use (&$count): array {
+                function (array $state, Message $event): array {
                 }
             )
             ->run();
