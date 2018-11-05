@@ -152,6 +152,6 @@ EOT;
 
         $row = $statement->fetch(\PDO::FETCH_ASSOC);
 
-        $this->assertEquals(['user' => 10], \json_decode($row['position']));
+        $this->assertEquals(['user' => 10], \json_decode($row['position'], true));
     }
 }
