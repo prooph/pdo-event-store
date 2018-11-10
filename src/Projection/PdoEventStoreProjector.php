@@ -33,6 +33,7 @@ use Prooph\EventStore\Projection\Projector;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use Prooph\EventStore\Util\ArrayCache;
+use Prooph\EventStore\Pdo\Util\Json;
 
 final class PdoEventStoreProjector implements Projector
 {
@@ -364,8 +365,8 @@ EOT;
         $statement = $this->connection->prepare($sql);
         try {
             $statement->execute([
-                \json_encode($this->streamPositions),
-                \json_encode($this->state),
+                Json::encode($this->streamPositions),
+                Json::encode($this->state),
                 $this->status->getValue(),
                 $this->name,
             ]);
@@ -728,8 +729,8 @@ EOT;
 
         $result = $statement->fetch(PDO::FETCH_OBJ);
 
-        $this->streamPositions = \array_merge($this->streamPositions, \json_decode($result->position, true));
-        $state = \json_decode($result->state, true);
+        $this->streamPositions = \array_merge($this->streamPositions, Json::decode($result->position, true));
+        $state = Json::decode($result->state, true);
 
         if (! empty($state)) {
             $this->state = $state;
@@ -835,7 +836,7 @@ EOT;
             $statement->execute(
                 [
                     $lockUntilString,
-                    \json_encode($this->streamPositions),
+                    Json::encode($this->streamPositions),
                     $this->name,
                 ]
             );
@@ -895,8 +896,8 @@ EOT;
         $statement = $this->connection->prepare($sql);
         try {
             $statement->execute([
-                \json_encode($this->streamPositions),
-                \json_encode($this->state),
+                Json::encode($this->streamPositions),
+                Json::encode($this->state),
                 $lockUntilString,
                 $this->name,
             ]);
