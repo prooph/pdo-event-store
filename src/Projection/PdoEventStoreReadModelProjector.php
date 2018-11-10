@@ -436,6 +436,7 @@ EOT;
 
         switch ($this->fetchRemoteStatus()) {
             case ProjectionStatus::STOPPING():
+                $this->load();
                 $this->stop();
 
                 return;
