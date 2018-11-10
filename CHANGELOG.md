@@ -1,7 +1,20 @@
 # Change Log
 
-## [v1.10.0](https://github.com/prooph/pdo-event-store/tree/v1.10.0)
+## [v1.10.1](https://github.com/prooph/pdo-event-store/tree/v1.10.1)
 
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.10.0...v1.10.1)
+
+**Fixed bugs:**
+
+- Fix for starting a Projector with `stopping` state, looses stream position state [\#180](https://github.com/prooph/pdo-event-store/pull/180) ([basz](https://github.com/basz))
+
+**Closed issues:**
+
+- Error No such table [\#182](https://github.com/prooph/pdo-event-store/issues/182)
+- Projector status [\#181](https://github.com/prooph/pdo-event-store/issues/181)
+- Starting a Projector with `stopping` state, looses stream position state [\#179](https://github.com/prooph/pdo-event-store/issues/179)
+
+## [v1.10.0](https://github.com/prooph/pdo-event-store/tree/v1.10.0) (2018-11-03)
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.9.1...v1.10.0)
 
 **Implemented enhancements:**
