@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace ProophTest\EventStore\Pdo\Projection;
 
 use Prooph\Common\Messaging\FQCNMessageFactory;
+use Prooph\Common\Messaging\Message;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\Pdo\MySqlEventStore;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSimpleStreamStrategy;
@@ -125,5 +126,50 @@ class MySqlEventStoreReadModelProjectorTest extends PdoEventStoreReadModelProjec
             SIGUSR1,
             $processDetails['exitcode']
         );
+    }
+
+    /**
+     * @test
+     */
+    public function a_stopped_status_should_keep_stream_positions(): void
+    {
+        $sql = <<<EOT
+INSERT INTO `projections` (name, position, state, status, locked_until)
+VALUES (?, ?, '{}', ?, NULL);
+EOT;
+
+        $statement = $this->connection->prepare($sql);
+        $statement->execute([
+            'test_projection',
+            \json_encode(['user' => 10]),
+            'stopping',
+        ]);
+
+        $this->prepareEventStream('user');
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
+
+        $projection
+            ->fromStream('user')
+            ->init(function () {
+                return ['count' => 0];
+            })
+            ->whenAny(
+                function (array $state, Message $event): array {
+                }
+            )
+            ->run();
+
+        $sql = <<<EOT
+SELECT * FROM `projections` WHERE name = ?
+EOT;
+
+        $statement = $this->connection->prepare($sql);
+        $statement->execute([
+            'test_projection',
+        ]);
+
+        $row = $statement->fetch(\PDO::FETCH_ASSOC);
+
+        $this->assertEquals(['user' => 10], \json_decode($row['position'], true));
     }
 }
