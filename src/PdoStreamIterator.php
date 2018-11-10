@@ -22,6 +22,7 @@ use Prooph\Common\Messaging\Message;
 use Prooph\Common\Messaging\MessageFactory;
 use Prooph\EventStore\Pdo\Exception\JsonException;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
+use Prooph\EventStore\Pdo\Util\Json;
 use Prooph\EventStore\StreamIterator\StreamIterator;
 
 final class PdoStreamIterator implements StreamIterator
@@ -123,20 +124,13 @@ final class PdoStreamIterator implements StreamIterator
             new DateTimeZone('UTC')
         );
 
-        $metadata = \json_decode($this->currentItem->metadata, true);
+        $metadata = Json::decode($this->currentItem->metadata, true);
 
         if (! \array_key_exists('_position', $metadata)) {
             $metadata['_position'] = $this->currentItem->no;
         }
 
-        $payload = \json_decode($this->currentItem->payload, true);
-        if (\json_last_error() !== JSON_ERROR_NONE) {
-            throw JsonException::whileDecode(
-                \json_last_error_msg(),
-                \json_last_error(),
-                $this->currentItem->payload
-            );
-        }
+        $payload = Json::decode($this->currentItem->payload, true);
 
         return $this->messageFactory->createMessageFromArray($this->currentItem->event_name, [
             'uuid' => $this->currentItem->event_id,
