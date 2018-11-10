@@ -686,8 +686,8 @@ EOT;
 
         $result = $statement->fetch(PDO::FETCH_OBJ);
 
-        $this->streamPositions = \array_merge($this->streamPositions, Json::decode($result->position, true));
-        $state = Json::decode($result->state, true);
+        $this->streamPositions = \array_merge($this->streamPositions, Json::decode($result->position));
+        $state = Json::decode($result->state);
 
         if (! empty($state)) {
             $this->state = $state;

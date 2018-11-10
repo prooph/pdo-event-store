@@ -205,32 +205,4 @@ class MySqlEventStoreTest extends AbstractPdoEventStoreTest
 
         $this->assertFalse($this->eventStore->hasStream($stream->streamName()));
     }
-
-    /**
-     * @test
-     * issue: https://github.com/prooph/pdo-event-store/issues/110
-     */
-    public function it_handles_invalid_json(): void
-    {
-        $this->expectException(JsonException::class);
-
-        $event = UserCreated::with(['name' => ['John', 'ßnow']], 1);
-        $event = $event->withAddedMetadata('key', 'value');
-
-        $streamName = new StreamName('Prooph\Model\User');
-        $stream = new Stream($streamName, new ArrayIterator([$event]), ['some' => ['metadata', 'as', 'well']]);
-
-        $this->eventStore->create($stream);
-
-        // Trigger an error when using an umlaut in the payload.
-        $this->connection->query('SET NAMES latin1');
-
-        $metadataMatcher = new MetadataMatcher();
-        $metadataMatcher = $metadataMatcher->withMetadataMatch(
-            'event_id', Operator::EQUALS(), $event->uuid()->toString(), FieldType::MESSAGE_PROPERTY()
-        );
-
-        $streamEvents = $this->eventStore->load($streamName, 1, null, $metadataMatcher);
-        $streamEvents->current(); // Trigger PdoStreamIterator.
-    }
 }

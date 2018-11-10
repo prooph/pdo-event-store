@@ -131,7 +131,7 @@ abstract class AbstractPdoEventStoreTest extends AbstractEventStoreTest
 
         /** @var TestDomainEvent $event */
         foreach ($eventStream as $event) {
-            $this->assertSame($payload, $event->payload());
+            $this->assertEquals($payload, $event->payload());
         }
     }
 

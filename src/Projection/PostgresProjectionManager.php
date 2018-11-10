@@ -369,7 +369,7 @@ SQL;
             throw ProjectionNotFound::withName($name);
         }
 
-        return Json::decode($result->position, true);
+        return Json::decode($result->position);
     }
 
     public function fetchProjectionState(string $name): array
@@ -398,6 +398,6 @@ SQL;
             throw ProjectionNotFound::withName($name);
         }
 
-        return Json::decode($result->state, true);
+        return Json::decode($result->state);
     }
 }

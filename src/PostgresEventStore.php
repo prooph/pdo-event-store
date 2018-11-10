@@ -117,7 +117,7 @@ EOT;
             throw StreamNotFound::with($streamName);
         }
 
-        return Json::decode($stream->metadata, true);
+        return Json::decode($stream->metadata);
     }
 
     public function updateStreamMetadata(StreamName $streamName, array $newMetadata): void
