@@ -25,6 +25,7 @@ use Prooph\EventStore\Exception;
 use Prooph\EventStore\Pdo\Exception\ProjectionNotCreatedException;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\PdoEventStore;
+use Prooph\EventStore\Pdo\Util\Json;
 use Prooph\EventStore\Pdo\Util\PostgresHelper;
 use Prooph\EventStore\Projection\ProjectionStatus;
 use Prooph\EventStore\Projection\ReadModel;
@@ -328,8 +329,8 @@ EOT;
         $statement = $this->connection->prepare($sql);
         try {
             $statement->execute([
-                \json_encode($this->streamPositions),
-                \json_encode($this->state),
+                Json::encode($this->streamPositions),
+                Json::encode($this->state),
                 $this->status->getValue(),
                 $this->name,
             ]);
@@ -685,8 +686,8 @@ EOT;
 
         $result = $statement->fetch(PDO::FETCH_OBJ);
 
-        $this->streamPositions = \array_merge($this->streamPositions, \json_decode($result->position, true));
-        $state = \json_decode($result->state, true);
+        $this->streamPositions = \array_merge($this->streamPositions, Json::decode($result->position, true));
+        $state = Json::decode($result->state, true);
 
         if (! empty($state)) {
             $this->state = $state;
@@ -792,7 +793,7 @@ EOT;
             $statement->execute(
                 [
                     $lockUntilString,
-                    \json_encode($this->streamPositions),
+                    Json::encode($this->streamPositions),
                     $this->name,
                 ]
             );
@@ -854,8 +855,8 @@ EOT;
         $statement = $this->connection->prepare($sql);
         try {
             $statement->execute([
-                \json_encode($this->streamPositions),
-                \json_encode($this->state),
+                Json::encode($this->streamPositions),
+                Json::encode($this->state),
                 $lockUntilString,
                 $this->name,
             ]);

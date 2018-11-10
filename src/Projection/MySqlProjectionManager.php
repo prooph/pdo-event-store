@@ -20,6 +20,7 @@ use Prooph\EventStore\Exception\OutOfRangeException;
 use Prooph\EventStore\Exception\ProjectionNotFound;
 use Prooph\EventStore\Pdo\Exception;
 use Prooph\EventStore\Pdo\MySqlEventStore;
+use Prooph\EventStore\Pdo\Util\Json;
 use Prooph\EventStore\Projection\ProjectionManager;
 use Prooph\EventStore\Projection\ProjectionStatus;
 use Prooph\EventStore\Projection\Projector;
@@ -419,7 +420,7 @@ SQL;
             throw ProjectionNotFound::withName($name);
         }
 
-        return \json_decode($result->position, true);
+        return Json::decode($result->position, true);
     }
 
     public function fetchProjectionState(string $name): array
@@ -448,6 +449,6 @@ SQL;
             throw ProjectionNotFound::withName($name);
         }
 
-        return \json_decode($result->state, true);
+        return Json::decode($result->state, true);
     }
 }
