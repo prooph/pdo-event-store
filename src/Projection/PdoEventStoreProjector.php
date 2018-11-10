@@ -27,13 +27,13 @@ use Prooph\EventStore\Exception;
 use Prooph\EventStore\Pdo\Exception\ProjectionNotCreatedException;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\PdoEventStore;
+use Prooph\EventStore\Pdo\Util\Json;
 use Prooph\EventStore\Pdo\Util\PostgresHelper;
 use Prooph\EventStore\Projection\ProjectionStatus;
 use Prooph\EventStore\Projection\Projector;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use Prooph\EventStore\Util\ArrayCache;
-use Prooph\EventStore\Pdo\Util\Json;
 
 final class PdoEventStoreProjector implements Projector
 {
@@ -729,8 +729,8 @@ EOT;
 
         $result = $statement->fetch(PDO::FETCH_OBJ);
 
-        $this->streamPositions = \array_merge($this->streamPositions, Json::decode($result->position, true));
-        $state = Json::decode($result->state, true);
+        $this->streamPositions = \array_merge($this->streamPositions, Json::decode($result->position));
+        $state = Json::decode($result->state);
 
         if (! empty($state)) {
             $this->state = $state;
