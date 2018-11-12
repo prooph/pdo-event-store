@@ -17,7 +17,7 @@ All known event streams are stored in an event stream table, so with a simple ta
 are available in your store.
 
 Same goes for the projections, all known projections are stored in a single table, so you can see what projections are
-available, and what their current state / stream positition / status is.
+available, and what their current state / stream position / status is.
 
 ## Load batch size
 
@@ -34,9 +34,9 @@ projection manager needs to query the underlying database table of the event-sto
  
 It's recommended to just use the same pdo connection instance for both.
 
-## Persistance Strategies
+## Persistence Strategies
 
-This component ships with 9 default persistance strategies:
+This component ships with 9 default persistence strategies:
 
 - MariaDbAggregateStreamStrategy
 - MariaDbSimpleStreamStrategy
@@ -57,7 +57,7 @@ The generated table name for a given stream is:
 so a sha1 hash of the stream name, prefixed with an underscore is the used table name.
 You can query the `event_streams` table to get real stream name to stream name mapping.
 
-You can implement your own persistance strategy by implementing the `Prooph\EventStore\Pdo\PersistenceStrategy` interface.
+You can implement your own persistence strategy by implementing the `Prooph\EventStore\Pdo\PersistenceStrategy` interface.
 
 ### AggregateStreamStrategy
 
