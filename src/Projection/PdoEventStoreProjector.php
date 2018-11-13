@@ -555,6 +555,9 @@ EOT;
                         break;
                     case ProjectionStatus::RESETTING():
                         $this->reset();
+                        if ($keepRunning) {
+                            $this->startAgain();
+                        }
                         break;
                     default:
                         break;
@@ -1024,5 +1027,29 @@ EOT;
             default:
                 return "`$tableName`";
         }
+    }
+
+    private function startAgain(): void
+    {
+        $this->isStopped = false;
+
+        $newStatus = ProjectionStatus::RUNNING();
+
+        $projectionsTable = $this->quoteTableName($this->projectionsTable);
+        $startProjectionSql = <<<EOT
+UPDATE $projectionsTable SET status = ? WHERE name = ?;
+EOT;
+        $statement = $this->connection->prepare($startProjectionSql);
+        try {
+            $statement->execute([$newStatus->getValue(), $this->name]);
+        } catch (PDOException $exception) {
+            // ignore and check error code
+        }
+
+        if ($statement->errorCode() !== '00000') {
+            throw RuntimeException::fromStatementErrorInfo($statement->errorInfo());
+        }
+
+        $this->status = $newStatus;
     }
 }
