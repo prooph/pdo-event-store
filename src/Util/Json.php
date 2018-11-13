@@ -33,10 +33,6 @@ class Json
             throw new JsonException(\json_last_error_msg(), $error);
         }
 
-        if ('[]' === $string) {
-            $string = '{}';
-        }
-
         return $string;
     }
 
