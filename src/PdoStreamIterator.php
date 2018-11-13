@@ -20,7 +20,6 @@ use PDOException;
 use PDOStatement;
 use Prooph\Common\Messaging\Message;
 use Prooph\Common\Messaging\MessageFactory;
-use Prooph\EventStore\Pdo\Exception\JsonException;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\Util\Json;
 use Prooph\EventStore\StreamIterator\StreamIterator;
