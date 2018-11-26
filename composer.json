@@ -18,18 +18,17 @@
     "prefer-stable": true,
     "require": {
         "php": "^7.1",
-        "prooph/event-store": "^7.4"
+        "prooph/event-store": "^7.5"
     },
     "require-dev": {
         "sandrokeil/interop-config": "^2.0.1",
         "phpunit/php-invoker": "^2.0",
         "phpunit/phpunit": "^7.1.4",
         "phpspec/prophecy": "^1.7",
-        "prooph/php-cs-fixer-config": "^0.2.1",
+        "prooph/php-cs-fixer-config": "^0.3",
         "prooph/bookdown-template": "^0.2.3",
         "psr/container": "^1.0",
-        "satooshi/php-coveralls": "^1.0",
-        "malukenho/docheader": "^0.1.4"
+        "satooshi/php-coveralls": "^1.0"
     },
     "suggest": {
         "psr/container": "^1.0 for usage of provided factories",

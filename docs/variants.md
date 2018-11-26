@@ -17,7 +17,7 @@ All known event streams are stored in an event stream table, so with a simple ta
 are available in your store.
 
 Same goes for the projections, all known projections are stored in a single table, so you can see what projections are
-available, and what their current state / stream positition / status is.
+available, and what their current state / stream position / status is.
 
 ## Load batch size
 
@@ -34,9 +34,9 @@ projection manager needs to query the underlying database table of the event-sto
  
 It's recommended to just use the same pdo connection instance for both.
 
-## Persistance Strategies
+## Persistence Strategies
 
-This component ships with 9 default persistance strategies:
+This component ships with 9 default persistence strategies:
 
 - MariaDbAggregateStreamStrategy
 - MariaDbSimpleStreamStrategy
@@ -57,7 +57,7 @@ The generated table name for a given stream is:
 so a sha1 hash of the stream name, prefixed with an underscore is the used table name.
 You can query the `event_streams` table to get real stream name to stream name mapping.
 
-You can implement your own persistance strategy by implementing the `Prooph\EventStore\Pdo\PersistenceStrategy` interface.
+You can implement your own persistence strategy by implementing the `Prooph\EventStore\Pdo\PersistenceStrategy` interface.
 
 ### AggregateStreamStrategy
 
@@ -120,3 +120,31 @@ transactions.
 
 Note: This could lead to problems using the event store, if you did not manage to handle the transaction handling accordingly.
 This is your problem and we will not provide any support for problems you encounter while doing so.
+
+### A note on Json
+
+MySql differs from the other vendors in a subtile manner which basicly is a result of the json specification itself. Json 
+does not distuinguish between *integers* and *floats*, it just knowns a *number*. This means that when you send a float 
+such as `2.0` to the store it will be stored by MySQL as integer `2`. While we have looked at ways to prevent this we 
+decided it would become too complicated to support that (could be done with nested JSON_OBJECT calls, which strangely 
+does store such value as-is).
+
+We think you can easily avoid this from becoming an issue by ensuring your events handle such differences. 
+
+Example
+
+```php
+final class MySliderChanged extends AggregateChanged
+{
+    public static function with(MySlider $slider): self {
+        return self::occur((string) $dossierId, [
+            'value' => $slider->toNative(), // float
+        ]);
+    }
+    
+    public function mySlider(): MySlider
+    {
+        return MySlider::from((float) $this->payload['value']); // use casting
+    }
+}
+```

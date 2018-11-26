@@ -1,7 +1,56 @@
 # Change Log
 
-## [v1.9.0-BETA-2](https://github.com/prooph/pdo-event-store/tree/v1.9.0-BETA-2)
+## [v1.10.1](https://github.com/prooph/pdo-event-store/tree/v1.10.1)
 
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.10.0...v1.10.1)
+
+**Fixed bugs:**
+
+- Fix for starting a Projector with `stopping` state, looses stream position state [\#180](https://github.com/prooph/pdo-event-store/pull/180) ([basz](https://github.com/basz))
+
+**Closed issues:**
+
+- Error No such table [\#182](https://github.com/prooph/pdo-event-store/issues/182)
+- Projector status [\#181](https://github.com/prooph/pdo-event-store/issues/181)
+- Starting a Projector with `stopping` state, looses stream position state [\#179](https://github.com/prooph/pdo-event-store/issues/179)
+
+## [v1.10.0](https://github.com/prooph/pdo-event-store/tree/v1.10.0) (2018-11-03)
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.9.1...v1.10.0)
+
+**Implemented enhancements:**
+
+- Feature/countable stream iterator [\#172](https://github.com/prooph/pdo-event-store/pull/172) ([basz](https://github.com/basz))
+
+**Fixed bugs:**
+
+- deleting running projections will not restart from event 0 [\#168](https://github.com/prooph/pdo-event-store/issues/168)
+- MariaDB 10.2.16 causes issues [\#164](https://github.com/prooph/pdo-event-store/issues/164)
+- Removed usage of mariadb json\_value with boolean [\#173](https://github.com/prooph/pdo-event-store/pull/173) ([gquemener](https://github.com/gquemener))
+
+**Merged pull requests:**
+
+- Update cs headers [\#178](https://github.com/prooph/pdo-event-store/pull/178) ([basz](https://github.com/basz))
+- Implement a second optional MetadataMatcher parameter for fromStream methods [\#177](https://github.com/prooph/pdo-event-store/pull/177) ([fjogeleit](https://github.com/fjogeleit))
+- forgotten whilst fixing \#164 [\#174](https://github.com/prooph/pdo-event-store/pull/174) ([basz](https://github.com/basz))
+
+## [v1.9.1](https://github.com/prooph/pdo-event-store/tree/v1.9.1) (2018-09-06)
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.9.0...v1.9.1)
+
+**Fixed bugs:**
+
+- Bugreport/batch size [\#171](https://github.com/prooph/pdo-event-store/pull/171) ([basz](https://github.com/basz))
+- Fix/not resetting until all done [\#170](https://github.com/prooph/pdo-event-store/pull/170) ([basz](https://github.com/basz))
+
+**Merged pull requests:**
+
+- apply latest prooph code style trends [\#169](https://github.com/prooph/pdo-event-store/pull/169) ([basz](https://github.com/basz))
+- Double bracket typo [\#167](https://github.com/prooph/pdo-event-store/pull/167) ([edwinkortman](https://github.com/edwinkortman))
+- Fix create\_event\_stream example links [\#166](https://github.com/prooph/pdo-event-store/pull/166) ([codeliner](https://github.com/codeliner))
+
+## [v1.9.0](https://github.com/prooph/pdo-event-store/tree/v1.9.0) (2018-06-29)
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.9.0-BETA-2...v1.9.0)
+
+## [v1.9.0-BETA-2](https://github.com/prooph/pdo-event-store/tree/v1.9.0-BETA-2) (2018-06-07)
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.9.0-BETA-1...v1.9.0-BETA-2)
 
 **Implemented enhancements:**

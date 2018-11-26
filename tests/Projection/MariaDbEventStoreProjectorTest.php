@@ -1,6 +1,7 @@
 <?php
+
 /**
- * This file is part of the prooph/pdo-event-store.
+ * This file is part of prooph/pdo-event-store.
  * (c) 2016-2018 prooph software GmbH <contact@prooph.de>
  * (c) 2016-2018 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
@@ -105,5 +106,50 @@ class MariaDbEventStoreProjectorTest extends PdoEventStoreProjectorTest
             SIGUSR1,
             $processDetails['exitcode']
         );
+    }
+
+    /**
+     * @test
+     */
+    public function a_stopped_status_should_keep_stream_positions(): void
+    {
+        $sql = <<<EOT
+INSERT INTO `projections` (name, position, state, status, locked_until)
+VALUES (?, ?, '{}', ?, NULL);
+EOT;
+
+        $statement = $this->connection->prepare($sql);
+        $statement->execute([
+            'test_projection',
+            \json_encode(['user' => 10]),
+            'stopping',
+        ]);
+
+        $this->prepareEventStream('user');
+        $projection = $this->projectionManager->createProjection('test_projection');
+
+        $projection
+            ->fromStream('user')
+            ->init(function () {
+                return ['count' => 0];
+            })
+            ->whenAny(
+                function (array $state, Message $event): array {
+                }
+            )
+            ->run();
+
+        $sql = <<<EOT
+SELECT * FROM `projections` WHERE name = ?
+EOT;
+
+        $statement = $this->connection->prepare($sql);
+        $statement->execute([
+            'test_projection',
+        ]);
+
+        $row = $statement->fetch(\PDO::FETCH_ASSOC);
+
+        $this->assertEquals(['user' => 10], \json_decode($row['position'], true));
     }
 }

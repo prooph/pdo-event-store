@@ -1,6 +1,7 @@
 <?php
+
 /**
- * This file is part of the prooph/pdo-event-store.
+ * This file is part of prooph/pdo-event-store.
  * (c) 2016-2018 prooph software GmbH <contact@prooph.de>
  * (c) 2016-2018 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
@@ -17,13 +18,10 @@ use PDO;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\Exception\ConcurrencyException;
-use Prooph\EventStore\Metadata\FieldType;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;
-use Prooph\EventStore\Pdo\Exception\JsonException;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\MySqlEventStore;
-use Prooph\EventStore\Pdo\PdoStreamIterator;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlAggregateStreamStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSingleStreamStrategy;
