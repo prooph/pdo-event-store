@@ -27,13 +27,13 @@ class Json
     {
         $flags = \JSON_UNESCAPED_UNICODE | \JSON_UNESCAPED_SLASHES | \JSON_PRESERVE_ZERO_FRACTION;
 
-        $string = \json_encode($value, $flags);
+        $json = \json_encode($value, $flags);
 
-        if ($error = \json_last_error()) {
+        if (JSON_ERROR_NONE !== $error = \json_last_error()) {
             throw new JsonException(\json_last_error_msg(), $error);
         }
 
-        return $string;
+        return $json;
     }
 
     /**
@@ -47,7 +47,7 @@ class Json
     {
         $data = \json_decode($json, true, 512, \JSON_BIGINT_AS_STRING);
 
-        if ($error = \json_last_error()) {
+        if (JSON_ERROR_NONE !== $error = \json_last_error()) {
             throw new JsonException(\json_last_error_msg(), $error);
         }
 
