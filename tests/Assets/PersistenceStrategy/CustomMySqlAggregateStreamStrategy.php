@@ -16,6 +16,7 @@ namespace ProophTest\EventStore\Pdo\Assets\PersistenceStrategy;
 use Iterator;
 use Prooph\EventStore\Pdo\Exception;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
+use Prooph\EventStore\Pdo\Util\Json;
 use Prooph\EventStore\StreamName;
 
 final class CustomMySqlAggregateStreamStrategy implements PersistenceStrategy
@@ -67,8 +68,8 @@ EOT;
             $data[] = $event->metadata()['_aggregate_version'];
             $data[] = $event->uuid()->toString();
             $data[] = $event->messageName();
-            $data[] = \json_encode($event->payload());
-            $data[] = \json_encode($event->metadata());
+            $data[] = Json::encode($event->payload());
+            $data[] = Json::encode($event->metadata());
             $data[] = $event->createdAt()->format('Y-m-d\TH:i:s.u');
         }
 

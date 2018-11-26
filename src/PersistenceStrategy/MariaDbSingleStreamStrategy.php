@@ -19,6 +19,7 @@ use Prooph\EventStore\Pdo\DefaultMessageConverter;
 use Prooph\EventStore\Pdo\HasQueryHint;
 use Prooph\EventStore\Pdo\MariaDBIndexedPersistenceStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
+use Prooph\EventStore\Pdo\Util\Json;
 use Prooph\EventStore\StreamName;
 
 final class MariaDbSingleStreamStrategy implements PersistenceStrategy, HasQueryHint, MariaDBIndexedPersistenceStrategy
@@ -91,8 +92,8 @@ EOT;
 
             $data[] = $eventData['uuid'];
             $data[] = $eventData['message_name'];
-            $data[] = \json_encode($eventData['payload']);
-            $data[] = \json_encode($eventData['metadata']);
+            $data[] = Json::encode($eventData['payload']);
+            $data[] = Json::encode($eventData['metadata']);
             $data[] = $eventData['created_at']->format('Y-m-d\TH:i:s.u');
         }
 

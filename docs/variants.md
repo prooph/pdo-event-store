@@ -120,3 +120,31 @@ transactions.
 
 Note: This could lead to problems using the event store, if you did not manage to handle the transaction handling accordingly.
 This is your problem and we will not provide any support for problems you encounter while doing so.
+
+### A note on Json
+
+MySql differs from the other vendors in a subtile manner which basicly is a result of the json specification itself. Json 
+does not distuinguish between *integers* and *floats*, it just knowns a *number*. This means that when you send a float 
+such as `2.0` to the store it will be stored by MySQL as integer `2`. While we have looked at ways to prevent this we 
+decided it would become too complicated to support that (could be done with nested JSON_OBJECT calls, which strangely 
+does store such value as-is).
+
+We think you can easily avoid this from becoming an issue by ensuring your events handle such differences. 
+
+Example
+
+```php
+final class MySliderChanged extends AggregateChanged
+{
+    public static function with(MySlider $slider): self {
+        return self::occur((string) $dossierId, [
+            'value' => $slider->toNative(), // float
+        ]);
+    }
+    
+    public function mySlider(): MySlider
+    {
+        return MySlider::from((float) $this->payload['value']); // use casting
+    }
+}
+```
