@@ -1035,6 +1035,8 @@ EOT;
 
         $newStatus = ProjectionStatus::RUNNING();
 
+        $now = new DateTimeImmutable('now', new DateTimeZone('UTC'));
+
         $projectionsTable = $this->quoteTableName($this->projectionsTable);
         $startProjectionSql = <<<EOT
 UPDATE $projectionsTable SET status = ?, locked_until = ? WHERE name = ?;
@@ -1043,7 +1045,7 @@ EOT;
         try {
             $statement->execute([
                 $newStatus->getValue(),
-                $this->createLockUntilString(new DateTimeImmutable('now')),
+                $this->createLockUntilString($now),
                 $this->name,
             ]);
         } catch (PDOException $exception) {
@@ -1055,5 +1057,6 @@ EOT;
         }
 
         $this->status = $newStatus;
+        $this->lastLockUpdate = $now;
     }
 }
