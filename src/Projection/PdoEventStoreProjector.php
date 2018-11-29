@@ -1037,11 +1037,15 @@ EOT;
 
         $projectionsTable = $this->quoteTableName($this->projectionsTable);
         $startProjectionSql = <<<EOT
-UPDATE $projectionsTable SET status = ? WHERE name = ?;
+UPDATE $projectionsTable SET status = ?, locked_until = ? WHERE name = ?;
 EOT;
         $statement = $this->connection->prepare($startProjectionSql);
         try {
-            $statement->execute([$newStatus->getValue(), $this->name]);
+            $statement->execute([
+                $newStatus->getValue(),
+                $this->createLockUntilString(new DateTimeImmutable('now')),
+                $this->name,
+            ]);
         } catch (PDOException $exception) {
             // ignore and check error code
         }

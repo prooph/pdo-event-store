@@ -219,6 +219,6 @@ EOT;
         $processDetails = \proc_get_status($projectionProcess);
         \posix_kill($processDetails['pid'], SIGQUIT);
 
-        $this->assertTrue($status->is(ProjectionStatus::RUNNING()), sprintf('Projection should be running, but it has `%s` status . Failed on attempt no. %s', $status->getValue(), $attempt));
+        $this->assertTrue($status->is(ProjectionStatus::RUNNING()), \sprintf('Projection should be running, but it has `%s` status . Failed on attempt no. %s', $status->getValue(), $attempt));
     }
 }
