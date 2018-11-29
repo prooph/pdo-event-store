@@ -14,11 +14,13 @@ declare(strict_types=1);
 namespace ProophTest\EventStore\Pdo\Projection;
 
 use Prooph\Common\Messaging\FQCNMessageFactory;
+use Prooph\Common\Messaging\Message;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\Pdo\MySqlEventStore;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSimpleStreamStrategy;
 use Prooph\EventStore\Pdo\Projection\MySqlProjectionManager;
 use Prooph\EventStore\Projection\ProjectionStatus;
+use Prooph\EventStore\Projection\Projector;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Pdo\TestUtil;
 
@@ -220,5 +222,43 @@ EOT;
         \posix_kill($processDetails['pid'], SIGQUIT);
 
         $this->assertTrue($status->is(ProjectionStatus::RUNNING()), \sprintf('Projection should be running, but it has `%s` status . Failed on attempt no. %s', $status->getValue(), $attempt));
+    }
+
+    /**
+     * @test
+     */
+    public function a_running_projector_that_is_reset_should_keep_stream_positions(): void
+    {
+        $this->prepareEventStream($sStreamName = 'user');
+
+        $projectionManager = $this->projectionManager;
+        $projection = $projectionManager->createProjection('test_projection', [
+            Projector::OPTION_PERSIST_BLOCK_SIZE => 1,
+        ]);
+
+        $eventCounter = 0;
+        $projection
+            ->fromStream('user')
+            ->init(function () {
+                return [];
+            })
+            ->whenAny(
+                function (array $state, Message $event) use (&$eventCounter, $projectionManager) {
+                    $eventCounter++;
+
+                    if (20 === $eventCounter) {
+                        $projectionManager->resetProjection('test_projection');
+                    }
+
+                    if (70 === $eventCounter) {
+                        $projectionManager->stopProjection('test_projection');
+                    }
+
+                    return $state;
+                }
+            )
+            ->run(true);
+
+        $this->assertEquals(70, $eventCounter);
     }
 }
