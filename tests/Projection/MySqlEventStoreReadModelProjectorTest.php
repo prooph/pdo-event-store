@@ -19,9 +19,11 @@ use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\Pdo\MySqlEventStore;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSimpleStreamStrategy;
 use Prooph\EventStore\Pdo\Projection\MySqlProjectionManager;
+use Prooph\EventStore\Projection\Projector;
 use Prooph\EventStore\Projection\ReadModel;
 use ProophTest\EventStore\Mock\ReadModelMock;
 use ProophTest\EventStore\Mock\UserCreated;
+use ProophTest\EventStore\Mock\UsernameChanged;
 use ProophTest\EventStore\Pdo\TestUtil;
 
 /**
@@ -171,5 +173,46 @@ EOT;
         $row = $statement->fetch(\PDO::FETCH_ASSOC);
 
         $this->assertEquals(['user' => 10], \json_decode($row['position'], true));
+    }
+
+    /**
+     * @test
+     * @testWith        [1, 70]
+     *                  [20, 70]
+     *                  [21, 71]
+     */
+    public function a_running_projector_that_is_reset_should_keep_stream_positions(int $blockSize, int $expectedEventsCount): void
+    {
+        $this->prepareEventStream('user-123');
+
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock(), [
+            Projector::OPTION_PERSIST_BLOCK_SIZE => $blockSize,
+        ]);
+
+        $projectionManager = $this->projectionManager;
+
+        $eventCounter = 0;
+
+        $projection
+            ->fromAll()
+            ->when([
+                       UserCreated::class => function ($state, Message $event) use (&$eventCounter): void {
+                           $eventCounter++;
+                       },
+                       UsernameChanged::class => function ($state, Message $event) use (&$eventCounter, $projectionManager): void {
+                           $eventCounter++;
+
+                           if ($eventCounter === 20) {
+                               $projectionManager->resetProjection('test_projection');
+                           }
+
+                           if ($eventCounter === 70) {
+                               $projectionManager->stopProjection('test_projection');
+                           }
+                       },
+                   ])
+            ->run(true);
+
+        $this->assertSame($expectedEventsCount, $eventCounter);
     }
 }
