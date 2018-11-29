@@ -157,74 +157,6 @@ EOT;
     }
 
     /**
-     * Attempt to restart the projection three times, as the process is asynchronous and mistakes can happen
-     *
-     * @test
-     * @testWith    [1]
-     *              [2]
-     *              [3]
-     */
-    public function projector_restarts_during_long_projection_with_keep_running_parameter(int $attempt): void
-    {
-        if (! \extension_loaded('pcntl')) {
-            $this->markTestSkipped('The PCNTL extension is not available.');
-
-            return;
-        }
-
-        $command = 'exec php ' . \realpath(__DIR__) . '/mysql-isolated-long-running-projection-with-small-block-size.php';
-        $descriptorSpec = [
-            0 => ['pipe', 'r'],
-            1 => ['pipe', 'w'],
-            2 => ['pipe', 'w'],
-        ];
-        \proc_open($command, $descriptorSpec, $pipes);
-
-        $connection = TestUtil::getConnection();
-
-        $eventStore = new MySqlEventStore(
-            new FQCNMessageFactory(),
-            $connection,
-            new MySqlSimpleStreamStrategy(new NoOpMessageConverter())
-        );
-
-        $projectionManager = new MySqlProjectionManager(
-            $eventStore,
-            $connection
-        );
-
-        \usleep(200000);
-        $projectionManager->resetProjection('test_projection');
-
-        $status = $projectionManager->fetchProjectionStatus('test_projection');
-
-        for ($i = 0; $i < 10; $i++) {
-            if (! $status->is(ProjectionStatus::RESETTING()) && ! $status->is(ProjectionStatus::IDLE())) {
-                break;
-            }
-
-            \usleep(400000);
-
-            $status = $projectionManager->fetchProjectionStatus('test_projection');
-        }
-
-        $descriptorSpec = [
-            0 => ['pipe', 'r'],
-            1 => ['pipe', 'w'],
-            2 => ['pipe', 'w'],
-        ];
-        /**
-         * Created process inherits env variables from this process.
-         * Script returns with non-standard code SIGUSR1 from the handler and -1 else
-         */
-        $projectionProcess = \proc_open($command, $descriptorSpec, $pipes);
-        $processDetails = \proc_get_status($projectionProcess);
-        \posix_kill($processDetails['pid'], SIGQUIT);
-
-        $this->assertTrue($status->is(ProjectionStatus::RUNNING()), \sprintf('Projection should be running, but it has `%s` status . Failed on attempt no. %s', $status->getValue(), $attempt));
-    }
-
-    /**
      * @test
      */
     public function a_running_projector_that_is_reset_should_keep_stream_positions(): void
@@ -259,6 +191,7 @@ EOT;
             )
             ->run(true);
 
+        $this->projectionManager->deleteProjection('test_projection', true);
         $this->assertEquals(70, $eventCounter);
     }
 }
