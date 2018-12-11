@@ -14,10 +14,12 @@ declare(strict_types=1);
 namespace ProophTest\EventStore\Pdo\Projection;
 
 use Prooph\Common\Messaging\FQCNMessageFactory;
+use Prooph\Common\Messaging\Message;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresSimpleStreamStrategy;
 use Prooph\EventStore\Pdo\PostgresEventStore;
 use Prooph\EventStore\Pdo\Projection\PostgresProjectionManager;
+use Prooph\EventStore\Projection\Projector;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Pdo\TestUtil;
 
@@ -151,5 +153,44 @@ EOT;
         $row = $statement->fetch(\PDO::FETCH_ASSOC);
 
         $this->assertEquals(['user' => 10], \json_decode($row['position'], true));
+    }
+
+    /**
+     * @test
+     */
+    public function a_running_projector_that_is_reset_should_keep_stream_positions(): void
+    {
+        $this->prepareEventStream($sStreamName = 'user');
+
+        $projectionManager = $this->projectionManager;
+        $projection = $projectionManager->createProjection('test_projection', [
+            Projector::OPTION_PERSIST_BLOCK_SIZE => 1,
+        ]);
+
+        $eventCounter = 0;
+        $projection
+            ->fromStream('user')
+            ->init(function () {
+                return [];
+            })
+            ->whenAny(
+                function (array $state, Message $event) use (&$eventCounter, $projectionManager) {
+                    $eventCounter++;
+
+                    if (20 === $eventCounter) {
+                        $projectionManager->resetProjection('test_projection');
+                    }
+
+                    if (70 === $eventCounter) {
+                        $projectionManager->stopProjection('test_projection');
+                    }
+
+                    return $state;
+                }
+            )
+            ->run(true);
+
+        $this->projectionManager->deleteProjection('test_projection', true);
+        $this->assertEquals(70, $eventCounter);
     }
 }
