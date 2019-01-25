@@ -2,8 +2,8 @@
 
 /**
  * This file is part of prooph/pdo-event-store.
- * (c) 2016-2018 prooph software GmbH <contact@prooph.de>
- * (c) 2016-2018 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
+ * (c) 2016-2019 prooph software GmbH <contact@prooph.de>
+ * (c) 2016-2019 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -18,12 +18,12 @@ use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Exception\InvalidArgumentException;
+use Prooph\EventStore\Exception\StreamExistsAlready;
 use Prooph\EventStore\Pdo\Projection\PdoEventStoreProjector;
 use Prooph\EventStore\Projection\ProjectionManager;
 use Prooph\EventStore\Projection\Projector;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
-use Prooph\EventStore\Exception\StreamExistsAlready;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
 use ProophTest\EventStore\Pdo\TestUtil;
@@ -365,7 +365,7 @@ abstract class PdoEventStoreProjectorTest extends AbstractEventStoreProjectorTes
             ->when([
                 UserCreated::class => function (array $state, Message $event) {
                     $this->emit($event);
-                }
+                },
             ])
             ->run(false);
 
@@ -386,7 +386,7 @@ abstract class PdoEventStoreProjectorTest extends AbstractEventStoreProjectorTes
             ->when([
                 UserCreated::class => function (array $state, Message $event) {
                     $this->emit($event);
-                }
+                },
             ]);
 
         $streamExistsAlreadyExceptionThrowed = false;
@@ -396,6 +396,6 @@ abstract class PdoEventStoreProjectorTest extends AbstractEventStoreProjectorTes
             $streamExistsAlreadyExceptionThrowed = true;
         }
 
-        $this->assertFalse($streamExistsAlreadyExceptionThrowed, "StreamExistsAlready exception should not be throwed");
+        $this->assertFalse($streamExistsAlreadyExceptionThrowed, 'StreamExistsAlready exception should not be throwed');
     }
 }
