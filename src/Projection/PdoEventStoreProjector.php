@@ -322,7 +322,7 @@ final class PdoEventStoreProjector implements Projector
 
     public function emit(Message $event): void
     {
-        if (! $this->streamCreated || ! $this->eventStore->hasStream(new StreamName($this->name))) {
+        if (! $this->streamCreated && ! $this->eventStore->hasStream(new StreamName($this->name))) {
             $this->eventStore->create(new Stream(new StreamName($this->name), new EmptyIterator()));
             $this->streamCreated = true;
         }
