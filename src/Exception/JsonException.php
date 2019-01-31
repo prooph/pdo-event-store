@@ -17,6 +17,7 @@ use Prooph\EventStore\Exception\RuntimeException as EventStoreRuntimeException;
 
 class JsonException extends EventStoreRuntimeException implements PdoEventStoreException
 {
+    /** @deprecated  */
     public static function whileDecode(string $msg, int $code, string $json): JsonException
     {
         return new self(

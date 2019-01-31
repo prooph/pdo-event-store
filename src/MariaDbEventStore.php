@@ -25,6 +25,7 @@ use Prooph\EventStore\Metadata\Operator;
 use Prooph\EventStore\Pdo\Exception\ConcurrencyExceptionFactory;
 use Prooph\EventStore\Pdo\Exception\ExtensionNotLoaded;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
+use Prooph\EventStore\Pdo\Util\Json;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamIterator\EmptyStreamIterator;
 use Prooph\EventStore\StreamName;
@@ -116,7 +117,7 @@ EOT;
             throw StreamNotFound::with($streamName);
         }
 
-        return \json_decode($stream->metadata, true);
+        return Json::decode($stream->metadata);
     }
 
     public function updateStreamMetadata(StreamName $streamName, array $newMetadata): void
@@ -133,7 +134,7 @@ EOT;
         try {
             $statement->execute([
                 'streamName' => $streamName->toString(),
-                'metadata' => \json_encode($newMetadata),
+                'metadata' => Json::encode($newMetadata),
             ]);
         } catch (PDOException $exception) {
             // ignore and check error code
@@ -766,7 +767,7 @@ SQL;
         }
 
         $streamName = $this->persistenceStrategy->generateTableName($stream->streamName());
-        $metadata = \json_encode($stream->metadata());
+        $metadata = Json::encode($stream->metadata());
 
         $sql = <<<EOT
 INSERT INTO `$this->eventStreamsTable` (real_stream_name, stream_name, metadata, category)

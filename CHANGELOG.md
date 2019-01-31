@@ -1,7 +1,19 @@
 # Change Log
 
-## [v1.10.1](https://github.com/prooph/pdo-event-store/tree/v1.10.1)
+## [v1.10.2](https://github.com/prooph/pdo-event-store/tree/v1.10.2)
 
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.10.1...v1.10.2)
+
+**Fixed bugs:**
+
+- Fix streamCreated condition [\#188](https://github.com/prooph/pdo-event-store/pull/188) ([rodion-k](https://github.com/rodion-k))
+- Issue/payload encoding [\#185](https://github.com/prooph/pdo-event-store/pull/185) ([prolic](https://github.com/prolic))
+
+**Merged pull requests:**
+
+- fixed typo into variants documentation [\#184](https://github.com/prooph/pdo-event-store/pull/184) ([AlessandroMinoccheri](https://github.com/AlessandroMinoccheri))
+
+## [v1.10.1](https://github.com/prooph/pdo-event-store/tree/v1.10.1) (2018-11-10)
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.10.0...v1.10.1)
 
 **Fixed bugs:**
