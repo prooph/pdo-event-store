@@ -405,12 +405,12 @@ abstract class PdoEventStoreProjectorTest extends AbstractEventStoreProjectorTes
     public function a_running_projector_that_is_reset_should_not_keep_stream_positions(): void
     {
         $this->prepareEventStream($sStreamName = 'user');
-        
+
         $projectionManager = $this->projectionManager;
         $projection = $projectionManager->createProjection('test_projection', [
             Projector::OPTION_PERSIST_BLOCK_SIZE => 1,
         ]);
-        
+
         $eventCounter = 0;
         $projection
             ->fromStream('user')
@@ -420,20 +420,20 @@ abstract class PdoEventStoreProjectorTest extends AbstractEventStoreProjectorTes
             ->whenAny(
                 function (array $state, Message $event) use (&$eventCounter, $projectionManager) {
                     $eventCounter++;
-                    
+
                     if (20 === $eventCounter) {
                         $projectionManager->resetProjection('test_projection');
                     }
-                    
+
                     if (70 === $eventCounter) {
                         $projectionManager->stopProjection('test_projection');
                     }
-                    
+
                     return $state;
                 }
             )
             ->run(true);
-        
+
         $this->projectionManager->deleteProjection('test_projection', true);
         $this->assertEquals(70, $eventCounter);
     }
