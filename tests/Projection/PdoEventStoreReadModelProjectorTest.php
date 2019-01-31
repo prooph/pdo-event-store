@@ -378,7 +378,7 @@ abstract class PdoEventStoreReadModelProjectorTest extends AbstractEventStoreRea
      *                  [20, 70]
      *                  [21, 71]
      */
-    public function a_running_projector_that_is_reset_should_keep_stream_positions(int $blockSize, int $expectedEventsCount): void
+    public function a_running_projector_that_is_reset_should_run_again(int $blockSize, int $expectedEventsCount): void
     {
         $this->prepareEventStream('user-123');
 

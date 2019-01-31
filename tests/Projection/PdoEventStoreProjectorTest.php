@@ -18,9 +18,12 @@ use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Exception\InvalidArgumentException;
+use Prooph\EventStore\Exception\StreamExistsAlready;
 use Prooph\EventStore\Pdo\Projection\PdoEventStoreProjector;
 use Prooph\EventStore\Projection\ProjectionManager;
 use Prooph\EventStore\Projection\Projector;
+use Prooph\EventStore\Stream;
+use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
 use ProophTest\EventStore\Pdo\TestUtil;
@@ -352,7 +355,54 @@ abstract class PdoEventStoreProjectorTest extends AbstractEventStoreProjectorTes
     /**
      * @test
      */
-    public function a_running_projector_that_is_reset_should_keep_stream_positions(): void
+    public function it_should_create_projection_stream_on_emit()
+    {
+        $this->prepareEventStream('user-123');
+
+        $projection = $this->projectionManager->createProjection('test_projection_emit');
+        $projection
+            ->fromStream('user-123')
+            ->when([
+                UserCreated::class => function (array $state, Message $event) {
+                    $this->emit($event);
+                },
+            ])
+            ->run(false);
+
+        $this->assertTrue($this->eventStore->hasStream(new StreamName('test_projection_emit')));
+    }
+
+    /**
+     * @test
+     */
+    public function it_should_not_create_projection_stream_on_emit_if_it_already_exists()
+    {
+        $this->eventStore->create(new Stream(new StreamName('test_projection_emit2'), new \ArrayIterator([])));
+
+        $this->prepareEventStream('user-123');
+        $projection = $this->projectionManager->createProjection('test_projection_emit2');
+        $projection
+            ->fromStream('user-123')
+            ->when([
+                UserCreated::class => function (array $state, Message $event) {
+                    $this->emit($event);
+                },
+            ]);
+
+        $streamExistsAlreadyExceptionThrowed = false;
+        try {
+            $projection->run(false);
+        } catch (StreamExistsAlready $e) {
+            $streamExistsAlreadyExceptionThrowed = true;
+        }
+
+        $this->assertFalse($streamExistsAlreadyExceptionThrowed, 'StreamExistsAlready exception should not be throwed');
+    }
+
+    /**
+     * @test
+     */
+    public function a_running_projector_that_is_reset_should_not_keep_stream_positions(): void
     {
         $this->prepareEventStream($sStreamName = 'user');
 
