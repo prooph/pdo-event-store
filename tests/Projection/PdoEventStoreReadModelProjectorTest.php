@@ -2,8 +2,8 @@
 
 /**
  * This file is part of prooph/pdo-event-store.
- * (c) 2016-2018 prooph software GmbH <contact@prooph.de>
- * (c) 2016-2018 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
+ * (c) 2016-2019 prooph software GmbH <contact@prooph.de>
+ * (c) 2016-2019 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -21,6 +21,7 @@ use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Exception\InvalidArgumentException;
 use Prooph\EventStore\Pdo\Projection\PdoEventStoreReadModelProjector;
 use Prooph\EventStore\Projection\ProjectionManager;
+use Prooph\EventStore\Projection\Projector;
 use Prooph\EventStore\Projection\ReadModel;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
@@ -369,5 +370,46 @@ abstract class PdoEventStoreReadModelProjectorTest extends AbstractEventStoreRea
         $updateLockThresholdProp->setValue($projector, 500);
 
         $this->assertFalse($shouldUpdateLock->invoke($projector, $now));
+    }
+
+    /**
+     * @test
+     * @testWith        [1, 70]
+     *                  [20, 70]
+     *                  [21, 71]
+     */
+    public function a_running_projector_that_is_reset_should_keep_stream_positions(int $blockSize, int $expectedEventsCount): void
+    {
+        $this->prepareEventStream('user-123');
+
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock(), [
+            Projector::OPTION_PERSIST_BLOCK_SIZE => $blockSize,
+        ]);
+
+        $projectionManager = $this->projectionManager;
+
+        $eventCounter = 0;
+
+        $projection
+            ->fromAll()
+            ->when([
+                UserCreated::class => function ($state, Message $event) use (&$eventCounter): void {
+                    $eventCounter++;
+                },
+                UsernameChanged::class => function ($state, Message $event) use (&$eventCounter, $projectionManager): void {
+                    $eventCounter++;
+
+                    if ($eventCounter === 20) {
+                        $projectionManager->resetProjection('test_projection');
+                    }
+
+                    if ($eventCounter === 70) {
+                        $projectionManager->stopProjection('test_projection');
+                    }
+                },
+            ])
+            ->run(true);
+
+        $this->assertSame($expectedEventsCount, $eventCounter);
     }
 }
