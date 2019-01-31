@@ -1,7 +1,18 @@
 # Change Log
 
-## [v1.10.2](https://github.com/prooph/pdo-event-store/tree/v1.10.2)
+## [v1.10.3](https://github.com/prooph/pdo-event-store/tree/v1.10.3)
 
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.10.2...v1.10.3)
+
+**Fixed bugs:**
+
+- Issue/Restarting projection during event processing [\#186](https://github.com/prooph/pdo-event-store/pull/186) ([grzegorzstachniukalm](https://github.com/grzegorzstachniukalm))
+
+**Closed issues:**
+
+- Projection implementation dependent on Message interface [\#187](https://github.com/prooph/pdo-event-store/issues/187)
+
+## [v1.10.2](https://github.com/prooph/pdo-event-store/tree/v1.10.2) (2019-01-25)
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.10.1...v1.10.2)
 
 **Fixed bugs:**
