@@ -64,7 +64,11 @@ final class MariaDbMetadataLockStrategy implements WriteLockStrategy
 
     public function releaseLock(string $name): bool
     {
-        $this->connection->exec('DO RELEASE_LOCK(\'' . $name . '\') as \'release_lock\'');
+        $res = $this->connection->query('SELECT RELEASE_LOCK(\'' . $name . '\') as \'release_lock\'');
+
+        if ($res) {
+            $res->fetchAll();
+        }
 
         return true;
     }

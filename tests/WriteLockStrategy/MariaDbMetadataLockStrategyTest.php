@@ -188,9 +188,14 @@ class MariaDbMetadataLockStrategyTest extends TestCase
      */
     public function it_releases_lock()
     {
+        $releaseStatement = $this->prophesize(\PDOStatement::class);
+        $releaseStatement->fetchAll()->shouldBeCalled();
+
         $connection = $this->prophesize(\PDO::class);
 
-        $connection->exec(Argument::containingString('RELEASE_LOCK(\'lock\''))->shouldBeCalled();
+        $connection->query(Argument::containingString('RELEASE_LOCK(\'lock\''))
+            ->shouldBeCalled()
+            ->willReturn($releaseStatement);
 
         $strategy = new MariaDbMetadataLockStrategy($connection->reveal());
 
@@ -202,7 +207,13 @@ class MariaDbMetadataLockStrategyTest extends TestCase
      */
     public function it_release_returns_true()
     {
+        $releaseStatement = $this->prophesize(\PDOStatement::class);
+
         $connection = $this->prophesize(\PDO::class);
+
+        $connection->query(Argument::any())
+            ->willReturn($releaseStatement);
+
         $strategy = new MariaDbMetadataLockStrategy($connection->reveal());
 
         $this->assertTrue($strategy->releaseLock('lock'));
