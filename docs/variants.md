@@ -124,7 +124,7 @@ This is your problem and we will not provide any support for problems you encoun
 ### Using write locks
 
 In high-concurrent write scenarios it is possible that events are skipped when reading from the stream simultaneously. 
-[Issue #198](https://github.com/prooph/pdo-event-store/issues/189) explains the background in more detail on why this 
+[Issue #189](https://github.com/prooph/pdo-event-store/issues/189) explains the background in more detail on why this 
 is happening. 
 
 In order to prevent this it is possible to apply a locking strategy when writing to an event stream. 
