@@ -26,6 +26,7 @@ use Prooph\EventStore\Pdo\Exception\ConcurrencyExceptionFactory;
 use Prooph\EventStore\Pdo\Exception\ExtensionNotLoaded;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\Util\Json;
+use Prooph\EventStore\Pdo\WriteLockStrategy\NoLockStrategy;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamIterator\EmptyStreamIterator;
 use Prooph\EventStore\StreamName;
@@ -69,6 +70,11 @@ final class MySqlEventStore implements PdoEventStore
     private $disableTransactionHandling;
 
     /**
+     * @var WriteLockStrategy
+     */
+    private $writeLockStrategy;
+
+    /**
      * @throws ExtensionNotLoaded
      */
     public function __construct(
@@ -77,10 +83,15 @@ final class MySqlEventStore implements PdoEventStore
         PersistenceStrategy $persistenceStrategy,
         int $loadBatchSize = 10000,
         string $eventStreamsTable = 'event_streams',
-        bool $disableTransactionHandling = false
+        bool $disableTransactionHandling = false,
+        WriteLockStrategy $writeLockStrategy = null
     ) {
         if (! \extension_loaded('pdo_mysql')) {
             throw ExtensionNotLoaded::with('pdo_mysql');
+        }
+
+        if (null === $writeLockStrategy) {
+            $writeLockStrategy = new NoLockStrategy();
         }
 
         Assertion::min($loadBatchSize, 1);
@@ -91,6 +102,7 @@ final class MySqlEventStore implements PdoEventStore
         $this->loadBatchSize = $loadBatchSize;
         $this->eventStreamsTable = $eventStreamsTable;
         $this->disableTransactionHandling = $disableTransactionHandling;
+        $this->writeLockStrategy = $writeLockStrategy;
     }
 
     public function fetchStreamMetadata(StreamName $streamName): array
@@ -222,6 +234,11 @@ EOT;
 
         $tableName = $this->persistenceStrategy->generateTableName($streamName);
 
+        $lockName = '_' . $tableName . '_write_lock';
+        if (!$this->writeLockStrategy->getLock($lockName)) {
+            throw ConcurrencyExceptionFactory::failedToAcquireLock();
+        }
+
         $rowPlaces = '(' . \implode(', ', \array_fill(0, \count($columnNames), '?')) . ')';
         $allPlaces = \implode(', ', \array_fill(0, $countEntries, $rowPlaces));
 
@@ -271,6 +288,8 @@ EOT;
         if (! $this->disableTransactionHandling && $this->connection->inTransaction() && ! $this->duringCreate) {
             $this->connection->commit();
         }
+
+        $this->writeLockStrategy->releaseLock($lockName);
     }
 
     public function load(

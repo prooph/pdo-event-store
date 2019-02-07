@@ -25,10 +25,13 @@ use Prooph\EventStore\Pdo\MariaDbEventStore;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbAggregateStreamStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbSingleStreamStrategy;
+use Prooph\EventStore\Pdo\WriteLockStrategy;
+use Prooph\EventStore\Pdo\WriteLockStrategy\MariaDbMetadataLockStrategy;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
+use Prophecy\Argument;
 use Ramsey\Uuid\Uuid;
 
 /**
@@ -161,6 +164,113 @@ class MariaDbEventStoreTest extends AbstractPdoEventStoreTest
         );
 
         $eventStore->appendTo(new StreamName('Prooph\Model\User'), new ArrayIterator([$streamEvent]));
+    }
+
+    /**
+     * @test
+     */
+    public function it_requests_and_releases_locks_when_appending_streams(): void
+    {
+        $writeLockName = '__878c0b7e51ecaab95c511fc816ad2a70c9418208_write_lock';
+
+        $lockStrategy = $this->prophesize(WriteLockStrategy::class);
+        $lockStrategy->getLock(Argument::exact($writeLockName))->shouldBeCalled()->willReturn(true);
+        $lockStrategy->releaseLock(Argument::exact($writeLockName))->shouldBeCalled()->willReturn(true);
+
+        $connection = $this->prophesize(\PDO::class);
+
+        $appendStatement = $this->prophesize(\PDOStatement::class);
+        $appendStatement->execute(Argument::any())->willReturn(true);
+        $appendStatement->errorInfo()->willReturn([0 => '00000']);
+        $appendStatement->errorCode()->willReturn('00000');
+
+        $connection->inTransaction()->willReturn(false);
+        $connection->beginTransaction()->willReturn(true);
+        $connection->prepare(Argument::any())->willReturn($appendStatement);
+
+        $eventStore = new MariaDbEventStore(
+            new FQCNMessageFactory(),
+            $connection->reveal(),
+            new MariaDbSingleStreamStrategy(new NoOpMessageConverter()),
+            10000,
+            'event_streams',
+            false,
+            $lockStrategy->reveal()
+        );
+
+        $streamEvent = UsernameChanged::with(
+            ['name' => 'John Doe'],
+            1
+        );
+
+        $eventStore->appendTo(new StreamName('Prooph\Model\User'), new ArrayIterator([$streamEvent]));
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_lock_fails(): void
+    {
+        $this->expectException(ConcurrencyException::class);
+
+        $lockStrategy = $this->prophesize(WriteLockStrategy::class);
+        $lockStrategy->getLock(Argument::any())->shouldBeCalled()->willReturn(false);
+
+        $connection = $this->prophesize(\PDO::class);
+
+        $eventStore = new MariaDbEventStore(
+            new FQCNMessageFactory(),
+            $connection->reveal(),
+            new MariaDbSingleStreamStrategy(new NoOpMessageConverter()),
+            10000,
+            'event_streams',
+            false,
+            $lockStrategy->reveal()
+        );
+
+        $streamEvent = UsernameChanged::with(
+            ['name' => 'John Doe'],
+            1
+        );
+
+        $eventStore->appendTo(new StreamName('Prooph\Model\User'), new ArrayIterator([$streamEvent]));
+    }
+
+    /**
+     * @test
+     */
+    public function it_can_write_to_db_with_locks_enabled(): void
+    {
+        $eventStore = new MariaDbEventStore(
+            new FQCNMessageFactory(),
+            $this->connection,
+            new MariaDbSingleStreamStrategy(new NoOpMessageConverter()),
+            10000,
+            'event_streams',
+            false,
+            new MariaDbMetadataLockStrategy($this->connection)
+        );
+
+        $streamName = new StreamName('Prooph\Model\User');
+        $stream = new Stream($streamName, new ArrayIterator([]));
+
+        $eventStore->create($stream);
+
+        $streamEvent = UsernameChanged::with(
+            ['name' => 'John Doe'],
+            1
+        );
+
+        $streamEvent = $streamEvent->withAddedMetadata('tag', 'person');
+        $streamEvent = $streamEvent->withAddedMetadata('_aggregate_id', Uuid::uuid4()->toString());
+        $streamEvent = $streamEvent->withAddedMetadata('_aggregate_type', 'user');
+
+        $eventStore->appendTo($streamName, new ArrayIterator([$streamEvent]));
+
+        $metadataMatcher = new MetadataMatcher();
+        $iterator = $eventStore->load($streamName, 1, 5, $metadataMatcher);
+
+        $this->assertCount(1, $iterator);
     }
 
     /**

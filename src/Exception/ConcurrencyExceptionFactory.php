@@ -27,4 +27,9 @@ class ConcurrencyExceptionFactory
             )
         );
     }
+
+    public static function failedToAcquireLock(): ConcurrencyException
+    {
+        return new ConcurrencyException('Failed to acquire lock for writing to stream');
+    }
 }
