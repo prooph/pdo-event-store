@@ -18,6 +18,7 @@ use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Pdo\MySqlEventStore;
+use Prooph\EventStore\Pdo\WriteLockStrategy\NoLockStrategy;
 
 final class MySqlEventStoreFactory extends AbstractEventStoreFactory
 {
@@ -57,6 +58,7 @@ final class MySqlEventStoreFactory extends AbstractEventStoreFactory
             'metadata_enrichers' => [],
             'plugins' => [],
             'disable_transaction_handling' => false,
+            'write_lock_strategy' => null,
         ];
     }
 }

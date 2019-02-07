@@ -22,6 +22,8 @@ use Prooph\EventStore\Pdo\Container\MariaDbEventStoreFactory;
 use Prooph\EventStore\Pdo\Exception\InvalidArgumentException;
 use Prooph\EventStore\Pdo\MariaDbEventStore;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
+use Prooph\EventStore\Pdo\WriteLockStrategy;
+use Prooph\EventStore\Pdo\WriteLockStrategy\MariaDbMetadataLockStrategy;
 use Prooph\EventStore\Plugin\Plugin;
 use ProophTest\EventStore\Pdo\TestUtil;
 use Psr\Container\ContainerInterface;
@@ -201,6 +203,31 @@ final class MariaDbEventStoreFactoryTest extends TestCase
 
         $eventStoreName = 'custom';
         MariaDbEventStoreFactory::$eventStoreName($container->reveal());
+    }
+
+    /**
+     * @test
+     */
+    public function it_loads_write_lock_if_set(): void
+    {
+        $config['prooph']['event_store']['default'] = [
+            'connection' => 'my_connection',
+            'persistence_strategy' => PersistenceStrategy\MySqlAggregateStreamStrategy::class,
+            'write_lock_strategy' => MariaDbMetadataLockStrategy::class,
+        ];
+
+        $connection = TestUtil::getConnection();
+
+        $container = $this->prophesize(ContainerInterface::class);
+
+        $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
+        $container->get('config')->willReturn($config)->shouldBeCalled();
+        $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory());
+        $container->get(PersistenceStrategy\MySqlAggregateStreamStrategy::class)->willReturn($this->prophesize(PersistenceStrategy::class));
+        $container->get(MariaDbMetadataLockStrategy::class)->willReturn($this->prophesize(WriteLockStrategy::class))->shouldBeCalled();
+
+        $factory = new MariaDbEventStoreFactory();
+        $factory($container->reveal());
     }
 
     /**
