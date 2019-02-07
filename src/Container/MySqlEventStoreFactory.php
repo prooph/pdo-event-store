@@ -18,7 +18,6 @@ use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Pdo\MySqlEventStore;
-use Prooph\EventStore\Pdo\WriteLockStrategy\NoLockStrategy;
 
 final class MySqlEventStoreFactory extends AbstractEventStoreFactory
 {

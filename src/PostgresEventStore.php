@@ -215,7 +215,7 @@ EOT;
         $tableName = $this->persistenceStrategy->generateTableName($streamName);
 
         $lockName = '_' . $tableName . '_write_lock';
-        if (!$this->writeLockStrategy->getLock($lockName)) {
+        if (! $this->writeLockStrategy->getLock($lockName)) {
             throw ConcurrencyExceptionFactory::failedToAcquireLock();
         }
 

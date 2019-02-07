@@ -50,7 +50,7 @@ final class MariaDbMetadataLockStrategy implements WriteLockStrategy
             throw $e;
         }
 
-        if (!$res) {
+        if (! $res) {
             return false;
         }
 
