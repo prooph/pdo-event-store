@@ -121,6 +121,24 @@ transactions.
 Note: This could lead to problems using the event store, if you did not manage to handle the transaction handling accordingly.
 This is your problem and we will not provide any support for problems you encounter while doing so.
 
+### Using write locks
+
+In high-concurrent write scenarios it is possible that events are skipped when reading from the stream simultaneously. 
+[Issue #198](https://github.com/prooph/pdo-event-store/issues/189) explains the background in more detail on why this 
+is happening. 
+
+In order to prevent this it is possible to apply a locking strategy when writing to an event stream. 
+By default the `NoLockStragey` does not conduct any form of locking. the `MysqlMetadataLockStrategy` uses MySQL
+metadata locks to ensure only one client at a time can write at the same stream (`MariaDbMetadataLockStrategy` 
+respectively). Both `MysqlMetadataLockStrategy` and `MariaDbMetadataLockStrategy` have an estimated loss of 50% write 
+throughput in peak times compared to the `NoLockStrategy`
+
+Changing the locking strategy depends on a few factors: 
+- The selected stream strategy: the more events are written to the same database table the more likely this is an issue. 
+  For example when using the `AggregateStreamStrategy` each aggregate has its own table, making this less likely an
+   issue (only when having lots of writes on the same aggregate respectively). 
+- How the stream is read: if it is read at the same time as it is written, is it fine to miss a few events, etc ... 
+
 ### A note on Json
 
 MySql differs from the other vendors in a subtile manner which basicly is a result of the json specification itself. Json 
