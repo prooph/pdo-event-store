@@ -65,7 +65,7 @@ class MariaDbMetadataLockStrategyTest extends TestCase
 
         $connection = $this->prophesize(\PDO::class);
 
-        $connection->query(Argument::containingString('GET_LOCK("lock"'))
+        $connection->query(Argument::containingString('GET_LOCK(\'lock\''))
             ->willReturn($statement->reveal())
             ->shouldBeCalled();
 
@@ -86,7 +86,7 @@ class MariaDbMetadataLockStrategyTest extends TestCase
 
         $connection = $this->prophesize(\PDO::class);
 
-        $connection->query(Argument::containingString("16777215"))
+        $connection->query(Argument::containingString('16777215'))
             ->willReturn($statement->reveal())
             ->shouldBeCalled();
 
@@ -190,7 +190,7 @@ class MariaDbMetadataLockStrategyTest extends TestCase
     {
         $connection = $this->prophesize(\PDO::class);
 
-        $connection->exec(Argument::containingString('RELEASE_LOCK("lock"'))->shouldBeCalled();
+        $connection->exec(Argument::containingString('RELEASE_LOCK(\'lock\''))->shouldBeCalled();
 
         $strategy = new MariaDbMetadataLockStrategy($connection->reveal());
 

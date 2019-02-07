@@ -36,7 +36,7 @@ final class MysqlMetadataLockStrategy implements WriteLockStrategy
     public function getLock(string $name): bool
     {
         try {
-            $res = $this->connection->query('SELECT GET_LOCK("' . $name . '", ' . $this->timeout . ') as `get_lock`');
+            $res = $this->connection->query('SELECT GET_LOCK(\'' . $name . '\', ' . $this->timeout . ') as \'get_lock\'');
         } catch (\PDOException $e) {
             // ER_USER_LOCK_DEADLOCK: we only care for deadlock errors and fail locking
             if ('3058' === $this->connection->errorCode()) {
@@ -60,7 +60,7 @@ final class MysqlMetadataLockStrategy implements WriteLockStrategy
 
     public function releaseLock(string $name): bool
     {
-        $this->connection->exec('DO RELEASE_LOCK("' . $name . '") as `release_lock`');
+        $this->connection->exec('DO RELEASE_LOCK(\'' . $name . '\') as \'release_lock\'');
 
         return true;
     }
