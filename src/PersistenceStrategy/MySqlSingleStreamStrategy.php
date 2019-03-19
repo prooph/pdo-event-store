@@ -16,12 +16,11 @@ namespace Prooph\EventStore\Pdo\PersistenceStrategy;
 use Iterator;
 use Prooph\Common\Messaging\MessageConverter;
 use Prooph\EventStore\Pdo\DefaultMessageConverter;
-use Prooph\EventStore\Pdo\HasQueryHint;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\Pdo\Util\Json;
 use Prooph\EventStore\StreamName;
 
-final class MySqlSingleStreamStrategy implements PersistenceStrategy, HasQueryHint
+final class MySqlSingleStreamStrategy implements PersistenceStrategy
 {
     /**
      * @var MessageConverter
@@ -91,10 +90,5 @@ EOT;
     public function generateTableName(StreamName $streamName): string
     {
         return '_' . \sha1($streamName->toString());
-    }
-
-    public function indexName(): string
-    {
-        return 'ix_query_aggregate';
     }
 }
