@@ -1,7 +1,14 @@
 # Change Log
 
-## [v1.10.4](https://github.com/prooph/pdo-event-store/tree/v1.10.4)
+## [v1.10.5](https://github.com/prooph/pdo-event-store/tree/v1.10.5)
 
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.10.4...v1.10.5)
+
+**Fixed bugs:**
+
+- fix PdoEventStoreReadModelProjector [\#196](https://github.com/prooph/pdo-event-store/pull/196) ([prolic](https://github.com/prolic))
+
+## [v1.10.4](https://github.com/prooph/pdo-event-store/tree/v1.10.4) (2019-04-09)
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.10.3...v1.10.4)
 
 **Fixed bugs:**
