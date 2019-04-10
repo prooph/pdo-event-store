@@ -1,7 +1,27 @@
 # Change Log
 
-## [v1.10.3](https://github.com/prooph/pdo-event-store/tree/v1.10.3)
+## [v1.10.5](https://github.com/prooph/pdo-event-store/tree/v1.10.5)
 
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.10.4...v1.10.5)
+
+**Fixed bugs:**
+
+- fix PdoEventStoreReadModelProjector [\#196](https://github.com/prooph/pdo-event-store/pull/196) ([prolic](https://github.com/prolic))
+
+## [v1.10.4](https://github.com/prooph/pdo-event-store/tree/v1.10.4) (2019-04-09)
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.10.3...v1.10.4)
+
+**Fixed bugs:**
+
+- PdoEventStoreProjector::updateLock should not update projection position [\#194](https://github.com/prooph/pdo-event-store/issues/194)
+- Removes position update from lock update [\#195](https://github.com/prooph/pdo-event-store/pull/195) ([brunowowk](https://github.com/brunowowk))
+- Fix reference error in PostgresEventStore for MetadataMatcher with IN Operations [\#192](https://github.com/prooph/pdo-event-store/pull/192) ([fjogeleit](https://github.com/fjogeleit))
+
+**Closed issues:**
+
+- Use tablespaces? [\#193](https://github.com/prooph/pdo-event-store/issues/193)
+
+## [v1.10.3](https://github.com/prooph/pdo-event-store/tree/v1.10.3) (2019-01-31)
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.10.2...v1.10.3)
 
 **Fixed bugs:**
@@ -11,6 +31,7 @@
 **Closed issues:**
 
 - Projection implementation dependent on Message interface [\#187](https://github.com/prooph/pdo-event-store/issues/187)
+- Resetting projection during event processing behaves incorrectly  [\#176](https://github.com/prooph/pdo-event-store/issues/176)
 
 ## [v1.10.2](https://github.com/prooph/pdo-event-store/tree/v1.10.2) (2019-01-25)
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.10.1...v1.10.2)

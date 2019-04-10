@@ -707,9 +707,9 @@ SQL;
             $parameters = [];
 
             if (\is_array($value)) {
-                foreach ($value as $k => &$v) {
+                foreach ($value as $k => $v) {
                     $parameters[] = ':metadata_' . $key . '_' . $k;
-                    $v = (string) $v;
+                    $value[$k] = (string) $v;
                 }
             } else {
                 $parameters = [':metadata_' . $key];

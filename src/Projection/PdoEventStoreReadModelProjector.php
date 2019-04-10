@@ -798,7 +798,7 @@ EOT;
 
         $projectionsTable = $this->quoteTableName($this->projectionsTable);
         $sql = <<<EOT
-UPDATE $projectionsTable SET locked_until = ?, position = ? WHERE name = ?;
+UPDATE $projectionsTable SET locked_until = ? WHERE name = ?;
 EOT;
 
         $statement = $this->connection->prepare($sql);
@@ -806,7 +806,6 @@ EOT;
             $statement->execute(
                 [
                     $lockUntilString,
-                    Json::encode($this->streamPositions),
                     $this->name,
                 ]
             );
