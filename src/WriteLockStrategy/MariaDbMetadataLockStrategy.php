@@ -30,7 +30,7 @@ final class MariaDbMetadataLockStrategy implements WriteLockStrategy
     public function __construct(\PDO $connection, int $timeout = 0xffffff)
     {
         if ($timeout < 0) {
-            throw new \InvalidArgumentException('$timeout must be larger 0.');
+            throw new \InvalidArgumentException('$timeout must be greater or equal to 0.');
         }
 
         $this->connection = $connection;
