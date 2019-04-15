@@ -260,6 +260,8 @@ EOT;
                 $this->connection->rollBack();
             }
 
+            $this->writeLockStrategy->releaseLock($lockName);
+
             throw StreamNotFound::with($streamName);
         }
 
@@ -268,6 +270,8 @@ EOT;
                 $this->connection->rollBack();
             }
 
+            $this->writeLockStrategy->releaseLock($lockName);
+
             throw ConcurrencyExceptionFactory::fromStatementErrorInfo($statement->errorInfo());
         }
 
@@ -275,6 +279,8 @@ EOT;
             if (! $this->disableTransactionHandling && $this->connection->inTransaction() && ! $this->duringCreate) {
                 $this->connection->rollBack();
             }
+
+            $this->writeLockStrategy->releaseLock($lockName);
 
             throw new RuntimeException(
                 \sprintf(
