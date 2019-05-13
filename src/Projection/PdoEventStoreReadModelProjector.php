@@ -16,7 +16,6 @@ namespace Prooph\EventStore\Pdo\Projection;
 use Closure;
 use DateTimeImmutable;
 use DateTimeZone;
-use Iterator;
 use PDO;
 use PDOException;
 use Prooph\Common\Messaging\Message;
@@ -32,6 +31,7 @@ use Prooph\EventStore\Pdo\Util\PostgresHelper;
 use Prooph\EventStore\Projection\ProjectionStatus;
 use Prooph\EventStore\Projection\ReadModel;
 use Prooph\EventStore\Projection\ReadModelProjector;
+use Prooph\EventStore\StreamIterator\MergedStreamIterator;
 use Prooph\EventStore\StreamName;
 
 final class PdoEventStoreReadModelProjector implements ReadModelProjector
@@ -475,23 +475,23 @@ EOT;
 
         try {
             do {
+                $eventStreams = [];
+
                 foreach ($this->streamPositions as $streamName => $position) {
                     try {
-                        $streamEvents = $this->eventStore->load(new StreamName($streamName), $position + 1, null, $this->metadataMatcher);
+                        $eventStreams[$streamName] = $this->eventStore->load(new StreamName($streamName), $position + 1, null, $this->metadataMatcher);
                     } catch (Exception\StreamNotFound $e) {
                         // ignore
                         continue;
                     }
+                }
 
-                    if ($singleHandler) {
-                        $this->handleStreamWithSingleHandler($streamName, $streamEvents);
-                    } else {
-                        $this->handleStreamWithHandlers($streamName, $streamEvents);
-                    }
+                $streamEvents = new MergedStreamIterator(\array_keys($eventStreams), ...\array_values($eventStreams));
 
-                    if ($this->isStopped) {
-                        break;
-                    }
+                if ($singleHandler) {
+                    $this->handleStreamWithSingleHandler($streamEvents);
+                } else {
+                    $this->handleStreamWithHandlers($streamEvents);
                 }
 
                 if (0 === $this->eventCounter) {
@@ -566,17 +566,18 @@ EOT;
         return ProjectionStatus::byValue($result->status);
     }
 
-    private function handleStreamWithSingleHandler(string $streamName, Iterator $events): void
+    private function handleStreamWithSingleHandler(MergedStreamIterator $events): void
     {
-        $this->currentStreamName = $streamName;
         $handler = $this->handler;
 
+        /* @var Message $event */
         foreach ($events as $key => $event) {
             if ($this->triggerPcntlSignalDispatch) {
                 \pcntl_signal_dispatch();
             }
-            /* @var Message $event */
-            $this->streamPositions[$streamName] = $key;
+
+            $this->currentStreamName = $events->streamName();
+            $this->streamPositions[$this->currentStreamName]++;
             $this->eventCounter++;
 
             $result = $handler($this->state, $event);
@@ -602,16 +603,16 @@ EOT;
         }
     }
 
-    private function handleStreamWithHandlers(string $streamName, Iterator $events): void
+    private function handleStreamWithHandlers(MergedStreamIterator $events): void
     {
-        $this->currentStreamName = $streamName;
-
+        /* @var Message $event */
         foreach ($events as $key => $event) {
             if ($this->triggerPcntlSignalDispatch) {
                 \pcntl_signal_dispatch();
             }
-            /* @var Message $event */
-            $this->streamPositions[$streamName] = $key;
+
+            $this->currentStreamName = $events->streamName();
+            $this->streamPositions[$this->currentStreamName]++;
 
             if (! isset($this->handlers[$event->messageName()])) {
                 continue;
