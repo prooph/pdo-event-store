@@ -18,7 +18,7 @@
     "prefer-stable": true,
     "repositories": [
         {
-            "type": "vcs",
+            "type": "git",
             "url": "https://github.com/basz/event-store.git"
         }
     ],
