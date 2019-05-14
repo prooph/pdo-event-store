@@ -614,7 +614,7 @@ EOT;
             }
 
             $this->currentStreamName = $events->streamName();
-            $this->streamPositions[$this->currentStreamName]++;
+            $this->streamPositions[$this->currentStreamName] = $key;
             $this->eventCounter++;
 
             $result = $handler($this->state, $event);
@@ -649,7 +649,7 @@ EOT;
             }
 
             $this->currentStreamName = $events->streamName();
-            $this->streamPositions[$this->currentStreamName]++;
+            $this->streamPositions[$this->currentStreamName] = $key;
 
             if (! isset($this->handlers[$event->messageName()])) {
                 continue;
