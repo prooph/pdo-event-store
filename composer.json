@@ -16,15 +16,9 @@
     ],
     "minimum-stability": "dev",
     "prefer-stable": true,
-    "repositories": [
-        {
-            "type": "git",
-            "url": "https://github.com/basz/event-store.git"
-        }
-    ],
     "require": {
         "php": "^7.1",
-        "prooph/event-store": "dev-improvement/persist-after-blocksize-processed-events as 7.5.2"
+        "prooph/event-store": "7.x-dev as 7.5.2"
     },
     "require-dev": {
         "sandrokeil/interop-config": "^2.0.1",
