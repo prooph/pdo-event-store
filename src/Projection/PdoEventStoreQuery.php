@@ -331,6 +331,10 @@ final class PdoEventStoreQuery implements Query
             $this->streamPositions[$this->currentStreamName] = $key;
 
             if (! isset($this->handlers[$event->messageName()])) {
+                if ($this->isStopped) {
+                    break;
+                }
+
                 continue;
             }
 

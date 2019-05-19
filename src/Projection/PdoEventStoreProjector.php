@@ -623,16 +623,7 @@ EOT;
                 $this->state = $result;
             }
 
-            if ($this->eventCounter === $this->persistBlockSize) {
-                $this->persist();
-                $this->eventCounter = 0;
-
-                $this->status = $this->fetchRemoteStatus();
-
-                if (! $this->status->is(ProjectionStatus::RUNNING()) && ! $this->status->is(ProjectionStatus::IDLE())) {
-                    $this->isStopped = true;
-                }
-            }
+            $this->persistAndFetchRemoteStatusWhenBlockSizeThresholdReached();
 
             if ($this->isStopped) {
                 break;
@@ -651,11 +642,17 @@ EOT;
             $this->currentStreamName = $events->streamName();
             $this->streamPositions[$this->currentStreamName] = $key;
 
+            $this->eventCounter++;
+
             if (! isset($this->handlers[$event->messageName()])) {
+                $this->persistAndFetchRemoteStatusWhenBlockSizeThresholdReached();
+
+                if ($this->isStopped) {
+                    break;
+                }
+
                 continue;
             }
-
-            $this->eventCounter++;
 
             $handler = $this->handlers[$event->messageName()];
             $result = $handler($this->state, $event);
@@ -664,19 +661,24 @@ EOT;
                 $this->state = $result;
             }
 
-            if ($this->eventCounter === $this->persistBlockSize) {
-                $this->persist();
-                $this->eventCounter = 0;
-
-                $this->status = $this->fetchRemoteStatus();
-
-                if (! $this->status->is(ProjectionStatus::RUNNING()) && ! $this->status->is(ProjectionStatus::IDLE())) {
-                    $this->isStopped = true;
-                }
-            }
+            $this->persistAndFetchRemoteStatusWhenBlockSizeThresholdReached();
 
             if ($this->isStopped) {
                 break;
+            }
+        }
+    }
+
+    private function persistAndFetchRemoteStatusWhenBlockSizeThresholdReached(): void
+    {
+        if ($this->eventCounter === $this->persistBlockSize) {
+            $this->persist();
+            $this->eventCounter = 0;
+
+            $this->status = $this->fetchRemoteStatus();
+
+            if (! $this->status->is(ProjectionStatus::RUNNING()) && ! $this->status->is(ProjectionStatus::IDLE())) {
+                $this->isStopped = true;
             }
         }
     }
