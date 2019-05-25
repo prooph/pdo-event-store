@@ -437,4 +437,31 @@ abstract class PdoEventStoreProjectorTest extends AbstractEventStoreProjectorTes
         $this->projectionManager->deleteProjection('test_projection', true);
         $this->assertEquals(70, $eventCounter);
     }
+
+    /**
+     * @test
+     */
+    public function not_acting_on_all_events_should_yield_correct_stream_position(): void
+    {
+        $this->prepareEventStream($sStreamName = 'user');
+
+        $projectionManager = $this->projectionManager;
+        $projection = $projectionManager->createProjection('test_projection', [
+            Projector::OPTION_PERSIST_BLOCK_SIZE => 5,
+        ]);
+
+        $projection
+            ->fromStream('user')
+            ->init(function () {
+                return [];
+            })
+            ->when([
+                UsernameChanged::class => function (array $state, Message $event): array {
+                    return $state;
+                },
+            ])
+            ->run(false);
+
+        $this->assertEquals(50, $projectionManager->fetchProjectionStreamPositions('test_projection')['user']);
+    }
 }

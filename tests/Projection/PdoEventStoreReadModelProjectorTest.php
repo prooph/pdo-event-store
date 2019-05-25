@@ -412,4 +412,31 @@ abstract class PdoEventStoreReadModelProjectorTest extends AbstractEventStoreRea
 
         $this->assertSame($expectedEventsCount, $eventCounter);
     }
+
+    /**
+     * @test
+     */
+    public function not_acting_on_all_events_should_yield_correct_stream_position(): void
+    {
+        $this->prepareEventStream($sStreamName = 'user');
+
+        $projectionManager = $this->projectionManager;
+        $projection = $projectionManager->createReadModelProjection('test_projection', new ReadModelMock(), [
+            Projector::OPTION_PERSIST_BLOCK_SIZE => 1,
+        ]);
+
+        $projection
+            ->fromStream('user')
+            ->init(function () {
+                return [];
+            })
+            ->when([
+                UsernameChanged::class => function (array $state, Message $event): array {
+                    return $state;
+                },
+            ])
+            ->run(false);
+
+        $this->assertEquals(50, $projectionManager->fetchProjectionStreamPositions('test_projection')['user']);
+    }
 }

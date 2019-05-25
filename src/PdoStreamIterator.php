@@ -152,6 +152,7 @@ final class PdoStreamIterator implements StreamIterator
 
         if (false !== $this->currentItem) {
             $this->currentKey++;
+            $this->currentItem->no = (int) $this->currentItem->no;
             $this->currentFromNumber = $this->currentItem->no;
         } else {
             $this->batchPosition++;
@@ -179,6 +180,7 @@ final class PdoStreamIterator implements StreamIterator
                 $this->currentKey = -1;
             } else {
                 $this->currentKey++;
+                $this->currentItem->no = (int) $this->currentItem->no;
                 $this->currentFromNumber = $this->currentItem->no;
             }
         }
