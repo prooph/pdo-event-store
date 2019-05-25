@@ -128,10 +128,10 @@ In high-concurrent write scenarios it is possible that events are skipped when r
 is happening. 
 
 In order to prevent this it is possible to apply a locking strategy when writing to an event stream. 
-By default the `NoLockStrategy` does not conduct any form of locking. the `MysqlMetadataLockStrategy` uses MySQL
-metadata locks to ensure only one client at a time can write at the same stream (`MariaDbMetadataLockStrategy` 
-respectively). Both `MysqlMetadataLockStrategy` and `MariaDbMetadataLockStrategy` have an estimated loss of 50% write 
-throughput in peak times compared to the `NoLockStrategy`
+By default the `NoLockStrategy` does not conduct any form of locking. The `MysqlMetadataLockStrategy` uses MySQL
+metadata locks to ensure only one client at a time can write at the same stream. All default locking strategies
+`MysqlMetadataLockStrategy`, `MariaDbMetadataLockStrategy` and `PostgresAdvisoryLockStrategy` have an estimated loss
+of 50% write throughput in peak times compared to the `NoLockStrategy`. 
 
 Changing the locking strategy depends on a few factors: 
 - The selected stream strategy: the more events are written to the same database table the more likely this is an issue. 
