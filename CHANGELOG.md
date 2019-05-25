@@ -1,7 +1,28 @@
 # Change Log
 
-## [v1.10.5](https://github.com/prooph/pdo-event-store/tree/v1.10.5)
+## [v1.11.0](https://github.com/prooph/pdo-event-store/tree/v1.11.0)
 
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.10.5...v1.11.0)
+
+**Implemented enhancements:**
+
+- Improvement/merged stream iterator [\#202](https://github.com/prooph/pdo-event-store/pull/202) ([basz](https://github.com/basz))
+- Feature/189 write locks [\#190](https://github.com/prooph/pdo-event-store/pull/190) ([fritz-gerneth](https://github.com/fritz-gerneth))
+
+**Fixed bugs:**
+
+- Projections \(v7\) with '-\>when\(event\)' won't persist the position until a registered event handler is called [\#203](https://github.com/prooph/pdo-event-store/issues/203)
+
+**Closed issues:**
+
+- Use `count\(\)` to support Generators [\#204](https://github.com/prooph/pdo-event-store/issues/204)
+- fromStreams\(a, b, c\) does not process in order [\#201](https://github.com/prooph/pdo-event-store/issues/201)
+
+**Merged pull requests:**
+
+- added php7.3 to travis [\#197](https://github.com/prooph/pdo-event-store/pull/197) ([AlessandroMinoccheri](https://github.com/AlessandroMinoccheri))
+
+## [v1.10.5](https://github.com/prooph/pdo-event-store/tree/v1.10.5) (2019-04-10)
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.10.4...v1.10.5)
 
 **Fixed bugs:**
