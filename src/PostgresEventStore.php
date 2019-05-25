@@ -29,6 +29,7 @@ use Prooph\EventStore\Pdo\Exception\ExtensionNotLoaded;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\Util\Json;
 use Prooph\EventStore\Pdo\Util\PostgresHelper;
+use Prooph\EventStore\Pdo\WriteLockStrategy\NoLockStrategy;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamIterator\EmptyStreamIterator;
 use Prooph\EventStore\StreamName;
@@ -70,6 +71,11 @@ final class PostgresEventStore implements PdoEventStore, TransactionalEventStore
     private $disableTransactionHandling;
 
     /**
+     * @var WriteLockStrategy
+     */
+    private $writeLockStrategy;
+
+    /**
      * @throws ExtensionNotLoaded
      */
     public function __construct(
@@ -78,10 +84,15 @@ final class PostgresEventStore implements PdoEventStore, TransactionalEventStore
         PersistenceStrategy $persistenceStrategy,
         int $loadBatchSize = 10000,
         string $eventStreamsTable = 'event_streams',
-        bool $disableTransactionHandling = false
+        bool $disableTransactionHandling = false,
+        WriteLockStrategy $writeLockStrategy = null
     ) {
         if (! \extension_loaded('pdo_pgsql')) {
             throw ExtensionNotLoaded::with('pdo_pgsql');
+        }
+
+        if (null === $writeLockStrategy) {
+            $writeLockStrategy = new NoLockStrategy();
         }
 
         Assertion::min($loadBatchSize, 1);
@@ -92,6 +103,7 @@ final class PostgresEventStore implements PdoEventStore, TransactionalEventStore
         $this->loadBatchSize = $loadBatchSize;
         $this->eventStreamsTable = $eventStreamsTable;
         $this->disableTransactionHandling = $disableTransactionHandling;
+        $this->writeLockStrategy = $writeLockStrategy;
     }
 
     public function fetchStreamMetadata(StreamName $streamName): array
@@ -202,6 +214,11 @@ EOT;
 
         $tableName = $this->persistenceStrategy->generateTableName($streamName);
 
+        $lockName = '_' . $tableName . '_write_lock';
+        if (! $this->writeLockStrategy->getLock($lockName)) {
+            throw ConcurrencyExceptionFactory::failedToAcquireLock();
+        }
+
         $rowPlaces = '(' . \implode(', ', \array_fill(0, \count($columnNames), '?')) . ')';
         $allPlaces = \implode(', ', \array_fill(0, $countEntries, $rowPlaces));
 
@@ -226,6 +243,8 @@ EOT;
         if ($statement->errorCode() !== '00000') {
             throw RuntimeException::fromStatementErrorInfo($statement->errorInfo());
         }
+
+        $this->writeLockStrategy->releaseLock($lockName);
     }
 
     public function load(

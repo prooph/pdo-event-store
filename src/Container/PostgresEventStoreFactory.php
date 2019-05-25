@@ -61,6 +61,7 @@ final class PostgresEventStoreFactory extends AbstractEventStoreFactory
             'metadata_enrichers' => [],
             'plugins' => [],
             'disable_transaction_handling' => false,
+            'write_lock_strategy' => null,
         ];
     }
 }

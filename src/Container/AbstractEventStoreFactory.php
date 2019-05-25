@@ -24,6 +24,7 @@ use Prooph\EventStore\Metadata\MetadataEnricher;
 use Prooph\EventStore\Metadata\MetadataEnricherAggregate;
 use Prooph\EventStore\Metadata\MetadataEnricherPlugin;
 use Prooph\EventStore\Pdo\Exception\InvalidArgumentException;
+use Prooph\EventStore\Pdo\WriteLockStrategy\NoLockStrategy;
 use Prooph\EventStore\Plugin\Plugin;
 use Psr\Container\ContainerInterface;
 
@@ -76,6 +77,12 @@ abstract class AbstractEventStoreFactory implements
         $config = $container->get('config');
         $config = $this->options($config, $this->configId);
 
+        if (isset($config['write_lock_strategy'])) {
+            $writeLockStrategy = $container->get($config['write_lock_strategy']);
+        } else {
+            $writeLockStrategy = new NoLockStrategy();
+        }
+
         $eventStoreClassName = $this->eventStoreClassName();
 
         $eventStore = new $eventStoreClassName(
@@ -84,7 +91,8 @@ abstract class AbstractEventStoreFactory implements
             $container->get($config['persistence_strategy']),
             $config['load_batch_size'],
             $config['event_streams_table'],
-            $config['disable_transaction_handling']
+            $config['disable_transaction_handling'],
+            $writeLockStrategy
         );
 
         if (! $config['wrap_action_event_emitter']) {
