@@ -993,6 +993,7 @@ EOT;
     {
         $lockTimeoutMs = $this->lockTimeoutMs % 1000;
         $lockTimeoutSeconds = ($this->lockTimeoutMs - $lockTimeoutMs) / 1000;
+
         return $from->modify("+{$lockTimeoutSeconds} seconds +{$lockTimeoutMs} milliseconds")->format('Y-m-d\TH:i:s.u');
     }
 
