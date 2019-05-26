@@ -1,17 +1,30 @@
 # Change Log
 
-## [v1.11.0](https://github.com/prooph/pdo-event-store/tree/v1.11.0)
+## [v1.11.1](https://github.com/prooph/pdo-event-store/tree/v1.11.1)
 
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.11.0...v1.11.1)
+
+**Fixed bugs:**
+
+- Fixes projection lock string generation [\#206](https://github.com/prooph/pdo-event-store/pull/206) ([brunowowk](https://github.com/brunowowk))
+
+**Closed issues:**
+
+- Projection fails sometimes when lock timeout is less than 100ms [\#198](https://github.com/prooph/pdo-event-store/issues/198)
+
+## [v1.11.0](https://github.com/prooph/pdo-event-store/tree/v1.11.0) (2019-05-26)
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.10.5...v1.11.0)
 
 **Implemented enhancements:**
 
+- MySQL Projections skipping events \(SingleStreamStrategy\) [\#189](https://github.com/prooph/pdo-event-store/issues/189)
 - Improvement/merged stream iterator [\#202](https://github.com/prooph/pdo-event-store/pull/202) ([basz](https://github.com/basz))
 - Feature/189 write locks [\#190](https://github.com/prooph/pdo-event-store/pull/190) ([fritz-gerneth](https://github.com/fritz-gerneth))
 
 **Fixed bugs:**
 
 - Projections \(v7\) with '-\>when\(event\)' won't persist the position until a registered event handler is called [\#203](https://github.com/prooph/pdo-event-store/issues/203)
+- MySQL Projections skipping events \\(SingleStreamStrategy\\) [\#189](https://github.com/prooph/pdo-event-store/issues/189)
 
 **Closed issues:**
 
