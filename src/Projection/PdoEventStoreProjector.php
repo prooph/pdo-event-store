@@ -991,17 +991,8 @@ EOT;
 
     private function createLockUntilString(DateTimeImmutable $from): string
     {
-        $micros = (string) ((int) $from->format('u') + ($this->lockTimeoutMs * 1000));
-
-        $secs = \substr($micros, 0, -6);
-
-        if ('' === $secs) {
-            $secs = 0;
-        }
-
-        $resultMicros = \substr($micros, -6);
-
-        return $from->modify('+' . $secs .' seconds')->format('Y-m-d\TH:i:s') . '.' . $resultMicros;
+        $lockTimeoutMicros = $this->lockTimeoutMs * 1000;
+        return $from->modify("+ {$lockTimeoutMicros} microseconds")->format('Y-m-d\TH:i:s.u');
     }
 
     private function shouldUpdateLock(DateTimeImmutable $now): bool
