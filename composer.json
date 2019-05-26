@@ -18,7 +18,7 @@
     "prefer-stable": true,
     "require": {
         "php": "^7.1",
-        "prooph/event-store": "^7.5.2"
+        "prooph/event-store": "^7.5.3"
     },
     "require-dev": {
         "sandrokeil/interop-config": "^2.0.1",
