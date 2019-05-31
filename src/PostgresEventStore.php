@@ -301,8 +301,8 @@ EOT;
         }
 
         try {
-            $selectStatement->execute();
             $countStatement->execute();
+            $selectStatement->execute();
         } catch (PDOException $exception) {
             // ignore and check error code
         }
@@ -383,8 +383,8 @@ EOT;
         }
 
         try {
-            $selectStatement->execute();
             $countStatement->execute();
+            $selectStatement->execute();
         } catch (PDOException $exception) {
             // ignore and check error code
         }
