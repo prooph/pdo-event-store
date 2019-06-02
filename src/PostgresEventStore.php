@@ -302,7 +302,6 @@ EOT;
 
         try {
             $selectStatement->execute();
-            $countStatement->execute();
         } catch (PDOException $exception) {
             // ignore and check error code
         }
@@ -313,12 +312,6 @@ EOT;
 
         if ($selectStatement->errorCode() !== '00000') {
             throw StreamNotFound::with($streamName);
-        }
-
-        $counted = (int) $countStatement->fetchColumn();
-
-        if (0 === (null === $count ? $counted : \min($counted, $count))) {
-            return new EmptyStreamIterator();
         }
 
         return new PdoStreamIterator(
