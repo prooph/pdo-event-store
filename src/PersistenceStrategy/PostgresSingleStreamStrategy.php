@@ -69,11 +69,11 @@ CREATE INDEX ON $tableName
 ((metadata->>'_aggregate_type'), (metadata->>'_aggregate_id'), no);
 EOT;
 
-        return [
+        return array_merge($this->getSchemaCreationSchema($tableName), [
             $statement,
             $index1,
             $index2,
-        ];
+        ]);
     }
 
     public function columnNames(): array
@@ -114,5 +114,17 @@ EOT;
         }
 
         return $table;
+    }
+
+    private function getSchemaCreationSchema(string $tableName) : array
+    {
+        if (!$schemaName = $this->extractSchema($tableName)) {
+            return [];
+        }
+
+        return [sprintf(
+            'CREATE SCHEMA IF NOT EXISTS %s',
+            $schemaName
+        )];
     }
 }
