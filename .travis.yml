@@ -222,6 +222,8 @@ matrix:
     - php: 7.3
       dist: bionic
       sudo: true
+      services:
+        - mysql
       env:
         - DEPENDENCIES=""
         - DRIVER="pdo_mysql"
