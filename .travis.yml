@@ -62,18 +62,21 @@ matrix:
       addons:
         mariadb: '10.3'
     - php: 7.2
+      dist: bionic
       sudo: true
       env:
         - DEPENDENCIES=""
         - DRIVER="pdo_mysql"
         - DB=mysql_5.7
     - php: 7.2
+      dist: bionic
       sudo: true
       env:
         - DEPENDENCIES="--prefer-lowest --prefer-stable"
         - DRIVER="pdo_mysql"
         - DB=mysql_5.7
     - php: 7.2
+      dist: bionic
       sudo: true
       env:
         - DEPENDENCIES=""
@@ -81,6 +84,7 @@ matrix:
         - DB=mysql_5.7
         - DB_ATTR_ERRMODE=2 # \PDO::ERRMODE_EXCEPTION
     - php: 7.2
+      dist: bionic
       env:
         - DEPENDENCIES=""
         - DRIVER="pdo_pgsql"
@@ -95,6 +99,7 @@ matrix:
       addons:
         postgresql: '9.4'
     - php: 7.2
+      dist: bionic
       env:
         - DEPENDENCIES=""
         - DRIVER="pdo_pgsql"
@@ -209,6 +214,7 @@ matrix:
       addons:
         mariadb: '10.3'
     - php: 7.3
+      dist: bionic
       sudo: true
       env:
         - DEPENDENCIES=""
@@ -221,6 +227,7 @@ matrix:
         - DRIVER="pdo_mysql"
         - DB=mysql_5.7
     - php: 7.3
+      dist: bionic
       sudo: true
       env:
         - DEPENDENCIES=""
@@ -228,6 +235,7 @@ matrix:
         - DB=mysql_5.7
         - DB_ATTR_ERRMODE=2 # \PDO::ERRMODE_EXCEPTION
     - php: 7.3
+      dist: bionic
       env:
         - DEPENDENCIES=""
         - DRIVER="pdo_pgsql"
@@ -235,6 +243,7 @@ matrix:
       addons:
         postgresql: '9.4'
     - php: 7.3
+      dist: bionic
       env:
         - DEPENDENCIES="--prefer-lowest --prefer-stable"
         - DRIVER="pdo_pgsql"
@@ -242,6 +251,7 @@ matrix:
       addons:
         postgresql: '9.4'
     - php: 7.3
+      dist: bionic
       env:
         - DEPENDENCIES=""
         - DRIVER="pdo_pgsql"
