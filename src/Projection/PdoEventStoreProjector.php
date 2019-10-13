@@ -631,7 +631,7 @@ EOT;
         }
     }
 
-    private function handleStreamWithHandlers(MergedStreamIterator  $events): void
+    private function handleStreamWithHandlers(MergedStreamIterator $events): void
     {
         /* @var Message $event */
         foreach ($events as $key => $event) {
