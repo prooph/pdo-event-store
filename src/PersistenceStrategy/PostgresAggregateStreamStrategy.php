@@ -57,10 +57,10 @@ CREATE TABLE $tableName (
 );
 EOT;
 
-        return [
+        return array_merge($this->getSchemaCreationSchema($tableName), [
             $statement,
             "CREATE UNIQUE INDEX on $tableName ((metadata->>'_aggregate_version'));",
-        ];
+        ]);
     }
 
     public function columnNames(): array
@@ -107,5 +107,17 @@ EOT;
         }
 
         return $table;
+    }
+
+    private function getSchemaCreationSchema(string $tableName) : array
+    {
+        if (!$schemaName = $this->extractSchema($tableName)) {
+            return [];
+        }
+
+        return [sprintf(
+            'CREATE SCHEMA IF NOT EXISTS %s',
+            $schemaName
+        )];
     }
 }

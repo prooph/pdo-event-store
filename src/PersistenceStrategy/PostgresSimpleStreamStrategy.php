@@ -56,9 +56,9 @@ CREATE TABLE $tableName (
 );
 EOT;
 
-        return [
+        return array_merge($this->getSchemaCreationSchema($tableName), [
             $statement,
-        ];
+        ]);
     }
 
     public function columnNames(): array
@@ -99,5 +99,17 @@ EOT;
         }
 
         return $table;
+    }
+
+    private function getSchemaCreationSchema(string $tableName) : array
+    {
+        if (!$schemaName = $this->extractSchema($tableName)) {
+            return [];
+        }
+
+        return [sprintf(
+            'CREATE SCHEMA IF NOT EXISTS %s',
+            $schemaName
+        )];
     }
 }
