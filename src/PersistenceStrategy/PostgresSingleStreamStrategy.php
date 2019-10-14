@@ -69,7 +69,7 @@ CREATE INDEX ON $tableName
 ((metadata->>'_aggregate_type'), (metadata->>'_aggregate_id'), no);
 EOT;
 
-        return array_merge($this->getSchemaCreationSchema($tableName), [
+        return \array_merge($this->getSchemaCreationSchema($tableName), [
             $statement,
             $index1,
             $index2,
@@ -116,13 +116,13 @@ EOT;
         return $table;
     }
 
-    private function getSchemaCreationSchema(string $tableName) : array
+    private function getSchemaCreationSchema(string $tableName): array
     {
-        if (!$schemaName = $this->extractSchema($tableName)) {
+        if (! $schemaName = $this->extractSchema($tableName)) {
             return [];
         }
 
-        return [sprintf(
+        return [\sprintf(
             'CREATE SCHEMA IF NOT EXISTS %s',
             $schemaName
         )];
