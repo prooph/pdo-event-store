@@ -56,7 +56,7 @@ CREATE TABLE $tableName (
 );
 EOT;
 
-        return array_merge($this->getSchemaCreationSchema($tableName), [
+        return \array_merge($this->getSchemaCreationSchema($tableName), [
             $statement,
         ]);
     }
@@ -101,13 +101,13 @@ EOT;
         return $table;
     }
 
-    private function getSchemaCreationSchema(string $tableName) : array
+    private function getSchemaCreationSchema(string $tableName): array
     {
-        if (!$schemaName = $this->extractSchema($tableName)) {
+        if (! $schemaName = $this->extractSchema($tableName)) {
             return [];
         }
 
-        return [sprintf(
+        return [\sprintf(
             'CREATE SCHEMA IF NOT EXISTS %s',
             $schemaName
         )];
