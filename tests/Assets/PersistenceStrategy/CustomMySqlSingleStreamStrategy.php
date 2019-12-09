@@ -15,11 +15,11 @@ namespace ProophTest\EventStore\Pdo\Assets\PersistenceStrategy;
 
 use Iterator;
 use Prooph\EventStore\Pdo\HasQueryHint;
-use Prooph\EventStore\Pdo\PersistenceStrategy;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlPersistenceStrategy;
 use Prooph\EventStore\Pdo\Util\Json;
 use Prooph\EventStore\StreamName;
 
-final class CustomMySqlSingleStreamStrategy implements PersistenceStrategy, HasQueryHint
+final class CustomMySqlSingleStreamStrategy implements MySqlPersistenceStrategy, HasQueryHint
 {
     /**
      * @param string $tableName

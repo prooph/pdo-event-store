@@ -18,11 +18,10 @@ use Prooph\Common\Messaging\MessageConverter;
 use Prooph\EventStore\Pdo\DefaultMessageConverter;
 use Prooph\EventStore\Pdo\HasQueryHint;
 use Prooph\EventStore\Pdo\MariaDBIndexedPersistenceStrategy;
-use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\Pdo\Util\Json;
 use Prooph\EventStore\StreamName;
 
-final class MariaDbSingleStreamStrategy implements PersistenceStrategy, HasQueryHint, MariaDBIndexedPersistenceStrategy
+final class MariaDbSingleStreamStrategy implements MariaDbPersistenceStrategy, HasQueryHint, MariaDBIndexedPersistenceStrategy
 {
     /**
      * @var MessageConverter

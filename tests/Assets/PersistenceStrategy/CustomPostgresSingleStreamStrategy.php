@@ -14,11 +14,11 @@ declare(strict_types=1);
 namespace ProophTest\EventStore\Pdo\Assets\PersistenceStrategy;
 
 use Iterator;
-use Prooph\EventStore\Pdo\PersistenceStrategy;
+use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresPersistenceStrategy;
 use Prooph\EventStore\Pdo\Util\Json;
 use Prooph\EventStore\StreamName;
 
-final class CustomPostgresSingleStreamStrategy implements PersistenceStrategy
+final class CustomPostgresSingleStreamStrategy implements PostgresPersistenceStrategy
 {
     /**
      * @param string $tableName

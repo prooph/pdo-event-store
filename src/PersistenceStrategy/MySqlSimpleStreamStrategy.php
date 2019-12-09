@@ -16,11 +16,10 @@ namespace Prooph\EventStore\Pdo\PersistenceStrategy;
 use Iterator;
 use Prooph\Common\Messaging\MessageConverter;
 use Prooph\EventStore\Pdo\DefaultMessageConverter;
-use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\Pdo\Util\Json;
 use Prooph\EventStore\StreamName;
 
-final class MySqlSimpleStreamStrategy implements PersistenceStrategy
+final class MySqlSimpleStreamStrategy implements MySqlPersistenceStrategy
 {
     /**
      * @var MessageConverter

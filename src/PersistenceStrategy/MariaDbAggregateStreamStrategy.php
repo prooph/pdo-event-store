@@ -18,11 +18,10 @@ use Prooph\Common\Messaging\MessageConverter;
 use Prooph\EventStore\Pdo\DefaultMessageConverter;
 use Prooph\EventStore\Pdo\Exception;
 use Prooph\EventStore\Pdo\MariaDBIndexedPersistenceStrategy;
-use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\Pdo\Util\Json;
 use Prooph\EventStore\StreamName;
 
-final class MariaDbAggregateStreamStrategy implements PersistenceStrategy, MariaDBIndexedPersistenceStrategy
+final class MariaDbAggregateStreamStrategy implements MariaDbPersistenceStrategy, MariaDBIndexedPersistenceStrategy
 {
     /**
      * @var MessageConverter

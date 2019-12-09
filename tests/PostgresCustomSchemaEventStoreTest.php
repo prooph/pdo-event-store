@@ -19,8 +19,8 @@ use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
-use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresAggregateStreamStrategy;
+use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresPersistenceStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresSingleStreamStrategy;
 use Prooph\EventStore\Pdo\PostgresEventStore;
 use Prooph\EventStore\Stream;
@@ -164,7 +164,7 @@ class PostgresCustomSchemaEventStoreTest extends AbstractPdoEventStoreTest
      */
     public function it_removes_stream_if_stream_table_hasnt_been_created(): void
     {
-        $strategy = $this->createMock(PersistenceStrategy::class);
+        $strategy = $this->createMock(PostgresPersistenceStrategy::class);
         $strategy->method('createSchema')->willReturn([
 <<<SQL
 DO $$

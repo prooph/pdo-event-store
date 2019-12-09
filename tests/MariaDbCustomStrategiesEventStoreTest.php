@@ -21,7 +21,7 @@ use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\MariaDbEventStore;
-use Prooph\EventStore\Pdo\PersistenceStrategy;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbPersistenceStrategy;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\UserCreated;
@@ -167,7 +167,7 @@ final class MariaDbCustomStrategiesEventStoreTest extends MariaDbEventStoreTest
      */
     public function it_removes_stream_if_stream_table_hasnt_been_created(): void
     {
-        $strategy = $this->createMock(PersistenceStrategy::class);
+        $strategy = $this->createMock(MariaDbPersistenceStrategy::class);
         $strategy->method('createSchema')->willReturn(["SIGNAL SQLSTATE '45000';"]);
         $strategy->method('generateTableName')->willReturn('_non_existing_table');
 
