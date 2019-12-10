@@ -20,7 +20,7 @@ use Prooph\EventStore\Pdo\Container\MariaDbProjectionManagerFactory;
 use Prooph\EventStore\Pdo\Exception\InvalidArgumentException;
 use Prooph\EventStore\Pdo\HasQueryHint;
 use Prooph\EventStore\Pdo\MariaDbEventStore;
-use Prooph\EventStore\Pdo\PersistenceStrategy;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbPersistenceStrategy;
 use Prooph\EventStore\Pdo\Projection\MariaDbProjectionManager;
 use ProophTest\EventStore\Pdo\TestUtil;
 use Psr\Container\ContainerInterface;
@@ -42,7 +42,7 @@ class MariaDbProjectionManagerFactoryTest extends TestCase
         $connection = TestUtil::getConnection();
 
         $messageFactory = $this->prophesize(MessageFactory::class);
-        $persistenceStrategy = $this->prophesize(PersistenceStrategy::class);
+        $persistenceStrategy = $this->prophesize(MariaDbPersistenceStrategy::class);
         $persistenceStrategy->willImplement(HasQueryHint::class);
 
         $container = $this->prophesize(ContainerInterface::class);
@@ -74,7 +74,7 @@ class MariaDbProjectionManagerFactoryTest extends TestCase
         $connection = TestUtil::getConnection();
 
         $messageFactory = $this->prophesize(MessageFactory::class);
-        $persistenceStrategy = $this->prophesize(PersistenceStrategy::class);
+        $persistenceStrategy = $this->prophesize(MariaDbPersistenceStrategy::class);
         $persistenceStrategy->willImplement(HasQueryHint::class);
 
         $container = $this->prophesize(ContainerInterface::class);

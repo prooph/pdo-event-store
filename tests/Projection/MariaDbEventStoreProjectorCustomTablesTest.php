@@ -57,7 +57,7 @@ class MariaDbEventStoreProjectorCustomTablesTest extends PdoEventStoreProjectorC
     public function it_handles_missing_projection_table(): void
     {
         $this->expectException(\Prooph\EventStore\Pdo\Exception\RuntimeException::class);
-        $this->expectExceptionMessage("Error 42S02. Maybe the projection table is not setup?\nError-Info: Table 'event_store_tests.events/projections' doesn't exist");
+        $this->expectExceptionMessage(\sprintf("Error 42S02. Maybe the projection table is not setup?\nError-Info: Table '%s.events/projections' doesn't exist", \getenv('DB_NAME')));
 
         $this->prepareEventStream('user-123');
 

@@ -25,6 +25,7 @@ use Prooph\EventStore\Metadata\Operator;
 use Prooph\EventStore\Pdo\Exception\ConcurrencyExceptionFactory;
 use Prooph\EventStore\Pdo\Exception\ExtensionNotLoaded;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbPersistenceStrategy;
 use Prooph\EventStore\Pdo\Util\Json;
 use Prooph\EventStore\Pdo\WriteLockStrategy\NoLockStrategy;
 use Prooph\EventStore\Stream;
@@ -45,7 +46,7 @@ final class MariaDbEventStore implements PdoEventStore
     private $connection;
 
     /**
-     * @var PersistenceStrategy
+     * @var MariaDbPersistenceStrategy
      */
     private $persistenceStrategy;
 
@@ -80,7 +81,7 @@ final class MariaDbEventStore implements PdoEventStore
     public function __construct(
         MessageFactory $messageFactory,
         PDO $connection,
-        PersistenceStrategy $persistenceStrategy,
+        MariaDbPersistenceStrategy $persistenceStrategy,
         int $loadBatchSize = 10000,
         string $eventStreamsTable = 'event_streams',
         bool $disableTransactionHandling = false,

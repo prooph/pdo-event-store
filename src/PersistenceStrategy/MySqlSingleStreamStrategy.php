@@ -17,11 +17,10 @@ use Iterator;
 use Prooph\Common\Messaging\MessageConverter;
 use Prooph\EventStore\Pdo\DefaultMessageConverter;
 use Prooph\EventStore\Pdo\HasQueryHint;
-use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\Pdo\Util\Json;
 use Prooph\EventStore\StreamName;
 
-final class MySqlSingleStreamStrategy implements PersistenceStrategy, HasQueryHint
+final class MySqlSingleStreamStrategy implements MySqlPersistenceStrategy, HasQueryHint
 {
     /**
      * @var MessageConverter

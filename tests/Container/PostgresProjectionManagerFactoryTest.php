@@ -18,7 +18,7 @@ use Prooph\Common\Messaging\MessageFactory;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Pdo\Container\PostgresProjectionManagerFactory;
 use Prooph\EventStore\Pdo\Exception\InvalidArgumentException;
-use Prooph\EventStore\Pdo\PersistenceStrategy;
+use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresPersistenceStrategy;
 use Prooph\EventStore\Pdo\PostgresEventStore;
 use Prooph\EventStore\Pdo\Projection\PostgresProjectionManager;
 use ProophTest\EventStore\Pdo\TestUtil;
@@ -44,7 +44,7 @@ class PostgresProjectionManagerFactoryTest extends TestCase
         $eventStore = new PostgresEventStore(
             $this->createMock(MessageFactory::class),
             TestUtil::getConnection(),
-            $this->createMock(PersistenceStrategy::class)
+            $this->createMock(PostgresPersistenceStrategy::class)
         );
 
         $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
@@ -72,7 +72,7 @@ class PostgresProjectionManagerFactoryTest extends TestCase
         $eventStore = new PostgresEventStore(
             $this->createMock(MessageFactory::class),
             TestUtil::getConnection(),
-            $this->createMock(PersistenceStrategy::class)
+            $this->createMock(PostgresPersistenceStrategy::class)
         );
 
         $container->get('my_connection')->willReturn($connection)->shouldBeCalled();

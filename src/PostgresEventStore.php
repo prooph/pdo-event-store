@@ -27,6 +27,7 @@ use Prooph\EventStore\Metadata\Operator;
 use Prooph\EventStore\Pdo\Exception\ConcurrencyExceptionFactory;
 use Prooph\EventStore\Pdo\Exception\ExtensionNotLoaded;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
+use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresPersistenceStrategy;
 use Prooph\EventStore\Pdo\Util\Json;
 use Prooph\EventStore\Pdo\Util\PostgresHelper;
 use Prooph\EventStore\Pdo\WriteLockStrategy\NoLockStrategy;
@@ -51,7 +52,7 @@ final class PostgresEventStore implements PdoEventStore, TransactionalEventStore
     private $connection;
 
     /**
-     * @var PersistenceStrategy
+     * @var PostgresPersistenceStrategy
      */
     private $persistenceStrategy;
 
@@ -81,7 +82,7 @@ final class PostgresEventStore implements PdoEventStore, TransactionalEventStore
     public function __construct(
         MessageFactory $messageFactory,
         PDO $connection,
-        PersistenceStrategy $persistenceStrategy,
+        PostgresPersistenceStrategy $persistenceStrategy,
         int $loadBatchSize = 10000,
         string $eventStreamsTable = 'event_streams',
         bool $disableTransactionHandling = false,

@@ -16,11 +16,11 @@ namespace ProophTest\EventStore\Pdo\Assets\PersistenceStrategy;
 use Iterator;
 use Prooph\EventStore\Pdo\HasQueryHint;
 use Prooph\EventStore\Pdo\MariaDBIndexedPersistenceStrategy;
-use Prooph\EventStore\Pdo\PersistenceStrategy;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbPersistenceStrategy;
 use Prooph\EventStore\Pdo\Util\Json;
 use Prooph\EventStore\StreamName;
 
-final class CustomMariaDbSingleStreamStrategy implements PersistenceStrategy, HasQueryHint, MariaDBIndexedPersistenceStrategy
+final class CustomMariaDbSingleStreamStrategy implements MariaDbPersistenceStrategy, HasQueryHint, MariaDBIndexedPersistenceStrategy
 {
     /**
      * @param string $tableName

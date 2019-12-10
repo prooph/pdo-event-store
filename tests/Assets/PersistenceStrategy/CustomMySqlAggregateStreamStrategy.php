@@ -15,11 +15,11 @@ namespace ProophTest\EventStore\Pdo\Assets\PersistenceStrategy;
 
 use Iterator;
 use Prooph\EventStore\Pdo\Exception;
-use Prooph\EventStore\Pdo\PersistenceStrategy;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlPersistenceStrategy;
 use Prooph\EventStore\Pdo\Util\Json;
 use Prooph\EventStore\StreamName;
 
-final class CustomMySqlAggregateStreamStrategy implements PersistenceStrategy
+final class CustomMySqlAggregateStreamStrategy implements MySqlPersistenceStrategy
 {
     /**
      * @param string $tableName

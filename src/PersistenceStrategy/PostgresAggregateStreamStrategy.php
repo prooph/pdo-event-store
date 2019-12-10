@@ -17,12 +17,11 @@ use Iterator;
 use Prooph\Common\Messaging\MessageConverter;
 use Prooph\EventStore\Pdo\DefaultMessageConverter;
 use Prooph\EventStore\Pdo\Exception;
-use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\Pdo\Util\Json;
 use Prooph\EventStore\Pdo\Util\PostgresHelper;
 use Prooph\EventStore\StreamName;
 
-final class PostgresAggregateStreamStrategy implements PersistenceStrategy
+final class PostgresAggregateStreamStrategy implements PostgresPersistenceStrategy
 {
     use PostgresHelper;
 

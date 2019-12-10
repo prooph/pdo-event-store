@@ -20,7 +20,7 @@ use Prooph\EventStore\Pdo\Container\MySqlProjectionManagerFactory;
 use Prooph\EventStore\Pdo\Exception\InvalidArgumentException;
 use Prooph\EventStore\Pdo\HasQueryHint;
 use Prooph\EventStore\Pdo\MySqlEventStore;
-use Prooph\EventStore\Pdo\PersistenceStrategy;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlPersistenceStrategy;
 use Prooph\EventStore\Pdo\Projection\MySqlProjectionManager;
 use ProophTest\EventStore\Pdo\TestUtil;
 use Psr\Container\ContainerInterface;
@@ -42,7 +42,7 @@ class MySqlProjectionManagerFactoryTest extends TestCase
         $connection = TestUtil::getConnection();
 
         $messageFactory = $this->prophesize(MessageFactory::class);
-        $persistenceStrategy = $this->prophesize(PersistenceStrategy::class);
+        $persistenceStrategy = $this->prophesize(MySqlPersistenceStrategy::class);
         $persistenceStrategy->willImplement(HasQueryHint::class);
 
         $container = $this->prophesize(ContainerInterface::class);
@@ -74,7 +74,7 @@ class MySqlProjectionManagerFactoryTest extends TestCase
         $connection = TestUtil::getConnection();
 
         $messageFactory = $this->prophesize(MessageFactory::class);
-        $persistenceStrategy = $this->prophesize(PersistenceStrategy::class);
+        $persistenceStrategy = $this->prophesize(MySqlPersistenceStrategy::class);
         $persistenceStrategy->willImplement(HasQueryHint::class);
 
         $container = $this->prophesize(ContainerInterface::class);

@@ -16,11 +16,11 @@ namespace ProophTest\EventStore\Pdo\Assets\PersistenceStrategy;
 use Iterator;
 use Prooph\EventStore\Pdo\Exception;
 use Prooph\EventStore\Pdo\MariaDBIndexedPersistenceStrategy;
-use Prooph\EventStore\Pdo\PersistenceStrategy;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbPersistenceStrategy;
 use Prooph\EventStore\Pdo\Util\Json;
 use Prooph\EventStore\StreamName;
 
-final class CustomMariaDbAggregateStreamStrategy implements PersistenceStrategy, MariaDBIndexedPersistenceStrategy
+final class CustomMariaDbAggregateStreamStrategy implements MariaDbPersistenceStrategy, MariaDBIndexedPersistenceStrategy
 {
     /**
      * @param string $tableName

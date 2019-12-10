@@ -22,8 +22,8 @@ use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\MySqlEventStore;
-use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlAggregateStreamStrategy;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlPersistenceStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSingleStreamStrategy;
 use Prooph\EventStore\Pdo\WriteLockStrategy;
 use Prooph\EventStore\Pdo\WriteLockStrategy\MysqlMetadataLockStrategy;
@@ -298,7 +298,7 @@ class MySqlEventStoreTest extends AbstractPdoEventStoreTest
      */
     public function it_removes_stream_if_stream_table_hasnt_been_created(): void
     {
-        $strategy = $this->createMock(PersistenceStrategy::class);
+        $strategy = $this->createMock(MySqlPersistenceStrategy::class);
         $strategy->method('createSchema')->willReturn(["SIGNAL SQLSTATE '45000';"]);
         $strategy->method('generateTableName')->willReturn('_non_existing_table');
 

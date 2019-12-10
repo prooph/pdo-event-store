@@ -20,7 +20,7 @@ use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Pdo\Exception\InvalidArgumentException;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\MySqlEventStore;
-use Prooph\EventStore\Pdo\PersistenceStrategy;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlPersistenceStrategy;
 use Prooph\EventStore\Pdo\Projection\MySqlProjectionManager;
 use ProophTest\EventStore\Pdo\TestUtil;
 use ProophTest\EventStore\Projection\AbstractProjectionManagerTest;
@@ -54,7 +54,7 @@ class MySqlProjectionManagerCustomTablesTest extends AbstractProjectionManagerTe
         $this->connection = TestUtil::getConnection();
         TestUtil::initCustomDatabaseTables($this->connection);
 
-        $persistenceStrategy = $this->prophesize(PersistenceStrategy::class)->reveal();
+        $persistenceStrategy = $this->prophesize(MySqlPersistenceStrategy::class)->reveal();
 
         $this->eventStore = new MySqlEventStore(
             new FQCNMessageFactory(),
