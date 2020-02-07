@@ -23,8 +23,8 @@
     "require-dev": {
         "sandrokeil/interop-config": "^2.0.1",
         "phpunit/php-invoker": "^2.0",
-        "phpunit/phpunit": "^7.1.4",
-        "phpspec/prophecy": "^1.7",
+        "phpunit/phpunit": "^7.5.18",
+        "phpspec/prophecy": "^1.9",
         "prooph/php-cs-fixer-config": "^0.3",
         "prooph/bookdown-template": "^0.2.3",
         "psr/container": "^1.0",
