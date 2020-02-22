@@ -13,12 +13,14 @@ declare(strict_types=1);
 
 namespace ProophTest\EventStore\Pdo\Projection;
 
+use ArrayIterator;
 use PDO;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Exception\InvalidArgumentException;
 use Prooph\EventStore\Exception\StreamExistsAlready;
+use Prooph\EventStore\Pdo\Projection\GapDetection;
 use Prooph\EventStore\Pdo\Projection\PdoEventStoreProjector;
 use Prooph\EventStore\Projection\ProjectionManager;
 use Prooph\EventStore\Projection\Projector;
@@ -45,6 +47,8 @@ abstract class PdoEventStoreProjectorTest extends AbstractEventStoreProjectorTes
      * @var PDO
      */
     protected $connection;
+
+    abstract protected function setUpEventStoreWithControlledConnection(PDO $connection): EventStore;
 
     protected function tearDown(): void
     {
@@ -463,5 +467,72 @@ abstract class PdoEventStoreProjectorTest extends AbstractEventStoreProjectorTes
             ->run(false);
 
         $this->assertEquals(50, $projectionManager->fetchProjectionStreamPositions('test_projection')['user']);
+    }
+
+    /**
+     * @test
+     */
+    public function it_detects_gap_and_performs_retry()
+    {
+        $streamName = new StreamName('user');
+
+        $this->prepareEventStreamWithOneEvent($streamName->toString());
+
+        $parallelConnection = TestUtil::getConnection(false);
+        $secondEventStore = $this->setUpEventStoreWithControlledConnection($parallelConnection);
+
+        // Begin transaction and let it open
+        $parallelConnection->beginTransaction();
+
+        $secondEventStore->appendTo($streamName, new ArrayIterator([
+            UsernameChanged::with([
+                'name' => 'Bob',
+            ], 2),
+        ]));
+
+        // Insert third event, while parallel connection is still in transaction
+        $this->eventStore->appendTo($streamName, new ArrayIterator([
+            UsernameChanged::with([
+                'name' => 'Sascha',
+            ], 3),
+        ]));
+
+        //Only one immediate retry and an increased detection window to have enough time for the test to succeed
+        $gapDetection = new GapDetection([0], new \DateInterval('PT60S'));
+
+        $projectionManager = $this->projectionManager;
+        $projection = $projectionManager->createProjection('test_projection', [
+            Projector::OPTION_PERSIST_BLOCK_SIZE => 1,
+            PdoEventStoreProjector::OPTION_GAP_DETECTION => $gapDetection,
+        ]);
+
+        $projection
+            ->fromStream('user')
+            ->init(function () {
+                return [];
+            })
+            ->when([
+                UserCreated::class => function (array $state, Message $event): array {
+                    return $state;
+                },
+                UsernameChanged::class => function (array $state, Message $event): array {
+                    return $state;
+                },
+            ])
+            ->run(false);
+
+        $this->assertEquals(1, $projectionManager->fetchProjectionStreamPositions('test_projection')['user']);
+
+        $this->assertTrue($gapDetection->isRetrying());
+
+        // Fill the gap
+        $parallelConnection->commit();
+
+        // Run again with gap detection in retry mode
+        $projection->run(false);
+
+        $this->assertEquals(3, $projectionManager->fetchProjectionStreamPositions('test_projection')['user']);
+
+        $this->assertFalse($gapDetection->isRetrying());
     }
 }

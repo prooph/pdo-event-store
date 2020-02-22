@@ -13,9 +13,11 @@ declare(strict_types=1);
 
 namespace ProophTest\EventStore\Pdo\Projection;
 
+use PDO;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\Message;
 use Prooph\Common\Messaging\NoOpMessageConverter;
+use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Pdo\MySqlEventStore;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSimpleStreamStrategy;
 use Prooph\EventStore\Pdo\Projection\MySqlProjectionManager;
@@ -45,6 +47,18 @@ class MySqlEventStoreProjectorTest extends PdoEventStoreProjectorTest
         $this->projectionManager = new MySqlProjectionManager(
             $this->eventStore,
             $this->connection
+        );
+    }
+
+    protected function setUpEventStoreWithControlledConnection(PDO $connection): EventStore
+    {
+        return new MySqlEventStore(
+            new FQCNMessageFactory(),
+            $connection,
+            new MySqlSimpleStreamStrategy(new NoOpMessageConverter()),
+            10000,
+            'event_streams',
+            true
         );
     }
 
