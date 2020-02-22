@@ -535,4 +535,14 @@ abstract class PdoEventStoreProjectorTest extends AbstractEventStoreProjectorTes
 
         $this->assertFalse($gapDetection->isRetrying());
     }
+
+    protected function prepareEventStreamWithOneEvent(string $name): void
+    {
+        $events = [];
+        $events[] = UserCreated::with([
+            'name' => 'Alex',
+        ], 1);
+
+        $this->eventStore->create(new Stream(new StreamName($name), new ArrayIterator($events)));
+    }
 }

@@ -48,13 +48,10 @@ final class GapDetection
      * 2. Transaction visibility problem described in https://github.com/prooph/pdo-event-store/issues/189
      *
      * The latter can only occur if a projection processes events near realtime.
-     * The detection window ensures that during a projection replay gap retries are not performed. During replays
-     * only gaps caused by transaction rollbacks are possible. Retries would just waste a lot of time and resources.
+     * When configured, a detection window ensures that during a projection replay gap retries are not performed. During replays
+     * only gaps caused by transaction rollbacks are possible. This avoids unnecessary retries.
      *
-     * By default the window is set to 30 seconds, meaning only if the current processed event was recorded in the last
-     * 30 seconds gap detection will tell the projector to perform a retry.
-     *
-     * @var \DateInterval
+     * @var \DateInterval|null
      */
     private $detectionWindow;
 
@@ -69,11 +66,7 @@ final class GapDetection
             $this->retryConfig = $retryConfig;
         }
 
-        if ($detectionWindow) {
-            $this->detectionWindow = $detectionWindow;
-        } else {
-            $this->detectionWindow = new \DateInterval('PT30S');
-        }
+        $this->detectionWindow = $detectionWindow;
     }
 
     public function isRetrying(): bool
@@ -103,9 +96,8 @@ final class GapDetection
 
     public function shouldRetryToFillGap(\DateTimeImmutable $now, Message $currentMessage): bool
     {
-        //Only retry if message was written to stream in last 30s, otherwise it's a gap caused by a transaction rollback
         //This check avoids unnecessary retries when replaying projections
-        if ($now->sub($this->detectionWindow) > $currentMessage->createdAt()) {
+        if ($this->detectionWindow && $now->sub($this->detectionWindow) > $currentMessage->createdAt()) {
             return false;
         }
 
