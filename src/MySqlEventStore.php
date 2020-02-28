@@ -46,7 +46,7 @@ final class MySqlEventStore implements PdoEventStore
     private $connection;
 
     /**
-     * @var MySqlPersistenceStrategy
+     * @var PersistenceStrategy
      */
     private $persistenceStrategy;
 
@@ -81,7 +81,7 @@ final class MySqlEventStore implements PdoEventStore
     public function __construct(
         MessageFactory $messageFactory,
         PDO $connection,
-        MySqlPersistenceStrategy $persistenceStrategy,
+        PersistenceStrategy $persistenceStrategy,
         int $loadBatchSize = 10000,
         string $eventStreamsTable = 'event_streams',
         bool $disableTransactionHandling = false,
@@ -89,6 +89,15 @@ final class MySqlEventStore implements PdoEventStore
     ) {
         if (! \extension_loaded('pdo_mysql')) {
             throw ExtensionNotLoaded::with('pdo_mysql');
+        }
+
+        if (! $persistenceStrategy instanceof MySqlPersistenceStrategy) {
+            @\trigger_error(\sprintf(
+                '"%s" will expect an instance of "%s" from v2.0.0, please migrate your custom "%s" class.',
+                __CLASS__,
+                MySqlPersistenceStrategy::class,
+                \get_class($persistenceStrategy)
+            ), E_USER_DEPRECATED);
         }
 
         if (null === $writeLockStrategy) {

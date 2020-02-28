@@ -21,6 +21,7 @@ use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;
 use Prooph\EventStore\Pdo\Exception\RuntimeException;
+use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresAggregateStreamStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresPersistenceStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresSingleStreamStrategy;
@@ -254,5 +255,22 @@ SQL
         }
 
         $this->assertFalse($this->eventStore->hasStream($stream->streamName()));
+    }
+
+    /**
+     * @test
+     */
+    public function it_triggers_deprecation_error_when_non_vendor_specific_persistence_strategy_is_injected(): void
+    {
+        $deprecationRaised = false;
+
+        $handler = function () use (&$deprecationRaised) {
+            $deprecationRaised = true;
+        };
+        \set_error_handler($handler, E_USER_DEPRECATED);
+        $strategy = $this->createMock(PersistenceStrategy::class);
+        $this->setupEventStoreWith($strategy);
+        $this->assertTrue($deprecationRaised);
+        \restore_error_handler();
     }
 }
