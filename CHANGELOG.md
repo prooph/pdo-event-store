@@ -1,30 +1,51 @@
-# Change Log
+# Changelog
 
-## [v1.11.1](https://github.com/prooph/pdo-event-store/tree/v1.11.1)
+## [v1.12.0](https://github.com/prooph/pdo-event-store/tree/v1.12.0)
+
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.11.2...v1.12.0)
+
+**Implemented enhancements:**
+
+- MySQL Projections skipping events \(SingleStreamStrategy\) [\#189](https://github.com/prooph/pdo-event-store/issues/189)
+- Restores custom strategy backward compatibility [\#222](https://github.com/prooph/pdo-event-store/pull/222) ([gquemener](https://github.com/gquemener))
+- Adds PHP7.4 support [\#219](https://github.com/prooph/pdo-event-store/pull/219) ([gquemener](https://github.com/gquemener))
+- Prevents using incompatible persistence strategy [\#217](https://github.com/prooph/pdo-event-store/pull/217) ([gquemener](https://github.com/gquemener))
+- Add gap detection to projections [\#221](https://github.com/prooph/pdo-event-store/pull/221) ([codeliner](https://github.com/codeliner))
+- Extends license period [\#220](https://github.com/prooph/pdo-event-store/pull/220) ([gquemener](https://github.com/gquemener))
+- CS fixes [\#216](https://github.com/prooph/pdo-event-store/pull/216) ([codeliner](https://github.com/codeliner))
+
+## [v1.11.2](https://github.com/prooph/pdo-event-store/tree/v1.11.2) (2019-10-14)
+
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.11.1...v1.11.2)
+
+**Merged pull requests:**
+
+- Use bionic distro and mysql as service [\#213](https://github.com/prooph/pdo-event-store/pull/213) ([codeliner](https://github.com/codeliner))
+- Add Schema-Creation to createSchema function [\#210](https://github.com/prooph/pdo-event-store/pull/210) ([heiglandreas](https://github.com/heiglandreas))
+- Change copyright [\#209](https://github.com/prooph/pdo-event-store/pull/209) ([codeliner](https://github.com/codeliner))
+- don't execute count statement on load [\#208](https://github.com/prooph/pdo-event-store/pull/208) ([prolic](https://github.com/prolic))
+
+## [v1.11.1](https://github.com/prooph/pdo-event-store/tree/v1.11.1) (2019-05-26)
 
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.11.0...v1.11.1)
 
 **Fixed bugs:**
 
+- Projection fails sometimes when lock timeout is less than 100ms [\#198](https://github.com/prooph/pdo-event-store/issues/198)
 - Fixes projection lock string generation [\#206](https://github.com/prooph/pdo-event-store/pull/206) ([brunowowk](https://github.com/brunowowk))
 
-**Closed issues:**
-
-- Projection fails sometimes when lock timeout is less than 100ms [\#198](https://github.com/prooph/pdo-event-store/issues/198)
-
 ## [v1.11.0](https://github.com/prooph/pdo-event-store/tree/v1.11.0) (2019-05-26)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.10.5...v1.11.0)
 
 **Implemented enhancements:**
 
-- MySQL Projections skipping events \(SingleStreamStrategy\) [\#189](https://github.com/prooph/pdo-event-store/issues/189)
 - Improvement/merged stream iterator [\#202](https://github.com/prooph/pdo-event-store/pull/202) ([basz](https://github.com/basz))
 - Feature/189 write locks [\#190](https://github.com/prooph/pdo-event-store/pull/190) ([fritz-gerneth](https://github.com/fritz-gerneth))
 
 **Fixed bugs:**
 
 - Projections \(v7\) with '-\>when\(event\)' won't persist the position until a registered event handler is called [\#203](https://github.com/prooph/pdo-event-store/issues/203)
-- MySQL Projections skipping events \\(SingleStreamStrategy\\) [\#189](https://github.com/prooph/pdo-event-store/issues/189)
 
 **Closed issues:**
 
@@ -36,6 +57,7 @@
 - added php7.3 to travis [\#197](https://github.com/prooph/pdo-event-store/pull/197) ([AlessandroMinoccheri](https://github.com/AlessandroMinoccheri))
 
 ## [v1.10.5](https://github.com/prooph/pdo-event-store/tree/v1.10.5) (2019-04-10)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.10.4...v1.10.5)
 
 **Fixed bugs:**
@@ -43,6 +65,7 @@
 - fix PdoEventStoreReadModelProjector [\#196](https://github.com/prooph/pdo-event-store/pull/196) ([prolic](https://github.com/prolic))
 
 ## [v1.10.4](https://github.com/prooph/pdo-event-store/tree/v1.10.4) (2019-04-09)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.10.3...v1.10.4)
 
 **Fixed bugs:**
@@ -56,6 +79,7 @@
 - Use tablespaces? [\#193](https://github.com/prooph/pdo-event-store/issues/193)
 
 ## [v1.10.3](https://github.com/prooph/pdo-event-store/tree/v1.10.3) (2019-01-31)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.10.2...v1.10.3)
 
 **Fixed bugs:**
@@ -68,6 +92,7 @@
 - Resetting projection during event processing behaves incorrectly  [\#176](https://github.com/prooph/pdo-event-store/issues/176)
 
 ## [v1.10.2](https://github.com/prooph/pdo-event-store/tree/v1.10.2) (2019-01-25)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.10.1...v1.10.2)
 
 **Fixed bugs:**
@@ -80,6 +105,7 @@
 - fixed typo into variants documentation [\#184](https://github.com/prooph/pdo-event-store/pull/184) ([AlessandroMinoccheri](https://github.com/AlessandroMinoccheri))
 
 ## [v1.10.1](https://github.com/prooph/pdo-event-store/tree/v1.10.1) (2018-11-10)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.10.0...v1.10.1)
 
 **Fixed bugs:**
@@ -93,6 +119,7 @@
 - Starting a Projector with `stopping` state, looses stream position state [\#179](https://github.com/prooph/pdo-event-store/issues/179)
 
 ## [v1.10.0](https://github.com/prooph/pdo-event-store/tree/v1.10.0) (2018-11-03)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.9.1...v1.10.0)
 
 **Implemented enhancements:**
@@ -112,6 +139,7 @@
 - forgotten whilst fixing \#164 [\#174](https://github.com/prooph/pdo-event-store/pull/174) ([basz](https://github.com/basz))
 
 ## [v1.9.1](https://github.com/prooph/pdo-event-store/tree/v1.9.1) (2018-09-06)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.9.0...v1.9.1)
 
 **Fixed bugs:**
@@ -126,9 +154,11 @@
 - Fix create\_event\_stream example links [\#166](https://github.com/prooph/pdo-event-store/pull/166) ([codeliner](https://github.com/codeliner))
 
 ## [v1.9.0](https://github.com/prooph/pdo-event-store/tree/v1.9.0) (2018-06-29)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.9.0-BETA-2...v1.9.0)
 
 ## [v1.9.0-BETA-2](https://github.com/prooph/pdo-event-store/tree/v1.9.0-BETA-2) (2018-06-07)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.9.0-BETA-1...v1.9.0-BETA-2)
 
 **Implemented enhancements:**
@@ -142,6 +172,7 @@
 - Ignored error in PdoEventStoreReadModelProjector [\#160](https://github.com/prooph/pdo-event-store/issues/160)
 
 ## [v1.9.0-BETA-1](https://github.com/prooph/pdo-event-store/tree/v1.9.0-BETA-1) (2018-06-04)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.8.4...v1.9.0-BETA-1)
 
 **Implemented enhancements:**
@@ -160,6 +191,7 @@
 - Change MySQL tables to utf8mb4 [\#156](https://github.com/prooph/pdo-event-store/pull/156) ([darrylhein](https://github.com/darrylhein))
 
 ## [v1.8.4](https://github.com/prooph/pdo-event-store/tree/v1.8.4) (2018-05-06)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.8.3...v1.8.4)
 
 **Fixed bugs:**
@@ -167,6 +199,7 @@
 - Fix index metadata in MariaDb single stream strategy [\#152](https://github.com/prooph/pdo-event-store/pull/152) ([stepiiik](https://github.com/stepiiik))
 
 ## [v1.8.3](https://github.com/prooph/pdo-event-store/tree/v1.8.3) (2018-05-04)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.8.2...v1.8.3)
 
 **Closed issues:**
@@ -178,6 +211,7 @@
 - MariaDB index mapping [\#151](https://github.com/prooph/pdo-event-store/pull/151) ([kochen](https://github.com/kochen))
 
 ## [v1.8.2](https://github.com/prooph/pdo-event-store/tree/v1.8.2) (2018-05-03)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.8.1...v1.8.2)
 
 **Fixed bugs:**
@@ -191,6 +225,7 @@
 - Upgrade locking mechanism [\#145](https://github.com/prooph/pdo-event-store/issues/145)
 
 ## [v1.8.1](https://github.com/prooph/pdo-event-store/tree/v1.8.1) (2018-04-30)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.8.0...v1.8.1)
 
 **Implemented enhancements:**
@@ -202,6 +237,7 @@
 - Calculate seconds and initialize interval with it [\#148](https://github.com/prooph/pdo-event-store/pull/148) ([codeliner](https://github.com/codeliner))
 
 ## [v1.8.0](https://github.com/prooph/pdo-event-store/tree/v1.8.0) (2018-04-29)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.7.3...v1.8.0)
 
 **Implemented enhancements:**
@@ -213,6 +249,7 @@
 - Update variants.md [\#143](https://github.com/prooph/pdo-event-store/pull/143) ([Orkin](https://github.com/Orkin))
 
 ## [v1.7.3](https://github.com/prooph/pdo-event-store/tree/v1.7.3) (2018-03-26)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.7.2...v1.7.3)
 
 **Fixed bugs:**
@@ -221,6 +258,7 @@
 - fix multiple calls to reset/stop/delete projection [\#140](https://github.com/prooph/pdo-event-store/pull/140) ([prolic](https://github.com/prolic))
 
 ## [v1.7.2](https://github.com/prooph/pdo-event-store/tree/v1.7.2) (2018-03-14)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.7.1...v1.7.2)
 
 **Fixed bugs:**
@@ -232,6 +270,7 @@
 - update docs [\#136](https://github.com/prooph/pdo-event-store/pull/136) ([prolic](https://github.com/prolic))
 
 ## [v1.7.1](https://github.com/prooph/pdo-event-store/tree/v1.7.1) (2018-02-26)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.7.0...v1.7.1)
 
 **Fixed bugs:**
@@ -244,6 +283,7 @@
 - Missing backticks on table names declarations \(mysql\) [\#128](https://github.com/prooph/pdo-event-store/issues/128)
 
 ## [v1.7.0](https://github.com/prooph/pdo-event-store/tree/v1.7.0) (2018-02-06)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.6.0...v1.7.0)
 
 **Implemented enhancements:**
@@ -256,13 +296,13 @@
 - Update schemas [\#122](https://github.com/prooph/pdo-event-store/issues/122)
 - Quote tablenames [\#130](https://github.com/prooph/pdo-event-store/pull/130) ([basz](https://github.com/basz))
 - Always update the projections position [\#126](https://github.com/prooph/pdo-event-store/pull/126) ([hvanoch](https://github.com/hvanoch))
-- upgrade table schemas [\#124](https://github.com/prooph/pdo-event-store/pull/124) ([prolic](https://github.com/prolic))
 
 **Closed issues:**
 
 - Ability to replace the DateTimeImmutable class on mocked datetime [\#123](https://github.com/prooph/pdo-event-store/issues/123)
 
 ## [v1.6.0](https://github.com/prooph/pdo-event-store/tree/v1.6.0) (2017-12-15)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.5.2...v1.6.0)
 
 **Implemented enhancements:**
@@ -282,8 +322,10 @@
 **Merged pull requests:**
 
 - Fix silently ignored errors in PostgresEventStore [\#118](https://github.com/prooph/pdo-event-store/pull/118) ([enumag](https://github.com/enumag))
+- Fixes position in projections [\#115](https://github.com/prooph/pdo-event-store/pull/115) ([Adapik](https://github.com/Adapik))
 
 ## [v1.5.2](https://github.com/prooph/pdo-event-store/tree/v1.5.2) (2017-11-19)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.5.1...v1.5.2)
 
 **Implemented enhancements:**
@@ -302,11 +344,11 @@
 
 **Merged pull requests:**
 
-- Fixes position in projections [\#115](https://github.com/prooph/pdo-event-store/pull/115) ([Adapik](https://github.com/Adapik))
 - PdoStreamIterator should check json\_last\_error after json\_decode [\#112](https://github.com/prooph/pdo-event-store/pull/112) ([denniskoenig](https://github.com/denniskoenig))
 - Restructure docs [\#109](https://github.com/prooph/pdo-event-store/pull/109) ([codeliner](https://github.com/codeliner))
 
 ## [v1.5.1](https://github.com/prooph/pdo-event-store/tree/v1.5.1) (2017-09-20)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.5.0...v1.5.1)
 
 **Implemented enhancements:**
@@ -327,6 +369,7 @@
 - remove connection property from stream iterator [\#104](https://github.com/prooph/pdo-event-store/pull/104) ([prolic](https://github.com/prolic))
 
 ## [v1.5.0](https://github.com/prooph/pdo-event-store/tree/v1.5.0) (2017-07-30)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.4.1...v1.5.0)
 
 **Implemented enhancements:**
@@ -335,6 +378,7 @@
 - Disable transaction handling [\#101](https://github.com/prooph/pdo-event-store/pull/101) ([prolic](https://github.com/prolic))
 
 ## [v1.4.1](https://github.com/prooph/pdo-event-store/tree/v1.4.1) (2017-07-10)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.4.0...v1.4.1)
 
 **Implemented enhancements:**
@@ -348,6 +392,7 @@
 - fix lock until string [\#99](https://github.com/prooph/pdo-event-store/pull/99) ([prolic](https://github.com/prolic))
 
 ## [v1.4.0](https://github.com/prooph/pdo-event-store/tree/v1.4.0) (2017-07-03)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.3.3...v1.4.0)
 
 **Implemented enhancements:**
@@ -355,6 +400,7 @@
 - Optionally trigger pcntl\_signal\_dispatch [\#96](https://github.com/prooph/pdo-event-store/pull/96) ([fritz-gerneth](https://github.com/fritz-gerneth))
 
 ## [v1.3.3](https://github.com/prooph/pdo-event-store/tree/v1.3.3) (2017-06-29)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.3.2...v1.3.3)
 
 **Fixed bugs:**
@@ -362,6 +408,7 @@
 - update lock after sleep [\#95](https://github.com/prooph/pdo-event-store/pull/95) ([prolic](https://github.com/prolic))
 
 ## [v1.3.2](https://github.com/prooph/pdo-event-store/tree/v1.3.2) (2017-06-24)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.3.1...v1.3.2)
 
 **Implemented enhancements:**
@@ -369,6 +416,7 @@
 - make use of projection not found exception [\#94](https://github.com/prooph/pdo-event-store/pull/94) ([prolic](https://github.com/prolic))
 
 ## [v1.3.1](https://github.com/prooph/pdo-event-store/tree/v1.3.1) (2017-06-22)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.3.0...v1.3.1)
 
 **Implemented enhancements:**
@@ -387,6 +435,7 @@
 - Remove port bindings from docker-compose [\#88](https://github.com/prooph/pdo-event-store/pull/88) ([bweston92](https://github.com/bweston92))
 
 ## [v1.3.0](https://github.com/prooph/pdo-event-store/tree/v1.3.0) (2017-06-18)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.2.0...v1.3.0)
 
 **Implemented enhancements:**
@@ -408,15 +457,20 @@
 - Test against PostgreSQL 9.6 [\#81](https://github.com/prooph/pdo-event-store/pull/81) ([dragosprotung](https://github.com/dragosprotung))
 
 ## [v1.2.0](https://github.com/prooph/pdo-event-store/tree/v1.2.0) (2017-05-29)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.1.0...v1.2.0)
 
+**Implemented enhancements:**
+
+- Catch PDOExceptions and check error codes [\#78](https://github.com/prooph/pdo-event-store/pull/78) ([dragosprotung](https://github.com/dragosprotung))
+
 ## [v1.1.0](https://github.com/prooph/pdo-event-store/tree/v1.1.0) (2017-05-24)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.0.1...v1.1.0)
 
 **Implemented enhancements:**
 
 - Support message property filters + new operators [\#80](https://github.com/prooph/pdo-event-store/pull/80) ([prolic](https://github.com/prolic))
-- Catch PDOExceptions and check error codes [\#78](https://github.com/prooph/pdo-event-store/pull/78) ([dragosprotung](https://github.com/dragosprotung))
 
 **Closed issues:**
 
@@ -427,6 +481,7 @@
 - improve docs [\#79](https://github.com/prooph/pdo-event-store/pull/79) ([prolic](https://github.com/prolic))
 
 ## [v1.0.1](https://github.com/prooph/pdo-event-store/tree/v1.0.1) (2017-05-17)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.0.0...v1.0.1)
 
 **Fixed bugs:**
@@ -434,6 +489,7 @@
 - Catch and ignore duplicate projection error when creating it [\#77](https://github.com/prooph/pdo-event-store/pull/77) ([dragosprotung](https://github.com/dragosprotung))
 
 ## [v1.0.0](https://github.com/prooph/pdo-event-store/tree/v1.0.0) (2017-03-30)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.0.0-beta4...v1.0.0)
 
 **Implemented enhancements:**
@@ -447,6 +503,7 @@
 - Add documentation [\#31](https://github.com/prooph/pdo-event-store/issues/31)
 
 ## [v1.0.0-beta4](https://github.com/prooph/pdo-event-store/tree/v1.0.0-beta4) (2017-03-13)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.0.0-beta3...v1.0.0-beta4)
 
 **Implemented enhancements:**
@@ -482,33 +539,43 @@
 
 **Merged pull requests:**
 
-- Fetch method load fix [\#55](https://github.com/prooph/pdo-event-store/pull/55) ([basz](https://github.com/basz))
-- implements where and values args on createWhereClauseForMetadata calls [\#54](https://github.com/prooph/pdo-event-store/pull/54) ([basz](https://github.com/basz))
 - update to use psr\container [\#53](https://github.com/prooph/pdo-event-store/pull/53) ([basz](https://github.com/basz))
 - name should be escaped [\#48](https://github.com/prooph/pdo-event-store/pull/48) ([basz](https://github.com/basz))
 - Always call reset projection [\#41](https://github.com/prooph/pdo-event-store/pull/41) ([codeliner](https://github.com/codeliner))
 - Run tests using docker [\#40](https://github.com/prooph/pdo-event-store/pull/40) ([codeliner](https://github.com/codeliner))
 
 ## [v1.0.0-beta3](https://github.com/prooph/pdo-event-store/tree/v1.0.0-beta3) (2017-01-12)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.0.0-beta2...v1.0.0-beta3)
 
 ## [v1.0.0-beta2](https://github.com/prooph/pdo-event-store/tree/v1.0.0-beta2) (2017-01-12)
+
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.0.0-beta1...v1.0.0-beta2)
 
 **Implemented enhancements:**
 
+- UnitTests [\#36](https://github.com/prooph/pdo-event-store/pull/36) ([oqq](https://github.com/oqq))
+- MySQL Database Scheme improvements [\#34](https://github.com/prooph/pdo-event-store/pull/34) ([oqq](https://github.com/oqq))
+- adds missing phpunit group annotations to container test classes [\#33](https://github.com/prooph/pdo-event-store/pull/33) ([oqq](https://github.com/oqq))
 - Projections Update [\#30](https://github.com/prooph/pdo-event-store/pull/30) ([prolic](https://github.com/prolic))
+- Convert PostgreSQL payload column from JSONB to JSON. [\#28](https://github.com/prooph/pdo-event-store/pull/28) ([shochdoerfer](https://github.com/shochdoerfer))
+- Handle missing tables [\#26](https://github.com/prooph/pdo-event-store/pull/26) ([prolic](https://github.com/prolic))
+
+**Merged pull requests:**
+
+- SQL Query improvements [\#37](https://github.com/prooph/pdo-event-store/pull/37) ([oqq](https://github.com/oqq))
+- updates minimum MySQL server version to 5.7.9 in README [\#35](https://github.com/prooph/pdo-event-store/pull/35) ([oqq](https://github.com/oqq))
+- Travis config improvement [\#29](https://github.com/prooph/pdo-event-store/pull/29) ([oqq](https://github.com/oqq))
+- Factory improvements [\#25](https://github.com/prooph/pdo-event-store/pull/25) ([oqq](https://github.com/oqq))
 
 ## [v1.0.0-beta1](https://github.com/prooph/pdo-event-store/tree/v1.0.0-beta1) (2017-01-12)
+
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/c557ada680ff4315b9662c49cf1eb65432961ac7...v1.0.0-beta1)
+
 **Implemented enhancements:**
 
 - addStreamToStreamsTable throws wrong exception [\#24](https://github.com/prooph/pdo-event-store/issues/24)
 - Add stop\(\) method to query, projection and read model projection [\#10](https://github.com/prooph/pdo-event-store/issues/10)
-- UnitTests [\#36](https://github.com/prooph/pdo-event-store/pull/36) ([oqq](https://github.com/oqq))
-- MySQL Database Scheme improvements [\#34](https://github.com/prooph/pdo-event-store/pull/34) ([oqq](https://github.com/oqq))
-- adds missing phpunit group annotations to container test classes [\#33](https://github.com/prooph/pdo-event-store/pull/33) ([oqq](https://github.com/oqq))
-- Convert PostgreSQL payload column from JSONB to JSON. [\#28](https://github.com/prooph/pdo-event-store/pull/28) ([shochdoerfer](https://github.com/shochdoerfer))
-- Handle missing tables [\#26](https://github.com/prooph/pdo-event-store/pull/26) ([prolic](https://github.com/prolic))
 - Wrap action event emitter [\#23](https://github.com/prooph/pdo-event-store/pull/23) ([prolic](https://github.com/prolic))
 - Add convenience methods to event store [\#22](https://github.com/prooph/pdo-event-store/pull/22) ([prolic](https://github.com/prolic))
 - add updateStreamMetadata method to event store [\#21](https://github.com/prooph/pdo-event-store/pull/21) ([prolic](https://github.com/prolic))
@@ -524,14 +591,11 @@
 
 **Fixed bugs:**
 
-- addStreamToStreamsTable throws wrong exception [\#24](https://github.com/prooph/pdo-event-store/issues/24)
 - Unit test error after update [\#17](https://github.com/prooph/pdo-event-store/issues/17)
 - Transaction handling [\#6](https://github.com/prooph/pdo-event-store/issues/6)
 - Bug with MySQLSingleStreamStrategy [\#5](https://github.com/prooph/pdo-event-store/issues/5)
-- Handle missing tables [\#26](https://github.com/prooph/pdo-event-store/pull/26) ([prolic](https://github.com/prolic))
 - fix sprintf usage [\#16](https://github.com/prooph/pdo-event-store/pull/16) ([malukenho](https://github.com/malukenho))
 - add tests for stopping projections and queries, fix small bug [\#11](https://github.com/prooph/pdo-event-store/pull/11) ([prolic](https://github.com/prolic))
-- Projections [\#9](https://github.com/prooph/pdo-event-store/pull/9) ([prolic](https://github.com/prolic))
 - fix stream iterator [\#3](https://github.com/prooph/pdo-event-store/pull/3) ([prolic](https://github.com/prolic))
 
 **Closed issues:**
@@ -542,13 +606,9 @@
 
 **Merged pull requests:**
 
-- SQL Query improvements [\#37](https://github.com/prooph/pdo-event-store/pull/37) ([oqq](https://github.com/oqq))
-- updates minimum MySQL server version to 5.7.9 in README [\#35](https://github.com/prooph/pdo-event-store/pull/35) ([oqq](https://github.com/oqq))
-- Travis config improvement [\#29](https://github.com/prooph/pdo-event-store/pull/29) ([oqq](https://github.com/oqq))
-- Factory improvements [\#25](https://github.com/prooph/pdo-event-store/pull/25) ([oqq](https://github.com/oqq))
 - Move scripts into separate directories by DB vendor [\#20](https://github.com/prooph/pdo-event-store/pull/20) ([mablae](https://github.com/mablae))
 - Work with new event store release [\#7](https://github.com/prooph/pdo-event-store/pull/7) ([malukenho](https://github.com/malukenho))
 
 
 
-\* *This Change Log was automatically generated by [github_changelog_generator](https://github.com/skywinder/Github-Changelog-Generator)*
+\* *This Changelog was automatically generated by [github_changelog_generator](https://github.com/github-changelog-generator/github-changelog-generator)*
