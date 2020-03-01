@@ -139,6 +139,64 @@ Changing the locking strategy depends on a few factors:
    issue (only when having lots of writes on the same aggregate respectively). 
 - How the stream is read: if it is read at the same time as it is written, is it fine to miss a few events, etc ... 
 
+### Gap Detection
+
+`v1.12` introduces a second mechanism to tackle skipped events in projections - "Gap Detection". 
+You can use it as an alternative to write locks or in combination.
+
+#### Write Lock + Gap Detection
+
+When using a write lock you have a performance penalty while writing. Often this is not a problem, because
+most systems have to deal with much more reads than writes. However, write locks can not fully prevent skipped events,
+because in case an aggregate records multiple events within the same transaction and the events have different payload size,
+it can still happen that a projection sees events too early and skip the ones with a big payload size.
+
+Combining Gap Detection with a short sleep time ensures that no events are skipped.
+
+*Note: By default, Gap Detection uses 4 retries with the last sleep time set to 500ms.*
+
+#### Only Gap Detection
+
+If write performance is too slow with a write lock, you can fallback to only use Gap Detection. But you should 
+configure a much higher sleep time or multiple retries with increasing sleep time.
+
+For more details you can read the discussion in the [Gap Detection PR](https://github.com/prooph/pdo-event-store/pull/221).
+
+#### Enabling gap detection for a projection:
+
+```php
+$gapDetection = new GapDetection();
+
+$projection = $projectionManager->createProjection('test_projection', [
+            PdoEventStoreProjector::OPTION_GAP_DETECTION => $gapDetection,
+        ]);
+``` 
+
+#### Enabling gap detection for a read model projection with custom configuration:
+
+```php
+$gapDetection = new GapDetection(
+    // Configure retries in case a gap is detected
+    [
+        0, // First retry without any sleep time
+        10, // Second retry after 10 ms
+        30, // Wait another 30 ms before performing a third retry
+    ],
+    \DateInterval('PT60S') //Set detection window to 60s
+);
+
+$projection = $projectionManager->createReadModelProjection('test_projection', [
+            PdoEventStoreReadModelProjector::OPTION_GAP_DETECTION => $gapDetection,
+        ]);
+``` 
+
+#### Detection Window
+
+If you set a detection window, gap detection is only performed on events not older than `NOW - window`
+If the detection window is set to `PT60S`, only events created within the last 60 seconds are checked. 
+Be careful when setting `Event::createdAt` manually (for example during a migration). 
+
+
 ### A note on Json
 
 MySql differs from the other vendors in a subtile manner which basicly is a result of the json specification itself. Json 

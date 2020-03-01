@@ -14,11 +14,16 @@ declare(strict_types=1);
 namespace ProophTest\EventStore\Pdo\Projection;
 
 use ArrayIterator;
+use DateInterval;
+use DateTimeImmutable;
+use DateTimeZone;
 use PDO;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Exception\InvalidArgumentException;
+use Prooph\EventStore\Pdo\Projection\GapDetection;
+use Prooph\EventStore\Pdo\Projection\PdoEventStoreProjector;
 use Prooph\EventStore\Pdo\Projection\PdoEventStoreReadModelProjector;
 use Prooph\EventStore\Projection\ProjectionManager;
 use Prooph\EventStore\Projection\Projector;
@@ -47,6 +52,8 @@ abstract class PdoEventStoreReadModelProjectorTest extends AbstractEventStoreRea
      * @var PDO
      */
     protected $connection;
+
+    abstract protected function setUpEventStoreWithControlledConnection(PDO $connection): EventStore;
 
     protected function tearDown(): void
     {
@@ -438,5 +445,226 @@ abstract class PdoEventStoreReadModelProjectorTest extends AbstractEventStoreRea
             ->run(false);
 
         $this->assertEquals(50, $projectionManager->fetchProjectionStreamPositions('test_projection')['user']);
+    }
+
+    /**
+     * @test
+     */
+    public function it_detects_gap_and_performs_retry()
+    {
+        $streamName = new StreamName('user');
+
+        $this->prepareEventStreamWithOneEvent($streamName->toString());
+
+        $parallelConnection = TestUtil::getConnection(false);
+        $secondEventStore = $this->setUpEventStoreWithControlledConnection($parallelConnection);
+
+        // Begin transaction and let it open
+        $parallelConnection->beginTransaction();
+
+        $secondEventStore->appendTo($streamName, new ArrayIterator([
+            UsernameChanged::with([
+                'name' => 'Bob',
+            ], 2),
+        ]));
+
+        // Insert third event, while parallel connection is still in transaction
+        $this->eventStore->appendTo($streamName, new ArrayIterator([
+            UsernameChanged::with([
+                'name' => 'Sascha',
+            ], 3),
+        ]));
+
+        //Only one immediate retry and an increased detection window to have enough time for the test to succeed
+        $gapDetection = new GapDetection([0], new \DateInterval('PT60S'));
+
+        $projectionManager = $this->projectionManager;
+        $projection = $projectionManager->createReadModelProjection('test_projection', new ReadModelMock(), [
+            Projector::OPTION_PERSIST_BLOCK_SIZE => 1,
+            PdoEventStoreProjector::OPTION_GAP_DETECTION => $gapDetection,
+        ]);
+
+        $projection
+            ->fromStream('user')
+            ->init(function () {
+                return [];
+            })
+            ->when([
+                UserCreated::class => function (array $state, Message $event): array {
+                    return $state;
+                },
+                UsernameChanged::class => function (array $state, Message $event): array {
+                    return $state;
+                },
+            ])
+            ->run(false);
+
+        $this->assertEquals(1, $projectionManager->fetchProjectionStreamPositions('test_projection')['user']);
+
+        $this->assertTrue($gapDetection->isRetrying());
+
+        // Fill the gap
+        $parallelConnection->commit();
+
+        // Run again with gap detection in retry mode
+        $projection->run(false);
+
+        $this->assertEquals(3, $projectionManager->fetchProjectionStreamPositions('test_projection')['user']);
+
+        $this->assertFalse($gapDetection->isRetrying());
+    }
+
+    /**
+     * @test
+     */
+    public function it_continues_when_retry_limit_is_reached_and_gap_not_filled()
+    {
+        $streamName = new StreamName('user');
+
+        $this->prepareEventStreamWithOneEvent($streamName->toString());
+
+        $parallelConnection = TestUtil::getConnection(false);
+        $secondEventStore = $this->setUpEventStoreWithControlledConnection($parallelConnection);
+
+        // Begin transaction and let it open
+        $parallelConnection->beginTransaction();
+
+        $secondEventStore->appendTo($streamName, new ArrayIterator([
+            UsernameChanged::with([
+                'name' => 'Bob',
+            ], 2),
+        ]));
+
+        // Insert third event, while parallel connection is still in transaction
+        $this->eventStore->appendTo($streamName, new ArrayIterator([
+            UsernameChanged::with([
+                'name' => 'Sascha',
+            ], 3),
+        ]));
+
+        //Two retries and an increased detection window to have enough time for the test to succeed
+        $gapDetection = new GapDetection([0, 5], new \DateInterval('PT60S'));
+
+        $projectionManager = $this->projectionManager;
+        $projection = $projectionManager->createReadModelProjection('test_projection', new ReadModelMock(), [
+            Projector::OPTION_PERSIST_BLOCK_SIZE => 1,
+            PdoEventStoreProjector::OPTION_GAP_DETECTION => $gapDetection,
+        ]);
+
+        $projection
+            ->fromStream('user')
+            ->init(function () {
+                return [];
+            })
+            ->when([
+                UserCreated::class => function (array $state, Message $event): array {
+                    return $state;
+                },
+                UsernameChanged::class => function (array $state, Message $event): array {
+                    return $state;
+                },
+            ])
+            ->run(false);
+
+        $this->assertEquals(1, $projectionManager->fetchProjectionStreamPositions('test_projection')['user']);
+
+        $this->assertTrue($gapDetection->isRetrying());
+
+        // Force a real gap
+        $parallelConnection->rollBack();
+
+        // Run again with gap detection in retry mode
+        $projection->run(false);
+
+        // Projection should not move forward, but instead retry a second time
+        $this->assertEquals(1, $projectionManager->fetchProjectionStreamPositions('test_projection')['user']);
+
+        // Third run with gap detection still in retry mode, but limit reached
+        $projection->run(false);
+
+        //Projection should have moved forward
+        $this->assertEquals(3, $projectionManager->fetchProjectionStreamPositions('test_projection')['user']);
+
+        $this->assertFalse($gapDetection->isRetrying());
+    }
+
+    /**
+     * @test
+     */
+    public function it_does_not_perform_retry_when_event_is_older_than_detection_window()
+    {
+        $streamName = new StreamName('user');
+
+        // Simulate a projection replay by setting createdAt to yesterday
+        $timeOfRecording = (new \DateTimeImmutable('now', new DateTimeZone('UTC')))->sub(new DateInterval('P1D'));
+
+        $this->prepareEventStreamWithOneEvent($streamName->toString(), $timeOfRecording);
+
+        $parallelConnection = TestUtil::getConnection(false);
+        $secondEventStore = $this->setUpEventStoreWithControlledConnection($parallelConnection);
+
+        // Begin transaction and let it open
+        $parallelConnection->beginTransaction();
+
+        $secondEventStore->appendTo($streamName, new ArrayIterator([
+            UsernameChanged::withPayloadAndSpecifiedCreatedAt([
+                'name' => 'Bob',
+            ], 2, $timeOfRecording),
+        ]));
+
+        // Insert third event, while parallel connection is still in transaction
+        $this->eventStore->appendTo($streamName, new ArrayIterator([
+            UsernameChanged::withPayloadAndSpecifiedCreatedAt([
+                'name' => 'Sascha',
+            ], 3, $timeOfRecording),
+        ]));
+
+        //Two retries but detection window set to one minute only
+        $gapDetection = new GapDetection([0, 5], new \DateInterval('PT60S'));
+
+        $projectionManager = $this->projectionManager;
+        $projection = $projectionManager->createReadModelProjection('test_projection', new ReadModelMock(), [
+            Projector::OPTION_PERSIST_BLOCK_SIZE => 1,
+            PdoEventStoreProjector::OPTION_GAP_DETECTION => $gapDetection,
+        ]);
+
+        $projection
+            ->fromStream('user')
+            ->init(function () {
+                return [];
+            })
+            ->when([
+                UserCreated::class => function (array $state, Message $event): array {
+                    return $state;
+                },
+                UsernameChanged::class => function (array $state, Message $event): array {
+                    return $state;
+                },
+            ])
+            ->run(false);
+
+        // No retry, since gap is too old
+        $this->assertEquals(3, $projectionManager->fetchProjectionStreamPositions('test_projection')['user']);
+
+        $parallelConnection->rollBack();
+
+        $this->assertFalse($gapDetection->isRetrying());
+    }
+
+    protected function prepareEventStreamWithOneEvent(string $name, DateTimeImmutable $createdAt = null): void
+    {
+        $events = [];
+
+        if ($createdAt) {
+            $events[] = UserCreated::withPayloadAndSpecifiedCreatedAt([
+                'name' => 'Alex',
+            ], 1, $createdAt);
+        } else {
+            $events[] = UserCreated::with([
+                'name' => 'Alex',
+            ], 1);
+        }
+
+        $this->eventStore->create(new Stream(new StreamName($name), new ArrayIterator($events)));
     }
 }

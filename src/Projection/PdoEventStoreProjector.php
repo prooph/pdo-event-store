@@ -172,7 +172,7 @@ final class PdoEventStoreProjector implements Projector
     private $metadataMatcher;
 
     /**
-     * @var GapDetection/null
+     * @var GapDetection|null
      */
     private $gapDetection;
 

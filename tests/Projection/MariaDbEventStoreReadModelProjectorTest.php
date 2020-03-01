@@ -13,9 +13,11 @@ declare(strict_types=1);
 
 namespace ProophTest\EventStore\Pdo\Projection;
 
+use PDO;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\Message;
 use Prooph\Common\Messaging\NoOpMessageConverter;
+use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Pdo\MariaDbEventStore;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbSimpleStreamStrategy;
 use Prooph\EventStore\Pdo\Projection\MariaDbProjectionManager;
@@ -47,6 +49,18 @@ class MariaDbEventStoreReadModelProjectorTest extends PdoEventStoreReadModelProj
         $this->projectionManager = new MariaDbProjectionManager(
             $this->eventStore,
             $this->connection
+        );
+    }
+
+    protected function setUpEventStoreWithControlledConnection(PDO $connection): EventStore
+    {
+        return new MariaDbEventStore(
+            new FQCNMessageFactory(),
+            $connection,
+            new MariaDbSimpleStreamStrategy(new NoOpMessageConverter()),
+            10000,
+            'event_streams',
+            true
         );
     }
 

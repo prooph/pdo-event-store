@@ -37,7 +37,8 @@ final class GapDetection
     private $retryConfig = [
         0, // First retry is triggered immediately
         5, // Second retry is triggered after 5ms
-        50, // Either DB is really busy or we have a real gap, wait another 50ms and run a last try
+        50, // Third retry with much longer sleep time
+        500, // Either DB is really busy or we have a real gap, wait another 500ms and run a last try
         // Add more ms values if projection should perform more retries
     ];
 
