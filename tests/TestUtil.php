@@ -35,9 +35,9 @@ abstract class TestUtil
      */
     private static $connection;
 
-    public static function getConnection(): PDO
+    public static function getConnection($sharedConnection = true): PDO
     {
-        if (! isset(self::$connection)) {
+        if (! isset(self::$connection) || ! $sharedConnection) {
             $connectionParams = self::getConnectionParams();
             $separator = self::$driverSchemeSeparators[$connectionParams['driver']];
             $dsn = self::$driverSchemeAliases[$connectionParams['driver']] . ':';
@@ -46,6 +46,10 @@ abstract class TestUtil
             $dsn .= 'dbname=' . $connectionParams['dbname'] . $separator;
             $dsn .= self::getCharsetValue($connectionParams['charset'], $connectionParams['driver']) . $separator;
             $dsn = \rtrim($dsn);
+
+            if (! $sharedConnection) {
+                return new PDO($dsn, $connectionParams['user'], $connectionParams['password'], $connectionParams['options']);
+            }
 
             $retries = 10; // keep trying for 10 seconds, should be enough
             while (null === self::$connection && $retries > 0) {

@@ -39,6 +39,8 @@ use Prooph\EventStore\Util\ArrayCache;
 
 final class PdoEventStoreProjector implements Projector
 {
+    public const OPTION_GAP_DETECTION = 'gap_detection';
+
     use PostgresHelper {
         quoteIdent as pgQuoteIdent;
         extractSchema as pgExtractSchema;
@@ -169,6 +171,11 @@ final class PdoEventStoreProjector implements Projector
      */
     private $metadataMatcher;
 
+    /**
+     * @var GapDetection|null
+     */
+    private $gapDetection;
+
     public function __construct(
         EventStore $eventStore,
         PDO $connection,
@@ -180,7 +187,8 @@ final class PdoEventStoreProjector implements Projector
         int $persistBlockSize,
         int $sleep,
         bool $triggerPcntlSignalDispatch = false,
-        int $updateLockThreshold = 0
+        int $updateLockThreshold = 0,
+        GapDetection $gapDetection = null
     ) {
         if ($triggerPcntlSignalDispatch && ! \extension_loaded('pcntl')) {
             throw Exception\ExtensionNotLoadedException::withName('pcntl');
@@ -198,6 +206,7 @@ final class PdoEventStoreProjector implements Projector
         $this->status = ProjectionStatus::IDLE();
         $this->triggerPcntlSignalDispatch = $triggerPcntlSignalDispatch;
         $this->updateLockThreshold = $updateLockThreshold;
+        $this->gapDetection = $gapDetection;
         $this->vendor = $this->connection->getAttribute(PDO::ATTR_DRIVER_NAME);
 
         while ($eventStore instanceof EventStoreDecorator) {
@@ -526,16 +535,26 @@ EOT;
                 $streamEvents = new MergedStreamIterator(\array_keys($eventStreams), ...\array_values($eventStreams));
 
                 if ($singleHandler) {
-                    $this->handleStreamWithSingleHandler($streamEvents);
+                    $gapDetected = ! $this->handleStreamWithSingleHandler($streamEvents);
                 } else {
-                    $this->handleStreamWithHandlers($streamEvents);
+                    $gapDetected = ! $this->handleStreamWithHandlers($streamEvents);
                 }
 
-                if (0 === $this->eventCounter) {
-                    \usleep($this->sleep);
-                    $this->updateLock();
-                } else {
+                if ($gapDetected && $this->gapDetection) {
+                    $sleep = $this->gapDetection->getSleepForNextRetry();
+
+                    \usleep($sleep);
+                    $this->gapDetection->trackRetry();
                     $this->persist();
+                } else {
+                    $this->gapDetection && $this->gapDetection->resetRetries();
+
+                    if (0 === $this->eventCounter) {
+                        \usleep($this->sleep);
+                        $this->updateLock();
+                    } else {
+                        $this->persist();
+                    }
                 }
 
                 $this->eventCounter = 0;
@@ -603,7 +622,7 @@ EOT;
         return ProjectionStatus::byValue($result->status);
     }
 
-    private function handleStreamWithSingleHandler(MergedStreamIterator $events): void
+    private function handleStreamWithSingleHandler(MergedStreamIterator $events): bool
     {
         $handler = $this->handler;
 
@@ -614,6 +633,14 @@ EOT;
             }
 
             $this->currentStreamName = $events->streamName();
+
+            if ($this->gapDetection
+                && $this->gapDetection->isGapInStreamPosition((int) $this->streamPositions[$this->currentStreamName], (int) $key)
+                && $this->gapDetection->shouldRetryToFillGap(new \DateTimeImmutable('now', new DateTimeZone('UTC')), $event)
+            ) {
+                return false;
+            }
+
             $this->streamPositions[$this->currentStreamName] = $key;
             $this->eventCounter++;
 
@@ -629,9 +656,11 @@ EOT;
                 break;
             }
         }
+
+        return true;
     }
 
-    private function handleStreamWithHandlers(MergedStreamIterator $events): void
+    private function handleStreamWithHandlers(MergedStreamIterator $events): bool
     {
         /* @var Message $event */
         foreach ($events as $key => $event) {
@@ -640,6 +669,14 @@ EOT;
             }
 
             $this->currentStreamName = $events->streamName();
+
+            if ($this->gapDetection
+                && $this->gapDetection->isGapInStreamPosition((int) $this->streamPositions[$this->currentStreamName], (int) $key)
+                && $this->gapDetection->shouldRetryToFillGap(new \DateTimeImmutable('now', new DateTimeZone('UTC')), $event)
+            ) {
+                return false;
+            }
+
             $this->streamPositions[$this->currentStreamName] = $key;
 
             $this->eventCounter++;
@@ -667,6 +704,8 @@ EOT;
                 break;
             }
         }
+
+        return true;
     }
 
     private function persistAndFetchRemoteStatusWhenBlockSizeThresholdReached(): void
