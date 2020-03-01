@@ -52,7 +52,7 @@ final class PostgresEventStore implements PdoEventStore, TransactionalEventStore
     private $connection;
 
     /**
-     * @var PostgresPersistenceStrategy
+     * @var PersistenceStrategy
      */
     private $persistenceStrategy;
 
@@ -82,7 +82,7 @@ final class PostgresEventStore implements PdoEventStore, TransactionalEventStore
     public function __construct(
         MessageFactory $messageFactory,
         PDO $connection,
-        PostgresPersistenceStrategy $persistenceStrategy,
+        PersistenceStrategy $persistenceStrategy,
         int $loadBatchSize = 10000,
         string $eventStreamsTable = 'event_streams',
         bool $disableTransactionHandling = false,
@@ -90,6 +90,15 @@ final class PostgresEventStore implements PdoEventStore, TransactionalEventStore
     ) {
         if (! \extension_loaded('pdo_pgsql')) {
             throw ExtensionNotLoaded::with('pdo_pgsql');
+        }
+
+        if (! $persistenceStrategy instanceof PostgresPersistenceStrategy) {
+            @\trigger_error(\sprintf(
+                '"%s" will expect an instance of "%s" from v2.0.0, please migrate your custom "%s" class.',
+                __CLASS__,
+                PostgresPersistenceStrategy::class,
+                \get_class($persistenceStrategy)
+            ), E_USER_DEPRECATED);
         }
 
         if (null === $writeLockStrategy) {

@@ -46,7 +46,7 @@ final class MariaDbEventStore implements PdoEventStore
     private $connection;
 
     /**
-     * @var MariaDbPersistenceStrategy
+     * @var PersistenceStrategy
      */
     private $persistenceStrategy;
 
@@ -81,7 +81,7 @@ final class MariaDbEventStore implements PdoEventStore
     public function __construct(
         MessageFactory $messageFactory,
         PDO $connection,
-        MariaDbPersistenceStrategy $persistenceStrategy,
+        PersistenceStrategy $persistenceStrategy,
         int $loadBatchSize = 10000,
         string $eventStreamsTable = 'event_streams',
         bool $disableTransactionHandling = false,
@@ -93,6 +93,15 @@ final class MariaDbEventStore implements PdoEventStore
 
         if (null === $writeLockStrategy) {
             $writeLockStrategy = new NoLockStrategy();
+        }
+
+        if (! $persistenceStrategy instanceof MariaDbPersistenceStrategy) {
+            @\trigger_error(\sprintf(
+                '"%s" will expect an instance of "%s" from v2.0.0, please migrate your custom "%s" class.',
+                __CLASS__,
+                MariaDbPersistenceStrategy::class,
+                \get_class($persistenceStrategy)
+            ), E_USER_DEPRECATED);
         }
 
         Assertion::min($loadBatchSize, 1);
