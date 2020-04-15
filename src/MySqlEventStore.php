@@ -721,6 +721,7 @@ SQL;
         }
 
         foreach ($metadataMatcher->data() as $key => $match) {
+            $this->convertToColumn($match);
             /** @var FieldType $fieldType */
             $fieldType = $match['fieldType'];
             $field = $match['field'];
@@ -863,6 +864,22 @@ EOT;
 
             if (! $result) {
                 throw new RuntimeException('Error during createSchemaFor: ' . \implode('; ', $statement->errorInfo()));
+            }
+        }
+    }
+
+    /**
+     * Convert metadata fields into indexed columns
+     *
+     * @example `_aggregate__id` => `aggregate_id`
+     */
+    private function convertToColumn(array &$match): void
+    {
+        if ($this->persistenceStrategy instanceof MySqlIndexedPersistenceStrategy) {
+            $indexedColumns = $this->persistenceStrategy->indexedMetadataFields();
+            if (\in_array($match['field'], \array_keys($indexedColumns), true)) {
+                $match['field'] = $indexedColumns[$match['field']];
+                $match['fieldType'] = FieldType::MESSAGE_PROPERTY();
             }
         }
     }

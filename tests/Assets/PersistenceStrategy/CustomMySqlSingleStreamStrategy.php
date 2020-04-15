@@ -15,11 +15,12 @@ namespace ProophTest\EventStore\Pdo\Assets\PersistenceStrategy;
 
 use Iterator;
 use Prooph\EventStore\Pdo\HasQueryHint;
+use Prooph\EventStore\Pdo\MySqlIndexedPersistenceStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlPersistenceStrategy;
 use Prooph\EventStore\Pdo\Util\Json;
 use Prooph\EventStore\StreamName;
 
-final class CustomMySqlSingleStreamStrategy implements MySqlPersistenceStrategy, HasQueryHint
+final class CustomMySqlSingleStreamStrategy implements MySqlPersistenceStrategy, HasQueryHint, MySqlIndexedPersistenceStrategy
 {
     /**
      * @param string $tableName
@@ -56,6 +57,15 @@ EOT;
             'payload',
             'metadata',
             'created_at',
+        ];
+    }
+
+    public function indexedMetadataFields(): array
+    {
+        return [
+            '_aggregate_id' => 'aggregate_id',
+            '_aggregate_type' => 'aggregate_type',
+            '_aggregate_version' => 'aggregate_version',
         ];
     }
 

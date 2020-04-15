@@ -17,10 +17,11 @@ use Iterator;
 use Prooph\Common\Messaging\MessageConverter;
 use Prooph\EventStore\Pdo\DefaultMessageConverter;
 use Prooph\EventStore\Pdo\HasQueryHint;
+use Prooph\EventStore\Pdo\MySqlIndexedPersistenceStrategy;
 use Prooph\EventStore\Pdo\Util\Json;
 use Prooph\EventStore\StreamName;
 
-final class MySqlSingleStreamStrategy implements MySqlPersistenceStrategy, HasQueryHint
+final class MySqlSingleStreamStrategy implements MySqlPersistenceStrategy, HasQueryHint, MySqlIndexedPersistenceStrategy
 {
     /**
      * @var MessageConverter
@@ -67,6 +68,15 @@ EOT;
             'payload',
             'metadata',
             'created_at',
+        ];
+    }
+
+    public function indexedMetadataFields(): array
+    {
+        return [
+            '_aggregate_id' => 'aggregate_id',
+            '_aggregate_type' => 'aggregate_type',
+            '_aggregate_version' => 'aggregate_version',
         ];
     }
 
