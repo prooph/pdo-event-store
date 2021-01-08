@@ -1,6 +1,6 @@
 # pdo-event-store
 
-[![Build Status](https://travis-ci.org/prooph/pdo-event-store.svg?branch=master)](https://travis-ci.org/prooph/pdo-event-store)
+[![Build Status](https://travis-ci.com/prooph/pdo-event-store.svg?branch=master)](https://travis-ci.com/prooph/pdo-event-store)
 [![Coverage Status](https://coveralls.io/repos/prooph/pdo-event-store/badge.svg?branch=master&service=github)](https://coveralls.io/github/prooph/pdo-event-store?branch=master)
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/prooph/improoph)
 
@@ -109,21 +109,21 @@ and a running Postgres server listening on port `5432`. Both should contain an e
 
 ```bash
 docker-compose -f docker-compose-tests.yml run composer run-script test-mariadb --timeout 0; \
-docker stop prooph-pdo-event-store_mariadb_1 && docker rm prooph-pdo-event-store_mariadb_1
+docker-compose -f docker-compose-tests.yml stop
 ```
 
 ### MySql
 
 ```bash
 docker-compose -f docker-compose-tests.yml run composer run-script test-mysql --timeout 0; \
-docker stop prooph-pdo-event-store_mysql_1 && docker rm prooph-pdo-event-store_mysql_1
+docker-compose -f docker-compose-tests.yml stop
 ```
 
 ### Postgres
 
 ```bash
 docker-compose -f docker-compose-tests.yml run composer run-script test-postgres --timeout 0; \
-docker stop prooph-pdo-event-store_postgres_1 && docker rm prooph-pdo-event-store_postgres_1
+docker-compose -f docker-compose-tests.yml stop
 ```
 
 ## Support
