@@ -126,11 +126,6 @@ docker-compose -f docker-compose-tests.yml run composer run-script test-postgres
 docker-compose -f docker-compose-tests.yml stop
 ```
 
-### For development
-```
-
-```
-
 ## Support
 
 - Ask questions on Stack Overflow tagged with [#prooph](https://stackoverflow.com/questions/tagged/prooph).
