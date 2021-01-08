@@ -28,6 +28,7 @@ use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
 use ProophTest\EventStore\Pdo\Assets\PersistenceStrategy\CustomMariaDbAggregateStreamStrategy;
 use ProophTest\EventStore\Pdo\Assets\PersistenceStrategy\CustomMariaDbSingleStreamStrategy;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Ramsey\Uuid\Uuid;
 
 /**
@@ -35,6 +36,8 @@ use Ramsey\Uuid\Uuid;
  */
 final class MariaDbCustomStrategiesEventStoreTest extends MariaDbEventStoreTest
 {
+    use ProphecyTrait;
+
     /**
      * @var MariaDbEventStore
      */

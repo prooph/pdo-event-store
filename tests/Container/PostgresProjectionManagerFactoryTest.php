@@ -22,6 +22,7 @@ use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresPersistenceStrategy;
 use Prooph\EventStore\Pdo\PostgresEventStore;
 use Prooph\EventStore\Pdo\Projection\PostgresProjectionManager;
 use ProophTest\EventStore\Pdo\TestUtil;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Container\ContainerInterface;
 
 /**
@@ -29,6 +30,8 @@ use Psr\Container\ContainerInterface;
  */
 class PostgresProjectionManagerFactoryTest extends TestCase
 {
+    use ProphecyTrait;
+
     /**
      * @test
      */

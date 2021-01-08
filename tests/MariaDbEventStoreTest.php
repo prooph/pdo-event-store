@@ -33,6 +33,7 @@ use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Ramsey\Uuid\Uuid;
 
 /**
@@ -40,6 +41,8 @@ use Ramsey\Uuid\Uuid;
  */
 class MariaDbEventStoreTest extends AbstractPdoEventStoreTest
 {
+    use ProphecyTrait;
+
     /**
      * @var MariaDbEventStore
      */

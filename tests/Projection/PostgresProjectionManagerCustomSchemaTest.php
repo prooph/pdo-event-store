@@ -26,6 +26,7 @@ use Prooph\EventStore\Pdo\Util\PostgresHelper;
 use Prooph\EventStore\Projection\InMemoryProjectionManager;
 use ProophTest\EventStore\Pdo\TestUtil;
 use ProophTest\EventStore\Projection\AbstractProjectionManagerTest;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 /**
  * @group postgres
@@ -33,6 +34,8 @@ use ProophTest\EventStore\Projection\AbstractProjectionManagerTest;
 class PostgresProjectionManagerCustomSchemaTest extends AbstractProjectionManagerTest
 {
     use PostgresHelper;
+    use ProphecyTrait;
+
     /**
      * @var PostgresProjectionManager
      */

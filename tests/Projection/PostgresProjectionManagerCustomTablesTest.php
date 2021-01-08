@@ -25,12 +25,15 @@ use Prooph\EventStore\Pdo\Projection\PostgresProjectionManager;
 use Prooph\EventStore\Projection\InMemoryProjectionManager;
 use ProophTest\EventStore\Pdo\TestUtil;
 use ProophTest\EventStore\Projection\AbstractProjectionManagerTest;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 /**
  * @group postgres
  */
 class PostgresProjectionManagerCustomTablesTest extends AbstractProjectionManagerTest
 {
+    use ProphecyTrait;
+
     /**
      * @var PostgresProjectionManager
      */

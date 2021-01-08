@@ -16,12 +16,15 @@ namespace ProophTest\EventStore\Pdo\WriteLockStrategy;
 use PHPUnit\Framework\TestCase;
 use Prooph\EventStore\Pdo\WriteLockStrategy\MariaDbMetadataLockStrategy;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 /**
  * @group mariadb
  */
 class MariaDbMetadataLockStrategyTest extends TestCase
 {
+    use ProphecyTrait;
+
     /**
      * @test
      */

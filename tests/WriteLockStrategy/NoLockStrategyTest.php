@@ -15,12 +15,15 @@ namespace ProophTest\EventStore\Pdo\WriteLockStrategy;
 
 use PHPUnit\Framework\TestCase;
 use Prooph\EventStore\Pdo\WriteLockStrategy\NoLockStrategy;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 /**
  * @group mysql
  */
 class NoLockStrategyTest extends TestCase
 {
+    use ProphecyTrait;
+
     /**
      * @test
      */

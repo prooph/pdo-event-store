@@ -24,12 +24,15 @@ use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbPersistenceStrategy;
 use Prooph\EventStore\Pdo\Projection\MariaDbProjectionManager;
 use ProophTest\EventStore\Pdo\TestUtil;
 use ProophTest\EventStore\Projection\AbstractProjectionManagerTest;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 /**
  * @group mariadb
  */
 class MariaDbProjectionManagerTest extends AbstractProjectionManagerTest
 {
+    use ProphecyTrait;
+
     /**
      * @var MariaDbProjectionManager
      */

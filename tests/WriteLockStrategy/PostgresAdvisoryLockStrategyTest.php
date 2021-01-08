@@ -16,12 +16,15 @@ namespace ProophTest\EventStore\Pdo\WriteLockStrategy;
 use PHPUnit\Framework\TestCase;
 use Prooph\EventStore\Pdo\WriteLockStrategy\PostgresAdvisoryLockStrategy;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 /**
  * @group postgres
  */
 class PostgresAdvisoryLockStrategyTest extends TestCase
 {
+    use ProphecyTrait;
+
     /**
      * @test
      */

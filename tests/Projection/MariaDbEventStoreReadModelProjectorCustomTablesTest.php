@@ -22,12 +22,15 @@ use Prooph\EventStore\Projection\ReadModel;
 use ProophTest\EventStore\Mock\ReadModelMock;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Pdo\TestUtil;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 /**
  * @group mariadb
  */
 class MariaDbEventStoreReadModelProjectorCustomTablesTest extends PdoEventStoreReadModelProjectorCustomTablesTest
 {
+    use ProphecyTrait;
+
     protected function setUp(): void
     {
         if (TestUtil::getDatabaseDriver() !== 'pdo_mysql') {

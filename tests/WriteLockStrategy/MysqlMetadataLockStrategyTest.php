@@ -16,12 +16,15 @@ namespace ProophTest\EventStore\Pdo\WriteLockStrategy;
 use PHPUnit\Framework\TestCase;
 use Prooph\EventStore\Pdo\WriteLockStrategy\MysqlMetadataLockStrategy;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 /**
  * @group mysql
  */
 class MysqlMetadataLockStrategyTest extends TestCase
 {
+    use ProphecyTrait;
+
     /**
      * @test
      */

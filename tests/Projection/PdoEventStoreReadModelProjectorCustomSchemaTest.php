@@ -29,9 +29,12 @@ use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
 use ProophTest\EventStore\Pdo\TestUtil;
 use ProophTest\EventStore\Projection\AbstractEventStoreReadModelProjectorTest;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 abstract class PdoEventStoreReadModelProjectorCustomSchemaTest extends AbstractEventStoreReadModelProjectorTest
 {
+    use ProphecyTrait;
+
     /**
      * @var ProjectionManager
      */

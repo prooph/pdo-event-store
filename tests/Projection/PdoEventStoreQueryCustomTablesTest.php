@@ -24,9 +24,12 @@ use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
 use ProophTest\EventStore\Pdo\TestUtil;
 use ProophTest\EventStore\Projection\AbstractEventStoreQueryTest;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 abstract class PdoEventStoreQueryCustomTablesTest extends AbstractEventStoreQueryTest
 {
+    use ProphecyTrait;
+
     /**
      * @var ProjectionManager
      */

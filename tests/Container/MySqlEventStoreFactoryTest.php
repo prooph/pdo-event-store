@@ -26,6 +26,7 @@ use Prooph\EventStore\Pdo\WriteLockStrategy;
 use Prooph\EventStore\Pdo\WriteLockStrategy\MysqlMetadataLockStrategy;
 use Prooph\EventStore\Plugin\Plugin;
 use ProophTest\EventStore\Pdo\TestUtil;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Container\ContainerInterface;
 
 /**
@@ -33,6 +34,8 @@ use Psr\Container\ContainerInterface;
  */
 final class MySqlEventStoreFactoryTest extends TestCase
 {
+    use ProphecyTrait;
+
     /**
      * @test
      */

@@ -23,6 +23,7 @@ use Prooph\EventStore\Pdo\MariaDbEventStore;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbPersistenceStrategy;
 use Prooph\EventStore\Pdo\Projection\MariaDbProjectionManager;
 use ProophTest\EventStore\Pdo\TestUtil;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Container\ContainerInterface;
 
 /**
@@ -30,6 +31,8 @@ use Psr\Container\ContainerInterface;
  */
 class MariaDbProjectionManagerFactoryTest extends TestCase
 {
+    use ProphecyTrait;
+
     /**
      * @test
      */

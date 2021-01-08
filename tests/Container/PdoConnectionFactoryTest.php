@@ -17,16 +17,19 @@ use PDO;
 use PHPUnit\Framework\TestCase;
 use Prooph\EventStore\Pdo\Exception\InvalidArgumentException;
 use ProophTest\EventStore\Pdo\TestUtil;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Container\ContainerInterface;
 
 class PdoConnectionFactoryTest extends TestCase
 {
+    use ProphecyTrait;
+
     /**
      * @var array
      */
     protected $config;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $vendor = TestUtil::getDatabaseDriver();
 

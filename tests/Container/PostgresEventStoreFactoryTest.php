@@ -27,6 +27,7 @@ use Prooph\EventStore\Pdo\WriteLockStrategy\NoLockStrategy;
 use Prooph\EventStore\Plugin\Plugin;
 use Prooph\EventStore\TransactionalActionEventEmitterEventStore;
 use ProophTest\EventStore\Pdo\TestUtil;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Container\ContainerInterface;
 
 /**
@@ -34,6 +35,8 @@ use Psr\Container\ContainerInterface;
  */
 final class PostgresEventStoreFactoryTest extends TestCase
 {
+    use ProphecyTrait;
+
     /**
      * @test
      */
