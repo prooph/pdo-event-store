@@ -16,7 +16,7 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "php": "^7.1",
+        "php": "^7.3 | ^8.0",
         "ext-pdo": "*",
         "prooph/event-store": "^7.5.3"
     },
