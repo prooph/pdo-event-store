@@ -492,9 +492,10 @@ before_script:
   - if [[ $DRIVER == 'pdo_pgsql' ]]; then psql -c 'create database event_store_tests;' -U postgres; fi
   - composer self-update
   - composer update $DEPENDENCIES
+  - rm -rf $HOME/.php-cs-fixer/.php_cs.cache
 
 script:
-  - cp phpunit.xml.$VENDOR phpunit.xml
+  - cp phpunit.$VENDOR.xml phpunit.xml
   - if [[ $TEST_COVERAGE == 'true' ]]; then php -dzend_extension=xdebug.so ./vendor/bin/phpunit --coverage-text --coverage-clover ./build/logs/clover.xml; else ./vendor/bin/phpunit; fi
   - if [[ $EXECUTE_CS_CHECK == 'true' ]]; then ./vendor/bin/php-cs-fixer fix -v --diff --dry-run; fi
 
