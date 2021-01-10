@@ -24,12 +24,15 @@ use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlPersistenceStrategy;
 use Prooph\EventStore\Pdo\Projection\MySqlProjectionManager;
 use ProophTest\EventStore\Pdo\TestUtil;
 use ProophTest\EventStore\Projection\AbstractProjectionManagerTest;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 /**
  * @group mysql
  */
 class MySqlProjectionManagerCustomTablesTest extends AbstractProjectionManagerTest
 {
+    use ProphecyTrait;
+
     /**
      * @var MySqlProjectionManager
      */

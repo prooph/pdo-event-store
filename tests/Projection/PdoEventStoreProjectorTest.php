@@ -178,6 +178,7 @@ abstract class PdoEventStoreProjectorTest extends AbstractEventStoreProjectorTes
 
     /**
      * @test
+     * @medium
      */
     public function it_dispatches_pcntl_signals_when_enabled(): void
     {
@@ -212,6 +213,7 @@ abstract class PdoEventStoreProjectorTest extends AbstractEventStoreProjectorTes
 
     /**
      * @test
+     * @large
      */
     public function it_respects_update_lock_threshold(): void
     {
