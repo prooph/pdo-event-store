@@ -386,6 +386,7 @@ abstract class PdoEventStoreReadModelProjectorTest extends AbstractEventStoreRea
 
     /**
      * @test
+     * @medium
      * @testWith        [1, 70]
      *                  [20, 70]
      *                  [21, 71]
