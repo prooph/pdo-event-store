@@ -48,6 +48,26 @@ class MariaDbProjectionManagerTest extends AbstractProjectionManagerTest
      */
     private $connection;
 
+    /**
+     * @test
+     * @large
+     */
+    public function it_fetches_projection_names(): void
+    {
+        // Overwrite parent test for different test duration
+        parent::it_fetches_projection_names();
+    }
+
+    /**
+     * @test
+     * @large
+     */
+    public function it_fetches_projection_names_using_regex(): void
+    {
+        // Overwrite parent test for different test duration
+        parent::it_fetches_projection_names_using_regex();
+    }
+
     protected function setUp(): void
     {
         if (TestUtil::getDatabaseDriver() !== 'pdo_mysql') {

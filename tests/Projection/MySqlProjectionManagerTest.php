@@ -74,6 +74,26 @@ class MySqlProjectionManagerTest extends AbstractProjectionManagerTest
 
     /**
      * @test
+     * @large
+     */
+    public function it_fetches_projection_names(): void
+    {
+        // Overwrite parent test for different test duration
+        parent::it_fetches_projection_names();
+    }
+
+    /**
+     * @test
+     * @large
+     */
+    public function it_fetches_projection_names_using_regex(): void
+    {
+        // Overwrite parent test for different test duration
+        parent::it_fetches_projection_names_using_regex();
+    }
+
+    /**
+     * @test
      */
     public function it_throws_exception_when_invalid_event_store_instance_passed(): void
     {

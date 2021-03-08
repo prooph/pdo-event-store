@@ -61,6 +61,26 @@ class PostgresEventStoreTest extends AbstractPdoEventStoreTest
 
     /**
      * @test
+     * @medium
+     */
+    public function it_fetches_stream_names(): void
+    {
+        // Overwrite parent test for different test duration
+        parent::it_fetches_stream_names();
+    }
+
+    /**
+     * @test
+     * @medium
+     */
+    public function it_fetches_stream_categories(): void
+    {
+        // Overwrite parent test for different test duration
+        parent::it_fetches_stream_categories();
+    }
+
+    /**
+     * @test
      */
     public function it_cannot_create_new_stream_if_table_name_is_already_used(): void
     {
