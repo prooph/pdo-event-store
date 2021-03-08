@@ -18,7 +18,7 @@
     "require": {
         "php": "^7.3 | ^8.0",
         "ext-pdo": "*",
-        "prooph/event-store": "^7.5.3"
+        "prooph/event-store": "^v7.6"
     },
     "require-dev": {
         "sandrokeil/interop-config": "^2.0.1",
