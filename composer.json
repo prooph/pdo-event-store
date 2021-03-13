@@ -16,16 +16,17 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "php": "^7.1",
+        "php": "^7.3 | ^8.0",
         "ext-pdo": "*",
-        "prooph/event-store": "^7.5.3"
+        "prooph/event-store": "^v7.6"
     },
     "require-dev": {
         "sandrokeil/interop-config": "^2.0.1",
-        "phpunit/php-invoker": "^2.0",
-        "phpunit/phpunit": "^7.5.18",
+        "phpunit/php-invoker": "^3.1",
+        "phpunit/phpunit": "^9.3",
         "phpspec/prophecy": "^1.9",
-        "prooph/php-cs-fixer-config": "^0.3",
+        "phpspec/prophecy-phpunit": "^2.0",
+        "prooph/php-cs-fixer-config": "^0.4",
         "prooph/bookdown-template": "^0.2.3",
         "psr/container": "^1.0",
         "satooshi/php-coveralls": "^1.0"
@@ -63,9 +64,9 @@
     "scripts": {
         "cs": "php-cs-fixer fix -v --diff --dry-run",
         "cs-fix": "php-cs-fixer fix -v --diff",
-        "test-postgres": "DB_HOST=postgres vendor/bin/phpunit -c phpunit.xml.postgres",
-        "test-mariadb": "DB_HOST=mariadb vendor/bin/phpunit -c phpunit.xml.mariadb",
-        "test-mysql": "DB_HOST=mysql vendor/bin/phpunit -c phpunit.xml.mysql",
+        "test-postgres": "DB_HOST=postgres vendor/bin/phpunit -c phpunit.postgres.xml",
+        "test-mariadb": "DB_HOST=mariadb vendor/bin/phpunit -c phpunit.mariadb.xml",
+        "test-mysql": "DB_HOST=mysql vendor/bin/phpunit -c phpunit.mysql.xml",
         "test-all": [
             "@test-postgres",
             "@test-mariadb",

@@ -2,8 +2,8 @@
 
 /**
  * This file is part of prooph/pdo-event-store.
- * (c) 2016-2020 Alexander Miertsch <kontakt@codeliner.ws>
- * (c) 2016-2020 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
+ * (c) 2016-2021 Alexander Miertsch <kontakt@codeliner.ws>
+ * (c) 2016-2021 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -25,9 +25,12 @@ use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
 use ProophTest\EventStore\Pdo\TestUtil;
 use ProophTest\EventStore\Projection\AbstractEventStoreProjectorTest;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 abstract class PdoEventStoreProjectorCustomSchemaTest extends AbstractEventStoreProjectorTest
 {
+    use ProphecyTrait;
+
     /**
      * @var ProjectionManager
      */

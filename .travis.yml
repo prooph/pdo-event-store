@@ -5,334 +5,6 @@ sudo: false
 matrix:
   fast_finish: true
   include:
-    - php: 7.1
-      dist: bionic
-      sudo: true
-      env:
-        - DEPENDENCIES=""
-        - DRIVER="pdo_mysql"
-        - DB=mariadb_10.2
-      addons:
-          mariadb: '10.2'
-    - php: 7.1
-      dist: bionic
-      sudo: true
-      env:
-        - DEPENDENCIES="--prefer-lowest --prefer-stable"
-        - DRIVER="pdo_mysql"
-        - DB=mariadb_10.2
-      addons:
-          mariadb: '10.2'
-    - php: 7.1
-      dist: bionic
-      sudo: true
-      env:
-        - DEPENDENCIES=""
-        - DRIVER="pdo_mysql"
-        - DB=mariadb_10.2
-        - DB_ATTR_ERRMODE=2 # \PDO::ERRMODE_EXCEPTION
-      addons:
-          mariadb: '10.2'
-    - php: 7.1
-      dist: bionic
-      sudo: true
-      env:
-        - DEPENDENCIES=""
-        - DRIVER="pdo_mysql"
-        - DB=mariadb_10.3
-      addons:
-        mariadb: '10.3'
-    - php: 7.1
-      dist: bionic
-      sudo: true
-      env:
-        - DEPENDENCIES="--prefer-lowest --prefer-stable"
-        - DRIVER="pdo_mysql"
-        - DB=mariadb_10.3
-      addons:
-        mariadb: '10.3'
-    - php: 7.1
-      dist: bionic
-      sudo: true
-      env:
-        - DEPENDENCIES=""
-        - DRIVER="pdo_mysql"
-        - DB=mariadb_10.3
-        - DB_ATTR_ERRMODE=2 # \PDO::ERRMODE_EXCEPTION
-      addons:
-        mariadb: '10.3'
-    - php: 7.1
-      dist: bionic
-      sudo: true
-      services:
-        - mysql
-      env:
-        - DEPENDENCIES=""
-        - DRIVER="pdo_mysql"
-        - DB=mysql_5.7
-    - php: 7.1
-      dist: bionic
-      sudo: true
-      services:
-        - mysql
-      env:
-        - DEPENDENCIES="--prefer-lowest --prefer-stable"
-        - DRIVER="pdo_mysql"
-        - DB=mysql_5.7
-    - php: 7.1
-      dist: bionic
-      sudo: true
-      services:
-        - mysql
-      env:
-        - DEPENDENCIES=""
-        - DRIVER="pdo_mysql"
-        - DB=mysql_5.7
-        - DB_ATTR_ERRMODE=2 # \PDO::ERRMODE_EXCEPTION
-    - php: 7.1
-      dist: bionic
-      env:
-        - DEPENDENCIES=""
-        - DRIVER="pdo_pgsql"
-        - DB=postgres_9.4
-      addons:
-        postgresql: '9.4'
-    - php: 7.1
-      dist: bionic
-      env:
-        - DEPENDENCIES="--prefer-lowest --prefer-stable"
-        - DRIVER="pdo_pgsql"
-        - DB=postgres_9.4
-      addons:
-        postgresql: '9.4'
-    - php: 7.1
-      dist: bionic
-      env:
-        - DEPENDENCIES=""
-        - DRIVER="pdo_pgsql"
-        - DB=postgres_9.4
-        - DB_ATTR_ERRMODE=2 # \PDO::ERRMODE_EXCEPTION
-      addons:
-        postgresql: '9.4'
-    - php: 7.1
-      dist: bionic
-      env:
-        - DEPENDENCIES=""
-        - DRIVER="pdo_pgsql"
-        - DB=postgres_9.5
-      addons:
-        postgresql: '9.5'
-    - php: 7.1
-      dist: bionic
-      env:
-        - DEPENDENCIES="--prefer-lowest --prefer-stable"
-        - DRIVER="pdo_pgsql"
-        - DB=postgres_9.5
-      addons:
-        postgresql: '9.5'
-    - php: 7.1
-      dist: bionic
-      env:
-        - DEPENDENCIES=""
-        - DRIVER="pdo_pgsql"
-        - DB=postgres_9.5
-        - DB_ATTR_ERRMODE=2 # \PDO::ERRMODE_EXCEPTION
-      addons:
-        postgresql: '9.5'
-    - php: 7.1
-      dist: bionic
-      env:
-        - DEPENDENCIES=""
-        - EXECUTE_CS_CHECK=true
-        - TEST_COVERAGE=true
-        - DRIVER="pdo_pgsql"
-        - DB=postgres_9.6
-      addons:
-        postgresql: '9.6'
-    - php: 7.1
-      dist: bionic
-      env:
-        - DEPENDENCIES="--prefer-lowest --prefer-stable"
-        - DRIVER="pdo_pgsql"
-        - DB=postgres_9.6
-      addons:
-        postgresql: '9.6'
-    - php: 7.1
-      dist: bionic
-      env:
-        - DEPENDENCIES=""
-        - DRIVER="pdo_pgsql"
-        - DB=postgres_9.6
-        - DB_ATTR_ERRMODE=2 # \PDO::ERRMODE_EXCEPTION
-      addons:
-        postgresql: '9.6'
-    - php: 7.2
-      dist: bionic
-      sudo: true
-      env:
-        - DEPENDENCIES=""
-        - DRIVER="pdo_mysql"
-        - DB=mariadb_10.2
-      addons:
-          mariadb: '10.2'
-    - php: 7.2
-      dist: bionic
-      sudo: true
-      env:
-        - DEPENDENCIES="--prefer-lowest --prefer-stable"
-        - DRIVER="pdo_mysql"
-        - DB=mariadb_10.2
-      addons:
-          mariadb: '10.2'
-    - php: 7.2
-      dist: bionic
-      sudo: true
-      env:
-        - DEPENDENCIES=""
-        - DRIVER="pdo_mysql"
-        - DB=mariadb_10.2
-        - DB_ATTR_ERRMODE=2 # \PDO::ERRMODE_EXCEPTION
-      addons:
-          mariadb: '10.2'
-    - php: 7.2
-      dist: bionic
-      sudo: true
-      env:
-        - DEPENDENCIES=""
-        - DRIVER="pdo_mysql"
-        - DB=mariadb_10.3
-      addons:
-        mariadb: '10.3'
-    - php: 7.2
-      dist: bionic
-      sudo: true
-      env:
-        - DEPENDENCIES="--prefer-lowest --prefer-stable"
-        - DRIVER="pdo_mysql"
-        - DB=mariadb_10.3
-      addons:
-        mariadb: '10.3'
-    - php: 7.2
-      dist: bionic
-      sudo: true
-      env:
-        - DEPENDENCIES=""
-        - DRIVER="pdo_mysql"
-        - DB=mariadb_10.3
-        - DB_ATTR_ERRMODE=2 # \PDO::ERRMODE_EXCEPTION
-      addons:
-        mariadb: '10.3'
-    - php: 7.2
-      dist: bionic
-      sudo: true
-      services:
-        - mysql
-      env:
-        - DEPENDENCIES=""
-        - DRIVER="pdo_mysql"
-        - DB=mysql_5.7
-    - php: 7.2
-      dist: bionic
-      sudo: true
-      services:
-        - mysql
-      env:
-        - DEPENDENCIES="--prefer-lowest --prefer-stable"
-        - DRIVER="pdo_mysql"
-        - DB=mysql_5.7
-    - php: 7.2
-      dist: bionic
-      sudo: true
-      services:
-        - mysql
-      env:
-        - DEPENDENCIES=""
-        - DRIVER="pdo_mysql"
-        - DB=mysql_5.7
-        - DB_ATTR_ERRMODE=2 # \PDO::ERRMODE_EXCEPTION
-    - php: 7.2
-      dist: bionic
-      env:
-        - DEPENDENCIES=""
-        - DRIVER="pdo_pgsql"
-        - DB=postgres_9.4
-      addons:
-        postgresql: '9.4'
-    - php: 7.2
-      env:
-        - DEPENDENCIES="--prefer-lowest --prefer-stable"
-        - DRIVER="pdo_pgsql"
-        - DB=postgres_9.4
-      addons:
-        postgresql: '9.4'
-    - php: 7.2
-      dist: bionic
-      env:
-        - DEPENDENCIES=""
-        - DRIVER="pdo_pgsql"
-        - DB=postgres_9.4
-        - DB_ATTR_ERRMODE=2 # \PDO::ERRMODE_EXCEPTION
-      addons:
-        postgresql: '9.4'
-    - php: 7.2
-      dist: bionic
-      env:
-        - DEPENDENCIES=""
-        - DRIVER="pdo_pgsql"
-        - DB=postgres_9.5
-      addons:
-        postgresql: '9.5'
-    - php: 7.2
-      dist: bionic
-      env:
-        - DEPENDENCIES="--prefer-lowest --prefer-stable"
-        - DRIVER="pdo_pgsql"
-        - DB=postgres_9.5
-      addons:
-        postgresql: '9.5'
-    - php: 7.2
-      dist: bionic
-      env:
-        - DEPENDENCIES=""
-        - DRIVER="pdo_pgsql"
-        - DB=postgres_9.5
-        - DB_ATTR_ERRMODE=2 # \PDO::ERRMODE_EXCEPTION
-      addons:
-        postgresql: '9.5'
-    - php: 7.2
-      dist: bionic
-      env:
-        - DEPENDENCIES=""
-        - DRIVER="pdo_pgsql"
-        - DB=postgres_9.6
-      addons:
-        postgresql: '9.6'
-    - php: 7.2
-      dist: bionic
-      env:
-        - DEPENDENCIES="--prefer-lowest --prefer-stable"
-        - DRIVER="pdo_pgsql"
-        - DB=postgres_9.6
-      addons:
-        postgresql: '9.6'
-    - php: 7.2
-      dist: bionic
-      env:
-        - DEPENDENCIES=""
-        - DRIVER="pdo_pgsql"
-        - DB=postgres_9.6
-        - DB_ATTR_ERRMODE=2 # \PDO::ERRMODE_EXCEPTION
-      addons:
-        postgresql: '9.6'
-    - php: 7.3
-      dist: bionic
-      sudo: true
-      env:
-        - DEPENDENCIES=""
-        - DRIVER="pdo_mysql"
-        - DB=mariadb_10.2
-      addons:
-          mariadb: '10.2'
     - php: 7.3
       dist: bionic
       sudo: true
@@ -636,6 +308,167 @@ matrix:
       addons:
         postgresql: '9.6'
     - php: 7.4
+      dist: bionic
+      env:
+        - DEPENDENCIES=""
+        - DRIVER="pdo_pgsql"
+        - DB=postgres_9.6
+        - DB_ATTR_ERRMODE=2 # \PDO::ERRMODE_EXCEPTION
+      addons:
+        postgresql: '9.6'
+    - php: 7.4
+      dist: bionic
+      sudo: true
+      env:
+        - DEPENDENCIES=""
+        - DRIVER="pdo_mysql"
+        - DB=mariadb_10.2
+      addons:
+        mariadb: '10.2'
+    - php: 7.4
+      dist: bionic
+      sudo: true
+      env:
+        - DEPENDENCIES="--prefer-lowest --prefer-stable"
+        - DRIVER="pdo_mysql"
+        - DB=mariadb_10.2
+      addons:
+        mariadb: '10.2'
+    - php: 7.4
+      dist: bionic
+      sudo: true
+      env:
+        - DEPENDENCIES=""
+        - DRIVER="pdo_mysql"
+        - DB=mariadb_10.2
+        - DB_ATTR_ERRMODE=2 # \PDO::ERRMODE_EXCEPTION
+      addons:
+        mariadb: '10.2'
+    - php: 8.0
+      dist: bionic
+      sudo: true
+      env:
+        - DEPENDENCIES=""
+        - DRIVER="pdo_mysql"
+        - DB=mariadb_10.3
+      addons:
+        mariadb: '10.3'
+    - php: 8.0
+      dist: bionic
+      sudo: true
+      env:
+        - DEPENDENCIES="--prefer-lowest --prefer-stable"
+        - DRIVER="pdo_mysql"
+        - DB=mariadb_10.3
+      addons:
+        mariadb: '10.3'
+    - php: 8.0
+      dist: bionic
+      sudo: true
+      env:
+        - DEPENDENCIES=""
+        - DRIVER="pdo_mysql"
+        - DB=mariadb_10.3
+        - DB_ATTR_ERRMODE=2 # \PDO::ERRMODE_EXCEPTION
+      addons:
+        mariadb: '10.3'
+    - php: 8.0
+      dist: bionic
+      sudo: true
+      services:
+        - mysql
+      env:
+        - DEPENDENCIES=""
+        - DRIVER="pdo_mysql"
+        - DB=mysql_5.7
+    - php: 8.0
+      dist: bionic
+      sudo: true
+      services:
+        - mysql
+      env:
+        - DEPENDENCIES="--prefer-lowest --prefer-stable"
+        - DRIVER="pdo_mysql"
+        - DB=mysql_5.7
+    - php: 8.0
+      dist: bionic
+      sudo: true
+      services:
+        - mysql
+      env:
+        - DEPENDENCIES=""
+        - DRIVER="pdo_mysql"
+        - DB=mysql_5.7
+        - DB_ATTR_ERRMODE=2 # \PDO::ERRMODE_EXCEPTION
+    - php: 8.0
+      dist: bionic
+      env:
+        - DEPENDENCIES=""
+        - DRIVER="pdo_pgsql"
+        - DB=postgres_9.4
+      addons:
+        postgresql: '9.4'
+    - php: 8.0
+      dist: bionic
+      env:
+        - DEPENDENCIES="--prefer-lowest --prefer-stable"
+        - DRIVER="pdo_pgsql"
+        - DB=postgres_9.4
+      addons:
+        postgresql: '9.4'
+    - php: 8.0
+      dist: bionic
+      env:
+        - DEPENDENCIES=""
+        - DRIVER="pdo_pgsql"
+        - DB=postgres_9.4
+        - DB_ATTR_ERRMODE=2 # \PDO::ERRMODE_EXCEPTION
+      addons:
+        postgresql: '9.4'
+    - php: 8.0
+      dist: bionic
+      env:
+        - DEPENDENCIES=""
+        - DRIVER="pdo_pgsql"
+        - DB=postgres_9.5
+      addons:
+        postgresql: '9.5'
+    - php: 8.0
+      dist: bionic
+      env:
+        - DEPENDENCIES="--prefer-lowest --prefer-stable"
+        - DRIVER="pdo_pgsql"
+        - DB=postgres_9.5
+      addons:
+        postgresql: '9.5'
+    - php: 8.0
+      dist: bionic
+      env:
+        - DEPENDENCIES=""
+        - DRIVER="pdo_pgsql"
+        - DB=postgres_9.5
+        - DB_ATTR_ERRMODE=2 # \PDO::ERRMODE_EXCEPTION
+      addons:
+        postgresql: '9.5'
+    - php: 8.0
+      dist: bionic
+      env:
+        - DEPENDENCIES=""
+        - EXECUTE_CS_CHECK=true
+        - TEST_COVERAGE=true
+        - DRIVER="pdo_pgsql"
+        - DB=postgres_9.6
+      addons:
+        postgresql: '9.6'
+    - php: 8.0
+      dist: bionic
+      env:
+        - DEPENDENCIES="--prefer-lowest --prefer-stable"
+        - DRIVER="pdo_pgsql"
+        - DB=postgres_9.6
+      addons:
+        postgresql: '9.6'
+    - php: 8.0
       dist: bionic
       env:
         - DEPENDENCIES=""
@@ -659,10 +492,11 @@ before_script:
   - if [[ $DRIVER == 'pdo_pgsql' ]]; then psql -c 'create database event_store_tests;' -U postgres; fi
   - composer self-update
   - composer update $DEPENDENCIES
+  - rm -rf $HOME/.php-cs-fixer/.php_cs.cache
 
 script:
-  - cp phpunit.xml.$VENDOR phpunit.xml
-  - if [[ $TEST_COVERAGE == 'true' ]]; then php -dzend_extension=xdebug.so ./vendor/bin/phpunit --coverage-text --coverage-clover ./build/logs/clover.xml; else ./vendor/bin/phpunit; fi
+  - cp phpunit.$VENDOR.xml phpunit.xml
+  - if [[ $TEST_COVERAGE == 'true' ]]; then XDEBUG_MODE=coverage php -dzend_extension=xdebug.so ./vendor/bin/phpunit --coverage-text --coverage-clover ./build/logs/clover.xml; else ./vendor/bin/phpunit; fi
   - if [[ $EXECUTE_CS_CHECK == 'true' ]]; then ./vendor/bin/php-cs-fixer fix -v --diff --dry-run; fi
 
 after_success:

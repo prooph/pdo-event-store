@@ -2,8 +2,8 @@
 
 /**
  * This file is part of prooph/pdo-event-store.
- * (c) 2016-2020 Alexander Miertsch <kontakt@codeliner.ws>
- * (c) 2016-2020 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
+ * (c) 2016-2021 Alexander Miertsch <kontakt@codeliner.ws>
+ * (c) 2016-2021 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -33,6 +33,7 @@ use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Ramsey\Uuid\Uuid;
 
 /**
@@ -40,6 +41,8 @@ use Ramsey\Uuid\Uuid;
  */
 class MySqlEventStoreTest extends AbstractPdoEventStoreTest
 {
+    use ProphecyTrait;
+
     /**
      * @var MySqlEventStore
      */
@@ -55,6 +58,26 @@ class MySqlEventStoreTest extends AbstractPdoEventStoreTest
         TestUtil::initDefaultDatabaseTables($this->connection);
 
         $this->setupEventStoreWith(new MySqlAggregateStreamStrategy(new NoOpMessageConverter()));
+    }
+
+    /**
+     * @test
+     * @medium
+     */
+    public function it_fetches_stream_names(): void
+    {
+        // Overwrite parent test for different test duration
+        parent::it_fetches_stream_names();
+    }
+
+    /**
+     * @test
+     * @medium
+     */
+    public function it_fetches_stream_categories(): void
+    {
+        // Overwrite parent test for different test duration
+        parent::it_fetches_stream_categories();
     }
 
     /**
