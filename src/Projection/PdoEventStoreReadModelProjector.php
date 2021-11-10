@@ -485,6 +485,7 @@ EOT;
         try {
             do {
                 $eventStreams = [];
+                $streamEvents = []; // free up memory from PDO statement
 
                 foreach ($this->streamPositions as $streamName => $position) {
                     try {
