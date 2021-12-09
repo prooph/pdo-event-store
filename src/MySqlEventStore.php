@@ -190,7 +190,7 @@ EOT;
             throw RuntimeException::fromStatementErrorInfo($statement->errorInfo());
         }
 
-        return '1' === $statement->fetchColumn();
+        return 1 === (int)$statement->fetchColumn();
     }
 
     public function create(Stream $stream): void
