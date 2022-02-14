@@ -189,6 +189,7 @@ final class PdoStreamIterator implements StreamIterator
     /**
      * @return bool|int
      */
+    #[\ReturnTypeWillChange]
     public function key()
     {
         if (null === $this->currentItem) {
