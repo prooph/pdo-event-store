@@ -2,8 +2,8 @@
 
 /**
  * This file is part of prooph/pdo-event-store.
- * (c) 2016-2021 Alexander Miertsch <kontakt@codeliner.ws>
- * (c) 2016-2021 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
+ * (c) 2016-2022 Alexander Miertsch <kontakt@codeliner.ws>
+ * (c) 2016-2022 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -190,7 +190,7 @@ EOT;
             throw RuntimeException::fromStatementErrorInfo($statement->errorInfo());
         }
 
-        return 1 === (int)$statement->fetchColumn();
+        return 1 === (int) $statement->fetchColumn();
     }
 
     public function create(Stream $stream): void
