@@ -16,6 +16,7 @@ namespace Prooph\EventStore\Pdo;
 use Iterator;
 use PDO;
 use PDOException;
+use Doctrine\DBAL\Driver\PDO\Connection;
 use Prooph\Common\Messaging\MessageFactory;
 use Prooph\EventStore\Exception\StreamExistsAlready;
 use Prooph\EventStore\Exception\StreamNotFound;
@@ -81,7 +82,7 @@ final class PostgresEventStore implements PdoEventStore, TransactionalEventStore
      */
     public function __construct(
         MessageFactory $messageFactory,
-        PDO $connection,
+        Connection $connection,
         PersistenceStrategy $persistenceStrategy,
         int $loadBatchSize = 10000,
         string $eventStreamsTable = 'event_streams',
