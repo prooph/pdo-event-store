@@ -1,6 +1,14 @@
 # Changelog
 
-## [v1.14.0](https://github.com/prooph/pdo-event-store/tree/v1.14.0)
+## [v1.14.1](https://github.com/prooph/pdo-event-store/tree/v1.14.1)
+
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.14.0...v1.14.1)
+
+**Fixed bugs:**
+
+- Allow int return values from GET\_LOCK MySQL function [\#239](https://github.com/prooph/pdo-event-store/pull/239) ([rmbl](https://github.com/rmbl))
+
+## [v1.14.0](https://github.com/prooph/pdo-event-store/tree/v1.14.0) (2022-02-18)
 
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.13.0...v1.14.0)
 
