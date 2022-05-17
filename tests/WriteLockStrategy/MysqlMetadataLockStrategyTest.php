@@ -47,6 +47,25 @@ class MysqlMetadataLockStrategyTest extends TestCase
     /**
      * @test
      */
+    public function it_returns_true_when_lock_successful_int()
+    {
+        $statement = $this->prophesize(\PDOStatement::class);
+        $statement->fetchAll()->willReturn([
+            0 => ['get_lock' => 1],
+        ]);
+
+        $connection = $this->prophesize(\PDO::class);
+
+        $connection->query(Argument::any())->willReturn($statement->reveal());
+
+        $strategy = new MysqlMetadataLockStrategy($connection->reveal());
+
+        $this->assertTrue($strategy->getLock('lock'));
+    }
+
+    /**
+     * @test
+     */
     public function it_requests_lock_with_given_name()
     {
         $statement = $this->prophesize(\PDOStatement::class);
@@ -129,6 +148,25 @@ class MysqlMetadataLockStrategyTest extends TestCase
         $statement = $this->prophesize(\PDOStatement::class);
         $statement->fetchAll()->willReturn([
             0 => ['get_lock' => '0'],
+        ]);
+
+        $connection = $this->prophesize(\PDO::class);
+
+        $connection->query(Argument::any())->willReturn($statement->reveal());
+
+        $strategy = new MysqlMetadataLockStrategy($connection->reveal());
+
+        $this->assertFalse($strategy->getLock('lock'));
+    }
+
+    /**
+     * @test
+     */
+    public function it_returns_false_on_lock_failure_int()
+    {
+        $statement = $this->prophesize(\PDOStatement::class);
+        $statement->fetchAll()->willReturn([
+            0 => ['get_lock' => 0],
         ]);
 
         $connection = $this->prophesize(\PDO::class);
