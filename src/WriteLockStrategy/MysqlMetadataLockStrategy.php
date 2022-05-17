@@ -51,7 +51,7 @@ final class MysqlMetadataLockStrategy implements WriteLockStrategy
         }
 
         $lockStatus = $res->fetchAll();
-        if ('1' === $lockStatus[0]['get_lock']) {
+        if ('1' === $lockStatus[0]['get_lock'] || 1 === $lockStatus[0]['get_lock']) {
             return true;
         }
 
