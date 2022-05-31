@@ -1,6 +1,18 @@
 # Changelog
 
-## [v1.14.1](https://github.com/prooph/pdo-event-store/tree/v1.14.1)
+## [v1.14.2](https://github.com/prooph/pdo-event-store/tree/v1.14.2)
+
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.14.1...v1.14.2)
+
+**Fixed bugs:**
+
+- fix\(mariadb\): hasStream failed to detect existing stream [\#241](https://github.com/prooph/pdo-event-store/pull/241) ([aheissenberger](https://github.com/aheissenberger))
+
+**Closed issues:**
+
+- MariaDB / hasStream fails to detect existing Stream [\#240](https://github.com/prooph/pdo-event-store/issues/240)
+
+## [v1.14.1](https://github.com/prooph/pdo-event-store/tree/v1.14.1) (2022-05-17)
 
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.14.0...v1.14.1)
 
