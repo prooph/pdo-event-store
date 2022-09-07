@@ -37,6 +37,8 @@ use Prooph\EventStore\StreamName;
 final class PdoEventStoreReadModelProjector implements ReadModelProjector
 {
     public const OPTION_GAP_DETECTION = 'gap_detection';
+    public const OPTION_LOAD_COUNT = 'load_count';
+    public const DEFAULT_LOAD_COUNT = null;
 
     use PostgresHelper {
         quoteIdent as pgQuoteIdent;
@@ -133,6 +135,11 @@ final class PdoEventStoreReadModelProjector implements ReadModelProjector
     private $sleep;
 
     /**
+     * @var int|null
+     */
+    private $loadCount;
+
+    /**
      * @var bool
      */
     private $triggerPcntlSignalDispatch;
@@ -177,6 +184,7 @@ final class PdoEventStoreReadModelProjector implements ReadModelProjector
         int $lockTimeoutMs,
         int $persistBlockSize,
         int $sleep,
+        int $loadCount = null,
         bool $triggerPcntlSignalDispatch = false,
         int $updateLockThreshold = 0,
         GapDetection $gapDetection = null
@@ -194,6 +202,7 @@ final class PdoEventStoreReadModelProjector implements ReadModelProjector
         $this->lockTimeoutMs = $lockTimeoutMs;
         $this->persistBlockSize = $persistBlockSize;
         $this->sleep = $sleep;
+        $this->loadCount = $loadCount;
         $this->status = ProjectionStatus::IDLE();
         $this->triggerPcntlSignalDispatch = $triggerPcntlSignalDispatch;
         $this->updateLockThreshold = $updateLockThreshold;
@@ -489,7 +498,7 @@ EOT;
 
                 foreach ($this->streamPositions as $streamName => $position) {
                     try {
-                        $eventStreams[$streamName] = $this->eventStore->load(new StreamName($streamName), $position + 1, null, $this->metadataMatcher);
+                        $eventStreams[$streamName] = $this->eventStore->load(new StreamName($streamName), $position + 1, $this->loadCount, $this->metadataMatcher);
                     } catch (Exception\StreamNotFound $e) {
                         // ignore
                         continue;
