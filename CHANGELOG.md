@@ -1,6 +1,14 @@
 # Changelog
 
-## [v1.14.2](https://github.com/prooph/pdo-event-store/tree/v1.14.2)
+## [v1.15.0](https://github.com/prooph/pdo-event-store/tree/v1.15.0)
+
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.15.0...v1.15.0)
+
+**Implemented enhancements:**
+
+- enable to set amount of event being loaded in single run [\#242](https://github.com/prooph/pdo-event-store/pull/242) ([unixslayer](https://github.com/unixslayer))
+
+## [v1.14.2](https://github.com/prooph/pdo-event-store/tree/v1.14.2) (2022-05-31)
 
 [Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.14.1...v1.14.2)
 
