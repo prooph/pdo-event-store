@@ -514,16 +514,14 @@ EOT;
                 }
 
                 if ($gapDetected && $this->gapDetection) {
-                    $sleep = $this->gapDetection->getSleepForNextRetry();
-
-                    \usleep($sleep);
+                    \usleep($this->gapDetection->getSleepForNextRetry() * 1000);
                     $this->gapDetection->trackRetry();
                     $this->persist();
                 } else {
                     $this->gapDetection && $this->gapDetection->resetRetries();
 
                     if (0 === $this->eventCounter) {
-                        \usleep($this->sleep);
+                        \usleep($this->sleep * 1000);
                         $this->updateLock();
                     } else {
                         $this->persist();
