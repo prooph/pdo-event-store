@@ -1,8 +1,16 @@
 # Changelog
 
-## [v1.15.0](https://github.com/prooph/pdo-event-store/tree/v1.15.0)
+## [v1.15.1](https://github.com/prooph/pdo-event-store/tree/v1.15.1)
 
-[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.15.0...v1.15.0)
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.15.0...v1.15.1)
+
+**Implemented enhancements:**
+
+- set to IDLE when no events loaded [\#245](https://github.com/prooph/pdo-event-store/pull/245) ([unixslayer](https://github.com/unixslayer))
+
+## [v1.15.0](https://github.com/prooph/pdo-event-store/tree/v1.15.0) (2022-09-13)
+
+[Full Changelog](https://github.com/prooph/pdo-event-store/compare/v1.14.2...v1.15.0)
 
 **Implemented enhancements:**
 
