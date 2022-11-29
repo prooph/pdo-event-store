@@ -132,6 +132,11 @@ final class PdoEventStoreReadModelProjector implements ReadModelProjector
     /**
      * @var int
      */
+    private $loadedEvents = 0;
+
+    /**
+     * @var int
+     */
     private $sleep;
 
     /**
@@ -506,6 +511,7 @@ EOT;
                 }
 
                 $streamEvents = new MergedStreamIterator(\array_keys($eventStreams), ...\array_values($eventStreams));
+                $this->loadedEvents = $streamEvents->count();
 
                 if ($singleHandler) {
                     $gapDetected = ! $this->handleStreamWithSingleHandler($streamEvents);
@@ -889,8 +895,13 @@ UPDATE $projectionsTable SET locked_until = NULL, status = ? WHERE name = ?;
 EOT;
 
         $statement = $this->connection->prepare($sql);
+
+        $status = $this->loadedEvents > 0
+            ? ProjectionStatus::RUNNING()
+            : ProjectionStatus::IDLE();
+
         try {
-            $statement->execute([ProjectionStatus::IDLE()->getValue(), $this->name]);
+            $statement->execute([$status->getValue(), $this->name]);
         } catch (PDOException $exception) {
             // ignore and check error code
         }
@@ -899,7 +910,7 @@ EOT;
             throw RuntimeException::fromStatementErrorInfo($statement->errorInfo());
         }
 
-        $this->status = ProjectionStatus::IDLE();
+        $this->status = $status;
     }
 
     private function persist(): void
