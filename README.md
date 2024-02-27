@@ -9,7 +9,7 @@ PDO EventStore implementation for [Prooph EventStore](https://github.com/prooph/
 Requirements
 ------------
 
-- PHP >= 7.1
+- PHP >= 7.3
 - PDO_MySQL Extension or PDO_PGSQL Extension
 
 For MariaDB you need server version >= 10.2.11.  

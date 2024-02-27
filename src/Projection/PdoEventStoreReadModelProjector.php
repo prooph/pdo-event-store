@@ -2,8 +2,8 @@
 
 /**
  * This file is part of prooph/pdo-event-store.
- * (c) 2016-2021 Alexander Miertsch <kontakt@codeliner.ws>
- * (c) 2016-2021 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
+ * (c) 2016-2022 Alexander Miertsch <kontakt@codeliner.ws>
+ * (c) 2016-2022 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -37,6 +37,8 @@ use Prooph\EventStore\StreamName;
 final class PdoEventStoreReadModelProjector implements ReadModelProjector
 {
     public const OPTION_GAP_DETECTION = 'gap_detection';
+    public const OPTION_LOAD_COUNT = 'load_count';
+    public const DEFAULT_LOAD_COUNT = null;
 
     use PostgresHelper {
         quoteIdent as pgQuoteIdent;
@@ -130,7 +132,17 @@ final class PdoEventStoreReadModelProjector implements ReadModelProjector
     /**
      * @var int
      */
+    private $loadedEvents = 0;
+
+    /**
+     * @var int
+     */
     private $sleep;
+
+    /**
+     * @var int|null
+     */
+    private $loadCount;
 
     /**
      * @var bool
@@ -177,6 +189,7 @@ final class PdoEventStoreReadModelProjector implements ReadModelProjector
         int $lockTimeoutMs,
         int $persistBlockSize,
         int $sleep,
+        int $loadCount = null,
         bool $triggerPcntlSignalDispatch = false,
         int $updateLockThreshold = 0,
         GapDetection $gapDetection = null
@@ -194,6 +207,7 @@ final class PdoEventStoreReadModelProjector implements ReadModelProjector
         $this->lockTimeoutMs = $lockTimeoutMs;
         $this->persistBlockSize = $persistBlockSize;
         $this->sleep = $sleep;
+        $this->loadCount = $loadCount;
         $this->status = ProjectionStatus::IDLE();
         $this->triggerPcntlSignalDispatch = $triggerPcntlSignalDispatch;
         $this->updateLockThreshold = $updateLockThreshold;
@@ -485,10 +499,11 @@ EOT;
         try {
             do {
                 $eventStreams = [];
+                $streamEvents = []; // free up memory from PDO statement
 
                 foreach ($this->streamPositions as $streamName => $position) {
                     try {
-                        $eventStreams[$streamName] = $this->eventStore->load(new StreamName($streamName), $position + 1, null, $this->metadataMatcher);
+                        $eventStreams[$streamName] = $this->eventStore->load(new StreamName($streamName), $position + 1, $this->loadCount, $this->metadataMatcher);
                     } catch (Exception\StreamNotFound $e) {
                         // ignore
                         continue;
@@ -496,6 +511,7 @@ EOT;
                 }
 
                 $streamEvents = new MergedStreamIterator(\array_keys($eventStreams), ...\array_values($eventStreams));
+                $this->loadedEvents = $streamEvents->count();
 
                 if ($singleHandler) {
                     $gapDetected = ! $this->handleStreamWithSingleHandler($streamEvents);
@@ -879,8 +895,13 @@ UPDATE $projectionsTable SET locked_until = NULL, status = ? WHERE name = ?;
 EOT;
 
         $statement = $this->connection->prepare($sql);
+
+        $status = $this->loadedEvents > 0
+            ? ProjectionStatus::RUNNING()
+            : ProjectionStatus::IDLE();
+
         try {
-            $statement->execute([ProjectionStatus::IDLE()->getValue(), $this->name]);
+            $statement->execute([$status->getValue(), $this->name]);
         } catch (PDOException $exception) {
             // ignore and check error code
         }
@@ -889,7 +910,7 @@ EOT;
             throw RuntimeException::fromStatementErrorInfo($statement->errorInfo());
         }
 
-        $this->status = ProjectionStatus::IDLE();
+        $this->status = $status;
     }
 
     private function persist(): void
