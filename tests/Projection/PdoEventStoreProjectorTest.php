@@ -681,7 +681,7 @@ abstract class PdoEventStoreProjectorTest extends AbstractEventStoreProjectorTes
         $this->assertFalse($gapDetection->isRetrying());
     }
 
-    protected function prepareEventStreamWithOneEvent(string $name, DateTimeImmutable $createdAt = null): void
+    protected function prepareEventStreamWithOneEvent(string $name, ?DateTimeImmutable $createdAt = null): void
     {
         $events = [];
 

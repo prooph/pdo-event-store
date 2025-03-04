@@ -193,10 +193,10 @@ final class PdoEventStoreProjector implements Projector
         int $cacheSize,
         int $persistBlockSize,
         int $sleep,
-        int $loadCount = null,
+        ?int $loadCount = null,
         bool $triggerPcntlSignalDispatch = false,
         int $updateLockThreshold = 0,
-        GapDetection $gapDetection = null
+        ?GapDetection $gapDetection = null
     ) {
         if ($triggerPcntlSignalDispatch && ! \extension_loaded('pcntl')) {
             throw Exception\ExtensionNotLoadedException::withName('pcntl');
@@ -246,7 +246,7 @@ final class PdoEventStoreProjector implements Projector
         return $this;
     }
 
-    public function fromStream(string $streamName, MetadataMatcher $metadataMatcher = null): Projector
+    public function fromStream(string $streamName, ?MetadataMatcher $metadataMatcher = null): Projector
     {
         if (null !== $this->query) {
             throw new Exception\RuntimeException('From was already called');

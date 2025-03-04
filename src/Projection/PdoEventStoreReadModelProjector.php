@@ -189,10 +189,10 @@ final class PdoEventStoreReadModelProjector implements ReadModelProjector
         int $lockTimeoutMs,
         int $persistBlockSize,
         int $sleep,
-        int $loadCount = null,
+        ?int $loadCount = null,
         bool $triggerPcntlSignalDispatch = false,
         int $updateLockThreshold = 0,
-        GapDetection $gapDetection = null
+        ?GapDetection $gapDetection = null
     ) {
         if ($triggerPcntlSignalDispatch && ! \extension_loaded('pcntl')) {
             throw Exception\ExtensionNotLoadedException::withName('pcntl');
@@ -241,7 +241,7 @@ final class PdoEventStoreReadModelProjector implements ReadModelProjector
         return $this;
     }
 
-    public function fromStream(string $streamName, MetadataMatcher $metadataMatcher = null): ReadModelProjector
+    public function fromStream(string $streamName, ?MetadataMatcher $metadataMatcher = null): ReadModelProjector
     {
         if (null !== $this->query) {
             throw new Exception\RuntimeException('From was already called');
