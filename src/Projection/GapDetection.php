@@ -61,7 +61,7 @@ final class GapDetection
      */
     private $retries = 0;
 
-    public function __construct(array $retryConfig = null, \DateInterval $detectionWindow = null)
+    public function __construct(?array $retryConfig = null, ?\DateInterval $detectionWindow = null)
     {
         if ($retryConfig) {
             $this->retryConfig = $retryConfig;
