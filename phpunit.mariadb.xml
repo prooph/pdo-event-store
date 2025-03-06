@@ -52,7 +52,7 @@
     <env name="DB_USERNAME" value="root"/>
     <env name="DB_PASSWORD" value=""/>
     <env name="DB_NAME" value="event_store_tests"/>
-    <env name="DB_PORT" value="3306"/>
+    <env name="DB_PORT" value="3307"/>
     <env name="DB_CHARSET" value="utf8"/>
     <!-- \PDO::ERRMODE_SILENT -->
     <env name="DB_ATTR_ERRMODE" value="0"/>
