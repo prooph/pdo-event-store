@@ -2,8 +2,8 @@
 
 /**
  * This file is part of prooph/pdo-event-store.
- * (c) 2016-2022 Alexander Miertsch <kontakt@codeliner.ws>
- * (c) 2016-2022 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
+ * (c) 2016-2025 Alexander Miertsch <kontakt@codeliner.ws>
+ * (c) 2016-2025 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -27,7 +27,7 @@ class NoLockStrategyTest extends TestCase
     /**
      * @test
      */
-    public function it_always_succeeds_locking()
+    public function it_always_succeeds_locking(): void
     {
         $strategy = new NoLockStrategy();
 
@@ -37,7 +37,7 @@ class NoLockStrategyTest extends TestCase
     /**
      * @test
      */
-    public function in_always_succeeds_releasing()
+    public function in_always_succeeds_releasing(): void
     {
         $strategy = new NoLockStrategy();
 
