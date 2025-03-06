@@ -2,8 +2,8 @@
 
 /**
  * This file is part of prooph/pdo-event-store.
- * (c) 2016-2022 Alexander Miertsch <kontakt@codeliner.ws>
- * (c) 2016-2022 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
+ * (c) 2016-2025 Alexander Miertsch <kontakt@codeliner.ws>
+ * (c) 2016-2025 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -65,7 +65,6 @@ class MySqlProjectionManagerCustomTablesTest extends AbstractProjectionManagerTe
             $persistenceStrategy,
             10000,
             'events/streams'
-
         );
         $this->projectionManager = new MySqlProjectionManager(
             $this->eventStore,

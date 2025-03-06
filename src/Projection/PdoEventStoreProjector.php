@@ -2,8 +2,8 @@
 
 /**
  * This file is part of prooph/pdo-event-store.
- * (c) 2016-2022 Alexander Miertsch <kontakt@codeliner.ws>
- * (c) 2016-2022 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
+ * (c) 2016-2025 Alexander Miertsch <kontakt@codeliner.ws>
+ * (c) 2016-2025 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -39,14 +39,16 @@ use Prooph\EventStore\Util\ArrayCache;
 
 final class PdoEventStoreProjector implements Projector
 {
-    public const OPTION_GAP_DETECTION = 'gap_detection';
-    public const OPTION_LOAD_COUNT = 'load_count';
-    public const DEFAULT_LOAD_COUNT = null;
-
     use PostgresHelper {
         quoteIdent as pgQuoteIdent;
         extractSchema as pgExtractSchema;
     }
+
+    public const OPTION_GAP_DETECTION = 'gap_detection';
+
+    public const OPTION_LOAD_COUNT = 'load_count';
+
+    public const DEFAULT_LOAD_COUNT = null;
 
     /**
      * @var EventStore
@@ -389,6 +391,7 @@ WHERE name = ?
 EOT;
 
         $statement = $this->connection->prepare($sql);
+
         try {
             $statement->execute([
                 Json::encode($this->streamPositions),
@@ -421,6 +424,7 @@ EOT;
 UPDATE $projectionsTable SET status = ? WHERE name = ?;
 EOT;
         $statement = $this->connection->prepare($stopProjectionSql);
+
         try {
             $statement->execute([ProjectionStatus::IDLE()->getValue(), $this->name]);
         } catch (PDOException $exception) {
@@ -451,6 +455,7 @@ EOT;
 DELETE FROM $projectionsTable WHERE name = ?;
 EOT;
         $statement = $this->connection->prepare($deleteProjectionSql);
+
         try {
             $statement->execute([$this->name]);
         } catch (PDOException $exception) {
@@ -510,6 +515,7 @@ EOT;
                 return;
             case ProjectionStatus::RESETTING():
                 $this->reset();
+
                 break;
             default:
                 break;
@@ -576,18 +582,22 @@ EOT;
                 switch ($this->fetchRemoteStatus()) {
                     case ProjectionStatus::STOPPING():
                         $this->stop();
+
                         break;
                     case ProjectionStatus::DELETING():
                         $this->delete(false);
+
                         break;
                     case ProjectionStatus::DELETING_INCL_EMITTED_EVENTS():
                         $this->delete(true);
+
                         break;
                     case ProjectionStatus::RESETTING():
                         $this->reset();
                         if ($keepRunning) {
                             $this->startAgain();
                         }
+
                         break;
                     default:
                         break;
@@ -608,6 +618,7 @@ SELECT status FROM $projectionsTable WHERE name = ? LIMIT 1;
 EOT;
 
         $statement = $this->connection->prepare($sql);
+
         try {
             $statement->execute([$this->name]);
         } catch (PDOException $exception) {
@@ -636,7 +647,7 @@ EOT;
     {
         $handler = $this->handler;
 
-        /* @var Message $event */
+        // @var Message $event
         foreach ($events as $key => $event) {
             if ($this->triggerPcntlSignalDispatch) {
                 \pcntl_signal_dispatch();
@@ -672,7 +683,7 @@ EOT;
 
     private function handleStreamWithHandlers(MergedStreamIterator $events): bool
     {
-        /* @var Message $event */
+        // @var Message $event
         foreach ($events as $key => $event) {
             if ($this->triggerPcntlSignalDispatch) {
                 \pcntl_signal_dispatch();
@@ -781,6 +792,7 @@ SELECT position, state FROM $projectionsTable WHERE name = ? LIMIT 1;
 EOT;
 
         $statement = $this->connection->prepare($sql);
+
         try {
             $statement->execute([$this->name]);
         } catch (PDOException $exception) {
@@ -808,6 +820,7 @@ EOT;
 SELECT 1 FROM $projectionsTable WHERE name = ?;
 EOT;
         $statement = $this->connection->prepare($sql);
+
         try {
             $statement->execute([$this->name]);
         } catch (PDOException $exception) {
@@ -830,6 +843,7 @@ VALUES (?, '{}', '{}', ?, NULL);
 EOT;
 
         $statement = $this->connection->prepare($sql);
+
         try {
             $statement->execute([$this->name, $this->status->getValue()]);
         } catch (PDOException $exception) {
@@ -857,6 +871,7 @@ UPDATE $projectionsTable SET locked_until = ?, status = ? WHERE name = ? AND (lo
 EOT;
 
         $statement = $this->connection->prepare($sql);
+
         try {
             $statement->execute([$lockUntilString, ProjectionStatus::RUNNING()->getValue(), $this->name, $nowString]);
         } catch (PDOException $exception) {
@@ -896,6 +911,7 @@ UPDATE $projectionsTable SET locked_until = ? WHERE name = ?;
 EOT;
 
         $statement = $this->connection->prepare($sql);
+
         try {
             $statement->execute(
                 [
@@ -931,6 +947,7 @@ UPDATE $projectionsTable SET locked_until = NULL, status = ? WHERE name = ?;
 EOT;
 
         $statement = $this->connection->prepare($sql);
+
         try {
             $statement->execute([ProjectionStatus::IDLE()->getValue(), $this->name]);
         } catch (PDOException $exception) {
@@ -957,6 +974,7 @@ WHERE name = ?
 EOT;
 
         $statement = $this->connection->prepare($sql);
+
         try {
             $statement->execute([
                 Json::encode($this->streamPositions),
@@ -983,6 +1001,7 @@ EOT;
 SELECT real_stream_name FROM $eventStreamsTable WHERE real_stream_name NOT LIKE '$%';
 EOT;
             $statement = $this->connection->prepare($sql);
+
             try {
                 $statement->execute();
             } catch (PDOException $exception) {
@@ -1087,6 +1106,7 @@ EOT;
 UPDATE $projectionsTable SET status = ?, locked_until = ? WHERE name = ?;
 EOT;
         $statement = $this->connection->prepare($startProjectionSql);
+
         try {
             $statement->execute([
                 $newStatus->getValue(),

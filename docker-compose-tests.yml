@@ -1,32 +1,47 @@
-version: '2'
 services:
-  composer:
-    image: prooph/composer:7.3
+  tests:
+    build: .
     volumes:
       - .:/app
-    links:
-      - postgres:postgres
-      - mariadb:mariadb
-      - mysql:mysql
     environment:
       - COMPOSER_ALLOW_SUPERUSER=1
+    depends_on:
+      postgres:
+        condition: service_healthy
+        restart: true
+      mariadb:
+        condition: service_healthy
+        restart: true
+      mysql:
+        condition: service_healthy
+        restart: true
 
   postgres:
     image: postgres:alpine
     environment:
       - POSTGRES_DB=event_store_tests
-      - POSTGRES_HOST_AUTH_METHOD=trust
-
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+#      - POSTGRES_HOST_AUTH_METHOD=trust
+    healthcheck:
+      test: [ "CMD-SHELL", "sh -c 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}'" ]
+      start_period: 30s
+      start_interval: 1s
   mariadb:
     image: mariadb:10.3
     environment:
-      - MYSQL_ROOT_PASSWORD=
-      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
       - MYSQL_DATABASE=event_store_tests
-
+      - MYSQL_ALLOW_EMPTY_PASSWORD=1
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      start_period: 30s
+      start_interval: 1s
   mysql:
     image: mysql:5.7
     environment:
-      - MYSQL_ROOT_PASSWORD=
-      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
       - MYSQL_DATABASE=event_store_tests
+      - MYSQL_ALLOW_EMPTY_PASSWORD=1
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      start_period: 30s
+      start_interval: 1s

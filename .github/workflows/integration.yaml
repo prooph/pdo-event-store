@@ -1,0 +1,129 @@
+name: integration
+on: [ push, pull_request ]
+
+jobs:
+  code-standard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+      - name: Install dependencies
+        run: composer update --prefer-dist
+      - name: Testing
+        run: ./vendor/bin/php-cs-fixer fix -v --diff --dry-run
+
+  coverage:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:9.5
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_DB: event_store_tests
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+        options:
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.4
+      - name: Install dependencies
+        run: composer update --prefer-dist
+      # This step is a workaround because test classes in this repository extend test classes from prooph/event-store
+      - name: Clone event store package to use the test classes
+        run: git clone -b 7.x https://github.com/prooph/event-store.git packages/event-store
+      - name: Testing
+        run: php -dxdebug.mode=coverage vendor/bin/phpunit -c phpunit.postgres.xml --coverage-clover tests/coverage.xml
+      - if: ${{ github.event_name == 'pull_request' }}
+        name: Download artifact
+        uses: dawidd6/action-download-artifact@v9
+        continue-on-error: true
+        with:
+          workflow: .github/workflows/integration.yml # this file
+          branch: main
+          name: coverage-report
+          path: tests/base
+      - if: ${{ github.event_name != 'pull_request' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: tests/coverage.xml
+      - if: ${{ github.event_name == 'pull_request' }}
+        name: Coverage Report as Comment (Clover)
+        uses: lucassabreu/comment-coverage-clover@main
+        with:
+          file: coverage.xml
+          base-file: tests/base/coverage.xml
+
+  tests:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:9.5
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_DB: event_store_tests
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+        options:
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      mariadb:
+        image: mariadb:10.2
+        ports:
+          - 3307:3306
+        env:
+          MARIADB_DATABASE: event_store_tests
+          MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: 1
+        options:
+          --health-cmd "mysqladmin ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      mysql:
+        image: mysql:5.7
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_DATABASE: event_store_tests
+          MYSQL_ALLOW_EMPTY_PASSWORD: 1
+        options:
+          --health-cmd "mysqladmin ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    strategy:
+      fail-fast: false
+      matrix:
+        dependencies: [ '', '--prefer-lowest --prefer-stable' ]
+        php: [ 8.2, 8.3, 8.4 ]
+        database:
+          - mariadb
+          - mysql
+          - postgres
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+      - name: Install dependencies
+        run: composer update --prefer-dist ${{ matrix.dependencies }}
+      # This step is a workaround because test classes in this repository extend test classes from prooph/event-store
+      - name: Clone event store package to use the test classes
+        run: git clone -b 7.x https://github.com/prooph/event-store.git packages/event-store
+      - name: Testing
+        run: php vendor/bin/phpunit --configuration phpunit.${{ matrix.database }}.xml
