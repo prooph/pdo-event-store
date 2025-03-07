@@ -2,8 +2,8 @@
 
 /**
  * This file is part of prooph/pdo-event-store.
- * (c) 2016-2022 Alexander Miertsch <kontakt@codeliner.ws>
- * (c) 2016-2022 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
+ * (c) 2016-2025 Alexander Miertsch <kontakt@codeliner.ws>
+ * (c) 2016-2025 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -33,6 +33,7 @@ use Prooph\EventStore\Projection\ReadModelProjector;
 final class PostgresProjectionManager implements ProjectionManager
 {
     use PostgresHelper;
+
     /**
      * @var EventStore
      */
@@ -139,6 +140,7 @@ EOT;
         }
 
         $statement = $this->connection->prepare($sql);
+
         try {
             $statement->execute([
                 $status,
@@ -164,6 +166,7 @@ UPDATE {$this->quoteIdent($this->projectionsTable)} SET status = ? WHERE name = 
 EOT;
 
         $statement = $this->connection->prepare($sql);
+
         try {
             $statement->execute([
                 ProjectionStatus::RESETTING()->getValue(),
@@ -189,6 +192,7 @@ UPDATE {$this->quoteIdent($this->projectionsTable)} SET status = ? WHERE name = 
 EOT;
 
         $statement = $this->connection->prepare($sql);
+
         try {
             $statement->execute([
                 ProjectionStatus::STOPPING()->getValue(),
@@ -239,6 +243,7 @@ SQL;
 
         $statement = $this->connection->prepare($query);
         $statement->setFetchMode(PDO::FETCH_OBJ);
+
         try {
             $statement->execute($values);
         } catch (PDOException $exception) {
@@ -291,6 +296,7 @@ SQL;
 
         $statement = $this->connection->prepare($query);
         $statement->setFetchMode(PDO::FETCH_OBJ);
+
         try {
             $statement->execute($values);
         } catch (PDOException $exception) {
@@ -329,6 +335,7 @@ SQL;
 
         $statement = $this->connection->prepare($query);
         $statement->setFetchMode(PDO::FETCH_OBJ);
+
         try {
             $statement->execute([$name]);
         } catch (PDOException $exception) {
@@ -358,6 +365,7 @@ SQL;
 
         $statement = $this->connection->prepare($query);
         $statement->setFetchMode(PDO::FETCH_OBJ);
+
         try {
             $statement->execute([$name]);
         } catch (PDOException $exception) {
@@ -387,6 +395,7 @@ SQL;
 
         $statement = $this->connection->prepare($query);
         $statement->setFetchMode(PDO::FETCH_OBJ);
+
         try {
             $statement->execute([$name]);
         } catch (PDOException $exception) {

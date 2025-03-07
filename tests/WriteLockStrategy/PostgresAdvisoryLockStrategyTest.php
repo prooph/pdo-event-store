@@ -2,8 +2,8 @@
 
 /**
  * This file is part of prooph/pdo-event-store.
- * (c) 2016-2022 Alexander Miertsch <kontakt@codeliner.ws>
- * (c) 2016-2022 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
+ * (c) 2016-2025 Alexander Miertsch <kontakt@codeliner.ws>
+ * (c) 2016-2025 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -28,14 +28,11 @@ class PostgresAdvisoryLockStrategyTest extends TestCase
     /**
      * @test
      */
-    public function it_returns_true_when_lock_successful()
+    public function it_returns_true_when_lock_successful(): void
     {
-        $statement = $this->prophesize(\PDOStatement::class);
-        $statement->execute();
-
         $connection = $this->prophesize(\PDO::class);
 
-        $connection->exec(Argument::any())->willReturn($statement->reveal());
+        $connection->exec(Argument::any())->willReturn(0);
 
         $strategy = new PostgresAdvisoryLockStrategy($connection->reveal());
 
@@ -45,15 +42,12 @@ class PostgresAdvisoryLockStrategyTest extends TestCase
     /**
      * @test
      */
-    public function it_requests_lock_with_given_name()
+    public function it_requests_lock_with_given_name(): void
     {
-        $statement = $this->prophesize(\PDOStatement::class);
-        $statement->execute();
-
         $connection = $this->prophesize(\PDO::class);
 
         $connection->exec(Argument::containingString('pg_advisory_lock'))
-            ->willReturn($statement->reveal())
+            ->willReturn(0)
             ->shouldBeCalled();
 
         $strategy = new PostgresAdvisoryLockStrategy($connection->reveal());
@@ -64,16 +58,13 @@ class PostgresAdvisoryLockStrategyTest extends TestCase
     /**
      * @test
      */
-    public function it_releases_lock()
+    public function it_releases_lock(): void
     {
-        $statement = $this->prophesize(\PDOStatement::class);
-        $statement->execute();
-
         $connection = $this->prophesize(\PDO::class);
 
         $connection->exec(Argument::containingString('pg_advisory_unlock'))
             ->shouldBeCalled()
-            ->willReturn($statement);
+            ->willReturn(0);
 
         $strategy = new PostgresAdvisoryLockStrategy($connection->reveal());
 
@@ -83,14 +74,12 @@ class PostgresAdvisoryLockStrategyTest extends TestCase
     /**
      * @test
      */
-    public function it_release_returns_true()
+    public function it_release_returns_true(): void
     {
-        $releaseStatement = $this->prophesize(\PDOStatement::class);
-
         $connection = $this->prophesize(\PDO::class);
 
         $connection->exec(Argument::any())
-            ->willReturn($releaseStatement);
+            ->willReturn(0);
 
         $strategy = new PostgresAdvisoryLockStrategy($connection->reveal());
 
