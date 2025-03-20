@@ -2,8 +2,8 @@
 
 /**
  * This file is part of prooph/pdo-event-store.
- * (c) 2016-2022 Alexander Miertsch <kontakt@codeliner.ws>
- * (c) 2016-2022 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
+ * (c) 2016-2025 Alexander Miertsch <kontakt@codeliner.ws>
+ * (c) 2016-2025 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -34,6 +34,7 @@ final class PdoEventStoreQuery implements Query
         quoteIdent as pgQuoteIdent;
         extractSchema as pgExtractSchema;
     }
+
     /**
      * @var EventStore
      */
@@ -298,7 +299,7 @@ final class PdoEventStoreQuery implements Query
     {
         $handler = $this->handler;
 
-        /* @var Message $event */
+        // @var Message $event
         foreach ($events as $key => $event) {
             if ($this->triggerPcntlSignalDispatch) {
                 \pcntl_signal_dispatch();
@@ -321,7 +322,7 @@ final class PdoEventStoreQuery implements Query
 
     private function handleStreamWithHandlers(MergedStreamIterator $events): void
     {
-        /* @var Message $event */
+        // @var Message $event
         foreach ($events as $key => $event) {
             if ($this->triggerPcntlSignalDispatch) {
                 \pcntl_signal_dispatch();
@@ -392,6 +393,7 @@ final class PdoEventStoreQuery implements Query
 SELECT real_stream_name FROM $eventStreamsTable WHERE real_stream_name NOT LIKE '$%';
 EOT;
             $statement = $this->connection->prepare($sql);
+
             try {
                 $statement->execute();
             } catch (PDOException $exception) {
