@@ -588,7 +588,7 @@ EOT;
                 $this->prepareStreamPositions();
             } while ($keepRunning && ! $this->isStopped);
         } finally {
-            $this->releaseLock();
+            $this->releaseLock($keepRunning);
         }
     }
 
@@ -915,7 +915,7 @@ EOT;
         $this->lastLockUpdate = $now;
     }
 
-    private function releaseLock(): void
+    private function releaseLock(bool $keepRunning): void
     {
         $projectionsTable = $this->quoteTableName($this->projectionsTable);
         $sql = <<<EOT
@@ -924,9 +924,7 @@ EOT;
 
         $statement = $this->connection->prepare($sql);
 
-        $status = $this->loadedEvents > 0
-            ? ProjectionStatus::RUNNING()
-            : ProjectionStatus::IDLE();
+        $status = $keepRunning && $this->loadedEvents > 0 ? ProjectionStatus::RUNNING() : ProjectionStatus::IDLE();
 
         try {
             $statement->execute([$status->getValue(), $this->name]);
