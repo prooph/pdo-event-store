@@ -2,8 +2,8 @@
 
 /**
  * This file is part of prooph/pdo-event-store.
- * (c) 2016-2022 Alexander Miertsch <kontakt@codeliner.ws>
- * (c) 2016-2022 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
+ * (c) 2016-2025 Alexander Miertsch <kontakt@codeliner.ws>
+ * (c) 2016-2025 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -123,6 +123,7 @@ WHERE real_stream_name = :streamName;
 EOT;
 
         $statement = $this->connection->prepare($sql);
+
         try {
             $statement->execute(['streamName' => $streamName->toString()]);
         } catch (PDOException $exception) {
@@ -153,6 +154,7 @@ WHERE real_stream_name = :streamName;
 EOT;
 
         $statement = $this->connection->prepare($sql);
+
         try {
             $statement->execute([
                 'streamName' => $streamName->toString(),
@@ -259,6 +261,7 @@ EOT;
         }
 
         $statement = $this->connection->prepare($sql);
+
         try {
             $statement->execute($data);
         } catch (PDOException $exception) {
@@ -495,6 +498,7 @@ DROP TABLE IF EXISTS `$encodedStreamName`;
 EOT;
 
         $statement = $this->connection->prepare($deleteEventStreamSql);
+
         try {
             $statement->execute();
         } catch (PDOException $exception) {
@@ -538,6 +542,7 @@ SQL;
 
         $statement = $this->connection->prepare($query);
         $statement->setFetchMode(PDO::FETCH_OBJ);
+
         try {
             $statement->execute($values);
         } catch (PDOException $exception) {
@@ -589,6 +594,7 @@ SQL;
 
         $statement = $this->connection->prepare($query);
         $statement->setFetchMode(PDO::FETCH_OBJ);
+
         try {
             $statement->execute($values);
         } catch (PDOException $exception) {
@@ -636,6 +642,7 @@ SQL;
 
         $statement = $this->connection->prepare($query);
         $statement->setFetchMode(PDO::FETCH_OBJ);
+
         try {
             $statement->execute($values);
         } catch (PDOException $exception) {
@@ -682,6 +689,7 @@ SQL;
 
         $statement = $this->connection->prepare($query);
         $statement->setFetchMode(PDO::FETCH_OBJ);
+
         try {
             $statement->execute($values);
         } catch (PDOException $exception) {
@@ -757,6 +765,7 @@ SQL;
             if ($fieldType->is(FieldType::METADATA())) {
                 if (\is_bool($value)) {
                     $where[] = "json_extract(metadata, '$.$field') $operatorString " . ($value ? 1 : 0) . " $operatorStringEnd";
+
                     continue;
                 }
 
@@ -764,6 +773,7 @@ SQL;
             } else {
                 if (\is_bool($value)) {
                     $where[] = "$field $operatorString " . \var_export($value, true) . ' ' . $operatorStringEnd;
+
                     continue;
                 }
 
@@ -803,6 +813,7 @@ VALUES (:realStreamName, :streamName, :metadata, :category);
 EOT;
 
         $statement = $this->connection->prepare($sql);
+
         try {
             $result = $statement->execute([
                 ':realStreamName' => $realStreamName,
@@ -835,6 +846,7 @@ DELETE FROM `$this->eventStreamsTable` WHERE real_stream_name = ?;
 EOT;
 
         $statement = $this->connection->prepare($deleteEventStreamTableEntrySql);
+
         try {
             $statement->execute([$streamName->toString()]);
         } catch (PDOException $exception) {
@@ -856,6 +868,7 @@ EOT;
 
         foreach ($schema as $command) {
             $statement = $this->connection->prepare($command);
+
             try {
                 $result = $statement->execute();
             } catch (PDOException $exception) {
