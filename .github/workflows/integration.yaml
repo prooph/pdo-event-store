@@ -59,7 +59,7 @@ jobs:
         name: Coverage Report as Comment (Clover)
         uses: lucassabreu/comment-coverage-clover@main
         with:
-          file: coverage.xml
+          file: tests/coverage.xml
           base-file: tests/base/coverage.xml
 
   tests:
