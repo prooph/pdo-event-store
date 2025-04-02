@@ -18,7 +18,7 @@
     "require": {
         "php": "^8.2",
         "ext-pdo": "*",
-        "prooph/event-store": "^v7.12.0"
+        "prooph/event-store": "^v7.12.1"
     },
     "require-dev": {
         "ext-pcntl": "*",

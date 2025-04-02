@@ -30,6 +30,7 @@ use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\PdoEventStore;
 use Prooph\EventStore\Pdo\Util\Json;
 use Prooph\EventStore\Pdo\Util\PostgresHelper;
+use Prooph\EventStore\Projection\MetadataAwareProjector;
 use Prooph\EventStore\Projection\ProjectionStatus;
 use Prooph\EventStore\Projection\Projector;
 use Prooph\EventStore\Stream;
@@ -37,7 +38,7 @@ use Prooph\EventStore\StreamIterator\MergedStreamIterator;
 use Prooph\EventStore\StreamName;
 use Prooph\EventStore\Util\ArrayCache;
 
-final class PdoEventStoreProjector implements Projector
+final class PdoEventStoreProjector implements MetadataAwareProjector
 {
     use PostgresHelper {
         quoteIdent as pgQuoteIdent;
@@ -248,19 +249,30 @@ final class PdoEventStoreProjector implements Projector
         return $this;
     }
 
-    public function fromStream(string $streamName, ?MetadataMatcher $metadataMatcher = null): Projector
+    public function withMetadataMatcher(?MetadataMatcher $metadataMatcher = null): MetadataAwareProjector
     {
-        if (null !== $this->query) {
-            throw new Exception\RuntimeException('From was already called');
-        }
-
-        $this->query['streams'][] = $streamName;
         $this->metadataMatcher = $metadataMatcher;
 
         return $this;
     }
 
-    public function fromStreams(string ...$streamNames): Projector
+    public function fromStream(string $streamName/**, ?MetadataMatcher $metadataMatcher = null*/): MetadataAwareProjector
+    {
+        if (null !== $this->query) {
+            throw new Exception\RuntimeException('From was already called');
+        }
+
+        if (\func_num_args() > 1) {
+            \trigger_error('The $metadataMatcher parameter is deprecated. Use withMetadataMatcher() instead.', E_USER_DEPRECATED);
+            $this->metadataMatcher = \func_get_arg(1);
+        }
+
+        $this->query['streams'][] = $streamName;
+
+        return $this;
+    }
+
+    public function fromStreams(string ...$streamNames): MetadataAwareProjector
     {
         if (null !== $this->query) {
             throw new Exception\RuntimeException('From was already called');
@@ -273,7 +285,7 @@ final class PdoEventStoreProjector implements Projector
         return $this;
     }
 
-    public function fromCategory(string $name): Projector
+    public function fromCategory(string $name): MetadataAwareProjector
     {
         if (null !== $this->query) {
             throw new Exception\RuntimeException('From was already called');
@@ -284,7 +296,7 @@ final class PdoEventStoreProjector implements Projector
         return $this;
     }
 
-    public function fromCategories(string ...$names): Projector
+    public function fromCategories(string ...$names): MetadataAwareProjector
     {
         if (null !== $this->query) {
             throw new Exception\RuntimeException('From was already called');
@@ -297,7 +309,7 @@ final class PdoEventStoreProjector implements Projector
         return $this;
     }
 
-    public function fromAll(): Projector
+    public function fromAll(): MetadataAwareProjector
     {
         if (null !== $this->query) {
             throw new Exception\RuntimeException('From was already called');
@@ -308,7 +320,7 @@ final class PdoEventStoreProjector implements Projector
         return $this;
     }
 
-    public function when(array $handlers): Projector
+    public function when(array $handlers): MetadataAwareProjector
     {
         if (null !== $this->handler || ! empty($this->handlers)) {
             throw new Exception\RuntimeException('When was already called');
@@ -329,7 +341,7 @@ final class PdoEventStoreProjector implements Projector
         return $this;
     }
 
-    public function whenAny(Closure $handler): Projector
+    public function whenAny(Closure $handler): MetadataAwareProjector
     {
         if (null !== $this->handler || ! empty($this->handlers)) {
             throw new Exception\RuntimeException('When was already called');
