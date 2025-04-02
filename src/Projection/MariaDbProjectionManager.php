@@ -22,12 +22,12 @@ use Prooph\EventStore\Exception\ProjectionNotFound;
 use Prooph\EventStore\Pdo\Exception;
 use Prooph\EventStore\Pdo\MariaDbEventStore;
 use Prooph\EventStore\Pdo\Util\Json;
+use Prooph\EventStore\Projection\MetadataAwareProjector;
+use Prooph\EventStore\Projection\MetadataAwareReadModelProjector;
 use Prooph\EventStore\Projection\ProjectionManager;
 use Prooph\EventStore\Projection\ProjectionStatus;
-use Prooph\EventStore\Projection\Projector;
 use Prooph\EventStore\Projection\Query;
 use Prooph\EventStore\Projection\ReadModel;
-use Prooph\EventStore\Projection\ReadModelProjector;
 
 final class MariaDbProjectionManager implements ProjectionManager
 {
@@ -84,7 +84,7 @@ final class MariaDbProjectionManager implements ProjectionManager
     public function createProjection(
         string $name,
         array $options = []
-    ): Projector {
+    ): MetadataAwareProjector {
         return new PdoEventStoreProjector(
             $this->eventStore,
             $this->connection,
@@ -106,7 +106,7 @@ final class MariaDbProjectionManager implements ProjectionManager
         string $name,
         ReadModel $readModel,
         array $options = []
-    ): ReadModelProjector {
+    ): MetadataAwareReadModelProjector {
         return new PdoEventStoreReadModelProjector(
             $this->eventStore,
             $this->connection,

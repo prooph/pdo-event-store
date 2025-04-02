@@ -18,7 +18,6 @@ use DateTimeImmutable;
 use DateTimeZone;
 use PDO;
 use PDOException;
-use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\EventStoreDecorator;
 use Prooph\EventStore\Exception;
@@ -28,13 +27,14 @@ use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\PdoEventStore;
 use Prooph\EventStore\Pdo\Util\Json;
 use Prooph\EventStore\Pdo\Util\PostgresHelper;
+use Prooph\EventStore\Projection\MetadataAwareReadModelProjector;
 use Prooph\EventStore\Projection\ProjectionStatus;
 use Prooph\EventStore\Projection\ReadModel;
 use Prooph\EventStore\Projection\ReadModelProjector;
 use Prooph\EventStore\StreamIterator\MergedStreamIterator;
 use Prooph\EventStore\StreamName;
 
-final class PdoEventStoreReadModelProjector implements ReadModelProjector
+final class PdoEventStoreReadModelProjector implements MetadataAwareReadModelProjector
 {
     use PostgresHelper {
         quoteIdent as pgQuoteIdent;
@@ -225,7 +225,7 @@ final class PdoEventStoreReadModelProjector implements ReadModelProjector
         }
     }
 
-    public function init(Closure $callback): ReadModelProjector
+    public function init(Closure $callback): MetadataAwareReadModelProjector
     {
         if (null !== $this->initCallback) {
             throw new Exception\RuntimeException('Projection already initialized');
@@ -244,14 +244,14 @@ final class PdoEventStoreReadModelProjector implements ReadModelProjector
         return $this;
     }
 
-    public function withMetadataMatcher(?MetadataMatcher $metadataMatcher = null): ReadModelProjector
+    public function withMetadataMatcher(?MetadataMatcher $metadataMatcher = null): MetadataAwareReadModelProjector
     {
         $this->metadataMatcher = $metadataMatcher;
 
         return $this;
     }
 
-    public function fromStream(string $streamName/**, ?MetadataMatcher $metadataMatcher = null*/): ReadModelProjector
+    public function fromStream(string $streamName/**, ?MetadataMatcher $metadataMatcher = null*/): MetadataAwareReadModelProjector
     {
         if (null !== $this->query) {
             throw new Exception\RuntimeException('From was already called');
@@ -267,7 +267,7 @@ final class PdoEventStoreReadModelProjector implements ReadModelProjector
         return $this;
     }
 
-    public function fromStreams(string ...$streamNames): ReadModelProjector
+    public function fromStreams(string ...$streamNames): MetadataAwareReadModelProjector
     {
         if (null !== $this->query) {
             throw new Exception\RuntimeException('From was already called');
@@ -280,7 +280,7 @@ final class PdoEventStoreReadModelProjector implements ReadModelProjector
         return $this;
     }
 
-    public function fromCategory(string $name): ReadModelProjector
+    public function fromCategory(string $name): MetadataAwareReadModelProjector
     {
         if (null !== $this->query) {
             throw new Exception\RuntimeException('From was already called');
@@ -291,7 +291,7 @@ final class PdoEventStoreReadModelProjector implements ReadModelProjector
         return $this;
     }
 
-    public function fromCategories(string ...$names): ReadModelProjector
+    public function fromCategories(string ...$names): MetadataAwareReadModelProjector
     {
         if (null !== $this->query) {
             throw new Exception\RuntimeException('From was already called');
@@ -304,7 +304,7 @@ final class PdoEventStoreReadModelProjector implements ReadModelProjector
         return $this;
     }
 
-    public function fromAll(): ReadModelProjector
+    public function fromAll(): MetadataAwareReadModelProjector
     {
         if (null !== $this->query) {
             throw new Exception\RuntimeException('From was already called');
@@ -315,7 +315,7 @@ final class PdoEventStoreReadModelProjector implements ReadModelProjector
         return $this;
     }
 
-    public function when(array $handlers): ReadModelProjector
+    public function when(array $handlers): MetadataAwareReadModelProjector
     {
         if (null !== $this->handler || ! empty($this->handlers)) {
             throw new Exception\RuntimeException('When was already called');
@@ -336,7 +336,7 @@ final class PdoEventStoreReadModelProjector implements ReadModelProjector
         return $this;
     }
 
-    public function whenAny(Closure $handler): ReadModelProjector
+    public function whenAny(Closure $handler): MetadataAwareReadModelProjector
     {
         if (null !== $this->handler || ! empty($this->handlers)) {
             throw new Exception\RuntimeException('When was already called');
