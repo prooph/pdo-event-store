@@ -225,7 +225,7 @@ final class PdoEventStoreReadModelProjector implements MetadataAwareReadModelPro
         }
     }
 
-    public function init(Closure $callback): MetadataAwareReadModelProjector
+    public function init(Closure $callback): PdoEventStoreReadModelProjector
     {
         if (null !== $this->initCallback) {
             throw new Exception\RuntimeException('Projection already initialized');
@@ -244,14 +244,14 @@ final class PdoEventStoreReadModelProjector implements MetadataAwareReadModelPro
         return $this;
     }
 
-    public function withMetadataMatcher(?MetadataMatcher $metadataMatcher = null): MetadataAwareReadModelProjector
+    public function withMetadataMatcher(?MetadataMatcher $metadataMatcher = null): PdoEventStoreReadModelProjector
     {
         $this->metadataMatcher = $metadataMatcher;
 
         return $this;
     }
 
-    public function fromStream(string $streamName/**, ?MetadataMatcher $metadataMatcher = null*/): MetadataAwareReadModelProjector
+    public function fromStream(string $streamName/**, ?MetadataMatcher $metadataMatcher = null*/): PdoEventStoreReadModelProjector
     {
         if (null !== $this->query) {
             throw new Exception\RuntimeException('From was already called');
@@ -267,7 +267,7 @@ final class PdoEventStoreReadModelProjector implements MetadataAwareReadModelPro
         return $this;
     }
 
-    public function fromStreams(string ...$streamNames): MetadataAwareReadModelProjector
+    public function fromStreams(string ...$streamNames): PdoEventStoreReadModelProjector
     {
         if (null !== $this->query) {
             throw new Exception\RuntimeException('From was already called');
@@ -280,7 +280,7 @@ final class PdoEventStoreReadModelProjector implements MetadataAwareReadModelPro
         return $this;
     }
 
-    public function fromCategory(string $name): MetadataAwareReadModelProjector
+    public function fromCategory(string $name): PdoEventStoreReadModelProjector
     {
         if (null !== $this->query) {
             throw new Exception\RuntimeException('From was already called');
@@ -291,7 +291,7 @@ final class PdoEventStoreReadModelProjector implements MetadataAwareReadModelPro
         return $this;
     }
 
-    public function fromCategories(string ...$names): MetadataAwareReadModelProjector
+    public function fromCategories(string ...$names): PdoEventStoreReadModelProjector
     {
         if (null !== $this->query) {
             throw new Exception\RuntimeException('From was already called');
@@ -304,7 +304,7 @@ final class PdoEventStoreReadModelProjector implements MetadataAwareReadModelPro
         return $this;
     }
 
-    public function fromAll(): MetadataAwareReadModelProjector
+    public function fromAll(): PdoEventStoreReadModelProjector
     {
         if (null !== $this->query) {
             throw new Exception\RuntimeException('From was already called');
@@ -315,7 +315,7 @@ final class PdoEventStoreReadModelProjector implements MetadataAwareReadModelPro
         return $this;
     }
 
-    public function when(array $handlers): MetadataAwareReadModelProjector
+    public function when(array $handlers): PdoEventStoreReadModelProjector
     {
         if (null !== $this->handler || ! empty($this->handlers)) {
             throw new Exception\RuntimeException('When was already called');
@@ -336,7 +336,7 @@ final class PdoEventStoreReadModelProjector implements MetadataAwareReadModelPro
         return $this;
     }
 
-    public function whenAny(Closure $handler): MetadataAwareReadModelProjector
+    public function whenAny(Closure $handler): PdoEventStoreReadModelProjector
     {
         if (null !== $this->handler || ! empty($this->handlers)) {
             throw new Exception\RuntimeException('When was already called');

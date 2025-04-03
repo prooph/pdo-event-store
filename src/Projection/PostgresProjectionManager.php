@@ -23,12 +23,12 @@ use Prooph\EventStore\Pdo\Exception;
 use Prooph\EventStore\Pdo\PostgresEventStore;
 use Prooph\EventStore\Pdo\Util\Json;
 use Prooph\EventStore\Pdo\Util\PostgresHelper;
-use Prooph\EventStore\Projection\MetadataAwareProjector;
-use Prooph\EventStore\Projection\MetadataAwareReadModelProjector;
 use Prooph\EventStore\Projection\ProjectionManager;
 use Prooph\EventStore\Projection\ProjectionStatus;
+use Prooph\EventStore\Projection\Projector;
 use Prooph\EventStore\Projection\Query;
 use Prooph\EventStore\Projection\ReadModel;
+use Prooph\EventStore\Projection\ReadModelProjector;
 
 final class PostgresProjectionManager implements ProjectionManager
 {
@@ -87,7 +87,7 @@ final class PostgresProjectionManager implements ProjectionManager
     public function createProjection(
         string $name,
         array $options = []
-    ): MetadataAwareProjector {
+    ): Projector {
         return new PdoEventStoreProjector(
             $this->eventStore,
             $this->connection,
@@ -109,7 +109,7 @@ final class PostgresProjectionManager implements ProjectionManager
         string $name,
         ReadModel $readModel,
         array $options = []
-    ): MetadataAwareReadModelProjector {
+    ): ReadModelProjector {
         return new PdoEventStoreReadModelProjector(
             $this->eventStore,
             $this->connection,
