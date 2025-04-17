@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace ProophTest\EventStore\Pdo\Projection;
 
 use ArrayIterator;
+use Assert\Assertion;
 use DateInterval;
 use DateTimeImmutable;
 use DateTimeZone;
@@ -26,6 +27,7 @@ use Prooph\EventStore\Pdo\Projection\GapDetection;
 use Prooph\EventStore\Pdo\Projection\PdoEventStoreProjector;
 use Prooph\EventStore\Pdo\Projection\PdoEventStoreReadModelProjector;
 use Prooph\EventStore\Projection\ProjectionManager;
+use Prooph\EventStore\Projection\ProjectionStatus;
 use Prooph\EventStore\Projection\Projector;
 use Prooph\EventStore\Projection\ReadModel;
 use Prooph\EventStore\Stream;
@@ -655,6 +657,68 @@ abstract class PdoEventStoreReadModelProjectorTestCase extends AbstractEventStor
         $parallelConnection->rollBack();
 
         $this->assertFalse($gapDetection->isRetrying());
+    }
+
+    /**
+     * @test
+     */
+    public function projection_should_run_until_end_of_stream(): void
+    {
+        $this->prepareEventStream('user-345');
+
+        $projectionManager = $this->projectionManager;
+        $projection = $projectionManager->createReadModelProjection('test_projection', new ReadModelMock(), [
+            Projector::OPTION_PERSIST_BLOCK_SIZE => 1,
+            PdoEventStoreReadModelProjector::OPTION_LOAD_COUNT => 1,
+        ]);
+
+        $projection
+            ->fromStream('user-345')
+            ->whenAny(function () use ($projectionManager) {
+                Assertion::eq(ProjectionStatus::RUNNING(), $projectionManager->fetchProjectionStatus('test_projection'));
+            })
+            ->run(false);
+
+        $this->assertEquals(50, $projectionManager->fetchProjectionStreamPositions('test_projection')['user-345']);
+        $this->assertEquals(ProjectionStatus::IDLE(), $projectionManager->fetchProjectionStatus('test_projection'));
+    }
+
+    /**
+     * @test
+     */
+    public function when_failed_projection_should_release_lock_but_indicate_running_status(): void
+    {
+        $this->prepareEventStream('user-345');
+
+        $projectionManager = $this->projectionManager;
+        $projection = $projectionManager->createReadModelProjection('test_projection', new ReadModelMock(), [
+            Projector::OPTION_PERSIST_BLOCK_SIZE => 1,
+            PdoEventStoreReadModelProjector::OPTION_LOAD_COUNT => 1,
+        ]);
+
+        $projection
+            ->fromStream('user-345')
+            ->init(function () {
+                return ['iteration' => 0];
+            })
+            ->whenAny(function (array $state, Message $event): array {
+                ++$state['iteration'];
+
+                if ($state['iteration'] > 5) {
+                    throw new \RuntimeException('something happened');
+                }
+
+                return $state;
+            });
+
+        try {
+            $projection->run(false);
+        } catch (\Throwable) {
+        }
+
+        $this->assertEquals(5, $projectionManager->fetchProjectionStreamPositions('test_projection')['user-345']);
+        $this->assertEquals(ProjectionStatus::RUNNING(), $projectionManager->fetchProjectionStatus('test_projection'));
+        $this->assertNull($this->connection->query("select locked_until from projections where name = 'test_projection'")->fetch(PDO::FETCH_COLUMN));
     }
 
     protected function prepareEventStreamWithOneEvent(string $name, ?DateTimeImmutable $createdAt = null): void
