@@ -15,36 +15,40 @@ namespace ProophTest\EventStore\Pdo\Projection;
 
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
-use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresSimpleStreamStrategy;
-use Prooph\EventStore\Pdo\PostgresEventStore;
-use Prooph\EventStore\Pdo\Projection\PostgresProjectionManager;
+use Prooph\EventStore\Pdo\MariaDbEventStore;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbSimpleStreamStrategy;
+use Prooph\EventStore\Pdo\Projection\MariaDbProjectionManager;
+use Prooph\EventStore\Projection\ReadModel;
 use ProophTest\EventStore\Mock\ReadModelMock;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Pdo\TestUtil;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 /**
- * @group postgres
+ * @group mariadb
  */
-class PostgresEventStoreReadModelProjectorCustomTablesTestCase extends PdoEventStoreReadModelProjectorCustomTablesTestCase
+class MariaDbEventStoreReadModelProjectorCustomTablesTest extends PdoEventStoreReadModelProjectorCustomTablesTestCase
 {
+    use ProphecyTrait;
+
     protected function setUp(): void
     {
-        if (TestUtil::getDatabaseDriver() !== 'pdo_pgsql') {
-            throw new \RuntimeException('Invalid database vendor');
+        if (TestUtil::getDatabaseDriver() !== 'pdo_mysql') {
+            throw new \RuntimeException('Invalid database driver');
         }
 
         $this->connection = TestUtil::getConnection();
         TestUtil::initCustomDatabaseTables($this->connection);
 
-        $this->eventStore = new PostgresEventStore(
+        $this->eventStore = new MariaDbEventStore(
             new FQCNMessageFactory(),
-            TestUtil::getConnection(),
-            new PostgresSimpleStreamStrategy(new NoOpMessageConverter()),
+            $this->connection,
+            new MariaDbSimpleStreamStrategy(new NoOpMessageConverter()),
             10000,
             'events/streams'
         );
 
-        $this->projectionManager = new PostgresProjectionManager(
+        $this->projectionManager = new MariaDbProjectionManager(
             $this->eventStore,
             $this->connection,
             'events/streams',
@@ -55,14 +59,31 @@ class PostgresEventStoreReadModelProjectorCustomTablesTestCase extends PdoEventS
     /**
      * @test
      */
+    public function it_calls_reset_projection_also_if_init_callback_returns_state(): void
+    {
+        $readModel = $this->prophesize(ReadModel::class);
+        $readModel->reset()->shouldBeCalled();
+
+        $readModelProjection = $this->projectionManager->createReadModelProjection('test-projection', $readModel->reveal());
+
+        $readModelProjection->init(function () {
+            return ['state' => 'some value'];
+        });
+
+        $readModelProjection->reset();
+    }
+
+    /**
+     * @test
+     */
     public function it_handles_missing_projection_table(): void
     {
         $this->expectException(\Prooph\EventStore\Pdo\Exception\RuntimeException::class);
-        $this->expectExceptionMessage("Error 42P01. Maybe the projection table is not setup?\nError-Info: ERROR:  relation \"events/projections\" does not exist\nLINE 1: SELECT status FROM");
+        $this->expectExceptionMessage(\sprintf("Error 42S02. Maybe the projection table is not setup?\nError-Info: Table '%s.events/projections' doesn't exist", \getenv('DB_NAME')));
 
         $this->prepareEventStream('user-123');
 
-        $this->connection->exec('DROP TABLE "events/projections";');
+        $this->connection->exec('DROP TABLE `events/projections`;');
 
         $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 

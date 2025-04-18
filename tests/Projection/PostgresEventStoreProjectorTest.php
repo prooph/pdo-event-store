@@ -21,14 +21,13 @@ use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresSimpleStreamStrategy;
 use Prooph\EventStore\Pdo\PostgresEventStore;
 use Prooph\EventStore\Pdo\Projection\PostgresProjectionManager;
-use ProophTest\EventStore\Mock\ReadModelMock;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Pdo\TestUtil;
 
 /**
  * @group postgres
  */
-class PostgresEventStoreReadModelProjectorTestCase extends PdoEventStoreReadModelProjectorTestCase
+class PostgresEventStoreProjectorTest extends PdoEventStoreProjectorTestCase
 {
     protected function setUp(): void
     {
@@ -69,13 +68,13 @@ class PostgresEventStoreReadModelProjectorTestCase extends PdoEventStoreReadMode
     public function it_handles_missing_projection_table(): void
     {
         $this->expectException(\Prooph\EventStore\Pdo\Exception\RuntimeException::class);
-        $this->expectExceptionMessage("Error 42P01. Maybe the projection table is not setup?\nError-Info: ERROR:  relation \"projections\" does not exist\nLINE 1: SELECT status FROM");
+        $this->expectExceptionMessage("Error 42P01. Maybe the projection table is not setup?\nError-Info: ERROR:  relation \"projections\" does not exist\nLINE 1: SELECT status FROM \"projections\" WHERE name = $1 LIMIT 1;");
 
         $this->prepareEventStream('user-123');
 
         $this->connection->exec('DROP TABLE projections;');
 
-        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
+        $projection = $this->projectionManager->createProjection('test_projection');
 
         $projection
             ->fromStream('user-123')
@@ -101,7 +100,7 @@ class PostgresEventStoreReadModelProjectorTestCase extends PdoEventStoreReadMode
             return;
         }
 
-        $command = 'exec php ' . \realpath(__DIR__) . '/postgres-isolated-long-running-read-model-projection.php';
+        $command = 'exec php ' . \realpath(__DIR__) . '/postgres-isolated-long-running-projection.php';
         $descriptorSpec = [
             0 => ['pipe', 'r'],
             1 => ['pipe', 'w'],
@@ -142,7 +141,7 @@ EOT;
         ]);
 
         $this->prepareEventStream('user');
-        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
+        $projection = $this->projectionManager->createProjection('test_projection');
 
         $projection
             ->fromStream('user')

@@ -18,33 +18,38 @@ use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\Message;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\EventStore;
-use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresSimpleStreamStrategy;
-use Prooph\EventStore\Pdo\PostgresEventStore;
-use Prooph\EventStore\Pdo\Projection\PostgresProjectionManager;
+use Prooph\EventStore\Pdo\MySqlEventStore;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSimpleStreamStrategy;
+use Prooph\EventStore\Pdo\Projection\MySqlProjectionManager;
+use Prooph\EventStore\Projection\ReadModel;
+use ProophTest\EventStore\Mock\ReadModelMock;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Pdo\TestUtil;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 /**
- * @group postgres
+ * @group mysql
  */
-class PostgresEventStoreProjectorTestCase extends PdoEventStoreProjectorTestCase
+class MySqlEventStoreReadModelProjectorTest extends PdoEventStoreReadModelProjectorTestCase
 {
+    use ProphecyTrait;
+
     protected function setUp(): void
     {
-        if (TestUtil::getDatabaseDriver() !== 'pdo_pgsql') {
-            throw new \RuntimeException('Invalid database vendor');
+        if (TestUtil::getDatabaseDriver() !== 'pdo_mysql') {
+            throw new \RuntimeException('Invalid database driver');
         }
 
         $this->connection = TestUtil::getConnection();
         TestUtil::initDefaultDatabaseTables($this->connection);
 
-        $this->eventStore = new PostgresEventStore(
+        $this->eventStore = new MySqlEventStore(
             new FQCNMessageFactory(),
-            TestUtil::getConnection(),
-            new PostgresSimpleStreamStrategy(new NoOpMessageConverter())
+            $this->connection,
+            new MySqlSimpleStreamStrategy(new NoOpMessageConverter())
         );
 
-        $this->projectionManager = new PostgresProjectionManager(
+        $this->projectionManager = new MySqlProjectionManager(
             $this->eventStore,
             $this->connection
         );
@@ -52,10 +57,10 @@ class PostgresEventStoreProjectorTestCase extends PdoEventStoreProjectorTestCase
 
     protected function setUpEventStoreWithControlledConnection(PDO $connection): EventStore
     {
-        return new PostgresEventStore(
+        return new MySqlEventStore(
             new FQCNMessageFactory(),
             $connection,
-            new PostgresSimpleStreamStrategy(new NoOpMessageConverter()),
+            new MySqlSimpleStreamStrategy(new NoOpMessageConverter()),
             10000,
             'event_streams',
             true
@@ -65,16 +70,33 @@ class PostgresEventStoreProjectorTestCase extends PdoEventStoreProjectorTestCase
     /**
      * @test
      */
+    public function it_calls_reset_projection_also_if_init_callback_returns_state(): void
+    {
+        $readModel = $this->prophesize(ReadModel::class);
+        $readModel->reset()->shouldBeCalled();
+
+        $readModelProjection = $this->projectionManager->createReadModelProjection('test-projection', $readModel->reveal());
+
+        $readModelProjection->init(function () {
+            return ['state' => 'some value'];
+        });
+
+        $readModelProjection->reset();
+    }
+
+    /**
+     * @test
+     */
     public function it_handles_missing_projection_table(): void
     {
         $this->expectException(\Prooph\EventStore\Pdo\Exception\RuntimeException::class);
-        $this->expectExceptionMessage("Error 42P01. Maybe the projection table is not setup?\nError-Info: ERROR:  relation \"projections\" does not exist\nLINE 1: SELECT status FROM \"projections\" WHERE name = $1 LIMIT 1;");
+        $this->expectExceptionMessage(\sprintf("Error 42S02. Maybe the projection table is not setup?\nError-Info: Table '%s.projections' doesn't exist", \getenv('DB_NAME')));
 
         $this->prepareEventStream('user-123');
 
         $this->connection->exec('DROP TABLE projections;');
 
-        $projection = $this->projectionManager->createProjection('test_projection');
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 
         $projection
             ->fromStream('user-123')
@@ -100,7 +122,7 @@ class PostgresEventStoreProjectorTestCase extends PdoEventStoreProjectorTestCase
             return;
         }
 
-        $command = 'exec php ' . \realpath(__DIR__) . '/postgres-isolated-long-running-projection.php';
+        $command = 'exec php ' . \realpath(__DIR__) . '/mysql-isolated-long-running-read-model-projection.php';
         $descriptorSpec = [
             0 => ['pipe', 'r'],
             1 => ['pipe', 'w'],
@@ -129,7 +151,7 @@ class PostgresEventStoreProjectorTestCase extends PdoEventStoreProjectorTestCase
     public function a_stopped_status_should_keep_stream_positions(): void
     {
         $sql = <<<EOT
-INSERT INTO "projections" (name, position, state, status, locked_until)
+INSERT INTO `projections` (name, position, state, status, locked_until)
 VALUES (?, ?, '{}', ?, NULL);
 EOT;
 
@@ -141,7 +163,7 @@ EOT;
         ]);
 
         $this->prepareEventStream('user');
-        $projection = $this->projectionManager->createProjection('test_projection');
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 
         $projection
             ->fromStream('user')
@@ -155,7 +177,7 @@ EOT;
             ->run();
 
         $sql = <<<EOT
-SELECT * FROM "projections" WHERE name = ?
+SELECT * FROM `projections` WHERE name = ?
 EOT;
 
         $statement = $this->connection->prepare($sql);

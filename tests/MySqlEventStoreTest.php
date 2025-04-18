@@ -39,7 +39,7 @@ use Ramsey\Uuid\Uuid;
 /**
  * @group mysql
  */
-class MySqlEventStoreTestCase extends AbstractPdoEventStoreTestCase
+class MySqlEventStoreTest extends AbstractPdoEventStoreTestCase
 {
     use ProphecyTrait;
 

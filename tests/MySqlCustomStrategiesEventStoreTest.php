@@ -29,7 +29,7 @@ use Ramsey\Uuid\Uuid;
 /**
  * @group mysql
  */
-final class MySqlCustomStrategiesEventStoreTest extends MySqlEventStoreTestCase
+final class MySqlCustomStrategiesEventStoreTest extends MySqlEventStoreTest
 {
     /**
      * @var MySqlEventStore

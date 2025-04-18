@@ -33,7 +33,7 @@ use Ramsey\Uuid\Uuid;
 /**
  * @group postgres
  */
-final class PostgresCustomStrategiesEventStoreTest extends PostgresEventStoreTestCase
+final class PostgresCustomStrategiesEventStoreTest extends PostgresEventStoreTest
 {
     use TransactionalEventStoreTestTrait;
 

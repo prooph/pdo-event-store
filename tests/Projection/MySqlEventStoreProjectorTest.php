@@ -21,19 +21,14 @@ use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Pdo\MySqlEventStore;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSimpleStreamStrategy;
 use Prooph\EventStore\Pdo\Projection\MySqlProjectionManager;
-use Prooph\EventStore\Projection\ReadModel;
-use ProophTest\EventStore\Mock\ReadModelMock;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Pdo\TestUtil;
-use Prophecy\PhpUnit\ProphecyTrait;
 
 /**
  * @group mysql
  */
-class MySqlEventStoreReadModelProjectorTestCase extends PdoEventStoreReadModelProjectorTestCase
+class MySqlEventStoreProjectorTest extends PdoEventStoreProjectorTestCase
 {
-    use ProphecyTrait;
-
     protected function setUp(): void
     {
         if (TestUtil::getDatabaseDriver() !== 'pdo_mysql') {
@@ -70,23 +65,6 @@ class MySqlEventStoreReadModelProjectorTestCase extends PdoEventStoreReadModelPr
     /**
      * @test
      */
-    public function it_calls_reset_projection_also_if_init_callback_returns_state(): void
-    {
-        $readModel = $this->prophesize(ReadModel::class);
-        $readModel->reset()->shouldBeCalled();
-
-        $readModelProjection = $this->projectionManager->createReadModelProjection('test-projection', $readModel->reveal());
-
-        $readModelProjection->init(function () {
-            return ['state' => 'some value'];
-        });
-
-        $readModelProjection->reset();
-    }
-
-    /**
-     * @test
-     */
     public function it_handles_missing_projection_table(): void
     {
         $this->expectException(\Prooph\EventStore\Pdo\Exception\RuntimeException::class);
@@ -96,7 +74,7 @@ class MySqlEventStoreReadModelProjectorTestCase extends PdoEventStoreReadModelPr
 
         $this->connection->exec('DROP TABLE projections;');
 
-        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
+        $projection = $this->projectionManager->createProjection('test_projection');
 
         $projection
             ->fromStream('user-123')
@@ -122,7 +100,7 @@ class MySqlEventStoreReadModelProjectorTestCase extends PdoEventStoreReadModelPr
             return;
         }
 
-        $command = 'exec php ' . \realpath(__DIR__) . '/mysql-isolated-long-running-read-model-projection.php';
+        $command = 'exec php ' . \realpath(__DIR__) . '/mysql-isolated-long-running-projection.php';
         $descriptorSpec = [
             0 => ['pipe', 'r'],
             1 => ['pipe', 'w'],
@@ -163,7 +141,7 @@ EOT;
         ]);
 
         $this->prepareEventStream('user');
-        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
+        $projection = $this->projectionManager->createProjection('test_projection');
 
         $projection
             ->fromStream('user')

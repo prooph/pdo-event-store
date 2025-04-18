@@ -26,7 +26,7 @@ use ProophTest\EventStore\Pdo\TestUtil;
 /**
  * @group mariadb
  */
-class MariaDbEventStoreProjectorTestCase extends PdoEventStoreProjectorTestCase
+class MariaDbEventStoreProjectorTest extends PdoEventStoreProjectorTestCase
 {
     protected function setUp(): void
     {

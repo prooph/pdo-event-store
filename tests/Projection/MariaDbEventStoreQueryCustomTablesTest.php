@@ -23,7 +23,7 @@ use ProophTest\EventStore\Pdo\TestUtil;
 /**
  * @group mariadb
  */
-class MariaDbEventStoreQueryCustomTablesTestCase extends PdoEventStoreQueryCustomTablesTestCase
+class MariaDbEventStoreQueryCustomTablesTest extends PdoEventStoreQueryCustomTablesTestCase
 {
     protected function setUp(): void
     {

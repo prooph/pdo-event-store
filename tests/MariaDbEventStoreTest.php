@@ -39,7 +39,7 @@ use Ramsey\Uuid\Uuid;
 /**
  * @group mariadb
  */
-class MariaDbEventStoreTestCase extends AbstractPdoEventStoreTestCase
+class MariaDbEventStoreTest extends AbstractPdoEventStoreTestCase
 {
     use ProphecyTrait;
 

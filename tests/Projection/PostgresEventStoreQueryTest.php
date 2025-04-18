@@ -15,32 +15,32 @@ namespace ProophTest\EventStore\Pdo\Projection;
 
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
-use Prooph\EventStore\Pdo\MariaDbEventStore;
-use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbSimpleStreamStrategy;
-use Prooph\EventStore\Pdo\Projection\MariaDbProjectionManager;
+use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresSimpleStreamStrategy;
+use Prooph\EventStore\Pdo\PostgresEventStore;
+use Prooph\EventStore\Pdo\Projection\PostgresProjectionManager;
 use ProophTest\EventStore\Pdo\TestUtil;
 
 /**
- * @group mariadb
+ * @group postgres
  */
-class MariaDbEventStoreQueryTestCase extends PdoEventStoreQueryTestCase
+class PostgresEventStoreQueryTest extends PdoEventStoreQueryTestCase
 {
     protected function setUp(): void
     {
-        if (TestUtil::getDatabaseDriver() !== 'pdo_mysql') {
-            throw new \RuntimeException('Invalid database driver');
+        if (TestUtil::getDatabaseDriver() !== 'pdo_pgsql') {
+            throw new \RuntimeException('Invalid database vendor');
         }
 
         $this->connection = TestUtil::getConnection();
         TestUtil::initDefaultDatabaseTables($this->connection);
 
-        $this->eventStore = new MariaDbEventStore(
+        $this->eventStore = new PostgresEventStore(
             new FQCNMessageFactory(),
-            $this->connection,
-            new MariaDbSimpleStreamStrategy(new NoOpMessageConverter())
+            TestUtil::getConnection(),
+            new PostgresSimpleStreamStrategy(new NoOpMessageConverter())
         );
 
-        $this->projectionManager = new MariaDbProjectionManager(
+        $this->projectionManager = new PostgresProjectionManager(
             $this->eventStore,
             $this->connection
         );
@@ -58,7 +58,7 @@ class MariaDbEventStoreQueryTestCase extends PdoEventStoreQueryTestCase
             return;
         }
 
-        $command = 'exec php ' . \realpath(__DIR__) . '/mariadb-isolated-long-running-query.php';
+        $command = 'exec php ' . \realpath(__DIR__) . '/postgres-isolated-long-running-query.php';
         $descriptorSpec = [
             0 => ['pipe', 'r'],
             1 => ['pipe', 'w'],

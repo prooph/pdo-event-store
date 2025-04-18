@@ -15,32 +15,32 @@ namespace ProophTest\EventStore\Pdo\Projection;
 
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
-use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresSimpleStreamStrategy;
-use Prooph\EventStore\Pdo\PostgresEventStore;
-use Prooph\EventStore\Pdo\Projection\PostgresProjectionManager;
+use Prooph\EventStore\Pdo\MariaDbEventStore;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbSimpleStreamStrategy;
+use Prooph\EventStore\Pdo\Projection\MariaDbProjectionManager;
 use ProophTest\EventStore\Pdo\TestUtil;
 
 /**
- * @group postgres
+ * @group mariadb
  */
-class PostgresEventStoreQueryTestCase extends PdoEventStoreQueryTestCase
+class MariaDbEventStoreQueryTest extends PdoEventStoreQueryTestCase
 {
     protected function setUp(): void
     {
-        if (TestUtil::getDatabaseDriver() !== 'pdo_pgsql') {
-            throw new \RuntimeException('Invalid database vendor');
+        if (TestUtil::getDatabaseDriver() !== 'pdo_mysql') {
+            throw new \RuntimeException('Invalid database driver');
         }
 
         $this->connection = TestUtil::getConnection();
         TestUtil::initDefaultDatabaseTables($this->connection);
 
-        $this->eventStore = new PostgresEventStore(
+        $this->eventStore = new MariaDbEventStore(
             new FQCNMessageFactory(),
-            TestUtil::getConnection(),
-            new PostgresSimpleStreamStrategy(new NoOpMessageConverter())
+            $this->connection,
+            new MariaDbSimpleStreamStrategy(new NoOpMessageConverter())
         );
 
-        $this->projectionManager = new PostgresProjectionManager(
+        $this->projectionManager = new MariaDbProjectionManager(
             $this->eventStore,
             $this->connection
         );
@@ -58,7 +58,7 @@ class PostgresEventStoreQueryTestCase extends PdoEventStoreQueryTestCase
             return;
         }
 
-        $command = 'exec php ' . \realpath(__DIR__) . '/postgres-isolated-long-running-query.php';
+        $command = 'exec php ' . \realpath(__DIR__) . '/mariadb-isolated-long-running-query.php';
         $descriptorSpec = [
             0 => ['pipe', 'r'],
             1 => ['pipe', 'w'],

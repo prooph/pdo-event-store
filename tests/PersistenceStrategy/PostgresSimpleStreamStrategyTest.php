@@ -14,12 +14,12 @@ declare(strict_types=1);
 namespace ProophTest\EventStore\Pdo\PersistenceStrategy;
 
 use Prooph\EventStore\Pdo\PersistenceStrategy;
-use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresAggregateStreamStrategy;
+use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresSimpleStreamStrategy;
 
-class PostgresAggregateStreamStrategyTestCase extends AbstractPostgresPersistenceStrategyTestCase
+class PostgresSimpleStreamStrategyTest extends AbstractPostgresPersistenceStrategyTestCase
 {
     protected function createStrategy(): PersistenceStrategy
     {
-        return new PostgresAggregateStreamStrategy();
+        return new PostgresSimpleStreamStrategy();
     }
 }

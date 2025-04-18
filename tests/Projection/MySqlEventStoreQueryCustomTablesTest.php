@@ -23,15 +23,13 @@ use ProophTest\EventStore\Pdo\TestUtil;
 /**
  * @group mysql
  */
-class MySqlEventStoreQueryCustomTablesTestCase extends PdoEventStoreQueryCustomTablesTestCase
+class MySqlEventStoreQueryCustomTablesTest extends PdoEventStoreQueryCustomTablesTestCase
 {
     protected function setUp(): void
     {
         if (TestUtil::getDatabaseDriver() !== 'pdo_mysql') {
             throw new \RuntimeException('Invalid database driver');
         }
-
-        $this->isMariaDb = TestUtil::getDatabaseVendor() === 'mariadb';
 
         $this->connection = TestUtil::getConnection();
         TestUtil::initCustomDatabaseTables($this->connection);
