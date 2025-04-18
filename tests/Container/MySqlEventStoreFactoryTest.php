@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace ProophTest\EventStore\Pdo\Container;
 
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\EventStore\ActionEventEmitterEventStore;
@@ -21,7 +23,8 @@ use Prooph\EventStore\Metadata\MetadataEnricher;
 use Prooph\EventStore\Pdo\Container\MySqlEventStoreFactory;
 use Prooph\EventStore\Pdo\Exception\InvalidArgumentException;
 use Prooph\EventStore\Pdo\MySqlEventStore;
-use Prooph\EventStore\Pdo\PersistenceStrategy;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlAggregateStreamStrategy;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlPersistenceStrategy;
 use Prooph\EventStore\Pdo\WriteLockStrategy;
 use Prooph\EventStore\Pdo\WriteLockStrategy\MysqlMetadataLockStrategy;
 use Prooph\EventStore\Plugin\Plugin;
@@ -29,21 +32,17 @@ use ProophTest\EventStore\Pdo\TestUtil;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Container\ContainerInterface;
 
-/**
- * @group mysql
- */
+#[Group('mysql')]
 final class MySqlEventStoreFactoryTest extends TestCase
 {
     use ProphecyTrait;
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_creates_adapter_via_connection_service(): void
     {
         $config['prooph']['event_store']['default'] = [
             'connection' => 'my_connection',
-            'persistence_strategy' => PersistenceStrategy\MySqlAggregateStreamStrategy::class,
+            'persistence_strategy' => MySqlAggregateStreamStrategy::class,
             'wrap_action_event_emitter' => false,
         ];
 
@@ -54,7 +53,7 @@ final class MySqlEventStoreFactoryTest extends TestCase
         $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
         $container->get('config')->willReturn($config)->shouldBeCalled();
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
-        $container->get(PersistenceStrategy\MySqlAggregateStreamStrategy::class)->willReturn($this->prophesize(PersistenceStrategy\MySqlPersistenceStrategy::class))->shouldBeCalled();
+        $container->get(MySqlAggregateStreamStrategy::class)->willReturn($this->prophesize(MySqlPersistenceStrategy::class))->shouldBeCalled();
 
         $factory = new MySqlEventStoreFactory();
         $eventStore = $factory($container->reveal());
@@ -62,14 +61,12 @@ final class MySqlEventStoreFactoryTest extends TestCase
         $this->assertInstanceOf(MySqlEventStore::class, $eventStore);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_wraps_action_event_emitter(): void
     {
         $config['prooph']['event_store']['custom'] = [
             'connection' => 'my_connection',
-            'persistence_strategy' => PersistenceStrategy\MySqlAggregateStreamStrategy::class,
+            'persistence_strategy' => MySqlAggregateStreamStrategy::class,
         ];
 
         $connection = TestUtil::getConnection();
@@ -79,7 +76,7 @@ final class MySqlEventStoreFactoryTest extends TestCase
         $container->get('config')->willReturn($config)->shouldBeCalled();
         $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
-        $container->get(PersistenceStrategy\MySqlAggregateStreamStrategy::class)->willReturn($this->prophesize(PersistenceStrategy\MySqlPersistenceStrategy::class))->shouldBeCalled();
+        $container->get(MySqlAggregateStreamStrategy::class)->willReturn($this->prophesize(MySqlPersistenceStrategy::class))->shouldBeCalled();
 
         $eventStoreName = 'custom';
         $eventStore = MySqlEventStoreFactory::$eventStoreName($container->reveal());
@@ -87,14 +84,12 @@ final class MySqlEventStoreFactoryTest extends TestCase
         $this->assertInstanceOf(ActionEventEmitterEventStore::class, $eventStore);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_injects_plugins(): void
     {
         $config['prooph']['event_store']['custom'] = [
             'connection' => 'my_connection',
-            'persistence_strategy' => PersistenceStrategy\MySqlAggregateStreamStrategy::class,
+            'persistence_strategy' => MySqlAggregateStreamStrategy::class,
             'plugins' => ['plugin'],
         ];
 
@@ -105,7 +100,7 @@ final class MySqlEventStoreFactoryTest extends TestCase
         $container->get('config')->willReturn($config)->shouldBeCalled();
         $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
-        $container->get(PersistenceStrategy\MySqlAggregateStreamStrategy::class)->willReturn($this->prophesize(PersistenceStrategy\MySqlPersistenceStrategy::class))->shouldBeCalled();
+        $container->get(MySqlAggregateStreamStrategy::class)->willReturn($this->prophesize(MySqlPersistenceStrategy::class))->shouldBeCalled();
 
         $featureMock = $this->getMockForAbstractClass(Plugin::class);
         $featureMock->expects($this->once())->method('attachToEventStore');
@@ -118,9 +113,7 @@ final class MySqlEventStoreFactoryTest extends TestCase
         $this->assertInstanceOf(ActionEventEmitterEventStore::class, $eventStore);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_throws_exception_when_invalid_plugin_configured(): void
     {
         $this->expectException(ConfigurationException::class);
@@ -128,7 +121,7 @@ final class MySqlEventStoreFactoryTest extends TestCase
 
         $config['prooph']['event_store']['custom'] = [
             'connection' => 'my_connection',
-            'persistence_strategy' => PersistenceStrategy\MySqlAggregateStreamStrategy::class,
+            'persistence_strategy' => MySqlAggregateStreamStrategy::class,
             'plugins' => ['plugin'],
         ];
 
@@ -139,7 +132,7 @@ final class MySqlEventStoreFactoryTest extends TestCase
         $container->get('config')->willReturn($config)->shouldBeCalled();
         $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
-        $container->get(PersistenceStrategy\MySqlAggregateStreamStrategy::class)->willReturn($this->prophesize(PersistenceStrategy\MySqlPersistenceStrategy::class))->shouldBeCalled();
+        $container->get(MySqlAggregateStreamStrategy::class)->willReturn($this->prophesize(MySqlPersistenceStrategy::class))->shouldBeCalled();
 
         $container->get('plugin')->willReturn('notAValidPlugin');
 
@@ -147,14 +140,12 @@ final class MySqlEventStoreFactoryTest extends TestCase
         MySqlEventStoreFactory::$eventStoreName($container->reveal());
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_injects_metadata_enrichers(): void
     {
         $config['prooph']['event_store']['custom'] = [
             'connection' => 'my_connection',
-            'persistence_strategy' => PersistenceStrategy\MySqlAggregateStreamStrategy::class,
+            'persistence_strategy' => MySqlAggregateStreamStrategy::class,
             'metadata_enrichers' => ['metadata_enricher1', 'metadata_enricher2'],
         ];
 
@@ -168,7 +159,7 @@ final class MySqlEventStoreFactoryTest extends TestCase
         $container->get('config')->willReturn($config);
         $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
-        $container->get(PersistenceStrategy\MySqlAggregateStreamStrategy::class)->willReturn($this->prophesize(PersistenceStrategy\MySqlPersistenceStrategy::class))->shouldBeCalled();
+        $container->get(MySqlAggregateStreamStrategy::class)->willReturn($this->prophesize(MySqlPersistenceStrategy::class))->shouldBeCalled();
 
         $container->get('metadata_enricher1')->willReturn($metadataEnricher1->reveal());
         $container->get('metadata_enricher2')->willReturn($metadataEnricher2->reveal());
@@ -179,9 +170,7 @@ final class MySqlEventStoreFactoryTest extends TestCase
         $this->assertInstanceOf(ActionEventEmitterEventStore::class, $eventStore);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_throws_exception_when_invalid_metadata_enricher_configured(): void
     {
         $this->expectException(ConfigurationException::class);
@@ -189,7 +178,7 @@ final class MySqlEventStoreFactoryTest extends TestCase
 
         $config['prooph']['event_store']['custom'] = [
             'connection' => 'my_connection',
-            'persistence_strategy' => PersistenceStrategy\MySqlAggregateStreamStrategy::class,
+            'persistence_strategy' => MySqlAggregateStreamStrategy::class,
             'metadata_enrichers' => ['foobar'],
         ];
 
@@ -200,7 +189,7 @@ final class MySqlEventStoreFactoryTest extends TestCase
         $container->get('config')->willReturn($config);
         $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory())->shouldBeCalled();
-        $container->get(PersistenceStrategy\MySqlAggregateStreamStrategy::class)->willReturn($this->prophesize(PersistenceStrategy\MySqlPersistenceStrategy::class))->shouldBeCalled();
+        $container->get(MySqlAggregateStreamStrategy::class)->willReturn($this->prophesize(MySqlPersistenceStrategy::class))->shouldBeCalled();
 
         $container->get('foobar')->willReturn('foobar');
 
@@ -208,14 +197,12 @@ final class MySqlEventStoreFactoryTest extends TestCase
         MySqlEventStoreFactory::$eventStoreName($container->reveal());
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_loads_write_lock_if_set(): void
     {
         $config['prooph']['event_store']['default'] = [
             'connection' => 'my_connection',
-            'persistence_strategy' => PersistenceStrategy\MySqlAggregateStreamStrategy::class,
+            'persistence_strategy' => MySqlAggregateStreamStrategy::class,
             'write_lock_strategy' => MysqlMetadataLockStrategy::class,
         ];
 
@@ -226,16 +213,14 @@ final class MySqlEventStoreFactoryTest extends TestCase
         $container->get('my_connection')->willReturn($connection)->shouldBeCalled();
         $container->get('config')->willReturn($config)->shouldBeCalled();
         $container->get(FQCNMessageFactory::class)->willReturn(new FQCNMessageFactory());
-        $container->get(PersistenceStrategy\MySqlAggregateStreamStrategy::class)->willReturn($this->prophesize(PersistenceStrategy\MySqlPersistenceStrategy::class));
+        $container->get(MySqlAggregateStreamStrategy::class)->willReturn($this->prophesize(MySqlPersistenceStrategy::class));
         $container->get(MysqlMetadataLockStrategy::class)->willReturn($this->prophesize(WriteLockStrategy::class))->shouldBeCalled();
 
         $factory = new MySqlEventStoreFactory();
         $factory($container->reveal());
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_throws_exception_when_invalid_container_given(): void
     {
         $this->expectException(InvalidArgumentException::class);

@@ -13,7 +13,10 @@ declare(strict_types=1);
 
 namespace ProophTest\EventStore\Pdo;
 
+use ArrayIterator;
 use PDO;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\Test;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Metadata\MetadataMatcher;
@@ -30,17 +33,10 @@ use ProophTest\EventStore\Pdo\Assets\PersistenceStrategy\CustomPostgresSingleStr
 use ProophTest\EventStore\TransactionalEventStoreTestTrait;
 use Ramsey\Uuid\Uuid;
 
-/**
- * @group postgres
- */
-final class PostgresCustomStrategiesEventStoreTest extends PostgresEventStoreTestCase
+#[Group('postgres')]
+final class PostgresCustomStrategiesEventStoreTest extends PostgresEventStoreTest
 {
     use TransactionalEventStoreTestTrait;
-
-    /**
-     * @var PostgresEventStore
-     */
-    protected $eventStore;
 
     protected function setUp(): void
     {
@@ -54,9 +50,7 @@ final class PostgresCustomStrategiesEventStoreTest extends PostgresEventStoreTes
         $this->setupEventStoreWith(new CustomPostgresAggregateStreamStrategy());
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_cannot_create_new_stream_if_table_name_is_already_used(): void
     {
         $this->expectException(RuntimeException::class);
@@ -70,19 +64,17 @@ final class PostgresCustomStrategiesEventStoreTest extends PostgresEventStoreTes
             $statement->execute();
         }
 
-        $this->eventStore->create(new Stream($streamName, new \ArrayIterator()));
+        $this->eventStore->create(new Stream($streamName, new ArrayIterator()));
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_loads_correctly_using_single_stream_per_aggregate_type_strategy(): void
     {
         $this->setupEventStoreWith(new CustomPostgresSingleStreamStrategy(), 5);
 
         $streamName = new StreamName('Prooph\Model\User');
 
-        $stream = new Stream($streamName, new \ArrayIterator($this->getMultipleTestEvents()));
+        $stream = new Stream($streamName, new ArrayIterator($this->getMultipleTestEvents()));
 
         $this->eventStore->create($stream);
 
@@ -102,9 +94,7 @@ final class PostgresCustomStrategiesEventStoreTest extends PostgresEventStoreTes
         $this->assertEquals('Bradley', $lastUser2Event->payload()['name']);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_fails_to_write_with_duplicate_version_and_mulitple_streams_per_aggregate_strategy(): void
     {
         $this->expectException(ConcurrencyException::class);
@@ -122,7 +112,7 @@ final class PostgresCustomStrategiesEventStoreTest extends PostgresEventStoreTes
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_id', $aggregateId);
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_type', 'user');
 
-        $stream = new Stream(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
+        $stream = new Stream(new StreamName('Prooph\Model\User'), new ArrayIterator([$streamEvent]));
 
         $this->eventStore->create($stream);
 
@@ -135,7 +125,7 @@ final class PostgresCustomStrategiesEventStoreTest extends PostgresEventStoreTes
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_id', $aggregateId);
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_type', 'user');
 
-        $this->eventStore->appendTo(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
+        $this->eventStore->appendTo(new StreamName('Prooph\Model\User'), new ArrayIterator([$streamEvent]));
     }
 
     public function it_ignores_transaction_handling_if_flag_is_enabled(): void
@@ -154,9 +144,7 @@ final class PostgresCustomStrategiesEventStoreTest extends PostgresEventStoreTes
         $eventStore->rollback();
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_removes_stream_if_stream_table_hasnt_been_created(): void
     {
         $strategy = $this->createMock(PostgresPersistenceStrategy::class);
@@ -172,7 +160,7 @@ SQL
 
         $this->setupEventStoreWith($strategy);
 
-        $stream = new Stream(new StreamName('Prooph\Model\User'), new \ArrayIterator());
+        $stream = new Stream(new StreamName('Prooph\Model\User'), new ArrayIterator());
 
         try {
             $this->eventStore->create($stream);

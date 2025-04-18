@@ -13,24 +13,23 @@ declare(strict_types=1);
 
 namespace ProophTest\EventStore\Pdo\WriteLockStrategy;
 
+use PDO;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Prooph\EventStore\Pdo\WriteLockStrategy\PostgresAdvisoryLockStrategy;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 
-/**
- * @group postgres
- */
+#[Group('postgres')]
 class PostgresAdvisoryLockStrategyTest extends TestCase
 {
     use ProphecyTrait;
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_returns_true_when_lock_successful(): void
     {
-        $connection = $this->prophesize(\PDO::class);
+        $connection = $this->prophesize(PDO::class);
 
         $connection->exec(Argument::any())->willReturn(0);
 
@@ -39,12 +38,10 @@ class PostgresAdvisoryLockStrategyTest extends TestCase
         $this->assertTrue($strategy->getLock('lock'));
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_requests_lock_with_given_name(): void
     {
-        $connection = $this->prophesize(\PDO::class);
+        $connection = $this->prophesize(PDO::class);
 
         $connection->exec(Argument::containingString('pg_advisory_lock'))
             ->willReturn(0)
@@ -55,12 +52,10 @@ class PostgresAdvisoryLockStrategyTest extends TestCase
         $strategy->getLock('lock');
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_releases_lock(): void
     {
-        $connection = $this->prophesize(\PDO::class);
+        $connection = $this->prophesize(PDO::class);
 
         $connection->exec(Argument::containingString('pg_advisory_unlock'))
             ->shouldBeCalled()
@@ -71,12 +66,10 @@ class PostgresAdvisoryLockStrategyTest extends TestCase
         $strategy->releaseLock('lock');
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_release_returns_true(): void
     {
-        $connection = $this->prophesize(\PDO::class);
+        $connection = $this->prophesize(PDO::class);
 
         $connection->exec(Argument::any())
             ->willReturn(0);

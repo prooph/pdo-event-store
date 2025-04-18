@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace ProophTest\EventStore\Pdo\Container;
 
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Prooph\Common\Messaging\MessageFactory;
 use Prooph\EventStore\EventStore;
@@ -25,16 +27,12 @@ use ProophTest\EventStore\Pdo\TestUtil;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Container\ContainerInterface;
 
-/**
- * @group postgres
- */
+#[Group('postgres')]
 class PostgresProjectionManagerFactoryTest extends TestCase
 {
     use ProphecyTrait;
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_creates_service(): void
     {
         $config['prooph']['projection_manager']['default'] = [
@@ -60,9 +58,7 @@ class PostgresProjectionManagerFactoryTest extends TestCase
         $this->assertInstanceOf(PostgresProjectionManager::class, $projectionManager);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_creates_service_via_callstatic(): void
     {
         $config['prooph']['projection_manager']['default'] = [
@@ -88,9 +84,7 @@ class PostgresProjectionManagerFactoryTest extends TestCase
         $this->assertInstanceOf(PostgresProjectionManager::class, $pdo);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_throws_exception_when_invalid_container_given(): void
     {
         $this->expectException(InvalidArgumentException::class);
