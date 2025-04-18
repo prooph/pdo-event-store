@@ -15,40 +15,36 @@ namespace ProophTest\EventStore\Pdo\Projection;
 
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
-use Prooph\EventStore\Pdo\MySqlEventStore;
-use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSimpleStreamStrategy;
-use Prooph\EventStore\Pdo\Projection\MySqlProjectionManager;
-use Prooph\EventStore\Projection\ReadModel;
+use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresSimpleStreamStrategy;
+use Prooph\EventStore\Pdo\PostgresEventStore;
+use Prooph\EventStore\Pdo\Projection\PostgresProjectionManager;
 use ProophTest\EventStore\Mock\ReadModelMock;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Pdo\TestUtil;
-use Prophecy\PhpUnit\ProphecyTrait;
 
 /**
- * @group mysql
+ * @group postgres
  */
-class MySqlEventStoreReadModelProjectorCustomTablesTestCase extends PdoEventStoreReadModelProjectorCustomTablesTestCase
+class PostgresEventStoreReadModelProjectorCustomTablesTest extends PdoEventStoreReadModelProjectorCustomTablesTestCase
 {
-    use ProphecyTrait;
-
     protected function setUp(): void
     {
-        if (TestUtil::getDatabaseDriver() !== 'pdo_mysql') {
-            throw new \RuntimeException('Invalid database driver');
+        if (TestUtil::getDatabaseDriver() !== 'pdo_pgsql') {
+            throw new \RuntimeException('Invalid database vendor');
         }
 
         $this->connection = TestUtil::getConnection();
         TestUtil::initCustomDatabaseTables($this->connection);
 
-        $this->eventStore = new MySqlEventStore(
+        $this->eventStore = new PostgresEventStore(
             new FQCNMessageFactory(),
-            $this->connection,
-            new MySqlSimpleStreamStrategy(new NoOpMessageConverter()),
+            TestUtil::getConnection(),
+            new PostgresSimpleStreamStrategy(new NoOpMessageConverter()),
             10000,
             'events/streams'
         );
 
-        $this->projectionManager = new MySqlProjectionManager(
+        $this->projectionManager = new PostgresProjectionManager(
             $this->eventStore,
             $this->connection,
             'events/streams',
@@ -59,31 +55,14 @@ class MySqlEventStoreReadModelProjectorCustomTablesTestCase extends PdoEventStor
     /**
      * @test
      */
-    public function it_calls_reset_projection_also_if_init_callback_returns_state(): void
-    {
-        $readModel = $this->prophesize(ReadModel::class);
-        $readModel->reset()->shouldBeCalled();
-
-        $readModelProjection = $this->projectionManager->createReadModelProjection('test-projection', $readModel->reveal());
-
-        $readModelProjection->init(function () {
-            return ['state' => 'some value'];
-        });
-
-        $readModelProjection->reset();
-    }
-
-    /**
-     * @test
-     */
     public function it_handles_missing_projection_table(): void
     {
         $this->expectException(\Prooph\EventStore\Pdo\Exception\RuntimeException::class);
-        $this->expectExceptionMessage(\sprintf("Error 42S02. Maybe the projection table is not setup?\nError-Info: Table '%s.events/projections' doesn't exist", \getenv('DB_NAME')));
+        $this->expectExceptionMessage("Error 42P01. Maybe the projection table is not setup?\nError-Info: ERROR:  relation \"events/projections\" does not exist\nLINE 1: SELECT status FROM");
 
         $this->prepareEventStream('user-123');
 
-        $this->connection->exec('DROP TABLE `events/projections`;');
+        $this->connection->exec('DROP TABLE "events/projections";');
 
         $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 

@@ -24,7 +24,7 @@ use ProophTest\EventStore\Pdo\TestUtil;
 /**
  * @group postgres
  */
-class PostgresEventStoreProjectorCustomTablesTestCase extends PdoEventStoreProjectorCustomTablesTestCase
+class PostgresEventStoreProjectorCustomTablesTest extends PdoEventStoreProjectorCustomTablesTestCase
 {
     protected function setUp(): void
     {

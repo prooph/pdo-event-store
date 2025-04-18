@@ -15,16 +15,16 @@ namespace ProophTest\EventStore\Pdo\Projection;
 
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\NoOpMessageConverter;
-use Prooph\EventStore\Pdo\MariaDbEventStore;
-use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbSimpleStreamStrategy;
-use Prooph\EventStore\Pdo\Projection\MariaDbProjectionManager;
+use Prooph\EventStore\Pdo\MySqlEventStore;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSimpleStreamStrategy;
+use Prooph\EventStore\Pdo\Projection\MySqlProjectionManager;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Pdo\TestUtil;
 
 /**
- * @group mariadb
+ * @group mysql
  */
-class MariaDbEventStoreProjectorCustomTablesTestCase extends PdoEventStoreProjectorCustomTablesTestCase
+class MySqlEventStoreProjectorCustomTablesTest extends PdoEventStoreProjectorCustomTablesTestCase
 {
     protected function setUp(): void
     {
@@ -35,15 +35,15 @@ class MariaDbEventStoreProjectorCustomTablesTestCase extends PdoEventStoreProjec
         $this->connection = TestUtil::getConnection();
         TestUtil::initCustomDatabaseTables($this->connection);
 
-        $this->eventStore = new MariaDbEventStore(
+        $this->eventStore = new MySqlEventStore(
             new FQCNMessageFactory(),
             $this->connection,
-            new MariaDbSimpleStreamStrategy(new NoOpMessageConverter()),
+            new MySqlSimpleStreamStrategy(new NoOpMessageConverter()),
             10000,
             'events/streams'
         );
 
-        $this->projectionManager = new MariaDbProjectionManager(
+        $this->projectionManager = new MySqlProjectionManager(
             $this->eventStore,
             $this->connection,
             'events/streams',

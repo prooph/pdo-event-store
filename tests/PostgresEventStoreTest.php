@@ -38,7 +38,7 @@ use Ramsey\Uuid\Uuid;
 /**
  * @group postgres
  */
-class PostgresEventStoreTestCase extends AbstractPdoEventStoreTestCase
+class PostgresEventStoreTest extends AbstractPdoEventStoreTestCase
 {
     use TransactionalEventStoreTestTrait;
 

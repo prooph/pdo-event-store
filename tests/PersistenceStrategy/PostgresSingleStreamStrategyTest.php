@@ -16,7 +16,7 @@ namespace ProophTest\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresSingleStreamStrategy;
 
-class PostgresSingleStreamStrategyTestCase extends AbstractPostgresPersistenceStrategyTestCase
+class PostgresSingleStreamStrategyTest extends AbstractPostgresPersistenceStrategyTestCase
 {
     protected function createStrategy(): PersistenceStrategy
     {

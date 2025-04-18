@@ -34,7 +34,7 @@ use Ramsey\Uuid\Uuid;
 /**
  * @group mariadb
  */
-final class MariaDbCustomStrategiesEventStoreTest extends MariaDbEventStoreTestCase
+final class MariaDbCustomStrategiesEventStoreTest extends MariaDbEventStoreTest
 {
     use ProphecyTrait;
 

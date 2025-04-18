@@ -18,17 +18,22 @@ use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\Message;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\EventStore;
-use Prooph\EventStore\Pdo\MySqlEventStore;
-use Prooph\EventStore\Pdo\PersistenceStrategy\MySqlSimpleStreamStrategy;
-use Prooph\EventStore\Pdo\Projection\MySqlProjectionManager;
+use Prooph\EventStore\Pdo\MariaDbEventStore;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbSimpleStreamStrategy;
+use Prooph\EventStore\Pdo\Projection\MariaDbProjectionManager;
+use Prooph\EventStore\Projection\ReadModel;
+use ProophTest\EventStore\Mock\ReadModelMock;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Pdo\TestUtil;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 /**
- * @group mysql
+ * @group mariadb
  */
-class MySqlEventStoreProjectorTestCase extends PdoEventStoreProjectorTestCase
+class MariaDbEventStoreReadModelProjectorTest extends PdoEventStoreReadModelProjectorTestCase
 {
+    use ProphecyTrait;
+
     protected function setUp(): void
     {
         if (TestUtil::getDatabaseDriver() !== 'pdo_mysql') {
@@ -38,13 +43,13 @@ class MySqlEventStoreProjectorTestCase extends PdoEventStoreProjectorTestCase
         $this->connection = TestUtil::getConnection();
         TestUtil::initDefaultDatabaseTables($this->connection);
 
-        $this->eventStore = new MySqlEventStore(
+        $this->eventStore = new MariaDbEventStore(
             new FQCNMessageFactory(),
             $this->connection,
-            new MySqlSimpleStreamStrategy(new NoOpMessageConverter())
+            new MariaDbSimpleStreamStrategy(new NoOpMessageConverter())
         );
 
-        $this->projectionManager = new MySqlProjectionManager(
+        $this->projectionManager = new MariaDbProjectionManager(
             $this->eventStore,
             $this->connection
         );
@@ -52,14 +57,31 @@ class MySqlEventStoreProjectorTestCase extends PdoEventStoreProjectorTestCase
 
     protected function setUpEventStoreWithControlledConnection(PDO $connection): EventStore
     {
-        return new MySqlEventStore(
+        return new MariaDbEventStore(
             new FQCNMessageFactory(),
             $connection,
-            new MySqlSimpleStreamStrategy(new NoOpMessageConverter()),
+            new MariaDbSimpleStreamStrategy(new NoOpMessageConverter()),
             10000,
             'event_streams',
             true
         );
+    }
+
+    /**
+     * @test
+     */
+    public function it_calls_reset_projection_also_if_init_callback_returns_state(): void
+    {
+        $readModel = $this->prophesize(ReadModel::class);
+        $readModel->reset()->shouldBeCalled();
+
+        $readModelProjection = $this->projectionManager->createReadModelProjection('test-projection', $readModel->reveal());
+
+        $readModelProjection->init(function () {
+            return ['state' => 'some value'];
+        });
+
+        $readModelProjection->reset();
     }
 
     /**
@@ -74,7 +96,7 @@ class MySqlEventStoreProjectorTestCase extends PdoEventStoreProjectorTestCase
 
         $this->connection->exec('DROP TABLE projections;');
 
-        $projection = $this->projectionManager->createProjection('test_projection');
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 
         $projection
             ->fromStream('user-123')
@@ -100,7 +122,7 @@ class MySqlEventStoreProjectorTestCase extends PdoEventStoreProjectorTestCase
             return;
         }
 
-        $command = 'exec php ' . \realpath(__DIR__) . '/mysql-isolated-long-running-projection.php';
+        $command = 'exec php ' . \realpath(__DIR__) . '/mariadb-isolated-long-running-read-model-projection.php';
         $descriptorSpec = [
             0 => ['pipe', 'r'],
             1 => ['pipe', 'w'],
@@ -141,7 +163,7 @@ EOT;
         ]);
 
         $this->prepareEventStream('user');
-        $projection = $this->projectionManager->createProjection('test_projection');
+        $projection = $this->projectionManager->createReadModelProjection('test_projection', new ReadModelMock());
 
         $projection
             ->fromStream('user')

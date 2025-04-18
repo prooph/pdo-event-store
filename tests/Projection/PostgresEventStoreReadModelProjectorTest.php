@@ -18,38 +18,34 @@ use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\Message;
 use Prooph\Common\Messaging\NoOpMessageConverter;
 use Prooph\EventStore\EventStore;
-use Prooph\EventStore\Pdo\MariaDbEventStore;
-use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbSimpleStreamStrategy;
-use Prooph\EventStore\Pdo\Projection\MariaDbProjectionManager;
-use Prooph\EventStore\Projection\ReadModel;
+use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresSimpleStreamStrategy;
+use Prooph\EventStore\Pdo\PostgresEventStore;
+use Prooph\EventStore\Pdo\Projection\PostgresProjectionManager;
 use ProophTest\EventStore\Mock\ReadModelMock;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Pdo\TestUtil;
-use Prophecy\PhpUnit\ProphecyTrait;
 
 /**
- * @group mariadb
+ * @group postgres
  */
-class MariaDbEventStoreReadModelProjectorTestCase extends PdoEventStoreReadModelProjectorTestCase
+class PostgresEventStoreReadModelProjectorTest extends PdoEventStoreReadModelProjectorTestCase
 {
-    use ProphecyTrait;
-
     protected function setUp(): void
     {
-        if (TestUtil::getDatabaseDriver() !== 'pdo_mysql') {
-            throw new \RuntimeException('Invalid database driver');
+        if (TestUtil::getDatabaseDriver() !== 'pdo_pgsql') {
+            throw new \RuntimeException('Invalid database vendor');
         }
 
         $this->connection = TestUtil::getConnection();
         TestUtil::initDefaultDatabaseTables($this->connection);
 
-        $this->eventStore = new MariaDbEventStore(
+        $this->eventStore = new PostgresEventStore(
             new FQCNMessageFactory(),
-            $this->connection,
-            new MariaDbSimpleStreamStrategy(new NoOpMessageConverter())
+            TestUtil::getConnection(),
+            new PostgresSimpleStreamStrategy(new NoOpMessageConverter())
         );
 
-        $this->projectionManager = new MariaDbProjectionManager(
+        $this->projectionManager = new PostgresProjectionManager(
             $this->eventStore,
             $this->connection
         );
@@ -57,10 +53,10 @@ class MariaDbEventStoreReadModelProjectorTestCase extends PdoEventStoreReadModel
 
     protected function setUpEventStoreWithControlledConnection(PDO $connection): EventStore
     {
-        return new MariaDbEventStore(
+        return new PostgresEventStore(
             new FQCNMessageFactory(),
             $connection,
-            new MariaDbSimpleStreamStrategy(new NoOpMessageConverter()),
+            new PostgresSimpleStreamStrategy(new NoOpMessageConverter()),
             10000,
             'event_streams',
             true
@@ -70,27 +66,10 @@ class MariaDbEventStoreReadModelProjectorTestCase extends PdoEventStoreReadModel
     /**
      * @test
      */
-    public function it_calls_reset_projection_also_if_init_callback_returns_state(): void
-    {
-        $readModel = $this->prophesize(ReadModel::class);
-        $readModel->reset()->shouldBeCalled();
-
-        $readModelProjection = $this->projectionManager->createReadModelProjection('test-projection', $readModel->reveal());
-
-        $readModelProjection->init(function () {
-            return ['state' => 'some value'];
-        });
-
-        $readModelProjection->reset();
-    }
-
-    /**
-     * @test
-     */
     public function it_handles_missing_projection_table(): void
     {
         $this->expectException(\Prooph\EventStore\Pdo\Exception\RuntimeException::class);
-        $this->expectExceptionMessage(\sprintf("Error 42S02. Maybe the projection table is not setup?\nError-Info: Table '%s.projections' doesn't exist", \getenv('DB_NAME')));
+        $this->expectExceptionMessage("Error 42P01. Maybe the projection table is not setup?\nError-Info: ERROR:  relation \"projections\" does not exist\nLINE 1: SELECT status FROM");
 
         $this->prepareEventStream('user-123');
 
@@ -122,7 +101,7 @@ class MariaDbEventStoreReadModelProjectorTestCase extends PdoEventStoreReadModel
             return;
         }
 
-        $command = 'exec php ' . \realpath(__DIR__) . '/mariadb-isolated-long-running-read-model-projection.php';
+        $command = 'exec php ' . \realpath(__DIR__) . '/postgres-isolated-long-running-read-model-projection.php';
         $descriptorSpec = [
             0 => ['pipe', 'r'],
             1 => ['pipe', 'w'],
@@ -151,7 +130,7 @@ class MariaDbEventStoreReadModelProjectorTestCase extends PdoEventStoreReadModel
     public function a_stopped_status_should_keep_stream_positions(): void
     {
         $sql = <<<EOT
-INSERT INTO `projections` (name, position, state, status, locked_until)
+INSERT INTO "projections" (name, position, state, status, locked_until)
 VALUES (?, ?, '{}', ?, NULL);
 EOT;
 
@@ -177,7 +156,7 @@ EOT;
             ->run();
 
         $sql = <<<EOT
-SELECT * FROM `projections` WHERE name = ?
+SELECT * FROM "projections" WHERE name = ?
 EOT;
 
         $statement = $this->connection->prepare($sql);

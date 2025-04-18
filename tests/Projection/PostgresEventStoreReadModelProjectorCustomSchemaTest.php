@@ -25,7 +25,7 @@ use ProophTest\EventStore\Pdo\TestUtil;
 /**
  * @group postgres
  */
-class PostgresEventStoreReadModelProjectorCustomSchemaTestCase extends PdoEventStoreReadModelProjectorCustomSchemaTestCase
+class PostgresEventStoreReadModelProjectorCustomSchemaTest extends PdoEventStoreReadModelProjectorCustomSchemaTestCase
 {
     use PostgresHelper;
 
