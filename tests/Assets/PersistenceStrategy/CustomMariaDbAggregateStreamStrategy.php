@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace ProophTest\EventStore\Pdo\Assets\PersistenceStrategy;
 
 use Iterator;
-use Prooph\EventStore\Pdo\Exception;
+use Prooph\EventStore\Pdo\Exception\RuntimeException;
 use Prooph\EventStore\Pdo\MariaDBIndexedPersistenceStrategy;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbPersistenceStrategy;
 use Prooph\EventStore\Pdo\Util\Json;
@@ -80,7 +80,7 @@ EOT;
 
         foreach ($streamEvents as $event) {
             if (! isset($event->metadata()['_aggregate_version'])) {
-                throw new Exception\RuntimeException('_aggregate_version is missing in metadata');
+                throw new RuntimeException('_aggregate_version is missing in metadata');
             }
 
             $data[] = $event->metadata()['_aggregate_version'];

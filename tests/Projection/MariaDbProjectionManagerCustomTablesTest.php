@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace ProophTest\EventStore\Pdo\Projection;
 
 use PDO;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\Test;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\EventStoreDecorator;
@@ -23,30 +25,17 @@ use Prooph\EventStore\Pdo\MariaDbEventStore;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbPersistenceStrategy;
 use Prooph\EventStore\Pdo\Projection\MariaDbProjectionManager;
 use ProophTest\EventStore\Pdo\TestUtil;
-use ProophTest\EventStore\Projection\AbstractProjectionManagerTest;
+use ProophTest\EventStore\Projection\AbstractProjectionManagerTestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
 
-/**
- * @group mariadb
- */
-class MariaDbProjectionManagerCustomTablesTest extends AbstractProjectionManagerTest
+#[Group('mariadb')]
+class MariaDbProjectionManagerCustomTablesTest extends AbstractProjectionManagerTestCase
 {
     use ProphecyTrait;
 
-    /**
-     * @var MariaDbProjectionManager
-     */
-    protected $projectionManager;
+    private MariaDbEventStore $eventStore;
 
-    /**
-     * @var MariaDbEventStore
-     */
-    private $eventStore;
-
-    /**
-     * @var PDO
-     */
-    private $connection;
+    private PDO $connection;
 
     protected function setUp(): void
     {
@@ -79,9 +68,7 @@ class MariaDbProjectionManagerCustomTablesTest extends AbstractProjectionManager
         TestUtil::tearDownDatabase();
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_throws_exception_when_invalid_event_store_instance_passed(): void
     {
         $this->expectException(\Prooph\EventStore\Exception\InvalidArgumentException::class);
@@ -91,9 +78,7 @@ class MariaDbProjectionManagerCustomTablesTest extends AbstractProjectionManager
         new MariaDbProjectionManager($eventStore->reveal(), $this->connection, 'events/streams', 'events/projections');
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_throws_exception_when_invalid_wrapped_event_store_instance_passed(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -105,9 +90,7 @@ class MariaDbProjectionManagerCustomTablesTest extends AbstractProjectionManager
         new MariaDbProjectionManager($wrappedEventStore->reveal(), $this->connection, 'events/streams', 'events/projections');
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_throws_exception_when_fetching_projecton_names_with_missing_db_table(): void
     {
         $this->expectException(RuntimeException::class);
@@ -116,9 +99,7 @@ class MariaDbProjectionManagerCustomTablesTest extends AbstractProjectionManager
         $this->projectionManager->fetchProjectionNames(null, 200, 0);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_throws_exception_when_fetching_projecton_names_regex_with_missing_db_table(): void
     {
         $this->expectException(RuntimeException::class);

@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace ProophTest\EventStore\Pdo\Projection;
 
 use PDO;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\Test;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\EventStoreDecorator;
@@ -23,45 +25,26 @@ use Prooph\EventStore\Pdo\MariaDbEventStore;
 use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbPersistenceStrategy;
 use Prooph\EventStore\Pdo\Projection\MariaDbProjectionManager;
 use ProophTest\EventStore\Pdo\TestUtil;
-use ProophTest\EventStore\Projection\AbstractProjectionManagerTest;
+use ProophTest\EventStore\Projection\AbstractProjectionManagerTestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
 
-/**
- * @group mariadb
- */
-class MariaDbProjectionManagerTest extends AbstractProjectionManagerTest
+#[Group('mariadb')]
+class MariaDbProjectionManagerTest extends AbstractProjectionManagerTestCase
 {
     use ProphecyTrait;
 
-    /**
-     * @var MariaDbProjectionManager
-     */
-    protected $projectionManager;
+    private MariaDbEventStore $eventStore;
 
-    /**
-     * @var MariaDbEventStore
-     */
-    private $eventStore;
+    private PDO $connection;
 
-    /**
-     * @var PDO
-     */
-    private $connection;
-
-    /**
-     * @test
-     * @large
-     */
+    #[Test]
     public function it_fetches_projection_names(): void
     {
         // Overwrite parent test for different test duration
         parent::it_fetches_projection_names();
     }
 
-    /**
-     * @test
-     * @large
-     */
+    #[Test]
     public function it_fetches_projection_names_using_regex(): void
     {
         // Overwrite parent test for different test duration
@@ -92,9 +75,7 @@ class MariaDbProjectionManagerTest extends AbstractProjectionManagerTest
         TestUtil::tearDownDatabase();
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_throws_exception_when_invalid_event_store_instance_passed(): void
     {
         $this->expectException(\Prooph\EventStore\Exception\InvalidArgumentException::class);
@@ -104,9 +85,7 @@ class MariaDbProjectionManagerTest extends AbstractProjectionManagerTest
         new MariaDbProjectionManager($eventStore->reveal(), $this->connection);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_throws_exception_when_invalid_wrapped_event_store_instance_passed(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -118,9 +97,7 @@ class MariaDbProjectionManagerTest extends AbstractProjectionManagerTest
         new MariaDbProjectionManager($wrappedEventStore->reveal(), $this->connection);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_throws_exception_when_fetching_projecton_names_with_missing_db_table(): void
     {
         $this->expectException(RuntimeException::class);
@@ -129,9 +106,7 @@ class MariaDbProjectionManagerTest extends AbstractProjectionManagerTest
         $this->projectionManager->fetchProjectionNames(null, 200, 0);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_throws_exception_when_fetching_projecton_names_regex_with_missing_db_table(): void
     {
         $this->expectException(RuntimeException::class);

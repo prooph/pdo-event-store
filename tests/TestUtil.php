@@ -13,7 +13,12 @@ declare(strict_types=1);
 
 namespace ProophTest\EventStore\Pdo;
 
+use DateInterval;
+use DateTimeImmutable;
+use DateTimeZone;
 use PDO;
+use PDOException;
+use RuntimeException;
 
 abstract class TestUtil
 {
@@ -55,7 +60,7 @@ abstract class TestUtil
             while (null === self::$connection && $retries > 0) {
                 try {
                     self::$connection = new PDO($dsn, $connectionParams['user'], $connectionParams['password'], $connectionParams['options']);
-                } catch (\PDOException $e) {
+                } catch (PDOException $e) {
                     if (2002 !== $e->getCode()) {
                         throw $e;
                     }
@@ -73,7 +78,7 @@ abstract class TestUtil
 
         try {
             self::$connection->rollBack();
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
             // ignore
         }
 
@@ -83,7 +88,7 @@ abstract class TestUtil
     public static function getDatabaseName(): string
     {
         if (! self::hasRequiredConnectionParams()) {
-            throw new \RuntimeException('No connection params given');
+            throw new RuntimeException('No connection params given');
         }
 
         return \getenv('DB_NAME');
@@ -92,7 +97,7 @@ abstract class TestUtil
     public static function getDatabaseDriver(): string
     {
         if (! self::hasRequiredConnectionParams()) {
-            throw new \RuntimeException('No connection params given');
+            throw new RuntimeException('No connection params given');
         }
 
         return \getenv('DB_DRIVER');
@@ -101,7 +106,7 @@ abstract class TestUtil
     public static function getDatabaseVendor(): string
     {
         if (! self::hasRequiredConnectionParams()) {
-            throw new \RuntimeException('No connection params given');
+            throw new RuntimeException('No connection params given');
         }
 
         return \explode('_', \getenv('DB'))[0];
@@ -110,7 +115,7 @@ abstract class TestUtil
     public static function getConnectionParams(): array
     {
         if (! self::hasRequiredConnectionParams()) {
-            throw new \RuntimeException('No connection params given');
+            throw new RuntimeException('No connection params given');
         }
 
         return self::getSpecifiedConnectionParams();
@@ -173,7 +178,7 @@ abstract class TestUtil
         }
     }
 
-    public static function getProjectionLockedUntilFromDefaultProjectionsTable(PDO $connection, string $projectionName): ?\DateTimeImmutable
+    public static function getProjectionLockedUntilFromDefaultProjectionsTable(PDO $connection, string $projectionName): ?DateTimeImmutable
     {
         $vendor = self::getDatabaseVendor();
 
@@ -192,16 +197,16 @@ abstract class TestUtil
         $lockedUntil = $statement->fetchColumn();
 
         if ($lockedUntil) {
-            return \DateTimeImmutable::createFromFormat('Y-m-d\TH:i:s.u', $lockedUntil, new \DateTimeZone('UTC'));
+            return DateTimeImmutable::createFromFormat('Y-m-d\TH:i:s.u', $lockedUntil, new DateTimeZone('UTC'));
         }
 
         return null;
     }
 
-    public static function subMilliseconds(\DateTimeImmutable $time, int $ms): \DateTimeImmutable
+    public static function subMilliseconds(DateTimeImmutable $time, int $ms): DateTimeImmutable
     {
         //Create a 0 interval
-        $interval = new \DateInterval('PT0S');
+        $interval = new DateInterval('PT0S');
         //and manually add split seconds
         $interval->f = $ms / 1000;
 

@@ -14,7 +14,11 @@ declare(strict_types=1);
 namespace ProophTest\EventStore\Pdo;
 
 use ArrayIterator;
+use DateTimeImmutable;
+use DateTimeZone;
 use PDO;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\Exception\ConcurrencyException;
@@ -29,28 +33,22 @@ use Prooph\EventStore\Pdo\PostgresEventStore;
 use Prooph\EventStore\Pdo\Util\PostgresHelper;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
-use ProophTest\EventStore\AbstractEventStoreTest;
+use ProophTest\EventStore\AbstractEventStoreTestCase;
 use ProophTest\EventStore\Mock\TestDomainEvent;
 use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\EventStore\Mock\UsernameChanged;
 use Ramsey\Uuid\Uuid;
 
-abstract class AbstractPdoEventStoreTestCase extends AbstractEventStoreTest
+abstract class AbstractPdoEventStoreTestCase extends AbstractEventStoreTestCase
 {
     use PostgresHelper {
         quoteIdent as pgQuoteIdent;
         extractSchema as pgExtractSchema;
     }
 
-    /**
-     * @var PDO
-     */
-    protected $connection;
+    protected PDO $connection;
 
-    /**
-     * @var PersistenceStrategy
-     */
-    protected $persistenceStrategy;
+    protected PersistenceStrategy $persistenceStrategy;
 
     protected function setupEventStoreWith(
         PersistenceStrategy $persistenceStrategy,
@@ -104,7 +102,7 @@ abstract class AbstractPdoEventStoreTestCase extends AbstractEventStoreTest
         }
     }
 
-    public function dp_payload_stays_same_through_store(): array
+    public static function dp_payload_stays_same_through_store(): array
     {
         return [
             [[]],
@@ -121,10 +119,8 @@ abstract class AbstractPdoEventStoreTestCase extends AbstractEventStoreTest
         ];
     }
 
-    /**
-     * @test
-     * @dataProvider dp_payload_stays_same_through_store
-     */
+    #[DataProvider('dp_payload_stays_same_through_store')]
+    #[Test]
     public function payload_stays_same_through_store(array $payload): void
     {
         $event = TestDomainEvent::with($payload, 1);
@@ -140,9 +136,7 @@ abstract class AbstractPdoEventStoreTestCase extends AbstractEventStoreTest
         }
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_handles_not_existing_event_streams_table(): void
     {
         $this->expectException(RuntimeException::class);
@@ -153,9 +147,7 @@ abstract class AbstractPdoEventStoreTestCase extends AbstractEventStoreTest
         $this->eventStore->create($this->getTestStream());
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_throws_exception_using_aggregate_stream_strategy_if_aggregate_version_is_missing_in_metadata(): void
     {
         $this->expectException(RuntimeException::class);
@@ -163,19 +155,17 @@ abstract class AbstractPdoEventStoreTestCase extends AbstractEventStoreTest
         $event = TestDomainEvent::fromArray([
             'uuid' => Uuid::uuid4()->toString(),
             'message_name' => 'test-message',
-            'created_at' => new \DateTimeImmutable('now', new \DateTimeZone('UTC')),
+            'created_at' => new DateTimeImmutable('now', new DateTimeZone('UTC')),
             'payload' => [],
             'metadata' => [],
         ]);
 
-        $stream = new Stream(new StreamName('Prooph\Model\User'), new \ArrayIterator([$event]));
+        $stream = new Stream(new StreamName('Prooph\Model\User'), new ArrayIterator([$event]));
 
         $this->eventStore->create($stream);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_fails_to_write_duplicate_version_using_aggregate_stream_strategy(): void
     {
         $this->expectException(ConcurrencyException::class);
@@ -191,7 +181,7 @@ abstract class AbstractPdoEventStoreTestCase extends AbstractEventStoreTest
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_id', $aggregateId);
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_type', 'user');
 
-        $stream = new Stream(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
+        $stream = new Stream(new StreamName('Prooph\Model\User'), new ArrayIterator([$streamEvent]));
 
         $this->eventStore->create($stream);
 
@@ -204,12 +194,10 @@ abstract class AbstractPdoEventStoreTestCase extends AbstractEventStoreTest
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_id', $aggregateId);
         $streamEvent = $streamEvent->withAddedMetadata('_aggregate_type', 'user');
 
-        $this->eventStore->appendTo(new StreamName('Prooph\Model\User'), new \ArrayIterator([$streamEvent]));
+        $this->eventStore->appendTo(new StreamName('Prooph\Model\User'), new ArrayIterator([$streamEvent]));
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_throws_exception_when_fetching_stream_names_with_missing_db_table(): void
     {
         $this->expectException(RuntimeException::class);
@@ -218,9 +206,7 @@ abstract class AbstractPdoEventStoreTestCase extends AbstractEventStoreTest
         $this->eventStore->fetchStreamNames(null, null, 200, 0);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_throws_exception_when_fetching_stream_names_regex_with_missing_db_table(): void
     {
         $this->expectException(RuntimeException::class);
@@ -229,9 +215,7 @@ abstract class AbstractPdoEventStoreTestCase extends AbstractEventStoreTest
         $this->eventStore->fetchStreamNamesRegex('^foo', null, 200, 0);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_throws_exception_when_fetching_category_names_with_missing_db_table(): void
     {
         $this->expectException(RuntimeException::class);
@@ -240,9 +224,7 @@ abstract class AbstractPdoEventStoreTestCase extends AbstractEventStoreTest
         $this->eventStore->fetchCategoryNames(null, 200, 0);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_throws_exception_when_fetching_category_names_regex_with_missing_db_table(): void
     {
         $this->expectException(RuntimeException::class);
@@ -251,9 +233,7 @@ abstract class AbstractPdoEventStoreTestCase extends AbstractEventStoreTest
         $this->eventStore->fetchCategoryNamesRegex('^foo', 200, 0);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_returns_only_matched_metadata(): void
     {
         $event = UserCreated::with(['name' => 'John'], 1);
@@ -298,9 +278,7 @@ abstract class AbstractPdoEventStoreTestCase extends AbstractEventStoreTest
         $this->assertCount(1, $streamEvents);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_returns_only_matched_metadata_reverse(): void
     {
         $event = UserCreated::with(['name' => 'John'], 1);
@@ -347,9 +325,7 @@ abstract class AbstractPdoEventStoreTestCase extends AbstractEventStoreTest
         $this->assertCount(1, $streamEvents);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_returns_only_matched_message_property(): void
     {
         $event = UserCreated::with(['name' => 'John'], 1);
@@ -436,9 +412,7 @@ abstract class AbstractPdoEventStoreTestCase extends AbstractEventStoreTest
         $this->assertFalse($result->valid());
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_returns_only_matched_message_property_reverse(): void
     {
         $event = UserCreated::with(['name' => 'John'], 1);
@@ -523,9 +497,7 @@ abstract class AbstractPdoEventStoreTestCase extends AbstractEventStoreTest
         $this->assertFalse($result->valid());
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_adds_event_position_to_metadata_if_field_not_occupied(): void
     {
         $event = UserCreated::with(['name' => 'John'], 1);
@@ -543,9 +515,7 @@ abstract class AbstractPdoEventStoreTestCase extends AbstractEventStoreTest
         $this->assertEquals(1, $readEvent->metadata()['_position']);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_does_not_add_event_position_to_metadata_if_field_is_occupied(): void
     {
         $event = UserCreated::with(['name' => 'John'], 1);
@@ -564,10 +534,7 @@ abstract class AbstractPdoEventStoreTestCase extends AbstractEventStoreTest
         $this->assertSame('foo', $readEvent->metadata()['_position']);
     }
 
-    /**
-     * @test
-     * issue: https://github.com/prooph/pdo-event-store/issues/106
-     */
+    #[Test]
     public function it_doesnt_double_escape_metadata(): void
     {
         $event = UserCreated::with(['name' => 'John'], 1);
@@ -585,9 +552,7 @@ abstract class AbstractPdoEventStoreTestCase extends AbstractEventStoreTest
         $this->assertCount(1, $streamEvents);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_does_not_use_json_force_object_for_stream_metadata_and_event_payload_and_metadata(): void
     {
         $event = UserCreated::with(['name' => ['John', 'Jane']], 1);
@@ -601,7 +566,7 @@ abstract class AbstractPdoEventStoreTestCase extends AbstractEventStoreTest
         $statement = $this->connection->prepare("SELECT * FROM {$this->quoteTableName($this->eventStreamsTable())}");
         $statement->execute();
 
-        $result = $statement->fetch(\PDO::FETCH_ASSOC);
+        $result = $statement->fetch(PDO::FETCH_ASSOC);
 
         // mariadb does not add spaces to json, while mysql and postgres do, so strip them
         $this->assertSame('{"some":["metadata","as","well"]}', \str_replace(' ', '', $result['metadata']));
@@ -617,7 +582,7 @@ abstract class AbstractPdoEventStoreTestCase extends AbstractEventStoreTest
 
         $statement->execute();
 
-        $result = $statement->fetch(\PDO::FETCH_ASSOC);
+        $result = $statement->fetch(PDO::FETCH_ASSOC);
 
         // mariadb does not add spaces to json, while mysql and postgres do, so strip them
         $this->assertSame('{"name":["John","Jane"]}', \str_replace(' ', '', $result['payload']));

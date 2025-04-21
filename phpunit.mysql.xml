@@ -1,41 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
          backupGlobals="false"
-         backupStaticAttributes="false"
+         backupStaticProperties="false"
          colors="true"
-         convertErrorsToExceptions="true"
-         convertNoticesToExceptions="true"
-         convertWarningsToExceptions="true"
          processIsolation="false"
          stopOnFailure="false"
          bootstrap="vendor/autoload.php"
-         timeoutForSmallTests="2"
-         enforceTimeLimit="true"
          failOnWarning="true"
          failOnRisky="true"
 >
-  <coverage>
-    <include>
-      <directory>./src/</directory>
-    </include>
-    <exclude>
-      <file>./src/Container/MariaDbEventStoreFactory.php</file>
-      <file>./src/Container/MariaDbProjectionManagerFactory.php</file>
-      <file>./src/PersistenceStrategy/MariaDbAggregateStreamStrategy.php</file>
-      <file>./src/PersistenceStrategy/MariaDbSimpleStreamStrategy.php</file>
-      <file>./src/PersistenceStrategy/MariaDbSingleStreamStrategy.php</file>
-      <file>./src/Projection/MariaDbProjectionManager.php</file>
-      <file>./src/MariaDbEventStore.php</file>
-      <file>./src/Container/PostgresEventStoreFactory.php</file>
-      <file>./src/Container/PostgresProjectionManagerFactory.php</file>
-      <file>./src/PersistenceStrategy/PostgresAggregateStreamStrategy.php</file>
-      <file>./src/PersistenceStrategy/PostgresSimpleStreamStrategy.php</file>
-      <file>./src/PersistenceStrategy/PostgresSingleStreamStrategy.php</file>
-      <file>./src/Projection/PostgresProjectionManager.php</file>
-      <file>./src/PostgresEventStore.php</file>
-    </exclude>
-  </coverage>
   <testsuite name="Prooph PDO EventStore Test Suite">
     <directory>./tests/</directory>
   </testsuite>
@@ -57,4 +31,25 @@
     <!-- \PDO::ERRMODE_SILENT -->
     <env name="DB_ATTR_ERRMODE" value="0"/>
   </php>
+  <source>
+    <include>
+      <directory>./src/</directory>
+    </include>
+    <exclude>
+      <file>./src/Container/MariaDbEventStoreFactory.php</file>
+      <file>./src/Container/MariaDbProjectionManagerFactory.php</file>
+      <file>./src/PersistenceStrategy/MariaDbAggregateStreamStrategy.php</file>
+      <file>./src/PersistenceStrategy/MariaDbSimpleStreamStrategy.php</file>
+      <file>./src/PersistenceStrategy/MariaDbSingleStreamStrategy.php</file>
+      <file>./src/Projection/MariaDbProjectionManager.php</file>
+      <file>./src/MariaDbEventStore.php</file>
+      <file>./src/Container/PostgresEventStoreFactory.php</file>
+      <file>./src/Container/PostgresProjectionManagerFactory.php</file>
+      <file>./src/PersistenceStrategy/PostgresAggregateStreamStrategy.php</file>
+      <file>./src/PersistenceStrategy/PostgresSimpleStreamStrategy.php</file>
+      <file>./src/PersistenceStrategy/PostgresSingleStreamStrategy.php</file>
+      <file>./src/Projection/PostgresProjectionManager.php</file>
+      <file>./src/PostgresEventStore.php</file>
+    </exclude>
+  </source>
 </phpunit>

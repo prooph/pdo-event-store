@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace ProophTest\EventStore\Pdo\Projection;
 
 use PDO;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\Test;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\EventStoreDecorator;
@@ -25,31 +27,18 @@ use Prooph\EventStore\Pdo\Projection\PostgresProjectionManager;
 use Prooph\EventStore\Pdo\Util\PostgresHelper;
 use Prooph\EventStore\Projection\InMemoryProjectionManager;
 use ProophTest\EventStore\Pdo\TestUtil;
-use ProophTest\EventStore\Projection\AbstractProjectionManagerTest;
+use ProophTest\EventStore\Projection\AbstractProjectionManagerTestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
 
-/**
- * @group postgres
- */
-class PostgresProjectionManagerCustomSchemaTest extends AbstractProjectionManagerTest
+#[Group('postgres')]
+class PostgresProjectionManagerCustomSchemaTest extends AbstractProjectionManagerTestCase
 {
     use PostgresHelper;
     use ProphecyTrait;
 
-    /**
-     * @var PostgresProjectionManager
-     */
-    protected $projectionManager;
+    private PostgresEventStore $eventStore;
 
-    /**
-     * @var PostgresEventStore
-     */
-    private $eventStore;
-
-    /**
-     * @var PDO
-     */
-    private $connection;
+    private PDO $connection;
 
     protected function setUp(): void
     {
@@ -90,9 +79,7 @@ class PostgresProjectionManagerCustomSchemaTest extends AbstractProjectionManage
         TestUtil::tearDownDatabase();
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_throws_exception_when_invalid_event_store_instance_passed(): void
     {
         $this->expectException(\Prooph\EventStore\Exception\InvalidArgumentException::class);
@@ -102,9 +89,7 @@ class PostgresProjectionManagerCustomSchemaTest extends AbstractProjectionManage
         new InMemoryProjectionManager($eventStore->reveal());
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_throws_exception_when_invalid_wrapped_event_store_instance_passed(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -116,9 +101,7 @@ class PostgresProjectionManagerCustomSchemaTest extends AbstractProjectionManage
         new PostgresProjectionManager($wrappedEventStore->reveal(), $this->connection);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_throws_exception_when_fetching_projecton_names_with_missing_db_table(): void
     {
         $this->expectException(RuntimeException::class);
@@ -127,9 +110,7 @@ class PostgresProjectionManagerCustomSchemaTest extends AbstractProjectionManage
         $this->projectionManager->fetchProjectionNames(null, 200, 0);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_throws_exception_when_fetching_projection_names_using_invalid_regex(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -138,9 +119,7 @@ class PostgresProjectionManagerCustomSchemaTest extends AbstractProjectionManage
         $this->projectionManager->fetchProjectionNamesRegex('invalid)', 10, 0);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_throws_exception_when_fetching_projecton_names_regex_with_missing_db_table(): void
     {
         $this->expectException(RuntimeException::class);

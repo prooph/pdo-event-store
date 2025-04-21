@@ -51,14 +51,14 @@ $query = $projectionManager->createQuery(
     ]
 );
 
-\pcntl_signal(SIGQUIT, function () use ($query) {
+\pcntl_signal(SIGQUIT, function () use ($query): void {
     $query->stop();
     exit(SIGUSR1);
 });
 
 $query
     ->fromStreams('user-123')
-    ->whenAny(function () {
+    ->whenAny(function (): void {
         \usleep(500000);
     })
     ->run();

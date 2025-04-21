@@ -14,10 +14,11 @@ declare(strict_types=1);
 namespace ProophTest\EventStore\Pdo;
 
 use ArrayIterator;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\Test;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Metadata\MetadataMatcher;
 use Prooph\EventStore\Metadata\Operator;
-use Prooph\EventStore\Pdo\MySqlEventStore;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use ProophTest\EventStore\Mock\UserCreated;
@@ -25,21 +26,15 @@ use ProophTest\EventStore\Mock\UsernameChanged;
 use ProophTest\EventStore\Pdo\Assets\PersistenceStrategy\CustomMySqlAggregateStreamStrategy;
 use ProophTest\EventStore\Pdo\Assets\PersistenceStrategy\CustomMySqlSingleStreamStrategy;
 use Ramsey\Uuid\Uuid;
+use RuntimeException;
 
-/**
- * @group mysql
- */
-final class MySqlCustomStrategiesEventStoreTest extends MySqlEventStoreTestCase
+#[Group('mysql')]
+final class MySqlCustomStrategiesEventStoreTest extends MySqlEventStoreTest
 {
-    /**
-     * @var MySqlEventStore
-     */
-    protected $eventStore;
-
     protected function setUp(): void
     {
         if (TestUtil::getDatabaseDriver() !== 'pdo_mysql') {
-            throw new \RuntimeException('Invalid database driver');
+            throw new RuntimeException('Invalid database driver');
         }
 
         $this->connection = TestUtil::getConnection();
@@ -48,9 +43,7 @@ final class MySqlCustomStrategiesEventStoreTest extends MySqlEventStoreTestCase
         $this->setupEventStoreWith(new CustomMySqlAggregateStreamStrategy());
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_loads_correctly_using_single_stream_per_aggregate_type_strategy(): void
     {
         $this->setupEventStoreWith(new CustomMySqlSingleStreamStrategy(), 5);
@@ -77,9 +70,7 @@ final class MySqlCustomStrategiesEventStoreTest extends MySqlEventStoreTestCase
         $this->assertEquals('Bradley', $lastUser2Event->payload()['name']);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_fails_to_write_with_duplicate_version_and_mulitple_streams_per_aggregate_strategy(): void
     {
         $this->expectException(ConcurrencyException::class);

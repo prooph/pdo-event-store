@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace ProophTest\EventStore\Pdo\Container;
 
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Prooph\Common\Messaging\MessageFactory;
 use Prooph\EventStore\EventStore;
@@ -26,16 +28,12 @@ use ProophTest\EventStore\Pdo\TestUtil;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Container\ContainerInterface;
 
-/**
- * @group mariadb
- */
+#[Group('mariadb')]
 class MariaDbProjectionManagerFactoryTest extends TestCase
 {
     use ProphecyTrait;
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_creates_service(): void
     {
         $config['prooph']['projection_manager']['default'] = [
@@ -65,9 +63,7 @@ class MariaDbProjectionManagerFactoryTest extends TestCase
         $this->assertInstanceOf(MariaDbProjectionManager::class, $projectionManager);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_creates_service_via_callstatic(): void
     {
         $config['prooph']['projection_manager']['default'] = [
@@ -97,9 +93,7 @@ class MariaDbProjectionManagerFactoryTest extends TestCase
         $this->assertInstanceOf(MariaDbProjectionManager::class, $pdo);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_throws_exception_when_invalid_container_given(): void
     {
         $this->expectException(InvalidArgumentException::class);

@@ -15,6 +15,8 @@ namespace ProophTest\EventStore\Pdo;
 
 use ArrayIterator;
 use PDO;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\Test;
 use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Metadata\MetadataMatcher;
@@ -31,17 +33,10 @@ use ProophTest\EventStore\Pdo\Assets\PersistenceStrategy\CustomMariaDbSingleStre
 use Prophecy\PhpUnit\ProphecyTrait;
 use Ramsey\Uuid\Uuid;
 
-/**
- * @group mariadb
- */
-final class MariaDbCustomStrategiesEventStoreTest extends MariaDbEventStoreTestCase
+#[Group('mariadb')]
+final class MariaDbCustomStrategiesEventStoreTest extends MariaDbEventStoreTest
 {
     use ProphecyTrait;
-
-    /**
-     * @var MariaDbEventStore
-     */
-    protected $eventStore;
 
     protected function setUp(): void
     {
@@ -55,9 +50,7 @@ final class MariaDbCustomStrategiesEventStoreTest extends MariaDbEventStoreTestC
         $this->setupEventStoreWith(new CustomMariaDbAggregateStreamStrategy());
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_cannot_create_new_stream_if_table_name_is_already_used(): void
     {
         $this->expectException(RuntimeException::class);
@@ -71,12 +64,10 @@ final class MariaDbCustomStrategiesEventStoreTest extends MariaDbEventStoreTestC
             $statement->execute();
         }
 
-        $this->eventStore->create(new Stream($streamName, new \ArrayIterator()));
+        $this->eventStore->create(new Stream($streamName, new ArrayIterator()));
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_loads_correctly_using_single_stream_per_aggregate_type_strategy(): void
     {
         $this->setupEventStoreWith(new CustomMariaDbSingleStreamStrategy(), 5);
@@ -103,9 +94,7 @@ final class MariaDbCustomStrategiesEventStoreTest extends MariaDbEventStoreTestC
         $this->assertEquals('Bradley', $lastUser2Event->payload()['name']);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_fails_to_write_with_duplicate_version_and_mulitple_streams_per_aggregate_strategy(): void
     {
         $this->expectException(ConcurrencyException::class);
@@ -165,9 +154,7 @@ final class MariaDbCustomStrategiesEventStoreTest extends MariaDbEventStoreTestC
         $eventStore->appendTo(new StreamName('Prooph\Model\User'), new ArrayIterator([$streamEvent]));
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_removes_stream_if_stream_table_hasnt_been_created(): void
     {
         $strategy = $this->createMock(MariaDbPersistenceStrategy::class);

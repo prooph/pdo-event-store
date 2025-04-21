@@ -14,12 +14,15 @@ declare(strict_types=1);
 namespace ProophTest\EventStore\Pdo\Container;
 
 use PDO;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Prooph\EventStore\Pdo\Container\PdoConnectionFactory;
 use Prooph\EventStore\Pdo\Exception\InvalidArgumentException;
 use ProophTest\EventStore\Pdo\TestUtil;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Container\ContainerInterface;
+use RuntimeException;
 
 class PdoConnectionFactoryTest extends TestCase
 {
@@ -39,7 +42,7 @@ class PdoConnectionFactoryTest extends TestCase
         } elseif ($vendor === 'pdo_pgsql') {
             $vendor = 'pgsql';
         } else {
-            throw new \RuntimeException('Invalid database vendor');
+            throw new RuntimeException('Invalid database vendor');
         }
 
         $this->config = [
@@ -51,10 +54,8 @@ class PdoConnectionFactoryTest extends TestCase
         ];
     }
 
-    /**
-     * @test
-     * @group mysql
-     */
+    #[Group('mysql')]
+    #[Test]
     public function it_creates_mysql_connection(): void
     {
         $container = $this->prophesize(ContainerInterface::class);
@@ -67,10 +68,8 @@ class PdoConnectionFactoryTest extends TestCase
         $this->assertInstanceOf(PDO::class, $pdo);
     }
 
-    /**
-     * @test
-     * @group mysql
-     */
+    #[Group('mysql')]
+    #[Test]
     public function it_creates_mysql_connection_via_callstatic(): void
     {
         $container = $this->prophesize(ContainerInterface::class);
@@ -83,10 +82,8 @@ class PdoConnectionFactoryTest extends TestCase
         $this->assertInstanceOf(PDO::class, $pdo);
     }
 
-    /**
-     * @test
-     * @group postgres
-     */
+    #[Group('postgres')]
+    #[Test]
     public function it_creates_postgres_connection(): void
     {
         $container = $this->prophesize(ContainerInterface::class);
@@ -99,10 +96,8 @@ class PdoConnectionFactoryTest extends TestCase
         $this->assertInstanceOf(PDO::class, $pdo);
     }
 
-    /**
-     * @test
-     * @group postgres
-     */
+    #[Group('postgres')]
+    #[Test]
     public function it_creates_postgres_connection_via_callstatic(): void
     {
         $container = $this->prophesize(ContainerInterface::class);
@@ -115,9 +110,7 @@ class PdoConnectionFactoryTest extends TestCase
         $this->assertInstanceOf(PDO::class, $pdo);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_throws_exception_when_invalid_container_given(): void
     {
         $this->expectException(InvalidArgumentException::class);

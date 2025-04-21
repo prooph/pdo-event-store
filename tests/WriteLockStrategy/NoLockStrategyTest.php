@@ -13,20 +13,18 @@ declare(strict_types=1);
 
 namespace ProophTest\EventStore\Pdo\WriteLockStrategy;
 
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Prooph\EventStore\Pdo\WriteLockStrategy\NoLockStrategy;
 use Prophecy\PhpUnit\ProphecyTrait;
 
-/**
- * @group mysql
- */
+#[Group('mysql')]
 class NoLockStrategyTest extends TestCase
 {
     use ProphecyTrait;
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_always_succeeds_locking(): void
     {
         $strategy = new NoLockStrategy();
@@ -34,9 +32,7 @@ class NoLockStrategyTest extends TestCase
         $this->assertTrue($strategy->getLock('write_lock'));
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function in_always_succeeds_releasing(): void
     {
         $strategy = new NoLockStrategy();
