@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace ProophTest\EventStore\Pdo\Projection;
 
 use ArrayIterator;
+use Assert\Assertion;
 use DateInterval;
 use DateTimeImmutable;
 use DateTimeZone;
@@ -27,6 +28,7 @@ use Prooph\EventStore\Exception\InvalidArgumentException;
 use Prooph\EventStore\Pdo\Projection\GapDetection;
 use Prooph\EventStore\Pdo\Projection\PdoEventStoreProjector;
 use Prooph\EventStore\Pdo\Projection\PdoEventStoreReadModelProjector;
+use Prooph\EventStore\Projection\ProjectionStatus;
 use Prooph\EventStore\Projection\Projector;
 use Prooph\EventStore\Projection\ReadModel;
 use Prooph\EventStore\Stream;
@@ -456,27 +458,21 @@ abstract class AbstractPdoEventStoreReadModelProjectorTestCase extends AbstractE
         $projection
             ->fromStream('user')
             ->init(function () {
-                return [];
+                return ['iteration' => 0];
             })
-            ->when([
-                UserCreated::class => function (array $state, Message $event): array {
+            ->whenAny(
+                function (array $state, Message $event) use ($projectionManager, $gapDetection, $parallelConnection): array {
+                    if ($state['iteration'] === 1) {
+                        Assertion::true($gapDetection->isRetrying());
+                        $parallelConnection->commit();
+                    }
+
+                    ++$state['iteration'];
+
                     return $state;
-                },
-                UsernameChanged::class => function (array $state, Message $event): array {
-                    return $state;
-                },
-            ])
+                }
+            )
             ->run(false);
-
-        $this->assertEquals(1, $projectionManager->fetchProjectionStreamPositions('test_projection')['user']);
-
-        $this->assertTrue($gapDetection->isRetrying());
-
-        // Fill the gap
-        $parallelConnection->commit();
-
-        // Run again with gap detection in retry mode
-        $projection->run(false);
 
         $this->assertEquals(3, $projectionManager->fetchProjectionStreamPositions('test_projection')['user']);
 
@@ -521,36 +517,25 @@ abstract class AbstractPdoEventStoreReadModelProjectorTestCase extends AbstractE
         $projection
             ->fromStream('user')
             ->init(function () {
-                return [];
+                return ['iteration' => 0];
             })
-            ->when([
-                UserCreated::class => function (array $state, Message $event): array {
+            ->whenAny(
+                function (array $state, Message $event) use ($projectionManager, $gapDetection, $parallelConnection): array {
+                    if ($state['iteration'] === 1) {
+                        Assertion::true($gapDetection->isRetrying());
+                        $parallelConnection->rollBack();
+                    }
+
+                    ++$state['iteration'];
+
                     return $state;
-                },
-                UsernameChanged::class => function (array $state, Message $event): array {
-                    return $state;
-                },
-            ])
+                }
+            )
             ->run(false);
-
-        $this->assertEquals(1, $projectionManager->fetchProjectionStreamPositions('test_projection')['user']);
-
-        $this->assertTrue($gapDetection->isRetrying());
-
-        // Force a real gap
-        $parallelConnection->rollBack();
-
-        // Run again with gap detection in retry mode
-        $projection->run(false);
-
-        // Projection should not move forward, but instead retry a second time
-        $this->assertEquals(1, $projectionManager->fetchProjectionStreamPositions('test_projection')['user']);
-
-        // Third run with gap detection still in retry mode, but limit reached
-        $projection->run(false);
 
         //Projection should have moved forward
         $this->assertEquals(3, $projectionManager->fetchProjectionStreamPositions('test_projection')['user']);
+        $this->assertEquals(ProjectionStatus::IDLE(), $projectionManager->fetchProjectionStatus('test_projection'));
 
         $this->assertFalse($gapDetection->isRetrying());
     }
@@ -631,5 +616,62 @@ abstract class AbstractPdoEventStoreReadModelProjectorTestCase extends AbstractE
         }
 
         $this->eventStore->create(new Stream(new StreamName($name), new ArrayIterator($events)));
+    }
+
+    #[Test]
+    public function projection_should_run_until_end_of_stream(): void
+    {
+        $this->prepareEventStream('user-345');
+
+        $projectionManager = $this->projectionManager;
+        $projection = $projectionManager->createReadModelProjection('test_projection', new ReadModelMock(), [
+            Projector::OPTION_PERSIST_BLOCK_SIZE => 1,
+            PdoEventStoreReadModelProjector::OPTION_LOAD_COUNT => 1,
+        ]);
+
+        $projection
+            ->fromStream('user-345')
+            ->whenAny(function () {
+            })
+            ->run(false);
+
+        $this->assertEquals(50, $projectionManager->fetchProjectionStreamPositions('test_projection')['user-345']);
+        $this->assertEquals(ProjectionStatus::IDLE(), $projectionManager->fetchProjectionStatus('test_projection'));
+    }
+
+    #[Test]
+    public function when_failed_projection_should_release_lock_but_indicate_running_status(): void
+    {
+        $this->prepareEventStream('user-345');
+
+        $projectionManager = $this->projectionManager;
+        $projection = $projectionManager->createReadModelProjection('test_projection', new ReadModelMock(), [
+            Projector::OPTION_PERSIST_BLOCK_SIZE => 1,
+            PdoEventStoreReadModelProjector::OPTION_LOAD_COUNT => 1,
+        ]);
+
+        $projection
+            ->fromStream('user-345')
+            ->init(function () {
+                return ['iteration' => 0];
+            })
+            ->whenAny(function (array $state, Message $event): array {
+                ++$state['iteration'];
+
+                if ($state['iteration'] > 5) {
+                    throw new \RuntimeException('something happened');
+                }
+
+                return $state;
+            });
+
+        try {
+            $projection->run(false);
+        } catch (\Throwable) {
+        }
+
+        $this->assertEquals(5, $projectionManager->fetchProjectionStreamPositions('test_projection')['user-345']);
+        $this->assertEquals(ProjectionStatus::RUNNING(), $projectionManager->fetchProjectionStatus('test_projection'));
+        $this->assertNull($this->connection->query("select locked_until from projections where name = 'test_projection'")->fetch(PDO::FETCH_COLUMN));
     }
 }

@@ -135,11 +135,6 @@ final class PdoEventStoreReadModelProjector implements MetadataAwareReadModelPro
     /**
      * @var int
      */
-    private $loadedEvents = 0;
-
-    /**
-     * @var int
-     */
     private $sleep;
 
     /**
@@ -529,7 +524,7 @@ EOT;
                 }
 
                 $streamEvents = new MergedStreamIterator(\array_keys($eventStreams), ...\array_values($eventStreams));
-                $this->loadedEvents = $streamEvents->count();
+                $loadedEvents = $streamEvents->count();
 
                 if ($singleHandler) {
                     $gapDetected = ! $this->handleStreamWithSingleHandler($streamEvents);
@@ -586,9 +581,9 @@ EOT;
                 }
 
                 $this->prepareStreamPositions();
-            } while ($keepRunning && ! $this->isStopped);
+            } while (($keepRunning || $loadedEvents > 0) && ! $this->isStopped);
         } finally {
-            $this->releaseLock($keepRunning);
+            $this->releaseLock($keepRunning, $loadedEvents);
         }
     }
 
@@ -915,7 +910,7 @@ EOT;
         $this->lastLockUpdate = $now;
     }
 
-    private function releaseLock(bool $keepRunning): void
+    private function releaseLock(bool $keepRunning, int $loadedEvents): void
     {
         $projectionsTable = $this->quoteTableName($this->projectionsTable);
         $sql = <<<EOT
@@ -924,7 +919,7 @@ EOT;
 
         $statement = $this->connection->prepare($sql);
 
-        $status = $keepRunning && $this->loadedEvents > 0 ? ProjectionStatus::RUNNING() : ProjectionStatus::IDLE();
+        $status = ($keepRunning || $loadedEvents > 0) ? ProjectionStatus::RUNNING() : ProjectionStatus::IDLE();
 
         try {
             $statement->execute([$status->getValue(), $this->name]);
