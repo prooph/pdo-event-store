@@ -108,21 +108,21 @@ and a running Postgres server listening on port `5432`. Both should contain an e
 ### MariaDb
 
 ```bash
-docker-compose -f docker-compose-tests.yml run composer run-script test-mariadb --timeout 0; \
+docker-compose -f docker-compose-tests.yml run tests composer run-script test-mariadb --timeout 0; \
 docker-compose -f docker-compose-tests.yml stop
 ```
 
 ### MySql
 
 ```bash
-docker-compose -f docker-compose-tests.yml run composer run-script test-mysql --timeout 0; \
+docker-compose -f docker-compose-tests.yml run tests composer run-script test-mysql --timeout 0; \
 docker-compose -f docker-compose-tests.yml stop
 ```
 
 ### Postgres
 
 ```bash
-docker-compose -f docker-compose-tests.yml run composer run-script test-postgres --timeout 0; \
+docker-compose -f docker-compose-tests.yml run tests composer run-script test-postgres --timeout 0; \
 docker-compose -f docker-compose-tests.yml stop
 ```
 

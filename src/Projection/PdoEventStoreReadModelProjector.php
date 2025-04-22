@@ -212,6 +212,7 @@ final class PdoEventStoreReadModelProjector implements MetadataAwareReadModelPro
         $this->gapDetection = $gapDetection;
         $this->vendor = $this->connection->getAttribute(PDO::ATTR_DRIVER_NAME);
         while ($eventStore instanceof EventStoreDecorator) {
+            /** @var EventStoreDecorator $eventStore */
             $eventStore = $eventStore->getInnerEventStore();
         }
 

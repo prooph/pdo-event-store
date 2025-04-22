@@ -38,6 +38,8 @@ services:
       start_interval: 1s
   mysql:
     image: mysql:5.7
+    # until we go to mysql 8.0 we need to use this on arm64
+    platform: linux/amd64
     environment:
       - MYSQL_DATABASE=event_store_tests
       - MYSQL_ALLOW_EMPTY_PASSWORD=1
