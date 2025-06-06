@@ -182,9 +182,9 @@ final class PdoEventStoreProjector implements MetadataAwareProjector
     private $metadataMatcher;
 
     /**
-     * @var GapDetection|null
+     * @var GapDetector|null
      */
-    private $gapDetection;
+    private $gapDetector;
 
     public function __construct(
         EventStore $eventStore,
@@ -199,7 +199,7 @@ final class PdoEventStoreProjector implements MetadataAwareProjector
         ?int $loadCount = null,
         bool $triggerPcntlSignalDispatch = false,
         int $updateLockThreshold = 0,
-        ?GapDetection $gapDetection = null
+        ?GapDetector $gapDetection = null
     ) {
         if ($triggerPcntlSignalDispatch && ! \extension_loaded('pcntl')) {
             throw Exception\ExtensionNotLoadedException::withName('pcntl');
@@ -218,7 +218,7 @@ final class PdoEventStoreProjector implements MetadataAwareProjector
         $this->status = ProjectionStatus::IDLE();
         $this->triggerPcntlSignalDispatch = $triggerPcntlSignalDispatch;
         $this->updateLockThreshold = $updateLockThreshold;
-        $this->gapDetection = $gapDetection;
+        $this->gapDetector = $gapDetection;
         $this->vendor = $this->connection->getAttribute(PDO::ATTR_DRIVER_NAME);
 
         while ($eventStore instanceof EventStoreDecorator) {
@@ -568,14 +568,14 @@ EOT;
                     $gapDetected = ! $this->handleStreamWithHandlers($streamEvents);
                 }
 
-                if ($gapDetected && $this->gapDetection) {
-                    $sleep = $this->gapDetection->getSleepForNextRetry();
+                if ($gapDetected && $this->gapDetector) {
+                    $sleep = $this->gapDetector->getSleepForNextRetry();
 
                     \usleep($sleep);
-                    $this->gapDetection->trackRetry();
+                    $this->gapDetector->trackRetry();
                     $this->persist();
                 } else {
-                    $this->gapDetection && $this->gapDetection->resetRetries();
+                    $this->gapDetector && $this->gapDetector->resetRetries();
 
                     if (0 === $this->eventCounter) {
                         \usleep($this->sleep);
@@ -667,9 +667,9 @@ EOT;
 
             $this->currentStreamName = $events->streamName();
 
-            if ($this->gapDetection
-                && $this->gapDetection->isGapInStreamPosition((int) $this->streamPositions[$this->currentStreamName], (int) $key)
-                && $this->gapDetection->shouldRetryToFillGap(new \DateTimeImmutable('now', new DateTimeZone('UTC')), $event)
+            if ($this->gapDetector
+                && $this->gapDetector->isGapInStreamPosition((int) $this->streamPositions[$this->currentStreamName], (int) $key)
+                && $this->gapDetector->shouldRetryToFillGap(new \DateTimeImmutable('now', new DateTimeZone('UTC')), $event)
             ) {
                 return false;
             }
@@ -703,9 +703,9 @@ EOT;
 
             $this->currentStreamName = $events->streamName();
 
-            if ($this->gapDetection
-                && $this->gapDetection->isGapInStreamPosition((int) $this->streamPositions[$this->currentStreamName], (int) $key)
-                && $this->gapDetection->shouldRetryToFillGap(new \DateTimeImmutable('now', new DateTimeZone('UTC')), $event)
+            if ($this->gapDetector
+                && $this->gapDetector->isGapInStreamPosition((int) $this->streamPositions[$this->currentStreamName], (int) $key)
+                && $this->gapDetector->shouldRetryToFillGap(new \DateTimeImmutable('now', new DateTimeZone('UTC')), $event)
             ) {
                 return false;
             }
