@@ -25,7 +25,7 @@ use Prooph\Common\Messaging\Message;
  *
  * @package Prooph\EventStore\Pdo\Projection
  */
-final class GapDetection
+final class GapDetection implements GapDetector
 {
     /**
      * If gap still exists after all retries, projector moves on
