@@ -153,7 +153,7 @@ it can still happen that a projection sees events too early and skip the ones wi
 
 Combining Gap Detection with a short sleep time ensures that no events are skipped.
 
-*Note: By default, Gap Detection uses 4 retries with the last sleep time set to 500ms.*
+*Note: By default, Gap Detection uses 4 retries with the last sleep time set to 500μs.*
 
 #### Only Gap Detection
 
@@ -179,8 +179,8 @@ $gapDetection = new GapDetection(
     // Configure retries in case a gap is detected
     [
         0, // First retry without any sleep time
-        10, // Second retry after 10 ms
-        30, // Wait another 30 ms before performing a third retry
+        10, // Second retry after 10 μs
+        30, // Wait another 30 μs before performing a third retry
     ],
     \DateInterval('PT60S') //Set detection window to 60s
 );
