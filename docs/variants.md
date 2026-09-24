@@ -179,8 +179,8 @@ $gapDetection = new GapDetection(
     // Configure retries in case a gap is detected
     [
         0, // First retry without any sleep time
-        10, // Second retry after 10 ms
-        30, // Wait another 30 ms before performing a third retry
+        10_000, // Second retry after 10 ms (10,000  μs)
+        30_000, // Wait another 30 ms before performing a third retry
     ],
     \DateInterval('PT60S') //Set detection window to 60s
 );
